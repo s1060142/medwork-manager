@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedWork.Api", "MedWork.Api\MedWork.Api.csproj", "{66BACEE1-EC4F-EFC0-F4FF-7E81DE72E86B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MedWork.Api.Tests", "MedWork.Api.Tests\MedWork.Api.Tests.csproj", "{EE4955D5-29BB-038C-FD0A-79B174A036FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66BACEE1-EC4F-EFC0-F4FF-7E81DE72E86B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66BACEE1-EC4F-EFC0-F4FF-7E81DE72E86B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66BACEE1-EC4F-EFC0-F4FF-7E81DE72E86B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66BACEE1-EC4F-EFC0-F4FF-7E81DE72E86B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE4955D5-29BB-038C-FD0A-79B174A036FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE4955D5-29BB-038C-FD0A-79B174A036FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE4955D5-29BB-038C-FD0A-79B174A036FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE4955D5-29BB-038C-FD0A-79B174A036FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B416A288-2FC4-4DDB-AF52-990E0BF417A3}
+	EndGlobalSection
+EndGlobal
