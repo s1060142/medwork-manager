@@ -19,6 +19,7 @@ public class MedicalRecordsController : ControllerBase
     }
 
     [HttpGet("employee/{employeeId:int}")]
+    [ClinicalAccessAudit]
     public async Task<IActionResult> GetByEmployee(int employeeId)
     {
         var record = await _dbContext.MedicalRecords

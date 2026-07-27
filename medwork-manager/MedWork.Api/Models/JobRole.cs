@@ -14,6 +14,7 @@ public class JobRole
     public string? Description { get; set; }
 
     public ICollection<JobRoleRiskFactor> JobRoleRiskFactors { get; set; } = new List<JobRoleRiskFactor>();
-    public ICollection<Protocol> Protocols { get; set; } = new List<Protocol>();
-    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
-}
+        public ICollection<Protocol> Protocols { get; set; } = new List<Protocol>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public ICollection<JobRolePpe> JobRolePpes { get; set; } = new List<JobRolePpe>();
+    }

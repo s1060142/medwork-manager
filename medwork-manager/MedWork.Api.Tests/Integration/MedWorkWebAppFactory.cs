@@ -20,10 +20,16 @@ public class MedWorkWebAppFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
+            services.RemoveAll<DbContextOptions<AuditDbContext>>();
 
             services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseInMemoryDatabase(_databaseName);
+            });
+
+            services.AddDbContext<AuditDbContext>(options =>
+            {
+                options.UseInMemoryDatabase(_databaseName + "-audit");
             });
 
             services.AddAuthentication(options =>

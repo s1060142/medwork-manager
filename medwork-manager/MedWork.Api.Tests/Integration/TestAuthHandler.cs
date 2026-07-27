@@ -25,14 +25,19 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
             ? roleHeader.ToString()
             : AppRole.Admin;
 
-        var effectiveRole = string.Equals(requestedRole, AppRole.Doctor, StringComparison.OrdinalIgnoreCase)
-            ? AppRole.Doctor
-            : AppRole.Admin;
+        var effectiveRole = requestedRole switch
+        {
+            _ when string.Equals(requestedRole, AppRole.Doctor, StringComparison.OrdinalIgnoreCase) => AppRole.Doctor,
+            _ when string.Equals(requestedRole, AppRole.Secretary, StringComparison.OrdinalIgnoreCase) => AppRole.Secretary,
+            _ when string.Equals(requestedRole, AppRole.Rspp, StringComparison.OrdinalIgnoreCase) => AppRole.Rspp,
+            _ when string.Equals(requestedRole, AppRole.Employer, StringComparison.OrdinalIgnoreCase) => AppRole.Employer,
+            _ => AppRole.Admin
+        };
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "test-admin"),
-            new Claim(ClaimTypes.Name, "test-admin"),
+            new Claim(ClaimTypes.NameIdentifier, "test-" + effectiveRole.ToLowerInvariant()),
+            new Claim(ClaimTypes.Name, "test-" + effectiveRole.ToLowerInvariant()),
             new Claim(ClaimTypes.Role, effectiveRole),
         };
 

@@ -16,7 +16,7 @@ public class JwtTokenService : IJwtTokenService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(string username, string role)
+    public string GenerateToken(string username, string role, int? employeeId = null, int? companyId = null, int? siteId = null)
     {
         var claims = new List<Claim>
         {
@@ -25,6 +25,15 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.Name, username),
             new(ClaimTypes.Role, role)
         };
+
+        if (employeeId.HasValue)
+            claims.Add(new Claim("employeeId", employeeId.Value.ToString()));
+
+        if (companyId.HasValue)
+            claims.Add(new Claim("companyId", companyId.Value.ToString()));
+
+        if (siteId.HasValue)
+            claims.Add(new Claim("siteId", siteId.Value.ToString()));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -1,4 +1,6 @@
 using MedWork.Api.Models;
+using MedWork.Api.Security;
+using MedWork.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
@@ -11,6 +13,9 @@ public static class AppDbSeeder
         await dbContext.Database.MigrateAsync();
 
         await EnsureEncryptedDataReadableAsync(dbContext);
+
+        // --- Utenti applicativi (gestione su DB, password con Argon2id) ---
+        await SeedUsersAsync(dbContext, isDevelopment: dbContext.Database.IsRelational());
 
         var companySeeds = new[]
         {
@@ -461,6 +466,71 @@ public static class AppDbSeeder
         await dbContext.SaveChangesAsync();
 
         await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedUsersAsync(AppDbContext dbContext, bool isDevelopment)
+    {
+        // L'hasher è self-contained (salt + parametri dentro l'hash); non serve stato.
+        var hasher = new Argon2PasswordHasher();
+
+        // 1) Admin iniziale SEMPRE presente (anche in produzione), con password da env o fallback.
+        var adminPassword = Environment.GetEnvironmentVariable("MEDWORK_ADMIN_PASSWORD") ?? "Admin123!";
+        var existingAdmin = await dbContext.Users.AnyAsync(u => u.Username == "admin");
+        if (!existingAdmin)
+        {
+            dbContext.Users.Add(new AppUser
+            {
+                Username = "admin",
+                PasswordHash = hasher.Hash(adminPassword),
+                Role = AppRole.Admin,
+                IsActive = true,
+                MustChangePassword = !isDevelopment, // in prod forza il cambio al primo login
+                Email = "admin@medwork.it",
+                CreatedAtUtc = DateTime.UtcNow
+            });
+            await dbContext.SaveChangesAsync();
+        }
+
+        // 2) Solo in Development: ricrea le credenziali demo da appsettings (password in chiaro) come hash su DB.
+        //    In produzione questi utenti NON vanno creati (le password non devono stare nel repo).
+        if (isDevelopment)
+        {
+            var demoUsers = new (string Username, string Password, string Role, string? TaxCode)[]
+            {
+                ("doctor", "Doctor123!", AppRole.Doctor, null),
+                ("segreteria", "Segr123!", AppRole.Secretary, null),
+                ("rspp", "Rspp123!", AppRole.Rspp, null),
+                ("datore", "Datore123!", AppRole.Employer, "IT01234567890"),
+                ("lavoratore", "Lavoratore123!", AppRole.Worker, "RSSMRA80A01F205X"),
+            };
+
+            foreach (var demo in demoUsers)
+            {
+                var existing = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == demo.Username);
+                if (existing is null)
+                {
+                    dbContext.Users.Add(new AppUser
+                    {
+                        Username = demo.Username,
+                        PasswordHash = hasher.Hash(demo.Password),
+                        Role = demo.Role,
+                        TaxCode = demo.TaxCode,
+                        IsActive = true,
+                        MustChangePassword = false,
+                        CreatedAtUtc = DateTime.UtcNow
+                    });
+                }
+                else if (!existing.PasswordHash.StartsWith("$argon2id$"))
+                {
+                    // Migrazione: se era ancora in chiaro (vecchio seed), re-hash.
+                    existing.PasswordHash = hasher.Hash(demo.Password);
+                    existing.Role = demo.Role;
+                    existing.TaxCode = demo.TaxCode;
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     private static async Task EnsureEncryptedDataReadableAsync(AppDbContext dbContext)

@@ -68,4 +68,5 @@ public class Employee
     public ICollection<ScheduledExam> ScheduledExams { get; set; } = new List<ScheduledExam>();
     public ICollection<Vaccination> Vaccinations { get; set; } = new List<Vaccination>();
     public ICollection<NotificationLog> NotificationLogs { get; set; } = new List<NotificationLog>();
-}
+        public ICollection<EmployeePpe> EmployeePpes { get; set; } = new List<EmployeePpe>();
+    }

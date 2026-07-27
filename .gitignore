@@ -1,0 +1,6 @@
+# ===== Repo-root artifacts (not covered by medwork-manager/.gitignore) =====
+*.log
+api-*.log
+publish-test/
+sample-pdfs/
+**/medwork-frontend/tmp/

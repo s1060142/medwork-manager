@@ -1,7 +1,63 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5279'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000'
 
 export function getApiBaseUrl() {
   return API_BASE_URL
+}
+
+// ===== Refresh token proattivo =====
+// Rinnova il JWT quando mancano meno di 15 minuti alla scadenza.
+const REFRESH_THRESHOLD_MS = 15 * 60 * 1000
+let refreshInFlight = null
+
+function getTokenExpiryMs(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp ? payload.exp * 1000 : null
+  } catch {
+    return null
+  }
+}
+
+async function maybeRefreshToken() {
+  const token = localStorage.getItem('accessToken')
+  if (!token) return
+
+  const expiry = getTokenExpiryMs(token)
+  if (!expiry) return
+
+  const remaining = expiry - Date.now()
+  if (remaining > REFRESH_THRESHOLD_MS || remaining <= 0) return
+
+  // Evita refresh concorrenti
+  if (!refreshInFlight) {
+    refreshInFlight = fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken)
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        refreshInFlight = null
+      })
+  }
+
+  await refreshInFlight
+}
+
+function getContextHeaders() {
+  const headers = { 'Content-Type': 'application/json' }
+  const companyId = localStorage.getItem('activeCompanyId')
+  const siteId = localStorage.getItem('activeBranchId')
+  if (companyId) headers['X-Company-Id'] = companyId
+  if (siteId) headers['X-Site-Id'] = siteId
+  return headers
 }
 
 function getHeaders() {
@@ -9,10 +65,12 @@ function getHeaders() {
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...getContextHeaders(),
   }
 }
 
 export async function apiGet(endpoint) {
+  await maybeRefreshToken()
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method: 'GET',
     headers: getHeaders(),
@@ -23,7 +81,14 @@ export async function apiGet(endpoint) {
     throw buildApiError(message, response.status)
   }
 
-  return readJsonResponse(response)
+  const data = await readJsonResponse(response)
+  // Molti endpoint master-data restituiscono un wrapper paginato { total, items: [...] }
+  // (es. /api/master-data/employees). Per retrocompatibilità con i componenti che
+  // si aspettano un array grezzo, estraiamo .items quando presente.
+  if (data && !Array.isArray(data) && Array.isArray(data.items)) {
+    return data.items
+  }
+  return data
 }
 
 export async function authLogin(username, password) {
@@ -42,6 +107,7 @@ export async function authLogin(username, password) {
 }
 
 export async function apiSend(method, endpoint, payload) {
+  await maybeRefreshToken()
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
     headers: getHeaders(),
@@ -91,7 +157,7 @@ async function safeReadError(response) {
   try {
     const text = await response.text()
     if (!text) {
-      return 'Errore durante l’operazione.'
+      return 'Errore durante l\'operazione.'
     }
 
     const contentType = response.headers.get('content-type') || ''
@@ -118,7 +184,7 @@ async function safeReadError(response) {
 
     return text
   } catch {
-    return 'Errore durante l’operazione.'
+    return 'Errore durante l\'operazione.'
   }
 }
 

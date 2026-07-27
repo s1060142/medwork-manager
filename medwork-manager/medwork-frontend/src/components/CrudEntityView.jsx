@@ -401,7 +401,14 @@ function CrudEntityView({
     setError('')
     try {
       const data = await apiGet(config.readEndpoint)
-      setRows(Array.isArray(data) ? data : [])
+      // L'API restituisce un wrapper paginato { total, items: [...] } oppure un array grezzo.
+      // Estrai sempre l'array da visualizzare.
+      const rows = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : []
+      setRows(rows)
     } catch (requestError) {
       setError(requestError.message)
     } finally {

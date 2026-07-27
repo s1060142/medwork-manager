@@ -22,8 +22,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanies()
     {
+        var companyId = User.GetCompanyId();
         var data = await _dbContext.Companies
             .AsNoTracking()
+            .Where(x => companyId == null || x.Id == companyId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -44,8 +46,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetBranches()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.Branches
             .AsNoTracking()
+            .Where(x => companyId == null || x.CompanyId == companyId)
+            .Where(x => siteId == null || x.Id == siteId)
             .OrderBy(x => x.City)
             .Select(x => new
             {
@@ -65,12 +71,37 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("employees")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetEmployees()
+    public async Task<IActionResult> GetEmployees(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        [FromQuery] string? search = null)
     {
-        var data = await _dbContext.Employees
-            .AsNoTracking()
+        if (page < 1) page = 1;
+        if (pageSize is < 1 or > 200) pageSize = 25;
+
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
+
+        var query = _dbContext.Employees.AsNoTracking()
+            .Where(x => companyId == null || x.CompanyId == companyId)
+            .Where(x => siteId == null || x.BranchId == siteId);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLowerInvariant();
+            query = query.Where(x =>
+                x.FirstName.ToLower().Contains(s) ||
+                x.LastName.ToLower().Contains(s) ||
+                x.TaxCode.ToLower().Contains(s));
+        }
+
+        var total = await query.CountAsync();
+
+        var items = await query
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
@@ -94,7 +125,14 @@ public class MasterDataController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(data);
+        return Ok(new
+        {
+            total,
+            page,
+            pageSize,
+            totalPages = (int)Math.Ceiling(total / (double)pageSize),
+            items
+        });
     }
 
     [HttpGet("risk-factors")]
@@ -141,8 +179,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetEmployeeRisks()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.EmployeeRisks
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee.BranchId == siteId)
             .OrderBy(x => x.EmployeeId)
             .ThenBy(x => x.RiskFactorId)
             .Select(x => new
@@ -159,10 +201,15 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("medical-records")]
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
+    [ClinicalAccessAudit]
     public async Task<IActionResult> GetMedicalRecords()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.MedicalRecords
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee.BranchId == siteId)
             .OrderBy(x => x.Employee.LastName)
             .ThenBy(x => x.Employee.FirstName)
             .Select(x => new
@@ -182,10 +229,15 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("medical-visits")]
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
+    [ClinicalAccessAudit]
     public async Task<IActionResult> GetMedicalVisits()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.MedicalVisits
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee.BranchId == siteId)
             .OrderByDescending(x => x.VisitDate)
             .Select(x => new
             {
@@ -212,8 +264,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetVisitExams()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.VisitExams
             .AsNoTracking()
+            .Where(x => companyId == null || x.MedicalVisit.Employee.CompanyId == companyId)
+            .Where(x => siteId == null || x.MedicalVisit.Employee.BranchId == siteId)
             .OrderBy(x => x.MedicalVisitId)
             .ThenBy(x => x.Id)
             .Select(x => new
@@ -278,8 +334,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetPersonalProtocols()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.PersonalProtocols
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee!.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee!.BranchId == siteId)
             .OrderByDescending(x => x.AssignedAt)
             .Select(x => new
             {
@@ -301,8 +361,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetAnamneses()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.Anamneses
             .AsNoTracking()
+            .Where(x => companyId == null || x.MedicalVisit!.Employee!.CompanyId == companyId)
+            .Where(x => siteId == null || x.MedicalVisit!.Employee!.BranchId == siteId)
             .OrderByDescending(x => x.Id)
             .Select(x => new
             {
@@ -324,8 +388,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetScheduledExams()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.ScheduledExams
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee!.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee!.BranchId == siteId)
             .OrderBy(x => x.DueDate)
             .Select(x => new
             {
@@ -346,8 +414,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetVaccinations()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.Vaccinations
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee!.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee!.BranchId == siteId)
             .OrderByDescending(x => x.DateAdministered)
             .Select(x => new
             {
@@ -367,8 +439,12 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetNotificationLogs()
     {
+        var companyId = User.GetCompanyId();
+        var siteId = User.GetSiteId();
         var data = await _dbContext.NotificationLogs
             .AsNoTracking()
+            .Where(x => companyId == null || x.Employee!.CompanyId == companyId)
+            .Where(x => siteId == null || x.Employee!.BranchId == siteId)
             .OrderByDescending(x => x.SentDate)
             .Select(x => new
             {
@@ -437,8 +513,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanyContacts()
     {
+        var companyId = User.GetCompanyId();
         var data = await _dbContext.CompanyContacts
             .AsNoTracking()
+            .Where(x => companyId == null || x.CompanyId == companyId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Ruolo)
             .Select(x => new
@@ -460,8 +538,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetDepartments()
     {
+        var companyId = User.GetCompanyId();
         var data = await _dbContext.Departments
             .AsNoTracking()
+            .Where(x => companyId == null || x.CompanyId == companyId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Nome)
             .Select(x => new
@@ -483,8 +563,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetWorkLocations()
     {
+        var companyId = User.GetCompanyId();
         var data = await _dbContext.WorkLocations
             .AsNoTracking()
+            .Where(x => companyId == null || x.CompanyId == companyId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Descrizione)
             .Select(x => new
