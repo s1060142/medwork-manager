@@ -36,7 +36,7 @@ public class SamplePdfWriterTests
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("SamplePdf-" + Guid.NewGuid()).Options;
-        var ctx = new AppDbContext(options, new TestFieldEncryptionService());
+        var ctx = new AppDbContext(options);
 
         var company = new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890" };
         var employee = new Employee

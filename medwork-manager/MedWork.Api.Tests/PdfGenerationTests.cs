@@ -8,16 +8,6 @@ using QuestPDF.Infrastructure;
 namespace MedWork.Api.Tests;
 
 /// <summary>
-/// Implementazione fittizia di IFieldEncryptionService per i test (round-trip identità),
-/// così il DbContext InMemory non dipende da DataProtection.
-/// </summary>
-internal sealed class TestFieldEncryptionService : IFieldEncryptionService
-{
-    public string Encrypt(string value) => value;
-    public string Decrypt(string value) => value;
-}
-
-/// <summary>
 /// Verifica che la generazione PDF produca un file PDF valido (%PDF header),
 /// esercitando il codice reale di QuestPDF su dati seedati in memoria.
 /// </summary>
@@ -33,7 +23,7 @@ public class PdfGenerationTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("PdfTest-" + Guid.NewGuid())
             .Options;
-        var ctx = new AppDbContext(options, new TestFieldEncryptionService());
+        var ctx = new AppDbContext(options);
 
         var company = new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890" };
         var employee = new Employee

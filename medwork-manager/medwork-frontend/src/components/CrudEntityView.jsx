@@ -722,381 +722,394 @@ function CrudEntityView({
   }
 
   return (
-    <Paper elevation={2} sx={{ p: 3, borderRadius: 3, border: '1px solid #e6ebf2' }}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
-        <Box>
-          <Typography variant="h6">{config.label}</Typography>
-          <Typography variant="body2" color="text.secondary">
+      <Paper className="modern-card" sx={{ p: 3, borderRadius: 3 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{config.label}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {config.readOnly
+                ? 'Vista informativa in sola lettura sincronizzata dal backend.'
+                : 'Gestione completa: inserimento, modifica con doppio click sulla riga e cancellazione.'}
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 0.8 }}>
+              <Chip size="small" label={`Totale: ${scopedRows.length}`} variant="outlined" className="kpi-card-info" sx={{ height: 24, fontSize: 11 }} />
+              <Chip size="small" label={`Filtrati: ${filteredRows.length}`} variant="outlined" className="kpi-card-primary" sx={{ height: 24, fontSize: 11 }} />
+            </Stack>
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Button className="btn-secondary-modern" onClick={handleExportCsv} disabled={!filteredRows.length} startIcon={<span style={{fontSize: 18}}>📥</span>}>Export CSV</Button>
+            {canEdit && (
+              <Button className="btn-primary-modern" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>
+            )}
+          </Stack>
+        </Stack>
+
+        {!canEdit && (
+          <Alert severity="info" sx={{ mb: 2 }}>
             {config.readOnly
-              ? 'Vista informativa in sola lettura sincronizzata dal backend.'
-              : 'Gestione completa: inserimento, modifica con doppio click sulla riga e cancellazione.'}
-          </Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 0.8 }}>
-            <Chip size="small" label={`Totale: ${scopedRows.length}`} variant="outlined" />
-            <Chip size="small" label={`Filtrati: ${filteredRows.length}`} variant="outlined" />
-          </Stack>
-        </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-          <Button variant="outlined" onClick={handleExportCsv} disabled={!filteredRows.length}>Export CSV</Button>
-          {canEdit && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>
-          )}
-        </Stack>
-      </Stack>
+              ? 'Visualizzazione in sola lettura: questa entità è disponibile solo per consultazione.'
+              : `Visualizzazione in sola lettura: per modificare questa entità è richiesto il ruolo ${config.role}.`}
+          </Alert>
+        )}
 
-      {!canEdit && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {config.readOnly
-            ? 'Visualizzazione in sola lettura: questa entita e disponibile solo per consultazione.'
-            : `Visualizzazione in sola lettura: per modificare questa entita e richiesto il ruolo ${config.role}.`}
-        </Alert>
-      )}
+        <TextField
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          placeholder="Cerca nei dati visualizzati..."
+          size="small"
+          fullWidth
+          sx={{ mb: 2 }}
+          className="form-field-modern"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-      <TextField
-        value={searchText}
-        onChange={(event) => setSearchText(event.target.value)}
-        placeholder="Cerca nei dati visualizzati..."
-        size="small"
-        fullWidth
-        sx={{ mb: 2 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          ),
-        }}
-      />
-
-      <Paper variant="outlined" sx={{ p: 1.5, mb: 2, borderRadius: 2 }}>
-        <Stack spacing={1.2}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ md: 'center' }} justifyContent="space-between">
-            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" rowGap={0.8}>
-              <Typography variant="subtitle2">Filtri avanzati</Typography>
-              <Chip size="small" label={`Regole attive: ${queryRules.length}`} variant="outlined" />
+        <Paper className="search-filter-bar" sx={{ p: 1.5, mb: 2, borderRadius: 2 }}>
+          <Stack spacing={1.2}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ md: 'center' }} justifyContent="space-between">
+              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" rowGap={0.8}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Filtri avanzati</Typography>
+                <Chip size="small" label={`Regole attive: ${queryRules.length}`} variant="outlined" className="kpi-card-warning" sx={{ height: 24, fontSize: 11 }} />
+              </Stack>
+              <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={0.8}>
+                <Button size="small" className="btn-secondary-modern" onClick={addQueryRule}>Aggiungi Filtro</Button>
+                <Button size="small" className="btn-ghost-modern" onClick={() => setQueryRules([])}>Reset Filtri</Button>
+              </Stack>
             </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={0.8}>
-              <Button size="small" variant="outlined" onClick={addQueryRule}>Aggiungi Filtro</Button>
-              <Button size="small" onClick={() => setQueryRules([])}>Reset Filtri</Button>
-            </Stack>
-          </Stack>
 
-          {queryRules.map((rule) => (
-            <Stack key={rule.id} direction={{ xs: 'column', md: 'row' }} spacing={1}>
-              <TextField
-                select
-                size="small"
-                label="Campo"
-                value={rule.field}
-                onChange={(event) => updateQueryRule(rule.id, { field: event.target.value })}
-                sx={{ minWidth: { md: 220 } }}
-              >
-                {configuredColumns.map((column) => (
-                  <MenuItem key={column} value={column}>{fieldLabels[column] || keyToLabel(column)}</MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                size="small"
-                label="Operatore"
-                value={rule.operator}
-                onChange={(event) => updateQueryRule(rule.id, { operator: event.target.value })}
-                sx={{ minWidth: { md: 190 } }}
-              >
-                {QUERY_OPERATORS.map((operator) => (
-                  <MenuItem key={operator.value} value={operator.value}>{operator.label}</MenuItem>
-                ))}
-              </TextField>
-
-              {operatorNeedsValue(rule.operator) && (
+            {queryRules.map((rule) => (
+              <Stack key={rule.id} direction={{ xs: 'column', md: 'row' }} spacing={1}>
                 <TextField
+                  select
                   size="small"
-                  label="Valore"
-                  value={rule.value}
-                  onChange={(event) => updateQueryRule(rule.id, { value: event.target.value })}
-                  fullWidth
-                />
-              )}
-
-              <Button color="error" onClick={() => removeQueryRule(rule.id)}>Rimuovi</Button>
-            </Stack>
-          ))}
-        </Stack>
-      </Paper>
-
-      {!!error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : filteredRows.length === 0 ? (
-        <Alert severity="info">Nessun dato disponibile.</Alert>
-      ) : (
-        <TableContainer sx={{ borderRadius: 2, border: '1px solid #e6ebf2', overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 820 }}>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#f7f9fc' }}>
-                {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
-                  <TableCell key={column}>{fieldLabels[column] || keyToLabel(column)}</TableCell>
-                ))}
-                {(canEdit || config.key === 'employees') && <TableCell align="right">Azioni</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {pagedRows.map((row, index) => (
-                <TableRow
-                  key={
-                    config.compositeKey
-                      ? config.compositeKey.map((field) => row[field]).join('-')
-                      : row[config.idField] ?? index
-                  }
-                  hover
-                  onDoubleClick={canEdit ? () => openEdit(row) : undefined}
-                  sx={canEdit ? { cursor: 'pointer' } : undefined}
+                  label="Campo"
+                  value={rule.field}
+                  onChange={(event) => updateQueryRule(rule.id, { field: event.target.value })}
+                  sx={{ minWidth: { md: 220 } }}
+                  className="form-field-modern"
                 >
-                  {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
-                    <TableCell key={`${index}-${column}`}>{displayValue(row[column])}</TableCell>
+                  {configuredColumns.map((column) => (
+                    <MenuItem key={column} value={column}>{fieldLabels[column] || keyToLabel(column)}</MenuItem>
                   ))}
-                  {(canEdit || config.key === 'employees') && (
-                    <TableCell align="right">
-                      <Stack direction="row" justifyContent="flex-end" spacing={1}>
-                        {config.key === 'employees' && (
-                          <Button size="small" variant="outlined" onClick={() => openProfile(row)}>Profilo</Button>
-                        )}
-                        {canEdit && <Button size="small" color="error" variant="outlined" onClick={() => setConfirmDelete(row)}>Elimina</Button>}
-                      </Stack>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <TablePagination
-            component="div"
-            count={filteredRows.length}
-            page={page}
-            onPageChange={(_, nextPage) => setPage(nextPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(Number(event.target.value))
-              setPage(0)
-            }}
-            rowsPerPageOptions={[10, 25, 50]}
-            labelRowsPerPage="Righe per pagina"
-            sx={{
-              '& .MuiTablePagination-toolbar': {
-                flexWrap: 'wrap',
-                rowGap: 0.5,
-                px: { xs: 1, sm: 2 },
-              },
-              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                m: 0,
-              },
-            }}
-          />
-        </TableContainer>
-      )}
+                </TextField>
 
-      <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="md">
-        <DialogTitle>{editingRow ? `Modifica ${config.label}` : `Nuovo ${config.label}`}</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Compila i campi richiesti. Le validazioni vengono applicate prima del salvataggio.
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            {config.fields.map((field) => {
-              if (field.hiddenInForm) {
-                return null
-              }
+                <TextField
+                  select
+                  size="small"
+                  label="Operatore"
+                  value={rule.operator}
+                  onChange={(event) => updateQueryRule(rule.id, { operator: event.target.value })}
+                  sx={{ minWidth: { md: 190 } }}
+                  className="form-field-modern"
+                >
+                  {QUERY_OPERATORS.map((operator) => (
+                    <MenuItem key={operator.value} value={operator.value}>{operator.label}</MenuItem>
+                  ))}
+                </TextField>
 
-              if (config.key === 'employees' && field.name === 'birthCity') {
-                const selectedMunicipality = municipalities.find(
-                  (item) =>
-                    item.cadastralCode === formData.birthCityCode ||
-                    item.name.toLowerCase() === String(formData.birthCity || '').toLowerCase(),
-                ) || null
-
-                return (
-                  <Autocomplete
-                    key={field.name}
-                    options={municipalities}
-                    value={selectedMunicipality}
-                    onChange={(_, value) => {
-                      if (!value) {
-                        handleChange(field, '')
-                        return
-                      }
-
-                      handleChange(field, value.name)
-                      setFormData((current) => ({
-                        ...current,
-                        birthCity: value.name,
-                        birthCityCode: value.cadastralCode,
-                      }))
-                      setFormErrors((current) => ({
-                        ...current,
-                        birthCity: undefined,
-                        birthCityCode: undefined,
-                      }))
-                    }}
-                    onInputChange={(_, inputValue, reason) => {
-                      if (reason === 'input') {
-                        handleChange(field, inputValue)
-                      }
-                    }}
-                    getOptionLabel={(option) =>
-                      typeof option === 'string'
-                        ? option
-                        : `${option.name}${option.provinceCode ? ` (${option.provinceCode})` : ''}`
-                    }
-                    isOptionEqualToValue={(option, value) => option.cadastralCode === value.cadastralCode}
-                    filterOptions={(options, state) => {
-                      const query = state.inputValue.trim().toLowerCase()
-                      if (!query) return options
-                      return options
-                        .filter(
-                          (item) =>
-                            item.name.toLowerCase().includes(query) ||
-                            (item.provinceCode || '').toLowerCase().includes(query),
-                        )
-                    }}
-                    noOptionsText="Nessun comune trovato"
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={field.label}
-                        required={field.required}
-                        fullWidth
-                        placeholder="Cerca comune..."
-                        error={Boolean(formErrors[field.name])}
-                        helperText={formErrors[field.name] || municipalitiesError || 'Selezionando un comune, il codice viene compilato automaticamente in background.'}
-                      />
-                    )}
-                  />
-                )
-              }
-
-              if (field.type === 'select') {
-                const options = field.options || selectOptions[field.optionsEndpoint] || []
-                const filteredOptions =
-                  config.key === 'employees' && field.name === 'branchId' && formData.companyId
-                    ? options.filter((option) => Number(option.companyId) === Number(formData.companyId))
-                    : options
-                return (
+                {operatorNeedsValue(rule.operator) && (
                   <TextField
-                    key={field.name}
-                    select
-                    label={field.label}
-                    value={formData[field.name] ?? ''}
-                    onChange={(event) => handleChange(field, event.target.value)}
-                    required={field.required}
+                    size="small"
+                    label="Valore"
+                    value={rule.value}
+                    onChange={(event) => updateQueryRule(rule.id, { value: event.target.value })}
                     fullWidth
-                    error={Boolean(formErrors[field.name])}
-                    helperText={formErrors[field.name]}
-                  >
-                    <MenuItem value="">Seleziona...</MenuItem>
-                    {filteredOptions.map((option) => {
-                      const value = field.options ? option.value : option[field.optionValue]
-                      const label = field.options ? option.label : getOptionLabel(option, field)
-                      return (
-                      <MenuItem key={value} value={value}>
-                        {label}
-                      </MenuItem>
-                    )})}
-                  </TextField>
-                )
-              }
+                    className="form-field-modern"
+                  />
+                )}
 
-              if (config.key === 'employees' && field.name === 'taxCode') {
-                return (
-                  <Stack key={field.name} direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="flex-start">
+                <Button className="btn-ghost-modern" color="error" onClick={() => removeQueryRule(rule.id)}>Rimuovi</Button>
+              </Stack>
+            ))}
+          </Stack>
+        </Paper>
+
+        {!!error && <Alert severity="error" className="animate-fade-in" sx={{ mb: 2 }}>{error}</Alert>}
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : filteredRows.length === 0 ? (
+          <div className="empty-state animate-fade-in" sx={{ py: 6 }}>
+            <div className="empty-state-icon">📋</div>
+            <Typography className="empty-state-title">Nessun dato disponibile</Typography>
+            <Typography className="empty-state-text">Non ci sono record da visualizzare con i filtri correnti.</Typography>
+          </div>
+        ) : (
+          <div className="modern-table-container" sx={{ borderRadius: 3, overflowX: 'auto' }}>
+            <TableContainer className="modern-table-sticky">
+              <Table className="modern-table" size="small" stickyHeader sx={{ minWidth: 820 }}>
+                <TableHead>
+                  <TableRow>
+                    {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
+                      <TableCell key={column}>{fieldLabels[column] || keyToLabel(column)}</TableCell>
+                    ))}
+                    {(canEdit || config.key === 'employees') && <TableCell align="right">Azioni</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {pagedRows.map((row, index) => (
+                    <TableRow
+                      key={
+                        config.compositeKey
+                          ? config.compositeKey.map((field) => row[field]).join('-')
+                          : row[config.idField] ?? index
+                      }
+                      hover
+                      onClick={canEdit ? () => openEdit(row) : undefined}
+                      sx={canEdit ? { cursor: 'pointer' } : undefined}
+                    >
+                      {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
+                        <TableCell key={`${index}-${column}`}>{displayValue(row[column])}</TableCell>
+                      ))}
+                      {(canEdit || config.key === 'employees') && (
+                        <TableCell align="right">
+                          <Stack direction="row" justifyContent="flex-end" spacing={1}>
+                            {config.key === 'employees' && (
+                              <Button size="small" className="btn-secondary-modern" onClick={() => openProfile(row)}>Profilo</Button>
+                            )}
+                            {canEdit && <Button size="small" className="btn-ghost-modern" color="error" onClick={() => setConfirmDelete(row)}>Elimina</Button>}
+                          </Stack>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              component="div"
+              count={filteredRows.length}
+              page={page}
+              onPageChange={(_, nextPage) => setPage(nextPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(event) => {
+                setRowsPerPage(Number(event.target.value))
+                setPage(0)
+              }}
+              rowsPerPageOptions={[10, 25, 50]}
+              labelRowsPerPage="Righe per pagina"
+              sx={{
+                '& .MuiTablePagination-toolbar': {
+                  flexWrap: 'wrap',
+                  rowGap: 0.5,
+                  px: { xs: 1, sm: 2 },
+                },
+                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                  m: 0,
+                },
+              }}
+            />
+          </div>
+        )}
+
+        <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: 12 } }}>
+          <DialogTitle sx={{ fontWeight: 700 }}>{editingRow ? `Modifica ${config.label}` : `Nuovo ${config.label}`}</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Compila i campi richiesti. Le validazioni vengono applicate prima del salvataggio.
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              {config.fields.map((field) => {
+                if (field.hiddenInForm) {
+                  return null
+                }
+
+                if (config.key === 'employees' && field.name === 'birthCity') {
+                  const selectedMunicipality = municipalities.find(
+                    (item) =>
+                      item.cadastralCode === formData.birthCityCode ||
+                      item.name.toLowerCase() === String(formData.birthCity || '').toLowerCase(),
+                  ) || null
+
+                  return (
+                    <Autocomplete
+                      key={field.name}
+                      options={municipalities}
+                      value={selectedMunicipality}
+                      onChange={(_, value) => {
+                        if (!value) {
+                          handleChange(field, '')
+                          return
+                        }
+
+                        handleChange(field, value.name)
+                        setFormData((current) => ({
+                          ...current,
+                          birthCity: value.name,
+                          birthCityCode: value.cadastralCode,
+                        }))
+                        setFormErrors((current) => ({
+                          ...current,
+                          birthCity: undefined,
+                          birthCityCode: undefined,
+                        }))
+                      }}
+                      onInputChange={(_, inputValue, reason) => {
+                        if (reason === 'input') {
+                          handleChange(field, inputValue)
+                        }
+                      }}
+                      getOptionLabel={(option) =>
+                        typeof option === 'string'
+                          ? option
+                          : `${option.name}${option.provinceCode ? ` (${option.provinceCode})` : ''}`}
+                      isOptionEqualToValue={(option, value) => option.cadastralCode === value.cadastralCode}
+                      filterOptions={(options, state) => {
+                        const query = state.inputValue.trim().toLowerCase()
+                        if (!query) return options
+                        return options
+                          .filter(
+                            (item) =>
+                              item.name.toLowerCase().includes(query) ||
+                              (item.provinceCode || '').toLowerCase().includes(query),
+                          )
+                      }}
+                      noOptionsText="Nessun comune trovato"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={field.label}
+                          required={field.required}
+                          fullWidth
+                          placeholder="Cerca comune..."
+                          error={Boolean(formErrors[field.name])}
+                          helperText={formErrors[field.name] || municipalitiesError || 'Selezionando un comune, il codice viene compilato automaticamente in background.'}
+                          className="form-field-modern"
+                        />
+                      )}
+                    />
+                  )
+                }
+
+                if (field.type === 'select') {
+                  const options = field.options || selectOptions[field.optionsEndpoint] || []
+                  const filteredOptions =
+                    config.key === 'employees' && field.name === 'branchId' && formData.companyId
+                      ? options.filter((option) => Number(option.companyId) === Number(formData.companyId))
+                      : options
+                  return (
                     <TextField
+                      key={field.name}
+                      select
                       label={field.label}
                       value={formData[field.name] ?? ''}
                       onChange={(event) => handleChange(field, event.target.value)}
                       required={field.required}
                       fullWidth
-                      placeholder={field.placeholder}
-                      type="text"
-                      inputProps={{ maxLength: field.maxLength }}
                       error={Boolean(formErrors[field.name])}
                       helperText={formErrors[field.name]}
-                    />
-                    <Button
-                      variant="outlined"
-                      startIcon={<AutoFixHighIcon />}
-                      onClick={handleGenerateTaxCode}
-                      sx={{ minWidth: { xs: '100%', md: 240 }, height: 56 }}
+                      className="form-field-modern"
                     >
-                      Calcola Codice Fiscale
-                    </Button>
-                  </Stack>
+                      <MenuItem value="">Seleziona...</MenuItem>
+                      {filteredOptions.map((option) => {
+                        const value = field.options ? option.value : option[field.optionValue]
+                        const label = field.options ? option.label : getOptionLabel(option, field)
+                        return (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      )})}
+                    </TextField>
+                  )
+                }
+
+                if (config.key === 'employees' && field.name === 'taxCode') {
+                  return (
+                    <Stack key={field.name} direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="flex-start">
+                      <TextField
+                        label={field.label}
+                        value={formData[field.name] ?? ''}
+                        onChange={(event) => handleChange(field, event.target.value)}
+                        required={field.required}
+                        fullWidth
+                        placeholder={field.placeholder}
+                        type="text"
+                        inputProps={{ maxLength: field.maxLength }}
+                        error={Boolean(formErrors[field.name])}
+                        helperText={formErrors[field.name]}
+                        className="form-field-modern"
+                      />
+                      <Button
+                        className="btn-secondary-modern"
+                        startIcon={<AutoFixHighIcon />}
+                        onClick={handleGenerateTaxCode}
+                        sx={{ minWidth: { xs: '100%', md: 240 }, height: 56 }}
+                      >
+                        Calcola Codice Fiscale
+                      </Button>
+                    </Stack>
+                  )
+                }
+
+                return (
+                  <TextField
+                    key={field.name}
+                    label={field.label}
+                    value={formData[field.name] ?? ''}
+                    onChange={(event) => handleChange(field, event.target.value)}
+                    required={field.required}
+                    fullWidth
+                    placeholder={field.placeholder}
+                    type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
+                    multiline={field.type === 'textarea'}
+                    minRows={field.type === 'textarea' ? 3 : undefined}
+                    InputLabelProps={field.type === 'date' ? { shrink: true } : undefined}
+                    inputProps={{ maxLength: field.maxLength, min: field.min, max: field.max }}
+                    error={Boolean(formErrors[field.name])}
+                    helperText={formErrors[field.name]}
+                    className="form-field-modern"
+                    sx={field.type === 'textarea' ? { gridColumn: { xs: '1 / -1', md: '1 / -1' } } : undefined}
+                  />
                 )
-              }
+              })}
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button className="btn-ghost-modern" onClick={closeDialog} disabled={saving}>Annulla</Button>
+            <Button className="btn-primary-modern" onClick={handleSave} disabled={saving}>
+              {saving ? 'Salvataggio...' : 'Salva'}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-              return (
-                <TextField
-                  key={field.name}
-                  label={field.label}
-                  value={formData[field.name] ?? ''}
-                  onChange={(event) => handleChange(field, event.target.value)}
-                  required={field.required}
-                  fullWidth
-                  placeholder={field.placeholder}
-                  type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
-                  multiline={field.type === 'textarea'}
-                  minRows={field.type === 'textarea' ? 3 : undefined}
-                  InputLabelProps={field.type === 'date' ? { shrink: true } : undefined}
-                  inputProps={{ maxLength: field.maxLength, min: field.min, max: field.max }}
-                  error={Boolean(formErrors[field.name])}
-                  helperText={formErrors[field.name]}
-                  sx={field.type === 'textarea' ? { gridColumn: { xs: '1 / -1', md: '1 / -1' } } : undefined}
-                />
-              )
-            })}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeDialog} disabled={saving}>Annulla</Button>
-          <Button onClick={handleSave} variant="contained" disabled={saving}>
-            {saving ? 'Salvataggio...' : 'Salva'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} PaperProps={{ sx: { borderRadius: 12 } }}>
+          <DialogTitle sx={{ fontWeight: 700 }}>Conferma eliminazione</DialogTitle>
+          <DialogContent>
+            <Typography>Questa operazione non può essere annullata. Vuoi continuare?</Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button className="btn-ghost-modern" onClick={() => setConfirmDelete(null)} disabled={saving}>Annulla</Button>
+            <Button className="btn-primary-modern" color="error" onClick={handleDelete} disabled={saving}>
+              Elimina
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)}>
-        <DialogTitle>Conferma eliminazione</DialogTitle>
-        <DialogContent>
-          <Typography>Questa operazione non può essere annullata. Vuoi continuare?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDelete(null)} disabled={saving}>Annulla</Button>
-          <Button color="error" variant="contained" onClick={handleDelete} disabled={saving}>
-            Elimina
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={Boolean(successMessage)}
-        autoHideDuration={2500}
-        onClose={() => setSuccessMessage('')}
-        message={successMessage}
-      />
-
-      {config.key === 'employees' && (
-        <EmployeeProfileDialog
-          open={Boolean(profileEmployee)}
-          onClose={closeProfile}
-          employee={profileEmployee}
-          onEditEmployee={handleEditFromProfile}
+        <Snackbar
+          open={Boolean(successMessage)}
+          autoHideDuration={2500}
+          onClose={() => setSuccessMessage('')}
+          message={<span className="toast-modern toast-success">{successMessage}</span>}
         />
-      )}
-    </Paper>
-  )
+
+        {config.key === 'employees' && (
+          <EmployeeProfileDialog
+            open={Boolean(profileEmployee)}
+            onClose={closeProfile}
+            employee={profileEmployee}
+            onEditEmployee={handleEditFromProfile}
+          />
+        )}
+      </Paper>
+    )
 }
 
 export default CrudEntityView

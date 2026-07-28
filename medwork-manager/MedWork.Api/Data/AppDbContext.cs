@@ -7,13 +7,11 @@ namespace MedWork.Api.Data;
 
 public class AppDbContext : DbContext
 {
-    private readonly IFieldEncryptionService _fieldEncryptionService;
     private readonly ICurrentContextService? _currentContext;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IFieldEncryptionService fieldEncryptionService, ICurrentContextService? currentContext = null)
+    public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentContextService? currentContext = null)
         : base(options)
     {
-        _fieldEncryptionService = fieldEncryptionService;
         _currentContext = currentContext;
     }
 
@@ -74,15 +72,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Email).HasMaxLength(120);
         });
 
-        var encryptedRequiredStringConverter = new ValueConverter<string, string>(
-            value => _fieldEncryptionService.Encrypt(value),
-            value => _fieldEncryptionService.Decrypt(value));
-
-        var encryptedNullableStringConverter = new ValueConverter<string?, string?>(
-            value => string.IsNullOrWhiteSpace(value) ? value : _fieldEncryptionService.Encrypt(value),
-            value => string.IsNullOrWhiteSpace(value) ? value : _fieldEncryptionService.Decrypt(value));
-
-        var medicalVisitTypeConverter = new ValueConverter<MedicalVisitType, string>(
+                var medicalVisitTypeConverter = new ValueConverter<MedicalVisitType, string>(
             value => value.ToString(),
             value => ParseMedicalVisitType(value));
 
@@ -219,54 +209,54 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<MedicalRecord>(entity =>
-        {
-            entity.Property(x => x.MedicalHistory).HasMaxLength(4000).HasConversion(encryptedRequiredStringConverter).IsRequired();
-            entity.Property(x => x.Notes).HasMaxLength(2000);
-            entity.Property(x => x.CurrentTherapies).HasMaxLength(2000);
-            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+                {
+                    entity.Property(x => x.MedicalHistory).HasMaxLength(4000).IsRequired();
+                    entity.Property(x => x.Notes).HasMaxLength(2000);
+                    entity.Property(x => x.CurrentTherapies).HasMaxLength(2000);
+                    entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
 
-            entity.HasOne(x => x.Employee)
-                .WithOne(x => x.MedicalRecord)
-                .HasForeignKey<MedicalRecord>(x => x.EmployeeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(x => x.Employee)
+                        .WithOne(x => x.MedicalRecord)
+                        .HasForeignKey<MedicalRecord>(x => x.EmployeeId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.EmployeeId).IsUnique();
-        });
+                    entity.HasIndex(x => x.EmployeeId).IsUnique();
+                });
 
         modelBuilder.Entity<MedicalVisit>(entity =>
-        {
-            entity.Property(x => x.Outcome).HasMaxLength(250).IsRequired();
-            entity.Property(x => x.ClinicalNotes).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-            entity.Property(x => x.VisitType).HasConversion(medicalVisitTypeConverter).HasMaxLength(40).IsRequired();
-            entity.Property(x => x.TargetOrgans).HasMaxLength(2000);
-            entity.Property(x => x.ObjectiveExam).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
+                {
+                    entity.Property(x => x.Outcome).HasMaxLength(250).IsRequired();
+                    entity.Property(x => x.ClinicalNotes).HasMaxLength(4000);
+                    entity.Property(x => x.VisitType).HasConversion(medicalVisitTypeConverter).HasMaxLength(40).IsRequired();
+                    entity.Property(x => x.TargetOrgans).HasMaxLength(2000);
+                    entity.Property(x => x.ObjectiveExam).HasMaxLength(4000);
 
-            entity.HasOne(x => x.Employee)
-                .WithMany(x => x.MedicalVisits)
-                .HasForeignKey(x => x.EmployeeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(x => x.Employee)
+                        .WithMany(x => x.MedicalVisits)
+                        .HasForeignKey(x => x.EmployeeId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(x => x.Doctor)
-                .WithMany(x => x.MedicalVisits)
-                .HasForeignKey(x => x.DoctorId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+                    entity.HasOne(x => x.Doctor)
+                        .WithMany(x => x.MedicalVisits)
+                        .HasForeignKey(x => x.DoctorId)
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
-        modelBuilder.Entity<Anamnesis>(entity =>
-        {
-            entity.Property(x => x.WorkHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-            entity.Property(x => x.PersonalHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-            entity.Property(x => x.FamilyHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-            entity.Property(x => x.RemotePathology).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-            entity.Property(x => x.RecentPathology).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
+                modelBuilder.Entity<Anamnesis>(entity =>
+                {
+                    entity.Property(x => x.WorkHistory).HasMaxLength(4000);
+                    entity.Property(x => x.PersonalHistory).HasMaxLength(4000);
+                    entity.Property(x => x.FamilyHistory).HasMaxLength(4000);
+                    entity.Property(x => x.RemotePathology).HasMaxLength(4000);
+                    entity.Property(x => x.RecentPathology).HasMaxLength(4000);
 
-            entity.HasOne(x => x.MedicalVisit)
-                .WithOne(x => x.Anamnesis)
-                .HasForeignKey<Anamnesis>(x => x.MedicalVisitId)
-                .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(x => x.MedicalVisit)
+                        .WithOne(x => x.Anamnesis)
+                        .HasForeignKey<Anamnesis>(x => x.MedicalVisitId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.MedicalVisitId).IsUnique();
-        });
+                    entity.HasIndex(x => x.MedicalVisitId).IsUnique();
+                });
 
         modelBuilder.Entity<ExamType>(entity =>
         {
@@ -275,21 +265,21 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<VisitExam>(entity =>
-        {
-            entity.Property(x => x.Result).HasMaxLength(3000).HasConversion(encryptedRequiredStringConverter).IsRequired();
-            entity.Property(x => x.Notes).HasMaxLength(2000);
-            entity.Property(x => x.ReferenceRange).HasMaxLength(300);
+                {
+                    entity.Property(x => x.Result).HasMaxLength(3000).IsRequired();
+                    entity.Property(x => x.Notes).HasMaxLength(2000);
+                    entity.Property(x => x.ReferenceRange).HasMaxLength(300);
 
-            entity.HasOne(x => x.MedicalVisit)
-                .WithMany(x => x.VisitExams)
-                .HasForeignKey(x => x.MedicalVisitId)
-                .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(x => x.MedicalVisit)
+                        .WithMany(x => x.VisitExams)
+                        .HasForeignKey(x => x.MedicalVisitId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(x => x.ExamType)
-                .WithMany(x => x.VisitExams)
-                .HasForeignKey(x => x.ExamTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+                    entity.HasOne(x => x.ExamType)
+                        .WithMany(x => x.VisitExams)
+                        .HasForeignKey(x => x.ExamTypeId)
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
         modelBuilder.Entity<ScheduledExam>(entity =>
         {
@@ -327,7 +317,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<NotificationLog>(entity =>
                 {
                     entity.Property(x => x.Channel).HasConversion<string>().HasMaxLength(20).IsRequired();
-                    entity.Property(x => x.MessageText).HasMaxLength(2000).HasConversion(encryptedRequiredStringConverter).IsRequired();
+                    entity.Property(x => x.MessageText).HasMaxLength(2000).IsRequired();
                     // Chiave di deduplicazione NON cifrata (vedi NotificationLog.ReminderKey).
                     entity.Property(x => x.ReminderKey).HasMaxLength(120);
 

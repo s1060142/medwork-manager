@@ -1,12 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
+  InputAdornment,
   MenuItem,
   Paper,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormLabel,
   Stack,
   Switch,
   Tab,
@@ -14,13 +26,13 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableContainer,
   TextField,
   Typography,
 } from '@mui/material'
-import { apiGet } from '../services/apiClient'
+import { apiGet, apiSend } from '../services/apiClient'
 
 const STORAGE_KEY = 'medwork.archivedEmployees'
 
@@ -62,6 +74,31 @@ function saveArchived(ids) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
 }
 
+// Default form data for new employee
+const defaultEmployeeFormData = {
+  companyId: '',
+  branchId: '',
+  firstName: '',
+  lastName: '',
+  taxCode: '',
+  jobRole: '',
+  birthDate: '',
+  gender: '',
+  birthCity: '',
+  personalEmail: '',
+  phoneNumber: '',
+}
+
+function getFitnessClass(fitnessKey) {
+  const classes = {
+    fit: 'fitness-idoneo',
+    partial: 'fitness-parziale',
+    'not-fit': 'fitness-non-idoneo',
+    none: 'fitness-nessuna',
+  }
+  return classes[fitnessKey] || 'fitness-nessuna'
+}
+
 function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud }) {
   const [activeTab, setActiveTab] = useState('workers')
   const [employees, setEmployees] = useState([])
@@ -77,12 +114,24 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const [showArchived, setShowArchived] = useState(false)
   const [archivedIds, setArchivedIds] = useState(() => loadArchived())
 
+  // Edit employee state
+  const [editingEmployeeId, setEditingEmployeeId] = useState(null)
+  const [editFormData, setEditFormData] = useState({})
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
+
+  // Create employee state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [createFormData, setCreateFormData] = useState(defaultEmployeeFormData)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [createError, setCreateError] = useState('')
+
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true)
         setError('')
-
         const [employeesData, visitsData, companiesData, branchesData, rolesData] = await Promise.all([
           apiGet('/api/master-data/employees'),
           apiGet('/api/master-data/medical-visits'),
@@ -131,7 +180,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           latestOutcome: latestVisit?.outcome || '',
           fitness,
           isArchived: archivedIds.includes(Number(employee.id)),
-          jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
+          jobRoleDisplay: employee.jobRole || employee.jobRole || '-',
           workingStatus: 'Attivo',
         }
       })
@@ -166,10 +215,10 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     const counts = workerRows
       .filter((row) => !row.isArchived)
       .reduce((accumulator, row) => {
-      const key = row.jobRoleDisplay || '-'
-      accumulator[key] = (accumulator[key] || 0) + 1
-      return accumulator
-    }, {})
+        const key = row.jobRoleDisplay || '-'
+        accumulator[key] = (accumulator[key] || 0) + 1
+        return accumulator
+      }, {})
 
     const rows = []
     Object.keys(counts).forEach((name) => {
@@ -184,6 +233,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     return rows.sort((a, b) => b.count - a.count)
   }, [workerRows, jobRoles])
 
+  // Filter branches by company
+  const companyBranches = useMemo(() => {
+    if (!createFormData.companyId) return []
+    return branches.filter(b => Number(b.companyId) === Number(createFormData.companyId))
+  }, [branches, createFormData.companyId])
+
   const toggleArchived = (employeeId) => {
     const id = Number(employeeId)
     const next = archivedIds.includes(id)
@@ -194,70 +249,319 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     saveArchived(next)
   }
 
+  // Handle "Aggiungi" button click - opens create dialog directly
+  const handleOpenCreateDialog = () => {
+    // Pre-fill with current context company/branch if available
+    setCreateFormData({
+      ...defaultEmployeeFormData,
+      companyId: activeCompanyId || companies[0]?.id || '',
+      branchId: activeBranchId || '',
+    })
+    setCreateDialogOpen(true)
+    setCreateError('')
+  }
+
+  const handleCreateChange = (field, value) => {
+    setCreateFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreateEmployee = async () => {
+    setCreateLoading(true)
+    setCreateError('')
+    try {
+      const newEmployee = {
+        ...createFormData,
+        taxCode: (createFormData.taxCode || '').toUpperCase(),
+        birthDate: createFormData.birthDate ? `${createFormData.birthDate}T00:00:00` : null,
+      }
+
+      await apiSend('POST', '/api/admin-data/employees', newEmployee)
+
+      setCreateDialogOpen(false)
+      setCreateFormData(defaultEmployeeFormData)
+
+      // Refresh employees list
+      const refresh = async () => {
+        try {
+          const data = await apiGet('/api/master-data/employees')
+          const asArray = (d) => (Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : [])
+          setEmployees(asArray(data))
+        } catch (err) {
+          setError(err.message || 'Errore nel ricarico lavoratori.')
+        }
+      }
+      await refresh()
+    } catch (err) {
+      setCreateError(err.message || 'Errore nella creazione.')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  const handleCancelCreate = () => {
+    setCreateDialogOpen(false)
+    setCreateFormData(defaultEmployeeFormData)
+    setCreateError('')
+  }
+
+  const handleEditEmployee = (employee) => {
+    setEditingEmployeeId(employee.id)
+    // Prepare form data with fields we want to edit
+    const formData = {
+      firstName: employee.firstName || '',
+      lastName: employee.lastName || '',
+      taxCode: employee.taxCode || '',
+      jobRole: employee.jobRole || '',
+      birthDate: employee.birthDate ? employee.birthDate.split('T')[0] : '', // format for date input
+      gender: employee.gender || '',
+      birthCity: employee.birthCity || '',
+      personalEmail: employee.personalEmail || '',
+      phoneNumber: employee.phoneNumber || '',
+    }
+    setEditFormData(formData)
+    setEditDialogOpen(true)
+    setEditError('')
+  }
+
+  const handleEditChange = (field, value) => {
+    setEditFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingEmployeeId) return
+    setEditLoading(true)
+    setEditError('')
+    try {
+      // Prepare data for PUT request
+      const original = employees.find(emp => emp.id === editingEmployeeId)
+      if (!original) throw new Error('Employee not found')
+      const updatedData = {
+        ...original,
+        ...editFormData,
+        // Ensure taxCode is uppercase
+        taxCode: (editFormData.taxCode || '').toUpperCase(),
+        // Ensure birthDate is string
+        birthDate: editFormData.birthDate ? `${editFormData.birthDate}T00:00:00` : original.birthDate,
+      }
+      await apiSend('PUT', `/api/admin-data/employees/${editingEmployeeId}`, updatedData)
+      setEditDialogOpen(false)
+      // Refresh employees list
+      const refresh = async () => {
+        try {
+          const data = await apiGet('/api/master-data/employees')
+          const asArray = (d) => (Array.isArray(d) ? d : Array.isArray(d?.items) ? d.items : [])
+          setEmployees(asArray(data))
+        } catch (err) {
+          setError(err.message || 'Errore nel ricarico lavoratori.')
+        }
+      }
+      await refresh()
+    } catch (err) {
+      setEditError(err.message || 'Errore nel salvataggio.')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditDialogOpen(false)
+    setEditError('')
+  }
+
   return (
     <Stack spacing={2}>
-      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+      {/* Header Card */}
+      <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={1}>
           <Box>
-            <Typography variant="h6">Aziende / Lavoratori</Typography>
-            <Typography variant="body2" color="text.secondary">Vista operativa con KPI idoneità, filtri avanzati e stato lavorativo.</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>Aziende / Lavoratori</Typography>
+            <Typography variant="body2" color="text.secondary">Gestisci anagrafiche, idoneità e scadenze</Typography>
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button variant="outlined" onClick={onOpenEmployeeCrud}>Gestione completa</Button>
-            <Button variant="contained" onClick={onOpenEmployeeCreate}>Aggiungi</Button>
+            <Button className="btn-primary-modern" onClick={handleOpenCreateDialog} startIcon={<span style={{fontSize: 18}}>+</span>}>
+              Aggiungi Lavoratore
+            </Button>
           </Stack>
         </Stack>
-
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.2} alignItems={{ md: 'center' }} sx={{ mt: 1.5 }}>
-          <Stack direction="row" spacing={0.8} alignItems="center">
-            <Typography variant="body2" color="text.secondary">Azienda corrente</Typography>
-            <Typography variant="body2" color="text.secondary">›</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>{companies.length} aziende caricate</Typography>
-            <Chip size="small" variant="outlined" label={`${workerRows.filter((x) => !x.isArchived).length} lavoratori`} />
-          </Stack>
-        </Stack>
-
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mt: 1.5 }} variant="scrollable" allowScrollButtonsMobile>
-          <Tab value="general" label="Generali" />
-          <Tab value="places" label={`Luoghi (${branches.length})`} />
-          <Tab value="roles" label={`Mansioni (${contextualRolesWithCount.length})`} />
-          <Tab value="workers" label={`Lavoratori (${workerRows.filter((x) => !x.isArchived).length})`} />
-        </Tabs>
       </Paper>
 
-      {!!error && <Alert severity="error">{error}</Alert>}
-      {loading && <Alert severity="info">Caricamento dati in corso...</Alert>}
+      {/* Context Info Bar */}
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.2} alignItems={{ md: 'center' }} sx={{ mt: 1.5 }}>
+        <Stack direction="row" spacing={0.8} alignItems="center">
+          <Typography variant="body2" color="text.secondary">Contesto attivo</Typography>
+          <Typography variant="body2" color="text.secondary">›</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{companies.length} aziende caricate</Typography>
+          <Chip size="small" variant="outlined" label={`${workerRows.filter((x) => !x.isArchived).length} lavoratori`} className="kpi-card-info" sx={{ height: 24, fontSize: 12 }} />
+        </Stack>
+      </Stack>
 
+      {/* Modern Tabs */}
+      <div className="modern-tabs" sx={{ mt: 1.5 }}>
+        <Tab value="general" label={`Generali (${companies.length})`} onChange={(_, value) => setActiveTab(value)} />
+        <Tab value="places" label={`Luoghi (${branches.length})`} onChange={(_, value) => setActiveTab(value)} />
+        <Tab value="roles" label={`Mansioni (${contextualRolesWithCount.length})`} onChange={(_, value) => setActiveTab(value)} />
+        <Tab value="workers" label={`Lavoratori (${workerRows.filter((x) => !x.isArchived).length})`} onChange={(_, value) => setActiveTab(value)} />
+      </div>
+
+      {!!error && <Alert severity="error" className="animate-fade-in">{error}</Alert>}
+      {loading && <Alert severity="info" className="animate-fade-in">Caricamento dati in corso...</Alert>}
+
+      {/* GENERAL TAB */}
+      {!loading && activeTab === 'general' && (
+        <>
+          {/* KPI Cards */}
+          <div className="dashboard-grid" sx={{ mb: 2 }}>
+            <Paper className="kpi-card kpi-card-primary" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>
+                  <span style={{fontSize: 24}}>🏢</span>
+                </Box>
+                <Chip label={companies.length} size="small" color="primary" variant="outlined" sx={{ height: 24, fontSize: 11 }} />
+              </Stack>
+              <Typography variant="caption" color="text.secondary">Aziende</Typography>
+              <Typography variant="h5" sx={{ lineHeight: 1.1 }}>{companies.length}</Typography>
+            </Paper>
+            <Paper className="kpi-card kpi-card-teal" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>
+                  <span style={{fontSize: 24}}>📍</span>
+                </Box>
+                <Chip label={branches.length} size="small" color="success" variant="outlined" sx={{ height: 24, fontSize: 11 }} />
+              </Stack>
+              <Typography variant="caption" color="text.secondary">Sedi</Typography>
+              <Typography variant="h5" sx={{ lineHeight: 1.1 }}>{branches.length}</Typography>
+            </Paper>
+            <Paper className="kpi-card kpi-card-warning" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>
+                  <span style={{fontSize: 24}}>💼</span>
+                </Box>
+                <Chip label={contextualRolesWithCount.length} size="small" color="warning" variant="outlined" sx={{ height: 24, fontSize: 11 }} />
+              </Stack>
+              <Typography variant="caption" color="text.secondary">Mansioni</Typography>
+              <Typography variant="h5" sx={{ lineHeight: 1.1 }}>{contextualRolesWithCount.length}</Typography>
+            </Paper>
+            <Paper className="kpi-card kpi-card-info" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>
+                  <span style={{fontSize: 24}}>👥</span>
+                </Box>
+                <Chip label={workerRows.filter((x) => !x.isArchived).length} size="small" color="info" variant="outlined" sx={{ height: 24, fontSize: 11 }} />
+              </Stack>
+              <Typography variant="caption" color="text.secondary">Lavoratori attivi</Typography>
+              <Typography variant="h5" sx={{ lineHeight: 1.1 }}>{workerRows.filter((x) => !x.isArchived).length}</Typography>
+            </Paper>
+          </div>
+        </>
+      )}
+
+      {/* PLACES TAB */}
+      {!loading && activeTab === 'places' && (
+        <Paper className="modern-table-container" sx={{ borderRadius: 3 }}>
+          <TableContainer className="modern-table-sticky">
+            <Table className="modern-table" size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Azienda</TableCell>
+                  <TableCell>Città</TableCell>
+                  <TableCell>Indirizzo</TableCell>
+                  <TableCell>Provincia</TableCell>
+                  <TableCell>Dipendenti</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {branches.map((row) => (
+                  <TableRow key={row.id} hover>
+                    <TableCell>{row.companyName || '-'}</TableCell>
+                    <TableCell>{row.city || '-'}</TableCell>
+                    <TableCell>{row.address || '-'}</TableCell>
+                    <TableCell>{row.province || '-'}</TableCell>
+                    <TableCell>{row.employeesCount ?? '-'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+
+      {/* ROLES TAB */}
+      {!loading && activeTab === 'roles' && (
+        <Paper className="modern-table-container" sx={{ borderRadius: 3 }}>
+          <TableContainer className="modern-table-sticky">
+            <Table className="modern-table" size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Mansione</TableCell>
+                  <TableCell>Dipendenti</TableCell>
+                  <TableCell>Descrizione</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {contextualRolesWithCount.map((row) => (
+                  <TableRow key={row.id} hover>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell>{row.count}</TableCell>
+                    <TableCell>{jobRoles.find((x) => x.name === row.name)?.description || '-'}</TableCell>
+                  </TableRow>
+                ))}
+                {contextualRolesWithCount.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <div className="empty-state">
+                        <div className="empty-state-icon">💼</div>
+                        <Typography className="empty-state-title">Nessuna mansione</Typography>
+                        <Typography className="empty-state-text">Nessuna mansione presente nel contesto selezionato.</Typography>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+
+      {/* WORKERS TAB */}
       {!loading && activeTab === 'workers' && (
         <>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
+          {/* Fitness KPI Cards */}
+          <div className="dashboard-grid" sx={{ mb: 2 }}>
+            <Paper className="kpi-card kpi-card-success" sx={{ p: 1.5, borderRadius: 2.5 }}>
               <Typography variant="caption" color="text.secondary">Lavoratori idonei</Typography>
               <Typography variant="h5">{kpi.fit}</Typography>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
+            <Paper className="kpi-card kpi-card-warning" sx={{ p: 1.5, borderRadius: 2.5 }}>
               <Typography variant="caption" color="text.secondary">Parzialmente idonei</Typography>
               <Typography variant="h5">{kpi.partial}</Typography>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
+            <Paper className="kpi-card kpi-card-error" sx={{ p: 1.5, borderRadius: 2.5 }}>
               <Typography variant="caption" color="text.secondary">Non idonei</Typography>
               <Typography variant="h5">{kpi.notFit}</Typography>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
+            <Paper className="kpi-card kpi-card-default" sx={{ p: 1.5, borderRadius: 2.5 }}>
               <Typography variant="caption" color="text.secondary">Senza idoneità</Typography>
               <Typography variant="h5">{kpi.none}</Typography>
             </Paper>
-          </Box>
+          </div>
 
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-            <Stack direction={{ xs: 'column', lg: 'row' }} spacing={1.2}>
+          {/* Search/Filter Bar */}
+          <Paper className="search-filter-bar" sx={{ mb: 2 }}>
+            <Stack direction={{ xs: 'column', lg: 'row' }} spacing={1.2} alignItems={{ lg: 'center' }}>
               <TextField
                 size="small"
                 label="Cerca lavoratore"
                 placeholder="Cognome, nome, codice fiscale, mansione..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                sx={{ minWidth: { lg: 260 } }}
+                sx={{ minWidth: { lg: 260 }, flexGrow: 1 }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <span style={{fontSize: 18}}>🔍</span>
+                    </InputAdornment>
+                  ),
+                }}
               />
 
               <TextField
@@ -283,139 +587,291 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </Stack>
           </Paper>
 
-          <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-            <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table size="small" sx={{ minWidth: 980 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Cognome</TableCell>
-                  <TableCell>Nome</TableCell>
-                  <TableCell>Codice fiscale</TableCell>
-                  <TableCell>Mansione</TableCell>
-                  <TableCell>Stato idoneità</TableCell>
-                  <TableCell>Data ultimo giudizio</TableCell>
-                  <TableCell>Stato lavorativo</TableCell>
-                  <TableCell align="right">Azione</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow key={row.id} hover>
-                    <TableCell>{row.lastName}</TableCell>
-                    <TableCell>{row.firstName}</TableCell>
-                    <TableCell>{row.taxCode || '-'}</TableCell>
-                    <TableCell>{row.jobRoleDisplay}</TableCell>
-                    <TableCell>
-                      <Chip size="small" color={row.fitness.color} label={row.fitness.label} variant="outlined" />
-                    </TableCell>
-                    <TableCell>{formatDate(row.latestVisitDate)}</TableCell>
-                    <TableCell>
-                      <Chip size="small" color="success" label={row.workingStatus} />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button size="small" onClick={() => toggleArchived(row.id)}>
-                        {row.isArchived ? 'Ripristina' : 'Archivia'}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredRows.length === 0 && (
+          {/* Workers Table */}
+          <Paper className="modern-table-container" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <TableContainer className="modern-table-sticky">
+              <Table className="modern-table" size="small" stickyHeader sx={{ minWidth: 980 }}>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={8}>
-                      <Typography variant="body2" color="text.secondary">Nessun lavoratore trovato con i filtri correnti.</Typography>
-                    </TableCell>
+                    <TableCell>Cognome</TableCell>
+                    <TableCell>Nome</TableCell>
+                    <TableCell>Codice fiscale</TableCell>
+                    <TableCell>Mansione</TableCell>
+                    <TableCell>Stato idoneità</TableCell>
+                    <TableCell>Data ultimo giudizio</TableCell>
+                    <TableCell>Stato lavorativo</TableCell>
+                    <TableCell align="right">Azione</TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHead>
+                <TableBody>
+                  {filteredRows.map((row) => (
+                    <TableRow key={row.id} hover>
+                      <TableCell>{row.lastName}</TableCell>
+                      <TableCell>{row.firstName}</TableCell>
+                      <TableCell>{row.taxCode || '-'}</TableCell>
+                      <TableCell>{row.jobRoleDisplay}</TableCell>
+                      <TableCell>
+                        <Chip size="small" className={getFitnessClass(row.fitness.key)} label={row.fitness.label} variant="outlined" />
+                      </TableCell>
+                      <TableCell>{formatDate(row.latestVisitDate)}</TableCell>
+                      <TableCell>
+                        <Chip size="small" color="success" label={row.workingStatus} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            size="small"
+                            className="btn-primary-modern"
+                            onClick={() => handleEditEmployee(row)}
+                            startIcon={<span style={{ fontSize: 18 }}>✏️</span>}
+                            title="Modifica"
+                          />
+                          <Button
+                            size="small"
+                            className="btn-secondary-modern"
+                            onClick={() => toggleArchived(row.id)}
+                          >
+                            {row.isArchived ? 'Ripristina' : 'Archivia'}
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredRows.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8}>
+                        <div className="empty-state" sx={{ py: 4 }}>
+                          <div className="empty-state-icon">👥</div>
+                          <Typography className="empty-state-title">Nessun lavoratore trovato</Typography>
+                          <Typography className="empty-state-text">Prova a modificare i filtri di ricerca.</Typography>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </TableContainer>
           </Paper>
         </>
       )}
 
-      {!loading && activeTab === 'general' && (
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Aziende</Typography>
-              <Typography variant="h5">{companies.length}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Luoghi</Typography>
-              <Typography variant="h5">{branches.length}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Mansioni</Typography>
-              <Typography variant="h5">{contextualRolesWithCount.length}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Lavoratori attivi</Typography>
-              <Typography variant="h5">{workerRows.filter((x) => !x.isArchived).length}</Typography>
-            </Paper>
-          </Box>
-        </Paper>
-      )}
+      {/* Edit Employee Dialog */}
+      <Dialog open={editDialogOpen} onClose={handleCancelEdit} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 12 } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Modifica Lavoratore</DialogTitle>
+        <DialogContent sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            <TextField
+              label="Nome"
+              value={editFormData.firstName || ''}
+              onChange={(e) => handleEditChange('firstName', e.target.value)}
+              required
+              autoFocus
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Cognome"
+              value={editFormData.lastName || ''}
+              onChange={(e) => handleEditChange('lastName', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Codice fiscale"
+              value={editFormData.taxCode || ''}
+              onChange={(e) => handleEditChange('taxCode', e.target.value.toUpperCase())}
+              inputProps={{ maxLength: 16 }}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Mansione"
+              value={editFormData.jobRole || ''}
+              onChange={(e) => handleEditChange('jobRole', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Data di nascita"
+              type="date"
+              value={editFormData.birthDate || ''}
+              onChange={(e) => handleEditChange('birthDate', e.target.value)}
+              inputProps={{ min: '1900-01-01' }}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <FormControl fullWidth className="form-field-modern">
+              <FormLabel>Sesso</FormLabel>
+              <RadioGroup row value={editFormData.gender || ''} onChange={(e) => handleEditChange('gender', e.target.value)}>
+                <Radio value="M" label="Maschio" />
+                <Radio value="F" label="Femmina" />
+              </RadioGroup>
+            </FormControl>
+            <TextField
+              label="Comune di nascita"
+              value={editFormData.birthCity || ''}
+              onChange={(e) => handleEditChange('birthCity', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Email personale"
+              type="email"
+              value={editFormData.personalEmail || ''}
+              onChange={(e) => handleEditChange('personalEmail', e.target.value)}
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Telefono"
+              value={editFormData.phoneNumber || ''}
+              onChange={(e) => handleEditChange('phoneNumber', e.target.value)}
+              fullWidth
+              className="form-field-modern"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button className="btn-ghost-modern" onClick={handleCancelEdit}>Annulla</Button>
+          <Button
+            className="btn-primary-modern"
+            onClick={handleSaveEdit}
+            disabled={editLoading}
+          >
+            {editLoading ? 'Salvataggio...' : 'Salva'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      {!loading && activeTab === 'places' && (
-        <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 760 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Azienda</TableCell>
-                <TableCell>Città</TableCell>
-                <TableCell>Indirizzo</TableCell>
-                <TableCell>Provincia</TableCell>
-                <TableCell>Dipendenti</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {branches.map((row) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>{row.companyName || '-'}</TableCell>
-                  <TableCell>{row.city || '-'}</TableCell>
-                  <TableCell>{row.address || '-'}</TableCell>
-                  <TableCell>{row.province || '-'}</TableCell>
-                  <TableCell>{row.employeesCount ?? '-'}</TableCell>
-                </TableRow>
+      {/* Create Employee Dialog */}
+      <Dialog open={createDialogOpen} onClose={handleCancelCreate} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 12 } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>Nuovo Lavoratore</DialogTitle>
+        <DialogContent sx={{ p: 2 }}>
+          <Stack spacing={2}>
+            <TextField
+              select
+              label="Azienda"
+              value={createFormData.companyId || ''}
+              onChange={(e) => handleCreateChange('companyId', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+              inputProps={{ minWidth: 200 }}
+            >
+              {companies.map(company => (
+                <MenuItem key={company.id} value={company.id}>{company.name}</MenuItem>
               ))}
-            </TableBody>
-          </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      {!loading && activeTab === 'roles' && (
-        <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 680 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Mansione</TableCell>
-                <TableCell>Dipendenti</TableCell>
-                <TableCell>Descrizione</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {contextualRolesWithCount.map((row) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.count}</TableCell>
-                  <TableCell>{jobRoles.find((x) => x.name === row.name)?.description || '-'}</TableCell>
-                </TableRow>
+            </TextField>
+            <TextField
+              select
+              label="Sede"
+              value={createFormData.branchId || ''}
+              onChange={(e) => handleCreateChange('branchId', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+              inputProps={{ minWidth: 200 }}
+              disabled={!createFormData.companyId}
+            >
+              {companyBranches.map(branch => (
+                <MenuItem key={branch.id} value={branch.id}>{branch.city} - {branch.address}</MenuItem>
               ))}
-              {contextualRolesWithCount.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <Typography variant="body2" color="text.secondary">Nessuna mansione presente nel contesto selezionato.</Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          </TableContainer>
-        </Paper>
-      )}
+            </TextField>
+            <TextField
+              label="Nome"
+              value={createFormData.firstName || ''}
+              onChange={(e) => handleCreateChange('firstName', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Cognome"
+              value={createFormData.lastName || ''}
+              onChange={(e) => handleCreateChange('lastName', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Codice fiscale"
+              value={createFormData.taxCode || ''}
+              onChange={(e) => handleCreateChange('taxCode', e.target.value.toUpperCase())}
+              inputProps={{ maxLength: 16 }}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Mansione"
+              value={createFormData.jobRole || ''}
+              onChange={(e) => handleCreateChange('jobRole', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Data di nascita"
+              type="date"
+              value={createFormData.birthDate || ''}
+              onChange={(e) => handleCreateChange('birthDate', e.target.value)}
+              inputProps={{ min: '1900-01-01' }}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <FormControl fullWidth className="form-field-modern">
+              <FormLabel>Sesso</FormLabel>
+              <RadioGroup
+                row
+                value={createFormData.gender || ''}
+                onChange={(e) => handleCreateChange('gender', e.target.value)}
+              >
+                <Radio value="M" label="Maschio" />
+                <Radio value="F" label="Femmina" />
+              </RadioGroup>
+            </FormControl>
+            <TextField
+              label="Comune di nascita"
+              value={createFormData.birthCity || ''}
+              onChange={(e) => handleCreateChange('birthCity', e.target.value)}
+              required
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Email personale"
+              type="email"
+              value={createFormData.personalEmail || ''}
+              onChange={(e) => handleCreateChange('personalEmail', e.target.value)}
+              fullWidth
+              className="form-field-modern"
+            />
+            <TextField
+              label="Telefono"
+              value={createFormData.phoneNumber || ''}
+              onChange={(e) => handleCreateChange('phoneNumber', e.target.value)}
+              fullWidth
+              className="form-field-modern"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button className="btn-ghost-modern" onClick={handleCancelCreate}>Annulla</Button>
+          <Button
+            className="btn-primary-modern"
+            onClick={handleCreateEmployee}
+            disabled={createLoading}
+          >
+            {createLoading ? 'Creazione...' : 'Crea'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

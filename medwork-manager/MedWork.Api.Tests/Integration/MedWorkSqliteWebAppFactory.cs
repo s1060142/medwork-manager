@@ -33,32 +33,50 @@ public class MedWorkSqliteWebAppFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // Rimuovi registrazioni DB esistenti
+            // Rimuovi completamente le registrazioni dei DbContext per sostituirle
+            var appDbContextDescriptor = services.SingleOrDefault(
+                d => d.Lifetime == ServiceLifetime.Scoped && 
+                     d.ServiceType.Name.Contains("AppDbContext"));
+            if (appDbContextDescriptor != null)
+                services.Remove(appDbContextDescriptor);
+
+            var auditDbContextDescriptor = services.SingleOrDefault(
+                d => d.Lifetime == ServiceLifetime.Scoped && 
+                     d.ServiceType.Name.Contains("AuditDbContext"));
+            if (auditDbContextDescriptor != null)
+                services.Remove(auditDbContextDescriptor);
+
+            // Rimuovi anche i DbContextOptions che contengono i provider
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<DbContextOptions<AuditDbContext>>();
 
-            // Aggiungi SQLite con connection string condivisa
-            services.AddDbContext<AppDbContext>(options =>
+            // Registra SQLite in modo da SOSTITITUIRE i provider esistenti
+            services.AddScoped<AppDbContext>(provider =>
             {
-                options.UseSqlite(_connectionString);
+                var options = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseSqlite(_connectionString)
+                    // Ignora il warning di pending model changes per i test
+                    .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
+                    .Options;
+                var context = new AppDbContext(options);
+                // Usa EnsureCreated per SQLite invece di Migrate
+                context.Database.EnsureCreated();
+                return context;
             });
 
-            services.AddDbContext<AuditDbContext>(options =>
+            services.AddScoped<AuditDbContext>(provider =>
             {
-                options.UseSqlite(_connectionString);
+                var options = new DbContextOptionsBuilder<AuditDbContext>()
+                    .UseSqlite(_connectionString)
+                    .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
+                    .Options;
+                var context = new AuditDbContext(options);
+                context.Database.EnsureCreated();
+                return context;
             });
 
             // Registra le policy di autorizzazione (importante!)
             services.AddAuthorization(options => options.AddMedWorkAuthorizationPolicies());
-
-            // Assicura che lo schema sia creato all'avvio per ENTRAMBI i context
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var appDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            appDb.Database.EnsureCreated();
-            
-            var auditDb = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
-            auditDb.Database.EnsureCreated();
 
             // Test auth handler
             services.AddAuthentication(options =>

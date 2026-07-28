@@ -29,11 +29,11 @@ async function maybeRefreshToken() {
   if (remaining > REFRESH_THRESHOLD_MS || remaining <= 0) return
 
   // Evita refresh concorrenti
-  if (!refreshInFlight) {
-    refreshInFlight = fetch(`${API_BASE_URL}/api/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    })
+    if (!refreshInFlight) {
+      refreshInFlight = fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      })
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json()

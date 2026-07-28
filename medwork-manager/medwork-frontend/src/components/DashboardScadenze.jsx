@@ -253,6 +253,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       subtitle: '+12%',
       icon: <CalendarMonthIcon fontSize="small" color="primary" />,
       chipColor: 'success',
+      iconBg: 'primary',
     },
     {
       title: 'Vaccini Scaduti/In Scadenza',
@@ -260,6 +261,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       subtitle: 'Critico',
       icon: <VaccinesIcon fontSize="small" color="error" />,
       chipColor: 'error',
+      iconBg: 'error',
     },
     {
       title: 'Esami in Scadenza',
@@ -267,6 +269,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       subtitle: 'A Presto',
       icon: <BiotechIcon fontSize="small" color="warning" />,
       chipColor: 'warning',
+      iconBg: 'warning',
     },
     {
       title: 'Visite in Scadenza',
@@ -274,12 +277,14 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       subtitle: 'Vedi tutti',
       icon: <MedicalServicesIcon fontSize="small" color="info" />,
       chipColor: 'info',
+      iconBg: 'info',
     },
   ]
 
   return (
     <Stack spacing={2}>
-      <Paper elevation={1} sx={{ p: 2, borderRadius: 3 }}>
+      {/* Header with Search and Quick Actions */}
+      <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} justifyContent="space-between" alignItems={{ md: 'center' }}>
           <TextField
             value={search}
@@ -294,14 +299,22 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
                 </InputAdornment>
               ),
             }}
+            className="form-field-modern"
           />
           <Stack direction="row" spacing={1} flexWrap="wrap">
             {[15, 30, 60, 90].map((value) => (
-              <Button key={value} variant={days === value ? 'contained' : 'outlined'} onClick={() => setDays(value)}>
+              <Button key={value} 
+                variant={days === value ? 'contained' : 'outlined'} 
+                onClick={() => setDays(value)}
+                className={days === value ? 'btn-primary-modern' : 'btn-secondary-modern'}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
                 {value} gg
               </Button>
             ))}
-            <Button variant="contained" onClick={caricaScadenze}>Quick Action</Button>
+            <Button className="btn-primary-modern" onClick={caricaScadenze} startIcon={<span style={{fontSize: 18}}>⟳</span>}>
+              Aggiorna
+            </Button>
           </Stack>
         </Stack>
       </Paper>
@@ -312,85 +325,106 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
         </Box>
       )}
 
-      {!!errore && <Alert severity="error">{errore}</Alert>}
+      {!!errore && <Alert severity="error" className="animate-fade-in">{errore}</Alert>}
 
       {!caricamento && !errore && scopedExpiringVisits.length === 0 && (
-        <Alert severity="info">Nessuna visita in scadenza nei prossimi {days} giorni.</Alert>
+        <div className="empty-state animate-fade-in" sx={{ py: 6 }}>
+          <div className="empty-state-icon">✅</div>
+          <Typography className="empty-state-title">Nessuna scadenza imminente</Typography>
+          <Typography className="empty-state-text">Nessuna visita in scadenza nei prossimi {days} giorni.</Typography>
+        </div>
       )}
 
       {!caricamento && !errore && (
         <>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+          {/* KPI Cards Grid */}
+          <div className="dashboard-grid" sx={{ mb: 2 }}>
             {kpiCards.map((card) => (
-              <Paper key={card.title} variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Paper key={card.title} className={`kpi-card kpi-card-${card.iconBg}`} sx={{ p: 2, borderRadius: 3 }}>
                 <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
                   <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>{card.icon}</Box>
-                  <Chip label={card.subtitle} size="small" color={card.chipColor} variant="outlined" />
+                  <Chip label={card.subtitle} size="small" color={card.chipColor} variant="outlined" sx={{ height: 24, fontSize: 11 }} />
                 </Stack>
                 <Typography variant="caption" color="text.secondary">{card.title}</Typography>
-                <Typography variant="h4" sx={{ lineHeight: 1.1 }}>{card.value}</Typography>
+                <Typography variant="h4" sx={{ lineHeight: 1.1, fontWeight: 700 }}>{card.value}</Typography>
               </Paper>
             ))}
-          </Box>
+          </div>
 
+          {/* Main Content Grid */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 2 }}>
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+            {/* Critical Alerts */}
+            <Paper className="modern-card-elevated" sx={{ p: 2, borderRadius: 3 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <WarningAmberIcon color="error" fontSize="small" />
-                  <Typography variant="subtitle1">Alert Critici & Scadenze</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Alert Critici & Scadenze</Typography>
                 </Stack>
-                <Button size="small">Esporta Report</Button>
+                <Button className="btn-secondary-modern" size="small">Esporta Report</Button>
               </Stack>
 
               {criticalAlerts.length === 0 ? (
-                <Alert severity="success">Nessun alert critico rilevato.</Alert>
+                <div className="empty-state" sx={{ py: 4 }}>
+                  <div className="empty-state-icon">✅</div>
+                  <Typography className="empty-state-title">Nessun alert critico</Typography>
+                  <Typography className="empty-state-text">Tutto sotto controllo per il periodo selezionato.</Typography>
+                </div>
               ) : (
                 <List disablePadding>
                   {criticalAlerts.map((item) => (
-                    <ListItem key={item.medicalVisitId} divider sx={{ px: 0 }}>
+                    <ListItem key={item.medicalVisitId} divider sx={{ px: 0, py: 1 }}>
                       <ListItemText
-                        primary={`${item.employeeFullName} (${item.companyName})`}
-                        secondary={`Scadenza: ${formatDate(item.nextDeadlineDate)} • ${item.outcome || 'Nessun esito'}`}
+                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>{`${item.employeeFullName} (${item.companyName})`}</Typography>}
+                        secondary={<Typography variant="body2" color="text.secondary">Scadenza: {formatDate(item.nextDeadlineDate)} • {item.outcome || 'Nessun esito'}</Typography>}
                       />
-                      <Chip size="small" color={item.severity.color} label={item.severity.label} />
+                      <Chip size="small" className={`status-chip status-chip-${item.severity.color}`} label={item.severity.label} />
                     </ListItem>
                   ))}
                 </List>
               )}
             </Paper>
 
+            {/* Quick Actions & Compliance */}
             <Stack spacing={2}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                   <BoltIcon color="primary" fontSize="small" />
-                  <Typography variant="subtitle1">Quick Actions</Typography>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Quick Actions</Typography>
                 </Stack>
                 <Stack spacing={1}>
-                  <Button variant="contained" fullWidth onClick={onOpenMedicalVisitCreate}>Nuova Visita Medica</Button>
-                  <Button variant="outlined" fullWidth onClick={onOpenEmployeeCreate}>Aggiungi Dipendente</Button>
-                  <Button variant="outlined" fullWidth onClick={caricaScadenze}>Backup Dati Now</Button>
+                  <Button className="btn-primary-modern" fullWidth onClick={onOpenMedicalVisitCreate} startIcon={<span style={{fontSize: 18}}>+</span>}>
+                    Nuova Visita Medica
+                  </Button>
+                  <Button className="btn-secondary-modern" fullWidth onClick={onOpenEmployeeCreate} startIcon={<span style={{fontSize: 18}}>👤</span>}>
+                    Aggiungi Dipendente
+                  </Button>
+                  <Button className="btn-secondary-modern" fullWidth onClick={caricaScadenze} startIcon={<span style={{fontSize: 18}}>💾</span>}>
+                    Backup Dati Now
+                  </Button>
                 </Stack>
               </Paper>
 
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>Compliance Globale</Typography>
-                <LinearProgress variant="determinate" value={compliance.global} sx={{ mb: 1.5, borderRadius: 999 }} />
-                <Typography variant="caption" color="text.secondary">L' {compliance.global}% dei dipendenti è in regola con le visite.</Typography>
+              <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Compliance Globale</Typography>
+                <div className="progress-modern" sx={{ mb: 1.5 }}>
+                  <div className="progress-modern-bar" style={{ width: `${compliance.global}%` }}></div>
+                </div>
+                <Typography variant="caption" color="text.secondary">Il {compliance.global}% dei dipendenti è in regola con le visite.</Typography>
                 <Stack sx={{ mt: 1.5 }} spacing={0.6}>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Vaccini</Typography><Typography variant="body2" fontWeight={700}>{compliance.vaccines}%</Typography></Stack>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Visite Mediche</Typography><Typography variant="body2" fontWeight={700}>{compliance.visits}%</Typography></Stack>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Corsi Sicurezza</Typography><Typography variant="body2" fontWeight={700}>{compliance.training}%</Typography></Stack>
+                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Vaccini</Typography><Typography variant="body2" fontWeight={700} color={compliance.vaccines >= 80 ? 'success.main' : compliance.vaccines >= 60 ? 'warning.main' : 'error.main'}>{compliance.vaccines}%</Typography></Stack>
+                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Visite Mediche</Typography><Typography variant="body2" fontWeight={700} color={compliance.visits >= 80 ? 'success.main' : compliance.visits >= 60 ? 'warning.main' : 'error.main'}>{compliance.visits}%</Typography></Stack>
+                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Corsi Sicurezza</Typography><Typography variant="body2" fontWeight={700} color={compliance.training >= 80 ? 'success.main' : compliance.training >= 60 ? 'warning.main' : 'error.main'}>{compliance.training}%</Typography></Stack>
                 </Stack>
               </Paper>
             </Stack>
           </Box>
 
+          {/* Recent Appointments & Upcoming */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 2 }}>
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>Appuntamenti Recenti</Typography>
-              <TableContainer>
-                <Table size="small">
+            <Paper className="modern-card-elevated" sx={{ p: 2, borderRadius: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Appuntamenti Recenti</Typography>
+              <TableContainer className="modern-table-sticky">
+                <Table className="modern-table" size="small" stickyHeader>
                   <TableHead>
                     <TableRow>
                       <TableCell>Paziente</TableCell>
@@ -408,9 +442,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
                         <TableCell>{appointment.type}</TableCell>
                         <TableCell>{formatDateTime(appointment.when)}</TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{ color: appointment.status.color, fontWeight: 600 }}>
-                            {appointment.status.label}
-                          </Typography>
+                          <Chip size="small" className={`status-chip status-chip-${appointment.status.color === 'success.main' ? 'success' : appointment.status.color === 'primary.main' ? 'info' : 'default'}`} label={appointment.status.label} variant="outlined" />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -419,14 +451,14 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
               </TableContainer>
             </Paper>
 
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Paper className="modern-card-gradient" sx={{ p: 2, borderRadius: 3, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="subtitle1">Prossimi 30 Giorni</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Prossimi 30 Giorni</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                   Pianificati {upcoming7 + scopedExpiringVisits.length} interventi medici tra visite ed esami.
                 </Typography>
               </Box>
-              <Button sx={{ mt: 1.5 }} variant="text" onClick={onOpenReports}>Vedi Calendario Completo</Button>
+              <Button className="btn-secondary-modern" sx={{ mt: 1.5, alignSelf: 'flex-start' }} variant="text" onClick={onOpenReports}>Vedi Calendario Completo</Button>
             </Paper>
           </Box>
         </>

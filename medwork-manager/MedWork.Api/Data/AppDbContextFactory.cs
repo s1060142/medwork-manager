@@ -1,5 +1,3 @@
-using MedWork.Api.Services;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -26,9 +24,6 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
 
-        var dataProtectionProvider = DataProtectionProvider.Create("MedWork.Api.DesignTime");
-        var encryptionService = new FieldEncryptionService(dataProtectionProvider);
-
-        return new AppDbContext(optionsBuilder.Options, encryptionService);
+        return new AppDbContext(optionsBuilder.Options);
     }
 }

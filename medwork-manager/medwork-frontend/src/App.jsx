@@ -303,6 +303,10 @@ function App() {
         { key: 'analysis', label: 'Analisi e relazioni', icon: AssessmentIcon, children: ['allegato-3b', 'reporting'] },
       ]
     }
+    if (role === 'Doctor' || role === 'Secretary') {
+      // Medico/Secretario: vedono il menu principale ma NON i portali né amministrazione
+      return HIERARCHICAL_SIDE_NAV.filter((item) => item.key !== 'portals' && item.key !== 'administration')
+    }
     return HIERARCHICAL_SIDE_NAV.filter((item) => item.key !== 'administration')
   }, [role])
 

@@ -44,3 +44,30 @@ describe('App legacy shell', () => {
     expect(screen.getAllByText(/Log notifiche/i).length).toBeGreaterThan(0)
   })
 })
+
+describe('Role-based navigation', () => {
+  test('Doctor should NOT see Portali in sidebar navigation', async () => {
+    localStorage.setItem('accessToken', 'test-token')
+    localStorage.setItem('role', 'Doctor')
+    
+    render(<App />)
+
+    // Doctor should NOT see Worker Portal or Company Portal
+    expect(screen.queryByText(/Portale Lavoratori/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Portale Aziende/i)).not.toBeInTheDocument()
+    
+    // Doctor should NOT see Administration section
+    expect(screen.queryByText(/Amministrazione/i)).not.toBeInTheDocument()
+  })
+
+  test('Doctor should NOT see portali in module strip', async () => {
+    localStorage.setItem('accessToken', 'test-token')
+    localStorage.setItem('role', 'Doctor')
+    
+    render(<App />)
+
+    // Verify portali are not in the module strip
+    expect(screen.queryByText(/Portale Lavoratori/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Portale Aziende/i)).not.toBeInTheDocument()
+  })
+})

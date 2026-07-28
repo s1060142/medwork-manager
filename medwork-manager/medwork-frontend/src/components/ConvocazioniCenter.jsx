@@ -17,6 +17,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -122,67 +123,67 @@ export default function ConvocazioniCenter() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header stile Cartsan */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-        <Box sx={{ width: 48, height: 48, borderRadius: 2, background: 'linear-gradient(135deg,#1976d2,#00897b)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+      {/* Header */}
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+        <Box className="context-card-icon" sx={{ width: 56, height: 56, borderRadius: 2 }}>
           <CampaignIcon />
         </Box>
         <Box>
-          <Typography variant="h4" fontWeight={700}>Convocazioni</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>Convocazioni</Typography>
           <Typography variant="subtitle1" color="text.secondary">
             Invia convocazioni visita medica via email (con PDF allegato) — singole o di massa
           </Typography>
         </Box>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>}
-      {success && <Alert severity="success" sx={{ my: 2 }}>{success}</Alert>}
+      {error && <Alert severity="error" className="animate-fade-in" sx={{ my: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" className="animate-fade-in" sx={{ my: 2 }}>{success}</Alert>}
 
       <Grid container spacing={3}>
         {/* Pannello configurazione */}
-        <Grid  size={{ xs: 12, md: 4 }}>
-          <Card elevation={3} sx={{ borderRadius: 3, height: '100%' }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Paper className="modern-card-elevated" sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                 <SendIcon color="primary" />
-                <Typography variant="h6">Parametri convocazione</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>Parametri convocazione</Typography>
               </Stack>
               <Stack spacing={2}>
-                <FormControl fullWidth>
+                <FormControl fullWidth className="form-field-modern">
                   <InputLabel>Tipologia visita</InputLabel>
                   <Select label="Tipologia visita" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
                     {VISIT_TYPES.map((v) => <MenuItem key={v.value} value={v.value}>{v.label}</MenuItem>)}
                   </Select>
                 </FormControl>
                 <TextField label="Data e ora visita" type="datetime-local" value={visitDate}
-                  onChange={(e) => setVisitDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-                <TextField label="Luogo (opzionale)" value={location} onChange={(e) => setLocation(e.target.value)} fullWidth />
+                  onChange={(e) => setVisitDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth className="form-field-modern" />
+                <TextField label="Luogo (opzionale)" value={location} onChange={(e) => setLocation(e.target.value)} fullWidth className="form-field-modern" />
                 <Divider />
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                     Selezionati: <strong>{selected.length}</strong> / {employees.length}
                   </Typography>
-                  <Button fullWidth variant="contained" size="large" startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <CampaignIcon />}
-                    onClick={sendMass} disabled={busy || selected.length === 0} sx={{ borderRadius: 2 }}>
+                  <Button fullWidth variant="contained" size="large" className="btn-primary-modern" startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <CampaignIcon />}
+                    onClick={sendMass} disabled={busy || selected.length === 0} sx={{ borderRadius: 2, py: 1.5, fontWeight: 600, fontSize: 14 }}>
                     Invia convocazioni di massa
                   </Button>
                   {progress && <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{progress}</Typography>}
                 </Box>
               </Stack>
             </CardContent>
-          </Card>
+          </Paper>
         </Grid>
 
         {/* Tabella lavoratori selezionabili */}
-        <Grid  size={{ xs: 12, md: 8 }}>
-          <Card elevation={3} sx={{ borderRadius: 3 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Paper className="modern-table-container" sx={{ borderRadius: 3 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 1 }}>Lavoratori</Typography>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Lavoratori</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Spunta i lavoratori da convocare. Usa il checkbox in alto per selezionare tutti.
               </Typography>
-              <Box sx={{ maxHeight: 460, overflow: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                <Table size="small" stickyHeader>
+              <TableContainer className="modern-table-sticky">
+                <Table className="modern-table" size="small" stickyHeader>
                   <TableHead>
                     <TableRow>
                       <TableCell padding="checkbox">
@@ -208,53 +209,63 @@ export default function ConvocazioniCenter() {
                         <TableCell>{e.jobRole}</TableCell>
                         <TableCell align="right">
                           <Stack direction="row" spacing={1} justifyContent="flex-end">
-                            <Button size="small" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf(e.id)}>PDF</Button>
-                            <Button size="small" variant="outlined" startIcon={<SendIcon />} onClick={() => sendOne(e.id)} disabled={busy}>Invia</Button>
+                            <Button size="small" className="btn-secondary-modern" startIcon={<PictureAsPdfIcon />} onClick={() => openPdf(e.id)}>PDF</Button>
+                            <Button size="small" className="btn-primary-modern" startIcon={<SendIcon />} onClick={() => sendOne(e.id)} disabled={busy}>Invia</Button>
                           </Stack>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </Box>
+              </TableContainer>
             </CardContent>
-          </Card>
+          </Paper>
         </Grid>
 
         {/* Storico */}
-        <Grid  size={{ xs: 12 }}>
-          <Card elevation={3} sx={{ borderRadius: 3 }}>
+        <Grid size={{ xs: 12 }}>
+          <Paper className="modern-table-container" sx={{ borderRadius: 3 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 1 }}>Storico convocazioni</Typography>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Lavoratore</TableCell>
-                    <TableCell>Canale</TableCell>
-                    <TableCell>Data invio</TableCell>
-                    <TableCell>Dettaglio</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {(logs || []).slice(0, 30).map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell>{l.employeeFullName}</TableCell>
-                      <TableCell>{l.channel}</TableCell>
-                      <TableCell>{formatDateTime(l.sentDate)}</TableCell>
-                      <TableCell>{l.messageText}</TableCell>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Storico convocazioni</Typography>
+              <TableContainer className="modern-table-sticky">
+                <Table className="modern-table" size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Lavoratore</TableCell>
+                      <TableCell>Canale</TableCell>
+                      <TableCell>Data invio</TableCell>
+                      <TableCell>Dettaglio</TableCell>
                     </TableRow>
-                  ))}
-                  {(!logs || logs.length === 0) && (
-                    <TableRow><TableCell colSpan={4}>Nessuna convocazione inviata.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHead>
+                  <TableBody>
+                    {(logs || []).slice(0, 30).map((l) => (
+                      <TableRow key={l.id} hover>
+                        <TableCell>{l.employeeFullName}</TableCell>
+                        <TableCell>{l.channel}</TableCell>
+                        <TableCell>{formatDateTime(l.sentDate)}</TableCell>
+                        <TableCell>{l.messageText}</TableCell>
+                      </TableRow>
+                    ))}
+                    {(!logs || logs.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={4}>
+                          <div className="empty-state" sx={{ py: 4 }}>
+                            <div className="empty-state-icon">📋</div>
+                            <Typography className="empty-state-title">Nessuna convocazione inviata</Typography>
+                            <Typography className="empty-state-text">Le convocazioni inviate appariranno qui.</Typography>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </CardContent>
-          </Card>
+          </Paper>
         </Grid>
       </Grid>
 
-      <Alert severity="info" sx={{ mt: 3 }}>
+      <Alert severity="info" className="animate-fade-in" sx={{ mt: 3 }}>
         In ambiente di sviluppo l'email viene simulata (nessun server SMTP configurato).
         Configura la sezione "Email" in appsettings per l'invio reale.
       </Alert>
