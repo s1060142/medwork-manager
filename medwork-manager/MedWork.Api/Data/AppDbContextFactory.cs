@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using MedWork.Api.Services;
 
 namespace MedWork.Api.Data;
 
@@ -8,9 +9,6 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        // Legge la connection string da appsettings (Database=medwork), esattamente come fa l'app.
-        // Evita il precedente bug: la stringa era hardcodata su "MedWorkDb", creando un DB fantasma
-        // diverso da quello usato a runtime (medwork) e disallineando le migration.
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true)
@@ -24,6 +22,17 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
 
-        return new AppDbContext(optionsBuilder.Options);
+        // For design-time, we need to provide the required services
+                var serviceCollection = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+                serviceCollection.AddDataProtection();
+                serviceCollection.AddSingleton<IFieldEncryptionService, FieldEncryptionService>();
+                serviceCollection.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.HttpContextAccessor>();
+                serviceCollection.AddScoped<ICurrentContextService, CurrentContextService>();
+                var serviceProvider = serviceCollection.BuildServiceProvider();
+
+                var encryptionService = serviceProvider.GetRequiredService<IFieldEncryptionService>();
+                var contextService = serviceProvider.GetRequiredService<ICurrentContextService>();
+
+                return new AppDbContext(optionsBuilder.Options, encryptionService, contextService);
     }
 }

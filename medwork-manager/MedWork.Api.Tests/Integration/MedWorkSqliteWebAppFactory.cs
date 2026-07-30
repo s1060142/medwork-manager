@@ -1,5 +1,6 @@
 using MedWork.Api.Data;
 using MedWork.Api.Security;
+using MedWork.Api.Services;
 using MedWork.Api.Tests.Integration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 
 namespace MedWork.Api.Tests.Integration;
 
@@ -50,7 +53,13 @@ public class MedWorkSqliteWebAppFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<DbContextOptions<AuditDbContext>>();
 
-            // Registra SQLite in modo da SOSTITITUIRE i provider esistenti
+            // Add data protection for FieldEncryptionService
+            services.AddDataProtection();
+            services.AddScoped<IFieldEncryptionService, FieldEncryptionService>();
+            services.AddScoped<ICurrentContextService, CurrentContextService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // Registra SQLite in modo da SOSTITUIRE i provider esistenti
             services.AddScoped<AppDbContext>(provider =>
             {
                 var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -58,7 +67,9 @@ public class MedWorkSqliteWebAppFactory : WebApplicationFactory<Program>
                     // Ignora il warning di pending model changes per i test
                     .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
                     .Options;
-                var context = new AppDbContext(options);
+                var encryptionService = provider.GetRequiredService<IFieldEncryptionService>();
+                var contextService = provider.GetRequiredService<ICurrentContextService>();
+                var context = new AppDbContext(options, encryptionService, contextService);
                 // Usa EnsureCreated per SQLite invece di Migrate
                 context.Database.EnsureCreated();
                 return context;

@@ -35,18 +35,18 @@ public class MedicalVisitsController : ControllerBase
             .AsNoTracking()
             .Include(x => x.Employee)
                 .ThenInclude(x => x.Company)
-            .Include(x => x.VisitExams)
+            .Include(x => x.Exams)
                 .ThenInclude(x => x.ExamType)
-            .Where(x => x.NextDeadlineDate.Date >= today && x.NextDeadlineDate.Date <= maxDate)
+            .Where(x => x.NextDeadlineDate.HasValue && x.NextDeadlineDate.Value.Date >= today && x.NextDeadlineDate.Value.Date <= maxDate)
             .OrderBy(x => x.NextDeadlineDate)
             .Select(x => new ExpiringMedicalVisitDto
             {
                 MedicalVisitId = x.Id,
                 EmployeeFullName = x.Employee.FirstName + " " + x.Employee.LastName,
                 CompanyName = x.Employee.Company.Name,
-                NextDeadlineDate = x.NextDeadlineDate,
+                NextDeadlineDate = x.NextDeadlineDate.Value,
                 Outcome = x.Outcome,
-                Exams = x.VisitExams
+                Exams = x.Exams
                     .OrderBy(e => e.Id)
                     .Select(e => new VisitExamSummaryDto
                     {

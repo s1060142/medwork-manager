@@ -58,7 +58,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("MedicalVisitId")
                         .IsUnique();
 
-                    b.ToTable("Anamneses");
+                    b.ToTable("Anamneses", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.AppUser", b =>
@@ -109,7 +109,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Attachment", b =>
@@ -201,7 +201,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("UploadedAt");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Branch", b =>
@@ -237,7 +237,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Branches");
+                    b.ToTable("Branches", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Company", b =>
@@ -276,7 +276,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("VATNumber")
                         .IsUnique();
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.CompanyContact", b =>
@@ -324,7 +324,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("CompanyContacts");
+                    b.ToTable("CompanyContacts", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.CompanyGroup", b =>
@@ -386,7 +386,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyGroups");
+                    b.ToTable("CompanyGroups", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Department", b =>
@@ -433,7 +433,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Doctor", b =>
@@ -472,7 +472,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("MedicalLicenseNumber")
                         .IsUnique();
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.DoctorAvailability", b =>
@@ -499,7 +499,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorAvailabilities");
+                    b.ToTable("DoctorAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Employee", b =>
@@ -581,7 +581,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("TaxCode")
                         .IsUnique();
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.EmployeePpe", b =>
@@ -620,7 +620,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("PpeId");
 
-                    b.ToTable("EmployeePpes");
+                    b.ToTable("EmployeePpes", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.EmployeeRisk", b =>
@@ -635,7 +635,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("RiskFactorId");
 
-                    b.ToTable("EmployeeRisks");
+                    b.ToTable("EmployeeRisks", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.ExamType", b =>
@@ -657,7 +657,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ExamTypes");
+                    b.ToTable("ExamTypes", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Injury", b =>
@@ -758,7 +758,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("Injuries");
+                    b.ToTable("Injuries", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.InjuryAttachment", b =>
@@ -773,7 +773,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("InjuryAttachments");
+                    b.ToTable("InjuryAttachments", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRole", b =>
@@ -798,7 +798,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("JobRoles");
+                    b.ToTable("JobRoles", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRolePpe", b =>
@@ -820,7 +820,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("PpeId");
 
-                    b.ToTable("JobRolePpes");
+                    b.ToTable("JobRolePpes", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRoleRiskFactor", b =>
@@ -835,7 +835,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("RiskFactorId");
 
-                    b.ToTable("JobRoleRiskFactors");
+                    b.ToTable("JobRoleRiskFactors", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.MedicalRecord", b =>
@@ -872,7 +872,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("MedicalRecords");
+                    b.ToTable("MedicalRecords", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.MedicalVisit", b =>
@@ -923,7 +923,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("MedicalVisits");
+                    b.ToTable("MedicalVisits", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.NotificationLog", b =>
@@ -947,10 +947,6 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<string>("ReminderKey")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
                     b.Property<DateTime>("SentDate")
                         .HasColumnType("datetime2");
 
@@ -958,7 +954,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("NotificationLogs");
+                    b.ToTable("NotificationLogs", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.PersonalProtocol", b =>
@@ -992,7 +988,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("EmployeeId", "ProtocolId")
                         .IsUnique();
 
-                    b.ToTable("PersonalProtocols");
+                    b.ToTable("PersonalProtocols", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Ppe", b =>
@@ -1043,7 +1039,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ppes");
+                    b.ToTable("Ppes", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Protocol", b =>
@@ -1078,7 +1074,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("JobRoleId");
 
-                    b.ToTable("Protocols");
+                    b.ToTable("Protocols", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.RiskFactor", b =>
@@ -1108,7 +1104,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RiskFactors");
+                    b.ToTable("RiskFactors", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.ScheduledExam", b =>
@@ -1139,7 +1135,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("ExamTypeId");
 
-                    b.ToTable("ScheduledExams");
+                    b.ToTable("ScheduledExams", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.SiteVisit", b =>
@@ -1198,7 +1194,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("WorkLocationId");
 
-                    b.ToTable("SiteVisits");
+                    b.ToTable("SiteVisits", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Vaccination", b =>
@@ -1227,7 +1223,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Vaccinations");
+                    b.ToTable("Vaccinations", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.VisitExam", b =>
@@ -1263,7 +1259,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("MedicalVisitId");
 
-                    b.ToTable("VisitExams");
+                    b.ToTable("VisitExams", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.WorkLocation", b =>
@@ -1314,7 +1310,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("WorkLocations");
+                    b.ToTable("WorkLocations", (string)null);
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Anamnesis", b =>

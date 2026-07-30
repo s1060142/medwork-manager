@@ -6,17 +6,25 @@ public class ScheduledExam
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int ExamTypeId { get; set; }
+    public ExamType? ExamType { get; set; }
 
-    [Required]
-    public DateTime DueDate { get; set; }
+    public DateTime ScheduledDate { get; set; }
+
+    /// <summary>
+    /// Alias per compatibilità con controller che usano DueDate
+    /// </summary>
+    public DateTime DueDate 
+    { 
+        get => ScheduledDate; 
+        set => ScheduledDate = value; 
+    }
 
     public ScheduledExamStatus Status { get; set; } = ScheduledExamStatus.Planned;
 
-    public Employee? Employee { get; set; }
-    public ExamType? ExamType { get; set; }
+    [StringLength(500)]
+    public string? Notes { get; set; }
 }

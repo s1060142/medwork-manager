@@ -1,8 +1,11 @@
 using System.Text;
+using System.Text;
 using MedWork.Api.Data;
 using MedWork.Api.Models;
 using MedWork.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using QuestPDF.Infrastructure;
 
 namespace MedWork.Api.Tests;
@@ -23,7 +26,13 @@ public class PdfGenerationTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("PdfTest-" + Guid.NewGuid())
             .Options;
-        var ctx = new AppDbContext(options);
+        
+        // Mock IFieldEncryptionService and ICurrentContextService
+        var dataProtectionProvider = DataProtectionProvider.Create(new DirectoryInfo(Path.GetTempPath()));
+        var encryptionService = new FieldEncryptionService(dataProtectionProvider);
+        var contextService = new CurrentContextService(new HttpContextAccessor());
+        
+        var ctx = new AppDbContext(options, encryptionService, contextService);
 
         var company = new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890" };
         var employee = new Employee
@@ -56,11 +65,11 @@ public class PdfGenerationTests
         };
         visit.Employee = employee;
         visit.Doctor = doctor;
-        visit.VisitExams = new List<VisitExam>
+        visit.Exams = new List<VisitExam>
         {
             new() { ExamTypeId = 1, Result = "Funzionalità regolare" }
         };
-        visit.VisitExams.First().ExamType = examType;
+        visit.Exams.First().ExamType = examType;
 
         ctx.Companies.Add(company);
         ctx.Employees.Add(employee);

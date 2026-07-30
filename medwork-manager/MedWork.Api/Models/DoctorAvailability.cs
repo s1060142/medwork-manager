@@ -6,14 +6,31 @@ public class DoctorAvailability
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int DoctorId { get; set; }
-
-    public DayOfWeek DayOfWeek { get; set; }
-
-    public TimeSpan StartTime { get; set; }
-
-    public TimeSpan EndTime { get; set; }
-
     public Doctor? Doctor { get; set; }
+
+    /// <summary>
+    /// Data della disponibilità (per disponibilità puntuale)
+    /// </summary>
+    public DateTime? Date { get; set; }
+
+    /// <summary>
+    /// Giorno della settimana (per disponibilità ricorrente)
+    /// </summary>
+    public DayOfWeek? DayOfWeek { get; set; }
+
+    /// <summary>
+    /// Ora inizio
+    /// </summary>
+    public TimeOnly StartTime { get; set; }
+
+    /// <summary>
+    /// Ora fine
+    /// </summary>
+    public TimeOnly EndTime { get; set; }
+
+    [StringLength(250)]
+    public string? Location { get; set; }
+
+    public bool IsAvailable { get; set; } = true;
 }

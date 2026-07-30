@@ -30,7 +30,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import CrudEntityView from './components/CrudEntityView'
 import LoginCard from './components/LoginCard'
-import ContextSelector from './components/ContextSelector'
 import ContextSwitcher from './components/ContextSwitcher'
 import HomeDashboard from './components/HomeDashboard'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
@@ -244,7 +243,6 @@ function App() {
   const [workCompanies, setWorkCompanies] = useState([])
   const [workBranches, setWorkBranches] = useState([])
   const [expandedAreas, setExpandedAreas] = useState(new Set(['company-management']))
-  const [needsContext, setNeedsContext] = useState(false)
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [username, setUsername] = useState('')
 
@@ -288,6 +286,22 @@ function App() {
         setWorkCompanies([])
         setWorkBranches([])
       })
+  }, [isAuthenticated])
+
+  // Carica aziende/sedi per la schermata di login (pre-auth) così i select
+  // della LoginCard non restano disabilitati e il login è possibile.
+  useEffect(() => {
+    if (isAuthenticated) return
+
+    Promise.all([
+      apiGet('/api/master-data/companies').catch(() => []),
+      apiGet('/api/master-data/branches').catch(() => []),
+    ])
+      .then(([companiesData, branchesData]) => {
+        setWorkCompanies(Array.isArray(companiesData) ? companiesData : [])
+        setWorkBranches(Array.isArray(branchesData) ? branchesData : [])
+      })
+      .catch(() => {})
   }, [isAuthenticated])
 
   const roleAwareSideMenu = useMemo(() => {
@@ -354,27 +368,15 @@ function App() {
     // Fetch username from token payload or use the username from localStorage
     // The token already has the username in the 'sub' claim
     try {
-      const payload = JSON.parse(atob(accessToken.split('.')[1]));
-      setUsername(payload.sub || payload.name || 'Utente');
+      const payload = JSON.parse(atob(accessToken.split('.')[1]))
+      setUsername(payload.sub || payload.name || 'Utente')
     } catch {
-      setUsername('Utente');
+      setUsername('Utente')
     }
 
-    // Se non c'è un contesto salvato, mostra il selettore post-login.
-    const savedCompany = localStorage.getItem('activeCompanyId')
-    const savedSite = localStorage.getItem('activeBranchId')
-    if (!savedCompany) {
-      setNeedsContext(true)
-    } else {
-      setActiveCompanyId(savedCompany)
-      setActiveBranchId(savedSite || '')
-      // Aggiorna eventuale token con il contesto salvato.
-      apiSend('POST', '/api/auth/select-context', savedSite
-        ? { contextId: Number(savedSite), contextType: 'Branch' }
-        : { contextId: Number(savedCompany), contextType: 'Company' })
-        .then((data) => { if (data?.accessToken) localStorage.setItem('accessToken', data.accessToken) })
-        .catch(() => {})
-    }
+    // Nessun selettore contesto: l'utente opera su tutte le aziende in un
+    // unico contesto. Il backend (global query filter null-safe) restituisce
+    // tutti i dati quando il token non porta i claim companyId/siteId.
   }
 
   const handleContextChanged = (context, newToken) => {
@@ -413,7 +415,6 @@ function App() {
     localStorage.removeItem('activeBranchId')
     setToken('')
     setRole('')
-    setNeedsContext(false)
     setSelectedArea('company-management')
     setSelectedCompanyTab('groups')
     setSelectedModuleKey('companies')
@@ -442,7 +443,8 @@ function App() {
     persistWorkContextToSettings(nextCompanyId, nextBranchId)
   }
 
-  const hasWorkingContext = Boolean(activeCompanyId || activeBranchId)
+  // Con tutte le aziende in un unico contesto, i moduli sono sempre disponibili.
+  const hasWorkingContext = true
 
   const displayedCompanyName = useMemo(() => {
     if (!activeCompanyId) return '-'
@@ -698,29 +700,13 @@ function App() {
               <Typography variant="body2" sx={{ mb: 2.2, color: '#5f6472' }}>
                 Piattaforma di Medicina del Lavoro e Sorveglianza Sanitaria.
               </Typography>
-              <LoginCard onLoginSuccess={handleLoginSuccess} />
+              <LoginCard
+                onLoginSuccess={handleLoginSuccess}
+                companies={workCompanies}
+                branches={workBranches}
+              />
             </Paper>
           </Box>
-        ) : needsContext ? (
-          <ContextSelector
-            role={role}
-            username={username}
-            onContextSelected={(selectedContext, newToken) => {
-              if (newToken) {
-                localStorage.setItem('accessToken', newToken)
-              }
-              setActiveCompanyId(selectedContext.type === 'Company' ? String(selectedContext.id) : String(selectedContext.parentId || ''))
-              setActiveBranchId(selectedContext.type === 'Branch' ? String(selectedContext.id) : '')
-              persistWorkContextToSettings(
-                selectedContext.type === 'Company' ? String(selectedContext.id) : String(selectedContext.parentId || ''),
-                selectedContext.type === 'Branch' ? String(selectedContext.id) : ''
-              )
-              setNeedsContext(false)
-              setSelectedModuleKey('home')
-              setSelectedArea('schedule')
-              setExpandedAreas(new Set(['schedule']))
-            }}
-          />
         ) : (
           <Box className="legacy-layout">
             <header className="legacy-topbar">

@@ -2,19 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MedWork.Api.Models;
 
-/// <summary>
-/// Allegato/Documento generico per gestione documentale
-/// </summary>
 public class Attachment
 {
     public int Id { get; set; }
 
     [Required]
-    [StringLength(250, MinimumLength = 2)]
+    [StringLength(250)]
     public string Title { get; set; } = string.Empty;
 
     [StringLength(100)]
-    public string? Category { get; set; } // es. "Referto", "Certificato", "Scheda sicurezza", "Verbale", "Altro"
+    public string? Category { get; set; }
 
     [StringLength(500)]
     public string? Description { get; set; }
@@ -31,28 +28,36 @@ public class Attachment
 
     [Required]
     [StringLength(500)]
-    public string StoragePath { get; set; } = string.Empty; // Percorso su filesystem/Blob storage
+    public string StoragePath { get; set; } = string.Empty;
 
-    public string? Checksum { get; set; } // SHA256 per integrità
+    [StringLength(100)]
+    public string? Checksum { get; set; }
 
-    public int? EmployeeId { get; set; }
-    public int? CompanyId { get; set; }
-    public int? MedicalVisitId { get; set; }
-    public int? RiskFactorId { get; set; }
-    public int? SiteVisitId { get; set; }
-
-    public bool IsConfidential { get; set; } = false; // GDPR: dati sensibili
-    public bool IsArchived { get; set; } = false;
+    public bool IsConfidential { get; set; }
+    public bool IsArchived { get; set; }
 
     public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
-    public string UploadedBy { get; set; } = string.Empty; // User ID o nome
 
-    public DateTime? ExpiresAt { get; set; } // Scadenza documento (es. certificati)
+    [StringLength(120)]
+    public string UploadedBy { get; set; } = string.Empty;
 
-    // Navigation properties
+    public DateTime? ExpiresAt { get; set; }
+
+    // Optional references
+    public int? EmployeeId { get; set; }
     public Employee? Employee { get; set; }
+
+    public int? CompanyId { get; set; }
     public Company? Company { get; set; }
+
+    public int? MedicalVisitId { get; set; }
     public MedicalVisit? MedicalVisit { get; set; }
+
+    public int? RiskFactorId { get; set; }
     public RiskFactor? RiskFactor { get; set; }
+
+    public int? SiteVisitId { get; set; }
     public SiteVisit? SiteVisit { get; set; }
+
+    public int? InjuryId { get; set; }
 }

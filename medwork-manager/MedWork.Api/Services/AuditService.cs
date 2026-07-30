@@ -22,12 +22,12 @@ public class AuditService : IAuditService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public void Log(string action, string entityName, int? entityId = null, string? description = null)
+    public void Log(string entityName, string action, int? entityId = null, string? description = null)
     {
-        _ = LogAsync(action, entityName, entityId, description);
+        _ = LogAsync(entityName, action, entityId, description);
     }
 
-    public async Task LogAsync(string action, string entityName, int? entityId = null, string? description = null, CancellationToken cancellationToken = default)
+    public async Task LogAsync(string entityName, string action, int? entityId = null, string? description = null, CancellationToken cancellationToken = default)
     {
         var user = _httpContextAccessor.HttpContext?.User;
         var username = user?.FindFirstValue(ClaimTypes.Name)

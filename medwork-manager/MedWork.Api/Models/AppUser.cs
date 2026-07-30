@@ -1,13 +1,16 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using MedWork.Api.Security;
 
 namespace MedWork.Api.Models;
 
-/// <summary>
-/// Utente di applicazione. Le password NON sono mai salvate in chiaro:
-/// si memorizza solo l'hash Argon2id (parameterifornio da salt univo).
-/// </summary>
+public enum UserRole
+{
+    Admin = 1,
+    Doctor = 2,
+    CompanyAdmin = 3,
+    Employee = 4,
+    HealthSurveillance = 5
+}
+
 public class AppUser
 {
     public int Id { get; set; }
@@ -16,28 +19,44 @@ public class AppUser
     [StringLength(120)]
     public string Username { get; set; } = string.Empty;
 
-    /// <summary>Hash Argon2id (formato Lib9Argument: $argon2id$v=19$m=...,t=...,p=...$salt$hash).</summary>
     [Required]
+    [StringLength(200)]
     public string PasswordHash { get; set; } = string.Empty;
 
     [Required]
     [StringLength(40)]
-    public string Role { get; set; } = AppRole.Admin;
+    public string Role { get; set; } = UserRole.Employee.ToString();
 
-    /// <summary>Codice fiscale (lavoratore) o CF/PIVA (azienda) per i portali dedicati.</summary>
     [StringLength(32)]
     public string? TaxCode { get; set; }
 
-    /// <summary>Se false, l'utente non può autenticarsi (revoca senza cancellare lo storico).</summary>
-    public bool IsActive { get; set; } = true;
-
     [StringLength(120)]
+    [EmailAddress]
     public string? Email { get; set; }
 
+    public int? CompanyId { get; set; }
+    public Company? Company { get; set; }
+
+    public int? EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
+
+    public int? DoctorId { get; set; }
+    public Doctor? Doctor { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// Data creazione UTC
+    /// </summary>
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Ultimo accesso UTC
+    /// </summary>
     public DateTime? LastLoginAtUtc { get; set; }
 
-    /// <summary>Imposta a true dopo il primo login, per forzare il cambio password iniziale.</summary>
-    public bool MustChangePassword { get; set; }
+    /// <summary>
+    /// Flag per forzare cambio password al primo accesso
+    /// </summary>
+    public bool MustChangePassword { get; set; } = false;
 }

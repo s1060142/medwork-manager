@@ -4,13 +4,16 @@ namespace MedWork.Api.Models;
 
 public class MedicalRecord
 {
+    /// <summary>
+    /// Chiave primaria (EmployeeId per relazione 1:1)
+    /// </summary>
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
 
     [Required]
-    [StringLength(4000, MinimumLength = 20)]
+    [StringLength(4000)]
     public string MedicalHistory { get; set; } = string.Empty;
 
     [StringLength(2000)]
@@ -21,5 +24,6 @@ public class MedicalRecord
 
     public MedicalRecordStatus Status { get; set; } = MedicalRecordStatus.Active;
 
-    public Employee? Employee { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

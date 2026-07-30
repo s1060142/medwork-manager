@@ -99,13 +99,13 @@ public static class AppDbSeeder
         var doctorsByLicense = await dbContext.Doctors.ToDictionaryAsync(x => x.MedicalLicenseNumber, x => x);
 
         var availabilitySeeds = new[]
-        {
-            new { License = "MED-LOM-98765", Day = DayOfWeek.Monday, Start = new TimeSpan(8, 30, 0), End = new TimeSpan(12, 30, 0) },
-            new { License = "MED-LOM-98765", Day = DayOfWeek.Wednesday, Start = new TimeSpan(14, 0, 0), End = new TimeSpan(18, 0, 0) },
-            new { License = "MED-PIE-44112", Day = DayOfWeek.Tuesday, Start = new TimeSpan(9, 0, 0), End = new TimeSpan(13, 0, 0) },
-            new { License = "MED-PIE-44112", Day = DayOfWeek.Thursday, Start = new TimeSpan(14, 30, 0), End = new TimeSpan(18, 30, 0) },
-            new { License = "MED-LOM-77231", Day = DayOfWeek.Friday, Start = new TimeSpan(8, 0, 0), End = new TimeSpan(12, 0, 0) },
-        };
+                {
+                    new { License = "MED-LOM-98765", Day = DayOfWeek.Monday, Start = TimeOnly.FromTimeSpan(new TimeSpan(8, 30, 0)), End = TimeOnly.FromTimeSpan(new TimeSpan(12, 30, 0)) },
+                    new { License = "MED-LOM-98765", Day = DayOfWeek.Wednesday, Start = TimeOnly.FromTimeSpan(new TimeSpan(14, 0, 0)), End = TimeOnly.FromTimeSpan(new TimeSpan(18, 0, 0)) },
+                    new { License = "MED-PIE-44112", Day = DayOfWeek.Tuesday, Start = TimeOnly.FromTimeSpan(new TimeSpan(9, 0, 0)), End = TimeOnly.FromTimeSpan(new TimeSpan(13, 0, 0)) },
+                    new { License = "MED-PIE-44112", Day = DayOfWeek.Thursday, Start = TimeOnly.FromTimeSpan(new TimeSpan(14, 30, 0)), End = TimeOnly.FromTimeSpan(new TimeSpan(18, 30, 0)) },
+                    new { License = "MED-LOM-77231", Day = DayOfWeek.Friday, Start = TimeOnly.FromTimeSpan(new TimeSpan(8, 0, 0)), End = TimeOnly.FromTimeSpan(new TimeSpan(12, 0, 0)) },
+                };
 
         var existingAvailabilities = await dbContext.DoctorAvailabilities
             .Select(x => new { x.DoctorId, x.DayOfWeek, x.StartTime, x.EndTime })

@@ -318,10 +318,9 @@ function CrudEntityView({
       return rows
     }
 
-    if (config.key === 'companies') {
-      if (hasCompanyScope) {
-        return rows.filter((row) => Number(row.id) === Number(effectiveCompanyId))
-      }
+    if (config.key === 'companies' || config.key === 'company-groups') {
+      // Aziende e Gruppi Aziendali sono le entità radice dello scoping:
+      // non vanno filtrate per activeCompanyId (un'azienda è lo scope stesso).
       return rows
     }
 

@@ -13,7 +13,7 @@ public class ScheduledExamValidator : AbstractValidator<ScheduledExam>
         RuleFor(x => x.ExamTypeId)
             .GreaterThan(0).WithMessage("ExamTypeId deve essere maggiore di 0");
 
-        RuleFor(x => x.DueDate)
+        RuleFor(x => x.ScheduledDate)
             .NotEmpty().WithMessage("La data di scadenza è obbligatoria");
 
         RuleFor(x => x.Status)

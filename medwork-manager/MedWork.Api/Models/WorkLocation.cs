@@ -1,23 +1,49 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MedWork.Api.Models;
 
-/// <summary>
-/// Represents a work location / site for a company
-/// </summary>
 public class WorkLocation
 {
     public int Id { get; set; }
-    public int CompanyId { get; set; }
-    public string Descrizione { get; set; } = string.Empty;
-    public string Citta { get; set; } = string.Empty;
-    public string Cap { get; set; } = string.Empty;
-    public string Provincia { get; set; } = string.Empty;
-    public bool Attivo { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public string CreatedBy { get; set; } = "system";
-    public string UpdatedBy { get; set; } = "system";
 
-    // Navigation properties
-    public virtual Company? Company { get; set; }
-    public virtual ICollection<SiteVisit>? SiteVisits { get; set; } = new List<SiteVisit>();
+    [Required]
+    [StringLength(150)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Descrizione del luogo di lavoro
+    /// </summary>
+    [StringLength(200)]
+    public string? Descrizione { get; set; }
+
+    [StringLength(250)]
+    public string? Address { get; set; }
+
+    /// <summary>
+    /// Città
+    /// </summary>
+    [StringLength(100)]
+    public string? Citta { get; set; }
+
+    /// <summary>
+    /// CAP
+    /// </summary>
+    [StringLength(10)]
+    public string? Cap { get; set; }
+
+    /// <summary>
+    /// Provincia (sigla 2 caratteri)
+    /// </summary>
+    [StringLength(2)]
+    public string? Provincia { get; set; }
+
+    /// <summary>
+    /// Stato attivo
+    /// </summary>
+    public bool Attivo { get; set; } = true;
+
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
+    public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

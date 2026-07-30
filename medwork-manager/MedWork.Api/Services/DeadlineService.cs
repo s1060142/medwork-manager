@@ -50,13 +50,14 @@ public class DeadlineService : IDeadlineService
 
         foreach (var v in visitDeadlines)
         {
-            var days = (int)(v.NextDeadlineDate.Date - today).TotalDays;
+            if (!v.NextDeadlineDate.HasValue) continue;
+            var days = (int)(v.NextDeadlineDate.Value.Date - today).TotalDays;
             alerts.Add(new DeadlineAlert(
                 v.EmployeeId,
                 $"{v.Employee?.FirstName} {v.Employee?.LastName}".Trim(),
                 v.Employee?.Company?.Name ?? "-",
                 "Visita",
-                v.NextDeadlineDate,
+                v.NextDeadlineDate.Value,
                 days,
                 Classify(days)));
         }
@@ -65,18 +66,18 @@ public class DeadlineService : IDeadlineService
         var examDeadlines = await _db.ScheduledExams
             .AsNoTracking()
             .Include(s => s.Employee)!.ThenInclude(e => e!.Company)
-            .Where(s => s.Status == ScheduledExamStatus.Planned && s.DueDate <= horizon)
+            .Where(s => s.Status == ScheduledExamStatus.Planned && s.ScheduledDate <= horizon)
             .ToListAsync(ct);
 
         foreach (var s in examDeadlines)
         {
-            var days = (int)(s.DueDate.Date - today).TotalDays;
+            var days = (int)(s.ScheduledDate.Date - today).TotalDays;
             alerts.Add(new DeadlineAlert(
                 s.EmployeeId,
                 $"{s.Employee?.FirstName} {s.Employee?.LastName}".Trim(),
                 s.Employee?.Company?.Name ?? "-",
                 "Accertamento",
-                s.DueDate,
+                s.ScheduledDate,
                 days,
                 Classify(days)));
         }
@@ -100,7 +101,7 @@ public class DeadlineService : IDeadlineService
             var alreadySent = await _db.NotificationLogs
                 .IgnoreQueryFilters()
                 .AnyAsync(n => n.EmployeeId == alert.EmployeeId
-                    && n.SentDate >= today
+                    && n.SentAt >= today
                     && n.ReminderKey == marker, ct);
 
             if (alreadySent) continue;
@@ -109,7 +110,7 @@ public class DeadlineService : IDeadlineService
             {
                 EmployeeId = alert.EmployeeId,
                 Channel = NotificationChannel.Email,
-                SentDate = DateTime.UtcNow,
+                SentAt = DateTime.UtcNow,
                 ReminderKey = marker,
                 MessageText = $"{marker} {alert.Kind} in scadenza il {alert.DueDate:dd/MM/yyyy} " +
                               $"({(alert.DaysRemaining < 0 ? $"SCADUTA da {-alert.DaysRemaining} giorni" : $"tra {alert.DaysRemaining} giorni")}) " +

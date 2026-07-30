@@ -13,8 +13,9 @@ import {
   Typography,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import SignatureCapture from './SignatureCapture'
 
-const STEP_LABELS = ['Anamnesi', 'Esame Obiettivo', 'Giudizio di Idoneità']
+const STEP_LABELS = ['Anamnesi', 'Esame Obiettivo', 'Giudizio di Idoneità', 'Firma Grafometrica']
 
 const VISIT_TYPES = [
   'Preventive',
@@ -39,6 +40,7 @@ const initialData = {
   targetOrgans: '',
   outcome: '',
   clinicalNotes: '',
+  signatureData: null, // Will store the base64 signature image data
 }
 
 function MedicalVisitStepper({ onCreated }) {
@@ -85,6 +87,8 @@ function MedicalVisitStepper({ onCreated }) {
       }
     }
 
+    // Step 3 (signature) is optional, no validation needed
+
     setError('')
     return true
   }
@@ -125,10 +129,24 @@ function MedicalVisitStepper({ onCreated }) {
         personalHistory: formData.personalHistory,
         familyHistory: formData.familyHistory,
         remotePathology: formData.remotePathology,
-        recentPathology: formData.recentPathology,
+        recentPathology: formData.recentPathonia,
       })
 
-      setSuccess('Visita medica e anamnesi registrate con successo.')
+      // If we have a signature, create a graphic signature record
+      if (formData.signatureData) {
+        // First, get the employee to get the companyId
+        const employeeResp = await apiGet(`/api/master-data/employees/${formData.employeeId}`)
+        const companyId = employeeResp.companyId
+
+        await apiSend('POST', '/api/graphic-signatures', {
+          MedicalVisitId: createdVisit.id,
+          DocumentType: 'FitnessJudgment',
+          SignatureData: formData.signatureData,
+          CompanyId: companyId,
+        })
+      }
+
+      setSuccess('Visita medica, anamnesi e firma grafometrica registrate con successo.')
       setFormData(initialData)
       setActiveStep(0)
 
@@ -147,7 +165,7 @@ function MedicalVisitStepper({ onCreated }) {
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
         <Typography variant="h6">Inserimento Visita Medica (Stepper)</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Step 1: Anamnesi • Step 2: Esame Obiettivo/Organi Bersaglio • Step 3: Giudizio di Idoneità.
+          Step 1: Anamnesi • Step 2: Esame Obiettivo/Organi Bersaglio • Step 3: Giudizio di Idoneità • Step 4: Firma Grafometrica.
         </Typography>
       </Paper>
 
@@ -171,7 +189,9 @@ function MedicalVisitStepper({ onCreated }) {
                 onChange={(event) => setField('employeeId', event.target.value)}
               >
                 {employees.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
+                  <MenuItem key={item.id} value={item.id}>
+                    {`${item.firstName} ${item.lastName}`}
+                  </MenuItem>
                 ))}
               </TextField>
 
@@ -231,7 +251,7 @@ function MedicalVisitStepper({ onCreated }) {
                 multiline
                 minRows={2}
                 label="Patologie remote/recenti"
-                value={`${formData.remotePathology}${formData.remotePathology && formData.recentPathology ? '\n' : ''}${formData.recentPathology}`}
+                value={`${formData.remotePathology}${formData.remotePathology && formData.recentPathologia ? '\n' : ''}${formData.recentPathologia}`}
                 onChange={(event) => {
                   const parts = String(event.target.value || '').split('\n')
                   setField('remotePathology', parts[0] || '')
@@ -284,14 +304,35 @@ function MedicalVisitStepper({ onCreated }) {
               />
             </Box>
           )}
+
+          {activeStep === 3 && (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h5" gutterBottom>
+                Firma Grafometrica per il Giudizio di Idoneità
+              </Typography>
+              <SignatureCapture
+                signatureData={formData.signatureData}
+                onSignatureChange={(data) => setField('signatureData', data)}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Disegna la tua firma nel riquadro sopra. La firma sarà associata al giudizio di idoneità di questa visita.
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 2.5 }}>
-          <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || saving}>Indietro</Button>
+          <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || selling}>
+            Indietro
+          </Button>
           {activeStep < STEP_LABELS.length - 1 ? (
-            <Button variant="contained" onClick={handleNext} disabled={saving}>Avanti</Button>
+            <Button variant="contained" onClick={handleNext} disabled={saving}>
+              Avanti
+            </Button>
           ) : (
-            <Button variant="contained" onClick={handleSave} disabled={saving}>Salva Visita</Button>
+            <Button variant="contained" onClick={handleSave} disabled={saving}>
+              Salva Visita
+            </Button>
           )}
         </Stack>
       </Paper>

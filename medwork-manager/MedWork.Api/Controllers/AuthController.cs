@@ -74,15 +74,18 @@ public class AuthController : ControllerBase
             }
         }
         // Portale Aziende: collega il login all'azienda via codice fiscale/PIVA.
-        else if ((user.Role == AppRole.Employer || user.Role == AppRole.Rspp) && !string.IsNullOrWhiteSpace(user.TaxCode))
-        {
-            companyId = await _dbContext.Companies
-                .Where(c => c.VATNumber == user.TaxCode)
-                .Select(c => c.Id)
-                .FirstOrDefaultAsync();
-        }
+                else if ((user.Role == AppRole.Employer || user.Role == AppRole.Rspp) && !string.IsNullOrWhiteSpace(user.TaxCode))
+                {
+                    companyId = await _dbContext.Companies
+                        .Where(c => c.VATNumber == user.TaxCode)
+                        .Select(c => c.Id)
+                        .FirstOrDefaultAsync();
+                }
+                // Admin/Doctor/Secretary/Rspp: nessun contesto -> tutti i dati (no scoping).
+                // Il global query filter è null-safe, quindi companyId/siteId = null
+                // restituisce tutte le aziende/sedi in un unico contesto.
 
-        var token = _jwtTokenService.GenerateToken(user.Username, user.Role, employeeId, companyId, siteId);
+                var token = _jwtTokenService.GenerateToken(user.Username, user.Role, employeeId, companyId, siteId);
         return Ok(new LoginResponse
         {
             AccessToken = token,

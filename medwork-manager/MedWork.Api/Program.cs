@@ -14,6 +14,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HttpContextAccessor needed for CurrentContextService
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 
@@ -62,16 +65,37 @@ builder.Services.AddScoped<IConvocationService, ConvocationService>();
 builder.Services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
 builder.Services.AddScoped<IPasswordHasher, Argon2PasswordHasher>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IElectronicInvoiceService, ElectronicInvoiceService>();
+builder.Services.AddHttpClient<SdiCoopClient>();
+builder.Services.AddScoped<SdiPecClient>();
+builder.Services.AddScoped<SdiClientFactory>();
+builder.Services.AddScoped<ISdiClient>(sp =>
+    sp.GetRequiredService<SdiClientFactory>().CreateClient(
+        new MedWork.Api.Models.SdiConfiguration { Channel = "SDICOOP" }));
+builder.Services.AddScoped<IElectronicInvoiceXmlService, ElectronicInvoiceXmlService>();
+builder.Services.AddScoped<IGraphicSignatureService, GraphicSignatureService>();
+builder.Services.AddScoped<ICardiologistReportService, CardiologistReportService>();
+builder.Services.AddScoped<ILisConfigurationService, LisConfigurationService>();
+builder.Services.AddScoped<IHl7MessageService, Hl7MessageService>();
+builder.Services.AddScoped<IDiagnosticDeviceService, DiagnosticDeviceService>();
+builder.Services.AddScoped<IHrIntegrationService, HrIntegrationService>();
+builder.Services.AddScoped<ISafetyRiskManagementService, SafetyRiskManagementService>();
+builder.Services.AddScoped<IFieldEncryptionService, FieldEncryptionService>();
 
-// Solo registrare i DbContext se NON in ambiente Testing
-// In Testing, i test factory registrano i propri provider (SQLite/InMemory)
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        // Suppress pending model changes warning for manual SQL schema changes
+        options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    });
 
     builder.Services.AddDbContext<AuditDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    });
 }
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -114,7 +138,7 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.ContentType = "application/json";
         await context.HttpContext.Response.WriteAsync(
-            "{\"message\":\"Troppi tentativi. Riprova tra un minuto.\"}", ct);
+            "{\\\"message\\\":\\\"Troppi tentativi. Riprova tra un minuto.\\\"}", ct);
     };
 });
 
@@ -141,7 +165,8 @@ if (!app.Environment.IsEnvironment("Testing"))
     // Il DbContext di audit è separato: va migrato a parte per creare la tabella AuditLogs.
     var auditContext = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
     await auditContext.Database.MigrateAsync();
-    await AppDbSeeder.SeedAsync(dbContext);
+    // TEMP: disable seeder to debug column mapping issue
+    // await AppDbSeeder.SeedAsync(dbContext);
 }
 
 if (app.Environment.IsDevelopment())

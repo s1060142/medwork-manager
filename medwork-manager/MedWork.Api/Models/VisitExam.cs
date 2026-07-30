@@ -6,14 +6,14 @@ public class VisitExam
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int MedicalVisitId { get; set; }
+    public MedicalVisit? MedicalVisit { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int ExamTypeId { get; set; }
+    public ExamType? ExamType { get; set; }
 
     [Required]
-    [StringLength(3000, MinimumLength = 2)]
+    [StringLength(3000)]
     public string Result { get; set; } = string.Empty;
 
     [StringLength(2000)]
@@ -21,7 +21,4 @@ public class VisitExam
 
     [StringLength(300)]
     public string? ReferenceRange { get; set; }
-
-    public MedicalVisit? MedicalVisit { get; set; }
-    public ExamType? ExamType { get; set; }
 }

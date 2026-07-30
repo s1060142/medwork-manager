@@ -6,15 +6,12 @@ public class Branch
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int CompanyId { get; set; }
-
     [Required]
-    [StringLength(250, MinimumLength = 5)]
+    [StringLength(250)]
     public string Address { get; set; } = string.Empty;
 
     [Required]
-    [StringLength(100, MinimumLength = 2)]
+    [StringLength(100)]
     public string City { get; set; } = string.Empty;
 
     [StringLength(100)]
@@ -23,6 +20,18 @@ public class Branch
     [StringLength(10)]
     public string? PostalCode { get; set; }
 
+    [StringLength(30)]
+    public string? Phone { get; set; }
+
+    [StringLength(150)]
+    public string? Description { get; set; }
+
+    public int CompanyId { get; set; }
     public Company? Company { get; set; }
+
+    public int? MunicipalityId { get; set; }
+    public Municipality? Municipality { get; set; }
+
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public ICollection<SiteVisit> SiteVisits { get; set; } = new List<SiteVisit>();
 }

@@ -253,7 +253,7 @@ public class MasterDataController : ControllerBase
                 x.VisitType,
                 x.TargetOrgans,
                 x.ObjectiveExam,
-                ExamsCount = x.VisitExams.Count
+                ExamsCount = x.Exams.Count
             })
             .ToListAsync();
 

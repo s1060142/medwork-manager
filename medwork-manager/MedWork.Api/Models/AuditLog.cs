@@ -1,35 +1,62 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MedWork.Api.Models;
 
-/// <summary>
-/// Tracciamento delle modifiche ai dati sensibili (cartelle sanitarie e di rischio).
-/// Obbligatorio per dati di categoria particolare (GDPR art. 9) e per la tenuta
-/// della Cartella Sanitaria e di Rischio (D.Lgs 81/08).
-/// </summary>
 public class AuditLog
 {
     public long Id { get; set; }
 
-    /// <summary>Utente (username dal token JWT) che ha effettuato l'operazione.</summary>
+    [Required]
+    [StringLength(120)]
     public string Username { get; set; } = string.Empty;
 
-    /// <summary>Ruolo dell'utente al momento dell'operazione.</summary>
-    public string Role { get; set; } = string.Empty;
-
-    /// <summary>Tipo di azione: Create, Update, Delete, View, Export, Login.</summary>
+    [Required]
+    [StringLength(100)]
     public string Action { get; set; } = string.Empty;
 
-    /// <summary>Entità coinvolta (es. MedicalVisit, MedicalRecord, Employee).</summary>
-    public string EntityName { get; set; } = string.Empty;
+    [StringLength(100)]
+    public string? EntityType { get; set; }
 
-    /// <summary>Id dell'entità coinvolta, se applicabile.</summary>
     public int? EntityId { get; set; }
 
-    /// <summary>Descrizione leggibile dell'operazione.</summary>
+    [StringLength(4000)]
+    public string? OldValues { get; set; }
+
+    [StringLength(4000)]
+    public string? NewValues { get; set; }
+
+    [StringLength(50)]
+    public string? IpAddress { get; set; }
+
+    [StringLength(500)]
+    public string? UserAgent { get; set; }
+
+    /// <summary>
+    /// Timestamp UTC (alias per Timestamp per compatibilità)
+    /// </summary>
+    public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Timestamp (legacy)
+    /// </summary>
+    public DateTime Timestamp 
+    { 
+        get => TimestampUtc; 
+        set => TimestampUtc = value; 
+    }
+
+    public int? CompanyId { get; set; }
+
+    // Added fields for AuditService
+    [StringLength(50)]
+    public string? Role { get; set; }
+
+    [StringLength(100)]
+    public string? EntityName { get; set; }
+
+    [StringLength(500)]
     public string? Description { get; set; }
 
-    /// <summary>Indirizzo IP/Origine della richiesta (se disponibile).</summary>
+    [StringLength(100)]
     public string? Source { get; set; }
-
-    /// <summary>Timestamp UTC dell'evento.</summary>
-    public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
 }

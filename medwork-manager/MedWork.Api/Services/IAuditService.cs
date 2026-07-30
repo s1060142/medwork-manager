@@ -5,6 +5,6 @@ namespace MedWork.Api.Services;
 /// </summary>
 public interface IAuditService
 {
-    void Log(string action, string entityName, int? entityId = null, string? description = null);
-    Task LogAsync(string action, string entityName, int? entityId = null, string? description = null, CancellationToken cancellationToken = default);
+    void Log(string entityName, string action, int? entityId = null, string? description = null);
+    Task LogAsync(string entityName, string action, int? entityId = null, string? description = null, CancellationToken cancellationToken = default);
 }

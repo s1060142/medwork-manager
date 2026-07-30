@@ -6,17 +6,35 @@ public class Vaccination
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
+    public Employee? Employee { get; set; }
 
     [Required]
-    [StringLength(150, MinimumLength = 2)]
+    [StringLength(150)]
     public string VaccineName { get; set; } = string.Empty;
 
-    [Required]
+    /// <summary>
+    /// Data di somministrazione
+    /// </summary>
     public DateTime DateAdministered { get; set; }
 
+    /// <summary>
+    /// Prossima scadenza
+    /// </summary>
     public DateTime? NextDueDate { get; set; }
 
-    public Employee? Employee { get; set; }
+    [StringLength(500)]
+    public string? Notes { get; set; }
+
+    public int? PeriodMonths { get; set; }
+
+    public bool IsInvoiced { get; set; }
+
+    public int? InvoiceNumber { get; set; }
+    public int? InvoiceYear { get; set; }
+
+    /// <summary>
+    /// Data scadenza (alias per compatibilità)
+    /// </summary>
+    public DateTime? ExpiryDate { get; set; }
 }
