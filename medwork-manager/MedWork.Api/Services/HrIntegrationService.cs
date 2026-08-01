@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using MedWork.Api.Data;
 using MedWork.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedWork.Api.Services
 {
@@ -74,7 +75,7 @@ namespace MedWork.Api.Services
 
         public async Task<Employee?> ProcessTerminationEventAsync(TerminationEventDto terminationEvent)
         {
-            var employee = await _dbContext.Employees.FindAsync(terminationEvent.EmployeeId);
+            var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.TaxCode == terminationEvent.TaxCode && e.CompanyId == terminationEvent.CompanyId);
             if (employee == null)
                 return null;
 
@@ -101,7 +102,7 @@ namespace MedWork.Api.Services
 
         public async Task<Employee?> ProcessAbsenceEventAsync(AbsenceEventDto absenceEvent)
         {
-            var employee = await _dbContext.Employees.FindAsync(absenceEvent.EmployeeId);
+            var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.TaxCode == absenceEvent.TaxCode && e.CompanyId == absenceEvent.CompanyId);
             if (employee == null)
                 return null;
 
@@ -121,7 +122,7 @@ namespace MedWork.Api.Services
 
         public async Task<Employee?> ProcessTransferEventAsync(TransferEventDto transferEvent)
         {
-            var employee = await _dbContext.Employees.FindAsync(transferEvent.EmployeeId);
+            var employee = await _dbContext.Employees.FirstOrDefaultAsync(e => e.TaxCode == transferEvent.TaxCode && e.CompanyId == transferEvent.CompanyId);
             if (employee == null)
                 return null;
 

@@ -149,7 +149,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://localhost:5175", "http://127.0.0.1:5175", "http://localhost:5176", "http://127.0.0.1:5176")
+        policy.WithOrigins(
+                "http://localhost:3000", "http://127.0.0.1:3000",
+                "http://localhost:5173", "http://127.0.0.1:5173",
+                "http://localhost:5174", "http://127.0.0.1:5174",
+                "http://localhost:5175", "http://127.0.0.1:5175",
+                "http://localhost:5176", "http://127.0.0.1:5176")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -165,7 +170,7 @@ if (!app.Environment.IsEnvironment("Testing"))
     // Il DbContext di audit è separato: va migrato a parte per creare la tabella AuditLogs.
     var auditContext = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
     await auditContext.Database.MigrateAsync();
-    // TEMP: disable seeder to debug column mapping issue
+    // TEMP: disable seeder to debug startup
     // await AppDbSeeder.SeedAsync(dbContext);
 }
 

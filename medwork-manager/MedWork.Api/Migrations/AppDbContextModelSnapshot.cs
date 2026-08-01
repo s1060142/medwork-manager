@@ -22,6 +22,195 @@ namespace MedWork.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("MedWork.Api.Models.Accreditation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JobRoleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ProtocolId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RecurrenceMonths")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResponsibleEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ResponsiblePerson")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int?>("RiskFactorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ExpiryDate");
+
+                    b.HasIndex("JobRoleId");
+
+                    b.HasIndex("ProtocolId");
+
+                    b.HasIndex("RiskFactorId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Accreditations");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Activity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssignedToUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsSystemGenerated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("RelatedEntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedToUserId");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Activities");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.Anamnesis", b =>
                 {
                     b.Property<int>("Id")
@@ -58,7 +247,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("MedicalVisitId")
                         .IsUnique();
 
-                    b.ToTable("Anamneses", (string)null);
+                    b.ToTable("Anamneses");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.AppUser", b =>
@@ -69,12 +258,21 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -106,10 +304,16 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("DoctorId");
+
+                    b.HasIndex("EmployeeId");
+
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Attachment", b =>
@@ -154,6 +358,9 @@ namespace MedWork.Api.Migrations
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("InjuryId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsArchived")
                         .HasColumnType("bit");
 
@@ -167,6 +374,9 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("SiteVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SiteVisitId1")
                         .HasColumnType("int");
 
                     b.Property<string>("StoragePath")
@@ -199,9 +409,9 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("SiteVisitId");
 
-                    b.HasIndex("UploadedAt");
+                    b.HasIndex("SiteVisitId1");
 
-                    b.ToTable("Attachments", (string)null);
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Branch", b =>
@@ -225,11 +435,20 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("PostalCode")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Province")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -237,7 +456,53 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Branches", (string)null);
+                    b.ToTable("Branches");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.CardiologistReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CardiologistId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsSignedOff")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReportContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SignedOffAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VisitExamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CardiologistId");
+
+                    b.HasIndex("VisitExamId");
+
+                    b.ToTable("CardiologistReports");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Company", b =>
@@ -247,6 +512,18 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CivicNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int?>("CompanyGroupId")
                         .HasColumnType("int");
@@ -259,10 +536,30 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("LegalRepresentativeTaxCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Province")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("TaxCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("TaxRegime")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("VATNumber")
                         .IsRequired()
@@ -276,7 +573,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("VATNumber")
                         .IsUnique();
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.CompanyContact", b =>
@@ -287,44 +584,54 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("ContactType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("Nominativo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Ruolo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Telefono")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UpdatedBy")
+                    b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Mobile")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Nominativo")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Ruolo")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("CompanyContacts", (string)null);
+                    b.ToTable("CompanyContacts");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.CompanyGroup", b =>
@@ -335,58 +642,54 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("ArchivioUnico")
-                        .HasColumnType("bit");
+                    b.Property<string>("ArchivioUnico")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Cap")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Citta")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("CodiceFiscale")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Descrizione")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Indirizzo")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PartitaIva")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
 
                     b.Property<string>("Provincia")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
 
                     b.Property<string>("RagioneSociale")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CompanyGroups", (string)null);
+                    b.ToTable("CompanyGroups");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Department", b =>
@@ -403,37 +706,197 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("EmailReferente")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<string>("Referente")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.DeviceExamLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("ExamDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExamTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicalVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ParsedDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RawData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ExamTypeId");
+
+                    b.HasIndex("MedicalVisitId");
+
+                    b.ToTable("DeviceExamLogs");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.DeviceParserConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConfigurationJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DeviceType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Manufacturer")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ParserType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeviceParserConfigs");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.DiagnosticDevice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConfigurationJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConnectionAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ConnectionType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirmwareVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Manufacturer")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ParserType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("DiagnosticDevices");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Doctor", b =>
@@ -443,6 +906,10 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(150)
@@ -463,6 +930,10 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Phone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("Specialty")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
@@ -472,7 +943,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("MedicalLicenseNumber")
                         .IsUnique();
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.DoctorAvailability", b =>
@@ -483,23 +954,302 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DayOfWeek")
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DayOfWeek")
                         .HasColumnType("int");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
 
-                    b.Property<TimeSpan>("EndTime")
+                    b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("StartTime")
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("DoctorAvailabilities", (string)null);
+                    b.ToTable("DoctorAvailabilities");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttachmentsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Cig")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Cup")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("GeneratedXml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPublicAdministration")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LinesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PaymentDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientAddress")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RecipientCity")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RecipientCode")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<string>("RecipientCountry")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("RecipientName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RecipientPec")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RecipientPostalCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("RecipientProvince")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("RecipientTaxCode")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("RecipientVatNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SdiErrorCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SdiErrorDescription")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SdiFileName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SdiIdentifier")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("SdiResponseAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SdiResultCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SdiResultDescription")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("SdiSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SignedXml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("TaxableAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SdiIdentifier");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("CompanyId", "Year", "Number")
+                        .IsUnique();
+
+                    b.ToTable("ElectronicInvoices");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoiceLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountRate")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("ElectronicInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LineNumber")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("ReferenceItemCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UnitOfMeasure")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("VatNature")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<decimal>("VatRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElectronicInvoiceId");
+
+                    b.ToTable("ElectronicInvoiceLine");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoiceLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("ElectronicInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("PayloadReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElectronicInvoiceId");
+
+                    b.ToTable("ElectronicInvoiceLogs");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Employee", b =>
@@ -537,6 +1287,10 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<string>("FitnessStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(1)
@@ -549,6 +1303,9 @@ namespace MedWork.Api.Migrations
 
                     b.Property<int?>("JobRoleId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastFitnessDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -568,6 +1325,13 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
+                    b.Property<int?>("WorkLocationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WorkStatus")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
@@ -581,7 +1345,9 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("TaxCode")
                         .IsUnique();
 
-                    b.ToTable("Employees", (string)null);
+                    b.HasIndex("WorkLocationId");
+
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.EmployeePpe", b =>
@@ -620,7 +1386,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("PpeId");
 
-                    b.ToTable("EmployeePpes", (string)null);
+                    b.ToTable("EmployeePpes");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.EmployeeRisk", b =>
@@ -631,11 +1397,21 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("RiskFactorId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("AssignedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.HasKey("EmployeeId", "RiskFactorId");
 
                     b.HasIndex("RiskFactorId");
 
-                    b.ToTable("EmployeeRisks", (string)null);
+                    b.ToTable("EmployeeRisks");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.ExamType", b =>
@@ -650,6 +1426,10 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -657,7 +1437,287 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ExamTypes", (string)null);
+                    b.ToTable("ExamTypes");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.GraphicSignature", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MedicalVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SignatureData")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("SignedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SignedByType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("MedicalVisitId");
+
+                    b.ToTable("GraphicSignatures");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.HealthRecordExport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DownloadCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DownloadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ExportType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FilePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IncludeAttachments")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IncludePrivacyInfo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IncludeServices")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("PeriodEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("PeriodStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequestedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("RequestedAt");
+
+                    b.HasIndex("RequestedByUserId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("HealthRecordExports");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Hl7Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsProcessedSuccessfully")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("LisConfigurationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MedicalVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MessageControlId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("ObservationDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ObservationId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ObservationStatus")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ObservationUnits")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ObservationValue")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("OrderId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ParsedContent")
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("PatientBirthDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PatientIdentifier")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PatientName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PatientSex")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("ProcessingStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("RawContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceivingApplication")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("SendingApplication")
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<int?>("SiteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TriggerEvent")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int?>("VisitExamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("LisConfigurationId");
+
+                    b.HasIndex("MedicalVisitId");
+
+                    b.HasIndex("SiteId");
+
+                    b.HasIndex("VisitExamId");
+
+                    b.ToTable("Hl7Messages");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Injury", b =>
@@ -744,7 +1804,6 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
@@ -758,7 +1817,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("Injuries", (string)null);
+                    b.ToTable("Injuries");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.InjuryAttachment", b =>
@@ -773,7 +1832,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("InjuryAttachments", (string)null);
+                    b.ToTable("InjuryAttachments");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRole", b =>
@@ -783,6 +1842,13 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -795,10 +1861,12 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("JobRoles", (string)null);
+                    b.ToTable("JobRoles");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRolePpe", b =>
@@ -820,7 +1888,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("PpeId");
 
-                    b.ToTable("JobRolePpes", (string)null);
+                    b.ToTable("JobRolePpes");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.JobRoleRiskFactor", b =>
@@ -831,11 +1899,171 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("RiskFactorId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.HasKey("JobRoleId", "RiskFactorId");
 
                     b.HasIndex("RiskFactorId");
 
-                    b.ToTable("JobRoleRiskFactors", (string)null);
+                    b.ToTable("JobRoleRiskFactors");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.LabAccreditation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AccreditationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AccreditedExams")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LaboratoryAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LaboratoryEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("LaboratoryName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("LaboratoryPhone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("ExpiryDate");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("LabAccreditations");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.LisConfiguration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalSettings")
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConnectionStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("CredentialsEncrypted")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("InterfaceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsAutoSyncEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LastSuccessfulSync")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("SiteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SyncIntervalMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("LisConfigurations");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.MedicalRecord", b =>
@@ -845,6 +2073,9 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("CurrentTherapies")
                         .HasMaxLength(2000)
@@ -867,12 +2098,15 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("MedicalRecords", (string)null);
+                    b.ToTable("MedicalRecords");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.MedicalVisit", b =>
@@ -883,9 +2117,22 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AnalyticalInterval")
+                        .HasColumnType("int");
+
                     b.Property<string>("ClinicalNotes")
                         .HasMaxLength(4000)
                         .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConEsito")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int?>("DiastolicPressure")
+                        .HasColumnType("int");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
@@ -893,8 +2140,63 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("NextDeadlineDate")
+                    b.Property<DateTime?>("EmployeeTidDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("EmployeeTidType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ExamCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("FitnessOutcome")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HeartRate")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdoneitaLavorativa")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InvoiceFlag")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int?>("InvoiceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvoiceYear")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IsAltered")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int?>("JobRoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastTidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NextDeadlineDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("No3b")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("NoExpiry")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int?>("NotCoe")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("ObjectiveExam")
                         .HasMaxLength(4000)
@@ -905,25 +2207,99 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<string>("OutcomeCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Pathologies")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int>("Periodicity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PrescriptionExpiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PrescriptionRequired")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int?>("ReasonForVisit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RiskAssessment")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("RiskCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SchedulingCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Signature")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int?>("SystolicPressure")
+                        .HasColumnType("int");
+
                     b.Property<string>("TargetOrgans")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("TidType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("UnfitNew")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UnfitNotes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<double?>("UnfitNotes2")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ValidationCode")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ValidityDays")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("VisitDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<TimeOnly?>("VisitTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("VisitType")
                         .IsRequired()
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
+                    b.Property<int>("VisitTypeDetail")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Weight")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("DoctorId");
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("MedicalVisits", (string)null);
+                    b.HasIndex("JobRoleId");
+
+                    b.ToTable("MedicalVisits");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.NotificationLog", b =>
@@ -939,13 +2315,30 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDelivered")
+                        .HasColumnType("bit");
 
                     b.Property<string>("MessageText")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ReminderKey")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("SentDate")
                         .HasColumnType("datetime2");
@@ -954,7 +2347,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("NotificationLogs", (string)null);
+                    b.ToTable("NotificationLogs");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.PersonalProtocol", b =>
@@ -966,6 +2359,12 @@ namespace MedWork.Api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("AssignedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CompletionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("EmployeeId")
@@ -988,7 +2387,7 @@ namespace MedWork.Api.Migrations
                     b.HasIndex("EmployeeId", "ProtocolId")
                         .IsUnique();
 
-                    b.ToTable("PersonalProtocols", (string)null);
+                    b.ToTable("PersonalProtocols");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Ppe", b =>
@@ -1002,6 +2401,9 @@ namespace MedWork.Api.Migrations
                     b.Property<string>("Category")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -1030,6 +2432,9 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("RiskFactorId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Standard")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -1039,7 +2444,68 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ppes", (string)null);
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("RiskFactorId");
+
+                    b.ToTable("Ppes");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.PriceList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Vat")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("PriceLists");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Protocol", b =>
@@ -1074,7 +2540,128 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("JobRoleId");
 
-                    b.ToTable("Protocols", (string)null);
+                    b.ToTable("Protocols");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Quote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ConvertedToInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LinesJson")
+                        .HasMaxLength(50000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentDataJson")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("TaxableAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ValidityDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("VatAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConvertedToInvoiceId");
+
+                    b.HasIndex("CompanyId", "Year", "Number")
+                        .IsUnique();
+
+                    b.ToTable("Quotes");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.RiskAssessment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssessmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssessmentNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Assessor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ControlMeasures")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CurrentRiskLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("JobRoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("NextReviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RiskFactorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TargetRiskLevel")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobRoleId");
+
+                    b.HasIndex("RiskFactorId");
+
+                    b.ToTable("RiskAssessments");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.RiskFactor", b =>
@@ -1089,10 +2676,20 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
+                    b.Property<string>("AssessmentNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("LastAssessed")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1104,7 +2701,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RiskFactors", (string)null);
+                    b.ToTable("RiskFactors");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.ScheduledExam", b =>
@@ -1124,10 +2721,16 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("ExamTypeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1135,7 +2738,121 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("ExamTypeId");
 
-                    b.ToTable("ScheduledExams", (string)null);
+                    b.ToTable("ScheduledExams");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.SdiConfiguration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CertificateBase64")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CertificatePasswordEncrypted")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTestEnvironment")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PecPasswordEncrypted")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PecSmtpPort")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PecSmtpServer")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SenderPec")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TransmitterId")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique()
+                        .HasFilter("[CompanyId] IS NOT NULL");
+
+                    b.ToTable("SdiConfigurations");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.SdiNotificationLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ElectronicInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NotificationType")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("PayloadBase64")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Processed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResultCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SdiIdentifier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElectronicInvoiceId");
+
+                    b.ToTable("SdiNotificationLogs");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.SiteVisit", b =>
@@ -1146,55 +2863,73 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.Property<DateTime>("Data")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("InvoiceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvoiceYear")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsInvoiced")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
                     b.Property<string>("Luogo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Medico")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Periodicita")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("Scadenza")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("StrutturaVisitata")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<decimal>("Vat")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("VisitDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("WorkLocationId")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BranchId");
+
                     b.HasIndex("CompanyId");
 
-                    b.HasIndex("WorkLocationId");
-
-                    b.ToTable("SiteVisits", (string)null);
+                    b.ToTable("SiteVisits");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Vaccination", b =>
@@ -1211,8 +2946,27 @@ namespace MedWork.Api.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("InvoiceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvoiceYear")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsInvoiced")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("NextDueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("PeriodMonths")
+                        .HasColumnType("int");
 
                     b.Property<string>("VaccineName")
                         .IsRequired()
@@ -1223,7 +2977,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Vaccinations", (string)null);
+                    b.ToTable("Vaccinations");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.VisitExam", b =>
@@ -1259,7 +3013,7 @@ namespace MedWork.Api.Migrations
 
                     b.HasIndex("MedicalVisitId");
 
-                    b.ToTable("VisitExams", (string)null);
+                    b.ToTable("VisitExams");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.WorkLocation", b =>
@@ -1270,47 +3024,122 @@ namespace MedWork.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
                     b.Property<bool>("Attivo")
                         .HasColumnType("bit");
 
                     b.Property<string>("Cap")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Citta")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Descrizione")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Provincia")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("WorkLocations", (string)null);
+                    b.ToTable("WorkLocations");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Accreditation", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedWork.Api.Models.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedWork.Api.Models.Protocol", "Protocol")
+                        .WithMany()
+                        .HasForeignKey("ProtocolId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedWork.Api.Models.RiskFactor", "RiskFactor")
+                        .WithMany()
+                        .HasForeignKey("RiskFactorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("JobRole");
+
+                    b.Navigation("Protocol");
+
+                    b.Navigation("RiskFactor");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Activity", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.AppUser", "AssignedToUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedToUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.AppUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AssignedToUser");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Anamnesis", b =>
@@ -1322,6 +3151,27 @@ namespace MedWork.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("MedicalVisit");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.AppUser", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("MedWork.Api.Models.Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId");
+
+                    b.HasOne("MedWork.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Attachment", b =>
@@ -1351,6 +3201,10 @@ namespace MedWork.Api.Migrations
                         .HasForeignKey("SiteVisitId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MedWork.Api.Models.SiteVisit", null)
+                        .WithMany("Attachments")
+                        .HasForeignKey("SiteVisitId1");
+
                     b.Navigation("Company");
 
                     b.Navigation("Employee");
@@ -1373,11 +3227,32 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.CardiologistReport", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Doctor", "Cardiologist")
+                        .WithMany()
+                        .HasForeignKey("CardiologistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.VisitExam", "VisitExam")
+                        .WithMany()
+                        .HasForeignKey("VisitExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cardiologist");
+
+                    b.Navigation("VisitExam");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.Company", b =>
                 {
-                    b.HasOne("MedWork.Api.Models.CompanyGroup", null)
+                    b.HasOne("MedWork.Api.Models.CompanyGroup", "CompanyGroup")
                         .WithMany("Companies")
                         .HasForeignKey("CompanyGroupId");
+
+                    b.Navigation("CompanyGroup");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.CompanyContact", b =>
@@ -1402,6 +3277,52 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.DeviceExamLog", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.DiagnosticDevice", "Device")
+                        .WithMany("ExamLogs")
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.ExamType", "ExamType")
+                        .WithMany()
+                        .HasForeignKey("ExamTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.MedicalVisit", "MedicalVisit")
+                        .WithMany()
+                        .HasForeignKey("MedicalVisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Device");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("ExamType");
+
+                    b.Navigation("MedicalVisit");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.DiagnosticDevice", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.DoctorAvailability", b =>
                 {
                     b.HasOne("MedWork.Api.Models.Doctor", "Doctor")
@@ -1411,6 +3332,39 @@ namespace MedWork.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoice", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoiceLine", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.ElectronicInvoice", "ElectronicInvoice")
+                        .WithMany()
+                        .HasForeignKey("ElectronicInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ElectronicInvoice");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoiceLog", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.ElectronicInvoice", "ElectronicInvoice")
+                        .WithMany("Logs")
+                        .HasForeignKey("ElectronicInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ElectronicInvoice");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Employee", b =>
@@ -1436,6 +3390,10 @@ namespace MedWork.Api.Migrations
                         .HasForeignKey("JobRoleId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MedWork.Api.Models.WorkLocation", null)
+                        .WithMany("Employees")
+                        .HasForeignKey("WorkLocationId");
+
                     b.Navigation("Branch");
 
                     b.Navigation("Company");
@@ -1449,7 +3407,7 @@ namespace MedWork.Api.Migrations
                 {
                     b.HasOne("MedWork.Api.Models.Employee", "Employee")
                         .WithMany("EmployeePpes")
-                        .HasForeignKey("EmployeeId")
+                        .HasForeignKey("PpeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1481,6 +3439,85 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("RiskFactor");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.GraphicSignature", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.MedicalVisit", "MedicalVisit")
+                        .WithMany()
+                        .HasForeignKey("MedicalVisitId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("MedicalVisit");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.HealthRecordExport", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.AppUser", "RequestedByUser")
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("RequestedByUser");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Hl7Message", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.LisConfiguration", "LisConfiguration")
+                        .WithMany()
+                        .HasForeignKey("LisConfigurationId");
+
+                    b.HasOne("MedWork.Api.Models.MedicalVisit", "MedicalVisit")
+                        .WithMany()
+                        .HasForeignKey("MedicalVisitId");
+
+                    b.HasOne("MedWork.Api.Models.Branch", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId");
+
+                    b.HasOne("MedWork.Api.Models.VisitExam", "VisitExam")
+                        .WithMany()
+                        .HasForeignKey("VisitExamId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("LisConfiguration");
+
+                    b.Navigation("MedicalVisit");
+
+                    b.Navigation("Site");
+
+                    b.Navigation("VisitExam");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Injury", b =>
@@ -1521,6 +3558,15 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Injury");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.JobRole", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.JobRolePpe", b =>
                 {
                     b.HasOne("MedWork.Api.Models.JobRole", "JobRole")
@@ -1559,6 +3605,34 @@ namespace MedWork.Api.Migrations
                     b.Navigation("RiskFactor");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.LabAccreditation", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.LisConfiguration", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.Branch", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("Site");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.MedicalRecord", b =>
                 {
                     b.HasOne("MedWork.Api.Models.Employee", "Employee")
@@ -1572,6 +3646,12 @@ namespace MedWork.Api.Migrations
 
             modelBuilder.Entity("MedWork.Api.Models.MedicalVisit", b =>
                 {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MedWork.Api.Models.Doctor", "Doctor")
                         .WithMany("MedicalVisits")
                         .HasForeignKey("DoctorId")
@@ -1584,9 +3664,17 @@ namespace MedWork.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MedWork.Api.Models.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId");
+
+                    b.Navigation("Company");
+
                     b.Navigation("Doctor");
 
                     b.Navigation("Employee");
+
+                    b.Navigation("JobRole");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.NotificationLog", b =>
@@ -1619,6 +3707,32 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Protocol");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.Ppe", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("MedWork.Api.Models.RiskFactor", "RiskFactor")
+                        .WithMany("Ppes")
+                        .HasForeignKey("RiskFactorId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("RiskFactor");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.PriceList", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.Protocol", b =>
                 {
                     b.HasOne("MedWork.Api.Models.JobRole", "JobRole")
@@ -1627,6 +3741,41 @@ namespace MedWork.Api.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("JobRole");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.Quote", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedWork.Api.Models.ElectronicInvoice", "ConvertedToInvoice")
+                        .WithMany()
+                        .HasForeignKey("ConvertedToInvoiceId");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("ConvertedToInvoice");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.RiskAssessment", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.JobRole", "JobRole")
+                        .WithMany()
+                        .HasForeignKey("JobRoleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedWork.Api.Models.RiskFactor", "RiskFactor")
+                        .WithMany()
+                        .HasForeignKey("RiskFactorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobRole");
+
+                    b.Navigation("RiskFactor");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.ScheduledExam", b =>
@@ -1638,7 +3787,7 @@ namespace MedWork.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.ExamType", "ExamType")
-                        .WithMany()
+                        .WithMany("ScheduledExams")
                         .HasForeignKey("ExamTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1648,17 +3797,39 @@ namespace MedWork.Api.Migrations
                     b.Navigation("ExamType");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.SdiConfiguration", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.SdiNotificationLog", b =>
+                {
+                    b.HasOne("MedWork.Api.Models.ElectronicInvoice", "ElectronicInvoice")
+                        .WithMany("SdiNotifications")
+                        .HasForeignKey("ElectronicInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ElectronicInvoice");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.SiteVisit", b =>
                 {
+                    b.HasOne("MedWork.Api.Models.Branch", "Branch")
+                        .WithMany("SiteVisits")
+                        .HasForeignKey("BranchId");
+
                     b.HasOne("MedWork.Api.Models.Company", "Company")
                         .WithMany("SiteVisits")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MedWork.Api.Models.WorkLocation", null)
-                        .WithMany("SiteVisits")
-                        .HasForeignKey("WorkLocationId");
+                    b.Navigation("Branch");
 
                     b.Navigation("Company");
                 });
@@ -1683,7 +3854,7 @@ namespace MedWork.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.MedicalVisit", "MedicalVisit")
-                        .WithMany("VisitExams")
+                        .WithMany("Exams")
                         .HasForeignKey("MedicalVisitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1707,6 +3878,8 @@ namespace MedWork.Api.Migrations
             modelBuilder.Entity("MedWork.Api.Models.Branch", b =>
                 {
                     b.Navigation("Employees");
+
+                    b.Navigation("SiteVisits");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Company", b =>
@@ -1734,11 +3907,23 @@ namespace MedWork.Api.Migrations
                     b.Navigation("Employees");
                 });
 
+            modelBuilder.Entity("MedWork.Api.Models.DiagnosticDevice", b =>
+                {
+                    b.Navigation("ExamLogs");
+                });
+
             modelBuilder.Entity("MedWork.Api.Models.Doctor", b =>
                 {
                     b.Navigation("Availabilities");
 
                     b.Navigation("MedicalVisits");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.ElectronicInvoice", b =>
+                {
+                    b.Navigation("Logs");
+
+                    b.Navigation("SdiNotifications");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Employee", b =>
@@ -1762,6 +3947,8 @@ namespace MedWork.Api.Migrations
 
             modelBuilder.Entity("MedWork.Api.Models.ExamType", b =>
                 {
+                    b.Navigation("ScheduledExams");
+
                     b.Navigation("VisitExams");
                 });
 
@@ -1785,7 +3972,7 @@ namespace MedWork.Api.Migrations
                 {
                     b.Navigation("Anamnesis");
 
-                    b.Navigation("VisitExams");
+                    b.Navigation("Exams");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.Ppe", b =>
@@ -1805,11 +3992,18 @@ namespace MedWork.Api.Migrations
                     b.Navigation("EmployeeRisks");
 
                     b.Navigation("JobRoleRiskFactors");
+
+                    b.Navigation("Ppes");
+                });
+
+            modelBuilder.Entity("MedWork.Api.Models.SiteVisit", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("MedWork.Api.Models.WorkLocation", b =>
                 {
-                    b.Navigation("SiteVisits");
+                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

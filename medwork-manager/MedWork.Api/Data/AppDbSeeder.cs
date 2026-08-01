@@ -451,17 +451,21 @@ public static class AppDbSeeder
             }
 
             var hasLog = await dbContext.NotificationLogs.AnyAsync(x => x.EmployeeId == employee.Id);
-            if (!hasLog)
-            {
-                dbContext.NotificationLogs.Add(new NotificationLog
-                {
-                    EmployeeId = employee.Id,
-                    Channel = employee.Id % 2 == 0 ? NotificationChannel.Email : NotificationChannel.Sms,
-                    SentDate = DateTime.UtcNow.AddDays(-employee.Id),
-                    MessageText = "Convocazione visita medica periodica inviata (dataset demo)."
-                });
-            }
-        }
+                        if (!hasLog)
+                        {
+                            dbContext.NotificationLogs.Add(new NotificationLog
+                            {
+                                EmployeeId = employee.Id,
+                                Channel = employee.Id % 2 == 0 ? NotificationChannel.Email : NotificationChannel.Sms,
+                                SentAt = DateTime.UtcNow.AddDays(-employee.Id),
+                                MessageText = "Convocazione visita medica periodica inviata (dataset demo).",
+                                ReminderKey = $"DEMO_{employee.Id}_{DateTime.UtcNow.Ticks}",
+                                IsDelivered = true,
+                                DeliveredAt = DateTime.UtcNow.AddDays(-employee.Id + 1),
+                                ErrorMessage = null
+                            });
+                        }
+                    }
 
         await dbContext.SaveChangesAsync();
 

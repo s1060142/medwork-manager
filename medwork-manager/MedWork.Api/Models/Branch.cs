@@ -29,9 +29,6 @@ public class Branch
     public int CompanyId { get; set; }
     public Company? Company { get; set; }
 
-    public int? MunicipalityId { get; set; }
-    public Municipality? Municipality { get; set; }
-
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     public ICollection<SiteVisit> SiteVisits { get; set; } = new List<SiteVisit>();
 }

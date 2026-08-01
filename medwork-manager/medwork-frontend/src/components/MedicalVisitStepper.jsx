@@ -322,9 +322,9 @@ function MedicalVisitStepper({ onCreated }) {
         </Box>
 
         <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 2.5 }}>
-          <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || selling}>
-            Indietro
-          </Button>
+          <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || saving}>
+                      Indietro
+                    </Button>
           {activeStep < STEP_LABELS.length - 1 ? (
             <Button variant="contained" onClick={handleNext} disabled={saving}>
               Avanti

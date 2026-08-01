@@ -37,7 +37,6 @@ namespace MedWork.Api.Models
 
         public ICollection<EmployeeRisk> EmployeeRisks { get; set; } = new List<EmployeeRisk>();
         public ICollection<JobRoleRiskFactor> JobRoleRiskFactors { get; set; } = new List<JobRoleRiskFactor>();
-        public ICollection<VisitRisk> VisitRisks { get; set; } = new List<VisitRisk>();
         public ICollection<Ppe> Ppes { get; set; } = new List<Ppe>();
     }
 }

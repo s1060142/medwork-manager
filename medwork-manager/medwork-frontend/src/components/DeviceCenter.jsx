@@ -33,13 +33,12 @@ import {
   Edit as EditIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { apiDelete, apiGet, apiPost, apiPut } from '../services/apiClient';
+import { apiGet, apiSend } from '../services/apiClient';
 
 const DeviceCenter = () => {
   const [devices, setDevices] = useState([]);
   const [examLogs, setExamLogs] = useState([]);
   const [parserConfigs, setParserConfigs] = useState([]);
-  const [selectedDevice, setSelectedDevice] = useState(null);
   const [selectedTab, setSelectedTab] = useState(0); // 0: Devices, 1: Exam Logs, 2: Parser Configs
   const [openDeviceDialog, setOpenDeviceDialog] = useState(false);
   const [openExamLogDialog, setOpenExamLogDialog] = useState(false);
@@ -90,13 +89,13 @@ const DeviceCenter = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [devicesRes, deviceTypesRes, examTypesRes, employeesRes, visitsRes, examLogsRes, parserConfigsRes] = await Promise.all([
+        const [devicesRes, examTypesRes, employeesRes, visitsRes, examLogsRes, parserConfigsRes] = await Promise.all([
           apiGet('/api/diagnostic-devices'),
-          apiGet('/api/master-data/exam-types'), // Assuming we can get device types from exam types? Actually we need a list of device types from the enum.
-          apiGet('/api/master-data/exam-types'), // This is a placeholder; we need a proper endpoint for device types.
+          apiGet('/api/master-data/exam-types'),
+          apiGet('/api/master-data/exam-types'),
           apiGet('/api/master-data/employees'),
           apiGet('/api/master-data/medical-visits'),
-          apiGet('/api/diagnostic-devices/exams'),
+          apiGet('/api/diagnostic-devices/exam-logs'),
           apiGet('/api/diagnostic-devices/parser-configs'),
         ]);
         setDevices(devicesRes);
@@ -181,10 +180,10 @@ const DeviceCenter = () => {
   const handleSaveDevice = async () => {
     try {
       if (deviceForm.id) {
-        await apiPut(`/api/diagnostic-devices/${deviceForm.id}`, deviceForm);
+        await apiSend('PUT', `/api/diagnostic-devices/${deviceForm.id}`, deviceForm);
       } else {
-        await apiPost('/api/diagnostic-devices', deviceForm);
-      }
+         await apiSend('POST', '/api/diagnostic-devices', deviceForm);
+       }
       // Refresh devices
       const updatedDevices = await apiGet('/api/diagnostic-devices');
       setDevices(updatedDevices);
@@ -198,7 +197,7 @@ const DeviceCenter = () => {
   const handleDeleteDevice = async (id) => {
     if (!window.confirm('Sei sicuro di voler eliminare questo dispositivo?')) return;
     try {
-      await apiDelete(`/api/diagnostic-devices/${id}`);
+      await apiSend('DELETE', `/api/diagnostic-devices/${id}`);
       const updatedDevices = await apiGet('/api/diagnostic-devices');
       setDevices(updatedDevices);
     } catch (err) {
@@ -244,10 +243,10 @@ const DeviceCenter = () => {
   const handleSaveExamLog = async () => {
     try {
       if (examLogForm.id) {
-        await apiPut(`/api/diagnostic-devices/exams/${examLogForm.id}`, examLogForm);
+        await apiSend('PUT', `/api/diagnostic-devices/exams/${examLogForm.id}`, examLogForm);
       } else {
-        await apiPost('/api/diagnostic-devices/exams', examLogForm);
-      }
+         await apiSend('POST', '/api/diagnostic-devices/exams', examLogForm);
+       }
       // Refresh exam logs
       const updatedExamLogs = await apiGet('/api/diagnostic-devices/exams');
       setExamLogs(updatedExamLogs);
@@ -261,7 +260,7 @@ const DeviceCenter = () => {
   const handleDeleteExamLog = async (id) => {
     if (!window.confirm('Sei sicuro di voler eliminare questo log esame?')) return;
     try {
-      await apiDelete(`/api/diagnostic-devices/exams/${id}`);
+      await apiSend('DELETE', `/api/diagnostic-devices/exams/${id}`);
       const updatedExamLogs = await apiGet('/api/diagnostic-devices/exams');
       setExamLogs(updatedExamLogs);
     } catch (err) {
@@ -307,9 +306,9 @@ const DeviceCenter = () => {
   const handleSaveParserConfig = async () => {
     try {
       if (parserConfigForm.id) {
-        await apiPut(`/api/diagnostic-devices/parser-configs/${parserConfigForm.id}`, parserConfigForm);
+        await apiSend('PUT', `/api/diagnostic-devices/parser-configs/${parserConfigForm.id}`, parserConfigForm);
       } else {
-        await apiPost('/api/diagnostic-devices/parser-configs', parserConfigForm);
+        await apiSend('POST', '/api/diagnostic-devices/parser-configs', parserConfigForm);
       }
       // Refresh parser configs
       const updatedParserConfigs = await apiGet('/api/diagnostic-devices/parser-configs');
@@ -324,7 +323,7 @@ const DeviceCenter = () => {
   const handleDeleteParserConfig = async (id) => {
     if (!window.confirm('Sei sicuro di voler eliminare questa configurazione parser?')) return;
     try {
-      await apiDelete(`/api/diagnostic-devices/parser-configs/${id}`);
+      await apiSend('DELETE', `/api/diagnostic-devices/parser-configs/${id}`);
       const updatedParserConfigs = await apiGet('/api/diagnostic-devices/parser-configs');
       setParserConfigs(updatedParserConfigs);
     } catch (err) {
@@ -622,7 +621,7 @@ const DeviceCenter = () => {
             label="Data/Ora Esame"
             type="datetime-local"
             name="examDateTime"
-            value={examForm.examDateTime ? new Date(examForm.examDateTime).toISOString().slice(0, 16) : ''}
+            value={examLogForm.examDateTime ? new Date(examLogForm.examDateTime).toISOString().slice(0, 16) : ''}
             onChange={(e) => setExamLogForm({ ...examLogForm, examDateTime: e.target.value })}
             inputFormat="yyyy-MM-dd'T'HH:mm"
           />

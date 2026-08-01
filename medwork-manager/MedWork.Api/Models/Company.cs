@@ -28,6 +28,9 @@ public class Company
     [StringLength(30)]
     public string? ContactPhone { get; set; }
 
+    public int? CompanyGroupId { get; set; }
+    public CompanyGroup? CompanyGroup { get; set; }
+
     /// <summary>
     /// Indirizzo sede legale
     /// </summary>

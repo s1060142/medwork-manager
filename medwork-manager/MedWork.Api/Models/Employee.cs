@@ -57,6 +57,15 @@ public class Employee
     [Range(1, int.MaxValue)]
     public int? JobRoleId { get; set; }
 
+    // Fitness/Idoneità status per app-spec (Aziende module)
+    [StringLength(50)]
+    public string? FitnessStatus { get; set; } // "Idoneo", "Parzialmente idoneo", "Non idoneo", "Senza idoneità"
+
+    [StringLength(50)]
+    public string? WorkStatus { get; set; } = "Attivo"; // "Attivo", "Inattivo", "Sospeso", "Cessato"
+
+    public DateTime? LastFitnessDate { get; set; }
+
     public Company? Company { get; set; }
     public Branch? Branch { get; set; }
     public Department? Department { get; set; }
@@ -68,5 +77,5 @@ public class Employee
     public ICollection<ScheduledExam> ScheduledExams { get; set; } = new List<ScheduledExam>();
     public ICollection<Vaccination> Vaccinations { get; set; } = new List<Vaccination>();
     public ICollection<NotificationLog> NotificationLogs { get; set; } = new List<NotificationLog>();
-        public ICollection<EmployeePpe> EmployeePpes { get; set; } = new List<EmployeePpe>();
+    public ICollection<EmployeePpe> EmployeePpes { get; set; } = new List<EmployeePpe>();
     }

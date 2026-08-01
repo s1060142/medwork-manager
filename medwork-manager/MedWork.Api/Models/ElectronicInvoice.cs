@@ -247,6 +247,9 @@ public class ElectronicInvoice
 /// </summary>
 public class ElectronicInvoiceLine
 {
+    public int Id { get; set; }
+    public int ElectronicInvoiceId { get; set; }
+    public ElectronicInvoice? ElectronicInvoice { get; set; }
     public int LineNumber { get; set; }
 
     /// <summary>
@@ -294,6 +297,11 @@ public class ElectronicInvoiceLine
     /// </summary>
     [StringLength(2)]
     public string VatNature { get; set; } = "N1"; // N1=Escluso ex art.15, N2=Non soggetta, N3=Non imponibile, N4=Esente, N5=Regime del margine, N6=Inversione contabile, N7=IVA assolta in altro stato UE
+
+    /// <summary>
+    /// Importo riga (NetAmount + IVA)
+    /// </summary>
+    public decimal Amount { get; set; }
 }
 
 /// <summary>
