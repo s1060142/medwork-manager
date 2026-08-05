@@ -1,216 +1,404 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
+  CircularProgress,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
   MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
+  Tabs,
+  Tab,
 } from '@mui/material'
-import { apiGet } from '../services/apiClient'
-import { appendAuditEvent } from '../utils/auditTrail'
+import SearchIcon from '@mui/icons-material/Search'
+import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import StarIcon from '@mui/icons-material/Star'
+import StarBorderIcon from '@mui/icons-material/StarBorder'
+import { apiGet, apiSend } from '../services/apiClient'
 
-const STORAGE_KEY = 'medwork.protocols'
+const PROTOCOL_TYPES = [
+  { key: 'mansione', label: 'Protocolli di mansione' },
+  { key: 'accessori', label: 'Protocolli accessori' },
+  { key: 'dimissione', label: 'Protocolli di dimissione' },
+  { key: 'richiesta', label: 'Protocolli su richiesta' },
+]
 
-function readProtocols() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
+const PERIODICITY_OPTIONS = [
+  '1A', '2A', '3A', '4A', '5A', '6A',
+  '1M', '2M', '3M', '4M', '6M',
+  '1G', '2G', '5G', '10G', '20G', '50G',
+]
 
-function saveProtocols(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-}
-
-function ProtocolsCenter() {
-  const [protocols, setProtocols] = useState(() => readProtocols())
-  const [riskFactors, setRiskFactors] = useState([])
+export default function ProtocolsCenter() {
+  const [protocolType, setProtocolType] = useState('mansione')
+  const [protocols, setProtocols] = useState([])
+  const [selectedProtocol, setSelectedProtocol] = useState(null)
+  const [workplaces, setWorkplaces] = useState([])
+  const [assessments, setAssessments] = useState([])
+  const [companies, setCompanies] = useState([])
   const [examTypes, setExamTypes] = useState([])
-  const [error, setError] = useState('')
-  const [formData, setFormData] = useState({
-    name: '',
-    cadenceDays: 365,
-    objective: '',
-    riskFactorId: '',
-    examTypeId: '',
-  })
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [workplaceSearch, setWorkplaceSearch] = useState('')
+  const [assessmentSearch, setAssessmentSearch] = useState('')
+  const [workplacePage, setWorkplacePage] = useState(0)
+  const [assessmentPage, setAssessmentPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [workplaceDialog, setWorkplaceDialog] = useState({ open: false, edit: null })
+  const [assessmentDialog, setAssessmentDialog] = useState({ open: false, edit: null })
+  const [workplaceForm, setWorkplaceForm] = useState({ companyId: '', building: '', level: '', room: '' })
+  const [assessmentForm, setAssessmentForm] = useState({ examTypeId: '', periodicity: '', isPrimary: false })
 
+  // Load initial data
   useEffect(() => {
-    Promise.all([apiGet('/api/master-data/risk-factors'), apiGet('/api/master-data/exam-types')])
-      .then(([risks, exams]) => {
-        setRiskFactors(Array.isArray(risks) ? risks : [])
-        setExamTypes(Array.isArray(exams) ? exams : [])
-      })
-      .catch((requestError) => {
-        setError(requestError.message || 'Impossibile caricare i cataloghi per i protocolli.')
-      })
+    Promise.all([
+      apiGet('/api/master-data/protocols'),
+      apiGet('/api/master-data/companies'),
+      apiGet('/api/master-data/exam-types'),
+    ]).then(([protocolData, companyData, examData]) => {
+      setProtocols(Array.isArray(protocolData) ? protocolData : [])
+      setCompanies(Array.isArray(companyData) ? companyData : [])
+      setExamTypes(Array.isArray(examData) ? examData : [])
+    }).catch(() => {})
   }, [])
 
-  const riskMap = useMemo(
-    () =>
-      riskFactors.reduce((accumulator, item) => {
-        accumulator[item.id] = item.name
-        return accumulator
-      }, {}),
-    [riskFactors],
-  )
+  // Load workplaces and assessments when protocol changes
+  useEffect(() => {
+    if (selectedProtocol) {
+      setLoading(true)
+      // In real app, these would be API calls with protocolId
+      // Mock data for now
+      setWorkplaces([
+        { id: 1, companyId: 1, companyName: 'Dilaxia S.p.a.', building: 'Sede principale', level: 'Piano 1', room: 'Amb. 1' },
+        { id: 2, companyId: 2, companyName: 'Albox S.r.l.', building: 'Centrale', level: 'Piano 0', room: 'Amb. 2' },
+      ])
+      setAssessments([
+        { id: 1, examTypeId: 1, examTypeName: 'Visio Test', periodicity: '5A 50 2A', isPrimary: false },
+        { id: 2, examTypeId: 2, examTypeName: 'Visita Medica', periodicity: '5A 50 2A', isPrimary: true },
+      ])
+      setLoading(false)
+    } else {
+      setWorkplaces([])
+      setAssessments([])
+    }
+  }, [selectedProtocol])
 
-  const examMap = useMemo(
-    () =>
-      examTypes.reduce((accumulator, item) => {
-        accumulator[item.id] = item.name
-        return accumulator
-      }, {}),
-    [examTypes],
-  )
+  const filteredWorkplaces = useMemo(() => {
+    return workplaces.filter(w =>
+      w.companyName.toLowerCase().includes(workplaceSearch.toLowerCase()) ||
+      w.building.toLowerCase().includes(workplaceSearch.toLowerCase())
+    )
+  }, [workplaces, workplaceSearch])
 
-  const handleSave = () => {
-    if (!formData.name.trim()) return
+  const filteredAssessments = useMemo(() => {
+    return assessments.filter(a =>
+      a.examTypeName.toLowerCase().includes(assessmentSearch.toLowerCase())
+    )
+  }, [assessments, assessmentSearch])
 
-    const next = [
-      {
-        id: `${Date.now()}`,
-        ...formData,
-        createdAt: new Date().toISOString(),
-        active: true,
-      },
-      ...protocols,
-    ]
+  const paginatedWorkplaces = filteredWorkplaces.slice(workplacePage * rowsPerPage, workplacePage * rowsPerPage + rowsPerPage)
+  const paginatedAssessments = filteredAssessments.slice(assessmentPage * rowsPerPage, assessmentPage * rowsPerPage + rowsPerPage)
 
-    setProtocols(next)
-    saveProtocols(next)
-    appendAuditEvent({ module: 'Protocolli', action: 'Create', detail: formData.name })
-    setFormData({ name: '', cadenceDays: 365, objective: '', riskFactorId: '', examTypeId: '' })
+  const handleProtocolSelect = (protocol) => {
+    setSelectedProtocol(protocol)
+    setWorkplacePage(0)
+    setAssessmentPage(0)
   }
 
-  const toggleActive = (id) => {
-    const next = protocols.map((row) => (row.id === id ? { ...row, active: !row.active } : row))
-    setProtocols(next)
-    saveProtocols(next)
-    const changed = next.find((item) => item.id === id)
-    appendAuditEvent({ module: 'Protocolli', action: changed?.active ? 'Enable' : 'Disable', detail: changed?.name })
+  const openWorkplaceDialog = (edit = null) => {
+    if (edit) {
+      setWorkplaceForm({ companyId: edit.companyId, building: edit.building, level: edit.level, room: edit.room })
+    } else {
+      setWorkplaceForm({ companyId: '', building: '', level: '', room: '' })
+    }
+    setWorkplaceDialog({ open: true, edit })
   }
 
-  return (
+  const openAssessmentDialog = (edit = null) => {
+    if (edit) {
+      setAssessmentForm({ examTypeId: edit.examTypeId, periodicity: edit.periodicity, isPrimary: edit.isPrimary })
+    } else {
+      setAssessmentForm({ examTypeId: '', periodicity: '', isPrimary: false })
+    }
+    setAssessmentDialog({ open: true, edit })
+  }
+
+  const saveWorkplace = async () => {
+    if (!workplaceForm.companyId) return
+    setSaving(true)
+    try {
+      if (workplaceDialog.edit) {
+        // Update
+        setWorkplaces(prev => prev.map(w => w.id === workplaceDialog.edit.id ? { ...w, ...workplaceForm, companyName: companies.find(c => c.id === workplaceForm.companyId)?.name } : w))
+      } else {
+        // Create
+        const newId = Date.now()
+        const company = companies.find(c => c.id === workplaceForm.companyId)
+        setWorkplaces(prev => [...prev, { id: newId, ...workplaceForm, companyName: company?.name }])
+      }
+      setWorkplaceDialog({ open: false, edit: null })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const saveAssessment = async () => {
+    if (!assessmentForm.examTypeId) return
+    setSaving(true)
+    try {
+      const examType = examTypes.find(e => e.id === assessmentForm.examTypeId)
+      if (assessmentDialog.edit) {
+        setAssessments(prev => prev.map(a => a.id === assessmentDialog.edit.id ? { ...a, ...assessmentForm, examTypeName: examType?.name } : a))
+      } else {
+        const newId = Date.now()
+        setAssessments(prev => [...prev, { id: newId, ...assessmentForm, examTypeName: examType?.name }])
+      }
+      setAssessmentDialog({ open: false, edit: null })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deleteWorkplace = (id) => {
+    setWorkplaces(prev => prev.filter(w => w.id !== id))
+  }
+
+  const deleteAssessment = (id) => {
+    setAssessments(prev => prev.filter(a => a.id !== id))
+  }
+
+  const renderWorkplacesTab = () => (
     <Stack spacing={2}>
-      <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-        <Typography variant="h6">Protocolli sanitari</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Configura protocolli clinici per rischio, periodicità e set esami.
-        </Typography>
-
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' }, gap: 1.5, mt: 2 }}>
-          <TextField
-            label="Nome protocollo"
-            size="small"
-            value={formData.name}
-            onChange={(event) => setFormData((current) => ({ ...current, name: event.target.value }))}
-          />
-          <TextField
-            type="number"
-            label="Cadenza (giorni)"
-            size="small"
-            value={formData.cadenceDays}
-            onChange={(event) => setFormData((current) => ({ ...current, cadenceDays: Math.max(1, Number(event.target.value) || 365) }))}
-          />
-          <TextField
-            select
-            label="Rischio prevalente"
-            size="small"
-            value={formData.riskFactorId}
-            onChange={(event) => setFormData((current) => ({ ...current, riskFactorId: event.target.value }))}
-          >
-            <MenuItem value="">Nessuno</MenuItem>
-            {riskFactors.map((item) => (
-              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label="Esame principale"
-            size="small"
-            value={formData.examTypeId}
-            onChange={(event) => setFormData((current) => ({ ...current, examTypeId: event.target.value }))}
-          >
-            <MenuItem value="">Nessuno</MenuItem>
-            {examTypes.map((item) => (
-              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-            ))}
-          </TextField>
-          <Button variant="contained" onClick={handleSave}>
-            Salva protocollo
-          </Button>
-        </Box>
-
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
         <TextField
-          label="Obiettivo clinico"
           size="small"
-          multiline
-          minRows={2}
-          fullWidth
-          sx={{ mt: 1.5 }}
-          value={formData.objective}
-          onChange={(event) => setFormData((current) => ({ ...current, objective: event.target.value }))}
+          placeholder="Cerca luogo di lavoro..."
+          value={workplaceSearch}
+          onChange={(e) => { setWorkplaceSearch(e.target.value); setWorkplacePage(0) }}
+          sx={{ minWidth: 250 }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>
+          }}
         />
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => openWorkplaceDialog()}>
+          Aggiungi
+        </Button>
+      </Box>
 
-        {!!error && <Alert severity="warning" sx={{ mt: 1.5 }}>{error}</Alert>}
-      </Paper>
-
-      <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+      <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Protocollo</TableCell>
-              <TableCell>Rischio</TableCell>
-              <TableCell>Esame</TableCell>
-              <TableCell>Cadenza</TableCell>
-              <TableCell>Stato</TableCell>
-              <TableCell align="right">Azione</TableCell>
+              <TableCell style={{ width: 40 }}>
+                <Checkbox />
+              </TableCell>
+              <TableCell><strong>Azienda</strong></TableCell>
+              <TableCell><strong>Sede</strong></TableCell>
+              <TableCell><strong>Edificio</strong></TableCell>
+              <TableCell><strong>Livello</strong></TableCell>
+              <TableCell><strong>Locale</strong></TableCell>
+              <TableCell align="right" style={{ width: 80 }} />
             </TableRow>
           </TableHead>
           <TableBody>
-            {protocols.map((row) => (
+            {paginatedWorkplaces.map((row) => (
               <TableRow key={row.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
-                  <Typography variant="caption" color="text.secondary">{row.objective || 'Nessun obiettivo specificato.'}</Typography>
-                </TableCell>
-                <TableCell>{riskMap[row.riskFactorId] || '-'}</TableCell>
-                <TableCell>{examMap[row.examTypeId] || '-'}</TableCell>
-                <TableCell>{row.cadenceDays} gg</TableCell>
-                <TableCell>
-                  <Chip size="small" color={row.active ? 'success' : 'default'} label={row.active ? 'Attivo' : 'Disattivo'} />
-                </TableCell>
+                <TableCell><Checkbox /></TableCell>
+                <TableCell>{row.companyName}</TableCell>
+                <TableCell>{row.building}</TableCell>
+                <TableCell>{row.level}</TableCell>
+                <TableCell>{row.room}</TableCell>
                 <TableCell align="right">
-                  <Button size="small" onClick={() => toggleActive(row.id)}>
-                    {row.active ? 'Disattiva' : 'Attiva'}
-                  </Button>
+                  <IconButton size="small" onClick={() => openWorkplaceDialog(row)}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => deleteWorkplace(row.id)}><DeleteIcon fontSize="small" /></IconButton>
                 </TableCell>
               </TableRow>
             ))}
-            {protocols.length === 0 && (
+            {paginatedWorkplaces.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6}>
-                  <Typography variant="body2" color="text.secondary">Nessun protocollo configurato.</Typography>
+                <TableCell colSpan={7} align="center">
+                  <Typography variant="body2" color="text.secondary">Nessun luogo di lavoro configurato</Typography>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={filteredWorkplaces.length}
+        rowsPerPage={rowsPerPage}
+        page={workplacePage}
+        onPageChange={(e, p) => setWorkplacePage(p)}
+        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setWorkplacePage(0); }}
+      />
+    </Stack>
+  )
+
+  const renderAssessmentsTab = () => (
+    <Stack spacing={2}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+        <TextField
+          size="small"
+          placeholder="Cerca visita e accertamento..."
+          value={assessmentSearch}
+          onChange={(e) => { setAssessmentSearch(e.target.value); setAssessmentPage(0) }}
+          sx={{ minWidth: 250 }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>
+          }}
+        />
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => openAssessmentDialog()}>
+          Aggiungi
+        </Button>
+      </Box>
+
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell style={{ width: 40 }}>
+                <Checkbox />
+              </TableCell>
+              <TableCell><strong>Accertamento</strong></TableCell>
+              <TableCell><strong>Periodicità</strong></TableCell>
+              <TableCell><strong>Principale</strong></TableCell>
+              <TableCell align="right" style={{ width: 80 }} />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedAssessments.map((row) => (
+              <TableRow key={row.id} hover>
+                <TableCell><Checkbox /></TableCell>
+                <TableCell>{row.examTypeName}</TableCell>
+                <TableCell>{row.periodicity}</TableCell>
+                <TableCell align="center">
+                  {row.isPrimary ? (
+                    <StarIcon color="warning" fontSize="large" />
+                  ) : (
+                    <StarBorderIcon color="action" fontSize="large" onClick={() => {
+                      setAssessments(prev => prev.map(a => ({ ...a, isPrimary: a.id === row.id })))
+                    }} />
+                  )}
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton size="small" onClick={() => openAssessmentDialog(row)}><EditIcon fontSize="small" /></IconButton>
+                  <IconButton size="small" color="error" onClick={() => deleteAssessment(row.id)}><DeleteIcon fontSize="small" /></IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+            {paginatedAssessments.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <Typography variant="body2" color="text.secondary">Nessun accertamento configurato</Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={filteredAssessments.length}
+        rowsPerPage={rowsPerPage}
+        page={assessmentPage}
+        onPageChange={(e, p) => setAssessmentPage(p)}
+        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setAssessmentPage(0); }}
+      />
+    </Stack>
+  )
+
+  return (
+    <Stack spacing={2}>
+      {/* Protocol Type Tabs */}
+      <Paper sx={{ p: 1 }}>
+        <Tabs
+          value={protocolType}
+          onChange={(event, newType) => { setProtocolType(newType); setSelectedProtocol(null); }}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ width: '100%' }}
+        >
+          {PROTOCOL_TYPES.map((tab) => (
+            <Tab key={tab.key} label={tab.label} />
+          ))}
+        </Tabs>
       </Paper>
+
+      {/* Protocol Selector */}
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          {PROTOCOL_TYPES.find(t => t.key === protocolType)?.label}
+        </Typography>
+        
+        <FormControl fullWidth variant="outlined" size="small" sx={{ maxWidth: 500 }}>
+          <InputLabel>Seleziona protocollo</InputLabel>
+          <Select
+            value={selectedProtocol?.id?.toString() || ''}
+            label="Seleziona protocollo"
+            onChange={(e) => handleProtocolSelect(protocols.find(p => p.id === parseInt(e.target.value)) || null)}
+            displayEmpty
+          >
+            <MenuItem value="">Crea nuovo protocollo</MenuItem>
+            {protocols.map((p) => (
+              <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Paper>
+
+      {selectedProtocol ? (
+        <Stack spacing={2}>
+          <Typography variant="subtitle1" gutterBottom>
+            {selectedProtocol.name} - {selectedProtocol.jobRoleName || 'Senza mansione associata'}
+          </Typography>
+
+          {/* Workplaces Tab */}
+          <Tabs
+            value="workplaces"
+            onChange={() => {}}
+            TabIndicatorProps={{ style: { display: 'none' } }}
+            sx={{ '& .MuiTab-root': { minWidth: 120, padding: '8px 16px' } }}
+          >
+            <Tab label="Luoghi di lavoro" />
+            <Tab label="Visite e accertamenti" />
+          </Tabs>
+
+          {renderWorkplacesTab()}
+          {/* The assessment tab content would go here when the tabs are properly connected */}
+          {renderAssessmentsTab()}
+        </Stack>
+      ) : (
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" gutterBottom>Nessun protocollo selezionato</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Seleziona un protocollo dall'elenco o creane uno nuovo
+          </Typography>
+        </Paper>
+      )}
     </Stack>
   )
 }
-
-export default ProtocolsCenter

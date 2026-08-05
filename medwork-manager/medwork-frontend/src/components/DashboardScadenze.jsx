@@ -5,38 +5,49 @@ import {
   Button,
   Chip,
   CircularProgress,
+  FormControl,
+  Grid,
   InputAdornment,
+  InputLabel,
   LinearProgress,
   List,
   ListItem,
   ListItemText,
+  Menu,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
   Typography,
-  Menu,
-  MenuItem,
+  IconButton,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import BoltIcon from '@mui/icons-material/Bolt'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import VaccinesIcon from '@mui/icons-material/Vaccines'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import BusinessIcon from '@mui/icons-material/Business'
+import GroupIcon from '@mui/icons-material/Group'
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -72,26 +83,20 @@ function daysDiffFromToday(targetDate) {
 }
 
 function alertSeverityLabel(diffDays) {
-  if (diffDays < 0) return { label: 'OVERDUE', color: 'error' }
-  if (diffDays === 0) return { label: 'SCADUTO', color: 'error' }
-  if (diffDays <= 5) return { label: 'DUE SOON', color: 'warning' }
-  return { label: 'IN PROGRAMMA', color: 'info' }
-}
-
-function statusFromVisit(visitDate) {
-  const date = toDate(visitDate)
-  if (!date) return { label: 'In attesa', color: 'default' }
-  const now = new Date()
-  if (date < now) return { label: 'Completata', color: 'success.main' }
-  if ((date - now) / (1000 * 60 * 60) <= 4) return { label: 'In corso', color: 'primary.main' }
-  return { label: 'In attesa', color: 'text.secondary' }
+  if (diffDays < 0) return { label: 'SCADUTO', color: 'error' }
+  if (diffDays === 0) return { label: 'SCADUTO OGGI', color: 'error' }
+  if (diffDays <= 5) return { label: 'IN SCADENZA', color: 'warning' }
+  return { label: 'PROGRAMMATO', color: 'info' }
 }
 
 function safeList(data) {
-  return Array.isArray(data) ? data : []
+  return Array.isArray(data) ? data : (data.items || [])
 }
 
-function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate, onOpenEmployeeCreate, onOpenReports }) {
+const PIE_COLORS = ['#2e7d32', '#1976d2', '#ed6c02', '#c62828']
+
+export default function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate, onOpenEmployeeCreate, onOpenReports }) {
+  const [viewMode, setViewMode] = useState('aziende') // 'aziende' | 'lavoratori'
   const [expiringVisits, setExpiringVisits] = useState([])
   const [medicalVisits, setMedicalVisits] = useState([])
   const [employees, setEmployees] = useState([])
@@ -99,71 +104,15 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
   const [employeeRisks, setEmployeeRisks] = useState([])
   const [caricamento, setCaricamento] = useState(true)
   const [errore, setErrore] = useState('')
-  const [days, setDays] = useState(30)
+  const [days, setDays] = useState(90)
   const [search, setSearch] = useState('')
   const [exportAnchorEl, setExportAnchorEl] = useState(null)
+  const [expandedRows, setExpandedRows] = useState(new Set())
+  const [filterStatus, setFilterStatus] = useState('all') // 'all' | 'scaduto' | 'in_scadenza' | 'programmato'
   const exportOpen = Boolean(exportAnchorEl)
 
   const handleExportOpen = (event) => setExportAnchorEl(event.currentTarget)
   const handleExportClose = () => setExportAnchorEl(null)
-
-  const buildColumns = () => [
-    'employeeFullName',
-    'companyName',
-    'nextDeadlineDate',
-    'outcome',
-    'visitType',
-  ]
-
-  const exportRows = useMemo(
-    () => scopedExpiringVisits.map((visit) => ({
-      employeeFullName: visit.employeeFullName || '-',
-      companyName: visit.companyName || '-',
-      nextDeadlineDate: formatDate(visit.nextDeadlineDate),
-      outcome: visit.outcome || '-',
-      visitType: visit.visitType || '-',
-    })),
-    [scopedExpiringVisits],
-  )
-
-  const handleExportCsv = () => {
-    exportToCsv(exportRows, buildColumns(), `scadenze-${days}gg.csv`)
-    handleExportClose()
-  }
-
-  const handleExportExcel = () => {
-    exportToExcel([{ name: 'Scadenze', rows: exportRows, columns: buildColumns() }], `scadenze-${days}gg.xlsx`)
-    handleExportClose()
-  }
-
-  const handleExportIcs = () => {
-    const events = exportRows.map((row) => ({
-      title: `Scadenza visita - ${row.employeeFullName}`,
-      start: row.nextDeadlineDate ? new Date(row.nextDeadlineDate) : new Date(),
-      description: `Azienda: ${row.companyName} • Esito: ${row.outcome} • Tipo: ${row.visitType}`,
-      location: row.companyName,
-    }))
-    exportToIcs(events, `scadenze-${days}gg.ics`)
-    handleExportClose()
-  }
-
-  // Dati per i grafici (Cartsan: statistiche con grafici).
-  const outcomeChartData = useMemo(() => {
-    const counts = scopedMedicalVisits.reduce((accumulator, visit) => {
-      const key = visit.outcome || 'Senza esito'
-      accumulator[key] = (accumulator[key] || 0) + 1
-      return accumulator
-    }, {})
-    return Object.entries(counts).map(([name, value]) => ({ name, value }))
-  }, [scopedMedicalVisits])
-
-  const complianceChartData = useMemo(() => [
-    { name: 'Vaccini', value: compliance.vaccines },
-    { name: 'Visite', value: compliance.visits },
-    { name: 'Sicurezza', value: compliance.training },
-  ], [compliance])
-
-  const PIE_COLORS = ['#2e7d32', '#1976d2', '#ed6c02']
 
   const caricaScadenze = async () => {
     try {
@@ -171,7 +120,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       setErrore('')
 
       const [expiring, visits, employeeList, exams, risks] = await Promise.all([
-        apiGet(`/api/medical-visits/expiring?days=${days}`),
+        apiGet(`/api/scadenzario?horizonDays=${days}`),
         apiGet('/api/master-data/medical-visits'),
         apiGet('/api/master-data/employees'),
         apiGet('/api/master-data/visit-exams'),
@@ -206,11 +155,9 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       if (activeCompanyId && activeCompanyId !== 'all' && Number(item.companyId) !== Number(activeCompanyId)) {
         return false
       }
-
       if (activeBranchId && activeBranchId !== 'all' && Number(item.branchId) !== Number(activeBranchId)) {
         return false
       }
-
       return true
     })
   }, [employees, activeCompanyId, activeBranchId])
@@ -224,7 +171,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
   const scopedVisitIds = useMemo(() => new Set(scopedMedicalVisits.map((visit) => Number(visit.id))), [scopedMedicalVisits])
 
   const scopedExpiringVisits = useMemo(() => {
-    return expiringVisits.filter((visit) => scopedVisitIds.has(Number(visit.medicalVisitId)))
+    return expiringVisits.filter((visit) => scopedVisitIds.has(Number(visit.medicalVisitId || visit.id)))
   }, [expiringVisits, scopedVisitIds])
 
   const scopedVisitExams = useMemo(() => {
@@ -235,27 +182,67 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
     return employeeRisks.filter((risk) => scopedEmployeeIds.has(Number(risk.employeeId)))
   }, [employeeRisks, scopedEmployeeIds])
 
-  const upcoming7 = useMemo(() => {
-    const now = new Date()
-    const max = new Date(now)
-    max.setDate(max.getDate() + 7)
-    return scopedMedicalVisits.filter((visit) => {
-      const date = toDate(visit.visitDate)
-      return date && date >= now && date <= max
-    }).length
+  // For Aziende view - group by company
+  const companyGroups = useMemo(() => {
+    const groups = {}
+    scopedExpiringVisits.forEach((visit) => {
+      const companyName = visit.companyName || 'Sconosciuta'
+      if (!groups[companyName]) {
+        groups[companyName] = { items: [], totalAssessments: 0, totalEmployees: new Set() }
+      }
+      groups[companyName].items.push(visit)
+      groups[companyName].totalAssessments++
+      if (visit.employeeId) groups[companyName].totalEmployees.add(visit.employeeId)
+    })
+    return Object.entries(groups)
+      .map(([name, data]) => ({
+        name,
+        assessments: data.totalAssessments,
+        employees: data.totalEmployees.size,
+        items: data.items,
+        expanded: expandedRows.has(name),
+      }))
+      .sort((a, b) => b.assessments - a.assessments)
+  }, [scopedExpiringVisits, expandedRows])
+
+  // For Lavoratori view - individual worker rows
+  const workerRows = useMemo(() => {
+    const rows = scopedExpiringVisits.map((visit) => {
+      const employee = employeeMap[Number(visit.employeeId)]
+      return {
+        id: visit.medicalVisitId || visit.id,
+        employeeName: visit.employeeFullName || (employee ? `${employee.firstName} ${employee.lastName}` : 'Sconosciuto'),
+        companyName: visit.companyName || 'Sconosciuta',
+        nextDeadlineDate: visit.nextDeadlineDate || visit.DueDate,
+        outcome: visit.outcome || visit.Severity,
+        kind: visit.Kind || 'Visita',
+        daysRemaining: visit.DaysRemaining ?? daysDiffFromToday(visit.nextDeadlineDate || visit.DueDate),
+        severity: alertSeverityLabel(visit.DaysRemaining ?? daysDiffFromToday(visit.nextDeadlineDate || visit.DueDate)),
+      }
+    })
+    
+    if (filterStatus !== 'all') {
+      const statusMap = {
+        'scaduto': 'error',
+        'in_scadenza': 'warning', 
+        'programmato': 'info'
+      }
+      return rows.filter(r => r.severity.color === statusMap[filterStatus])
+    }
+    return rows.sort((a, b) => a.daysRemaining - b.daysRemaining)
+  }, [scopedExpiringVisits, employeeMap, filterStatus])
+
+  const outcomeChartData = useMemo(() => {
+    const counts = scopedMedicalVisits.reduce((accumulator, visit) => {
+      const key = visit.outcome || 'Senza esito'
+      accumulator[key] = (accumulator[key] || 0) + 1
+      return accumulator
+    }, {})
+    return Object.entries(counts).map(([name, value]) => ({ name, value }))
   }, [scopedMedicalVisits])
-
-  const vaccineAtRisk = useMemo(() => {
-    return scopedExpiringVisits.filter((visit) =>
-      (visit.exams || []).some((exam) => String(exam.examTypeName || '').toLowerCase().includes('vacc')),
-    ).length
-  }, [scopedExpiringVisits])
-
-  const examCount = useMemo(() => scopedVisitExams.length, [scopedVisitExams])
 
   const compliance = useMemo(() => {
     const totalEmployees = scopedEmployees.length || 1
-
     const latestByEmployee = scopedMedicalVisits.reduce((accumulator, visit) => {
       const key = Number(visit.employeeId)
       const date = toDate(visit.visitDate)
@@ -272,7 +259,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
     }).length
 
     const medicalPercent = Math.round((validVisits / totalEmployees) * 100)
-    const vaccinePercent = Math.max(0, Math.min(100, 100 - Math.round((vaccineAtRisk / totalEmployees) * 100)))
+    const vaccinePercent = Math.max(0, Math.min(100, medicalPercent))
     const safetyPercent = Math.max(0, Math.min(100, 70 + Math.round((scopedEmployeeRisks.length / totalEmployees) * 5)))
 
     return {
@@ -281,121 +268,111 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       training: safetyPercent,
       global: Math.round((vaccinePercent + medicalPercent + safetyPercent) / 3),
     }
-  }, [scopedEmployees, scopedMedicalVisits, vaccineAtRisk, scopedEmployeeRisks])
+  }, [scopedEmployees, scopedMedicalVisits, scopedEmployeeRisks])
 
-  const criticalAlerts = useMemo(() => {
-    const needle = search.trim().toLowerCase()
-    const list = scopedExpiringVisits
-      .map((visit) => {
-        const diff = daysDiffFromToday(visit.nextDeadlineDate)
-        return {
-          ...visit,
-          diff,
-          severity: alertSeverityLabel(diff),
-        }
-      })
-      .sort((a, b) => a.diff - b.diff)
+  const exportRows = useMemo(() => {
+    const rows = viewMode === 'aziende' 
+      ? companyGroups.flatMap(g => g.items.map(item => ({ ...item, companyGroup: g.name })))
+      : workerRows
+    return rows.map((visit) => ({
+      employeeName: visit.employeeName || visit.employeeFullName || '-',
+      companyName: visit.companyName || '-',
+      nextDeadlineDate: formatDate(visit.nextDeadlineDate || visit.DueDate),
+      outcome: visit.outcome || visit.Severity || '-',
+      kind: visit.Kind || visit.kind || 'Visita',
+      daysRemaining: visit.daysRemaining ?? visit.DaysRemaining ?? daysDiffFromToday(visit.nextDeadlineDate || visit.DueDate),
+      severity: visit.severity?.label || alertSeverityLabel(visit.daysRemaining ?? visit.DaysRemaining ?? daysDiffFromToday(visit.nextDeadlineDate || visit.DueDate)).label,
+    }))
+  }, [companyGroups, workerRows, viewMode])
 
-    if (!needle) return list.slice(0, 8)
+  const handleExportCsv = () => {
+    exportToCsv(exportRows, ['employeeName', 'companyName', 'nextDeadlineDate', 'outcome', 'kind', 'daysRemaining', 'severity'], `scadenze-${viewMode}-${days}gg.csv`)
+    handleExportClose()
+  }
 
-    return list
-      .filter((item) => {
-        const text = `${item.employeeFullName} ${item.companyName}`.toLowerCase()
-          const taxCode = (scopedEmployees.find((e) => `${e.firstName} ${e.lastName}`.trim().toLowerCase() === String(item.employeeFullName).toLowerCase())?.taxCode || '').toLowerCase()
-        return text.includes(needle) || taxCode.includes(needle)
-      })
-      .slice(0, 8)
-        }, [scopedExpiringVisits, search, scopedEmployees])
+  const handleExportExcel = () => {
+    exportToExcel([{ name: 'Scadenze', rows: exportRows, columns: ['employeeName', 'companyName', 'nextDeadlineDate', 'outcome', 'kind', 'daysRemaining', 'severity'] }], `scadenze-${viewMode}-${days}gg.xlsx`)
+    handleExportClose()
+  }
 
-  const recentAppointments = useMemo(() => {
-    return scopedMedicalVisits
-      .slice()
-      .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate))
-      .slice(0, 6)
-      .map((visit) => {
-        const employee = employeeMap[Number(visit.employeeId)]
-        return {
-          id: visit.id,
-          patient: visit.employeeFullName || `Dipendente #${visit.employeeId}`,
-          company: employee?.companyName || '-',
-          type: visit.visitType || 'Periodica',
-          when: visit.visitDate,
-          status: statusFromVisit(visit.visitDate),
-        }
-      })
-  }, [scopedMedicalVisits, employeeMap])
+  const handleExportIcs = () => {
+    const events = exportRows.map((row) => ({
+      title: `Scadenza ${row.kind} - ${row.employeeName}`,
+      start: row.nextDeadlineDate ? new Date(row.nextDeadlineDate) : new Date(),
+      description: `Azienda: ${row.companyName} • Esito: ${row.outcome} • Tipo: ${row.kind} • ${row.severity}`,
+      location: row.companyName,
+    }))
+    exportToIcs(events, `scadenze-${viewMode}-${days}gg.ics`)
+    handleExportClose()
+  }
+
+  const toggleRowExpand = (name) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }
 
   const kpiCards = [
-    {
-      title: 'Appuntamenti (7GG)',
-      value: String(upcoming7).padStart(2, '0'),
-      subtitle: '+12%',
-      icon: <CalendarMonthIcon fontSize="small" color="primary" />,
-      chipColor: 'success',
-      iconBg: 'primary',
-    },
-    {
-      title: 'Vaccini Scaduti/In Scadenza',
-      value: String(vaccineAtRisk).padStart(2, '0'),
-      subtitle: 'Critico',
-      icon: <VaccinesIcon fontSize="small" color="error" />,
-      chipColor: 'error',
-      iconBg: 'error',
-    },
-    {
-      title: 'Esami in Scadenza',
-      value: String(examCount).padStart(2, '0'),
-      subtitle: 'A Presto',
-      icon: <BiotechIcon fontSize="small" color="warning" />,
-      chipColor: 'warning',
-      iconBg: 'warning',
-    },
-    {
-      title: 'Visite in Scadenza',
-      value: String(scopedExpiringVisits.length).padStart(2, '0'),
-      subtitle: 'Vedi tutti',
-      icon: <MedicalServicesIcon fontSize="small" color="info" />,
-      chipColor: 'info',
-      iconBg: 'info',
-    },
+    { title: 'Totale Aziende', value: companyGroups.length, subtitle: viewMode === 'aziende' ? 'con scadenze' : '', icon: <BusinessIcon color="primary" />, chipColor: 'primary', iconBg: 'primary' },
+    { title: 'Totale Lavoratori', value: workerRows.length, subtitle: 'con scadenze', icon: <GroupIcon color="secondary" />, chipColor: 'secondary', iconBg: 'secondary' },
+    { title: 'Scaduti', value: workerRows.filter(r => r.severity.color === 'error').length, subtitle: 'Critico', icon: <WarningAmberIcon color="error" />, chipColor: 'error', iconBg: 'error' },
+    { title: 'In Scadenza (≤5gg)', value: workerRows.filter(r => r.severity.color === 'warning').length, subtitle: 'Urgente', icon: <MedicalServicesIcon color="warning" />, chipColor: 'warning', iconBg: 'warning' },
+    { title: 'Programmati', value: workerRows.filter(r => r.severity.color === 'info').length, subtitle: 'In regola', icon: <CalendarMonthIcon color="info" />, chipColor: 'info', iconBg: 'info' },
   ]
 
   return (
     <Stack spacing={2}>
-      {/* Header with Search and Quick Actions */}
-      <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} justifyContent="space-between" alignItems={{ md: 'center' }}>
-          <TextField
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Cerca per Codice Fiscale o Nome Dipendente..."
-            size="small"
-            sx={{ width: { xs: '100%', md: 460 } }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            className="form-field-modern"
-          />
+      {/* Header with View Toggle, Search and Quick Actions */}
+      <Paper sx={{ p: 2, borderRadius: 3 }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} justifyContent="space-between" alignItems={{ md: 'center' }} sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(event, newMode) => setViewMode(newMode)}
+              size="small"
+              aria-label="View mode"
+            >
+              <ToggleButton value="aziende" aria-label="Aziende">
+                <BusinessIcon fontSize="small" sx={{ mr: 0.5 }} /> Aziende
+              </ToggleButton>
+              <ToggleButton value="lavoratori" aria-label="Lavoratori">
+                <GroupIcon fontSize="small" sx={{ mr: 0.5 }} /> Lavoratori
+              </ToggleButton>
+            </ToggleButtonGroup>
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel id="status-filter">Stato</InputLabel>
+              <Select
+                labelId="status-filter"
+                value={filterStatus}
+                label="Stato"
+                onChange={(event) => setFilterStatus(event.target.value)}
+              >
+                <MenuItem value="all">Tutti</MenuItem>
+                <MenuItem value="scaduto">Scaduto</MenuItem>
+                <MenuItem value="in_scadenza">In scadenza</MenuItem>
+                <MenuItem value="programmato">Programmato</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
           <Stack direction="row" spacing={1} flexWrap="wrap">
             {[15, 30, 60, 90].map((value) => (
-              <Button key={value} 
-                variant={days === value ? 'contained' : 'outlined'} 
+              <Button
+                key={value}
+                variant={days === value ? 'contained' : 'outlined'}
                 onClick={() => setDays(value)}
-                className={days === value ? 'btn-primary-modern' : 'btn-secondary-modern'}
                 sx={{ textTransform: 'none', fontWeight: 600 }}
               >
                 {value} gg
               </Button>
             ))}
-            <Button className="btn-primary-modern" onClick={caricaScadenze} startIcon={<span style={{fontSize: 18}}>⟳</span>}>
+            <Button variant="contained" onClick={caricaScadenze} startIcon={<span style={{fontSize: 18}}>⟳</span>}>
               Aggiorna
             </Button>
             <Button
-              className="btn-secondary-modern"
               onClick={handleExportOpen}
               startIcon={<FileDownloadIcon />}
               sx={{ textTransform: 'none', fontWeight: 600 }}
@@ -409,6 +386,22 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
             </Menu>
           </Stack>
         </Stack>
+
+        {/* Search */}
+        <TextField
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Cerca per Codice Fiscale o Nome Dipendente..."
+          size="small"
+          sx={{ width: '100%' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
       </Paper>
 
       {caricamento && (
@@ -417,180 +410,238 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
         </Box>
       )}
 
-      {!!errore && <Alert severity="error" className="animate-fade-in">{errore}</Alert>}
+      {!!errore && <Alert severity="error">{errore}</Alert>}
 
-      {!caricamento && !errore && scopedExpiringVisits.length === 0 && (
-        <div className="empty-state animate-fade-in" sx={{ py: 6 }}>
-          <div className="empty-state-icon">✅</div>
-          <Typography className="empty-state-title">Nessuna scadenza imminente</Typography>
-          <Typography className="empty-state-text">Nessuna visita in scadenza nei prossimi {days} giorni.</Typography>
-        </div>
+      {!caricamento && !errore && workerRows.length === 0 && (
+        <Paper sx={{ p: 6, textAlign: 'center' }}>
+          <Typography variant="h6" color="success.main">✅</Typography>
+          <Typography variant="h6" gutterBottom>Nessuna scadenza imminente</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Nessuna visita in scadenza nei prossimi {days} giorni per la vista {viewMode === 'aziende' ? 'Aziende' : 'Lavoratori'}.
+          </Typography>
+        </Paper>
       )}
 
       {!caricamento && !errore && (
         <>
           {/* KPI Cards Grid */}
-          <div className="dashboard-grid" sx={{ mb: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(5, 1fr)' }, gap: 2, mb: 2 }}>
             {kpiCards.map((card) => (
-              <Paper key={card.title} className={`kpi-card kpi-card-${card.iconBg}`} sx={{ p: 2, borderRadius: 3 }}>
-                <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Box sx={{ p: 0.8, borderRadius: 1.5, bgcolor: 'action.hover' }}>{card.icon}</Box>
-                  <Chip label={card.subtitle} size="small" color={card.chipColor} variant="outlined" sx={{ height: 24, fontSize: 11 }} />
-                </Stack>
-                <Typography variant="caption" color="text.secondary">{card.title}</Typography>
+              <Paper key={card.title} sx={{ p: 2, borderRadius: 3, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>{card.icon}</Box>
+                </Box>
                 <Typography variant="h4" sx={{ lineHeight: 1.1, fontWeight: 700 }}>{card.value}</Typography>
+                <Typography variant="caption" color="text.secondary">{card.title}</Typography>
+                {card.subtitle && <Typography variant="caption" color={card.chipColor + '.main'}>{card.subtitle}</Typography>}
               </Paper>
             ))}
-          </div>
+          </Box>
 
-          {/* Grafici statistici (parità Cartsan: statistiche con grafici) */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
+          {/* Charts Row */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, mb: 2 }}>
+            <Paper sx={{ p: 2, borderRadius: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Esiti Visite Mediche</Typography>
               {outcomeChartData.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">Nessun dato disponibile.</Typography>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
-                    <Pie data={outcomeChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
+                    <Pie
+                      data={outcomeChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                      label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(1)}%)`}
+                    >
                       {outcomeChartData.map((entry, index) => (
                         <Cell key={entry.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend />
+                    <RechartsTooltip />
+                                        <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               )}
             </Paper>
 
-            <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
+            <Paper sx={{ p: 2, borderRadius: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Compliance (%)</Typography>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={complianceChartData}>
+                <BarChart data={[
+                  { name: 'Vaccini', value: compliance.vaccines },
+                  { name: 'Visite', value: compliance.visits },
+                  { name: 'Sicurezza', value: compliance.training },
+                ]}>
                   <XAxis dataKey="name" />
                   <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#1976d2" radius={[4, 4, 0, 0]} />
+                  <RechartsTooltip />
+                                    <Bar dataKey="value" fill="#1976d2" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
           </Box>
 
-          {/* Main Content Grid */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 2 }}>
-            {/* Critical Alerts */}
-            <Paper className="modern-card-elevated" sx={{ p: 2, borderRadius: 3 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <WarningAmberIcon color="error" fontSize="small" />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Alert Critici & Scadenze</Typography>
-                </Stack>
-                <Button className="btn-secondary-modern" size="small" onClick={handleExportCsv}>Esporta Report</Button>
-              </Stack>
-
-              {criticalAlerts.length === 0 ? (
-                <div className="empty-state" sx={{ py: 4 }}>
-                  <div className="empty-state-icon">✅</div>
-                  <Typography className="empty-state-title">Nessun alert critico</Typography>
-                  <Typography className="empty-state-text">Tutto sotto controllo per il periodo selezionato.</Typography>
-                </div>
-              ) : (
-                <List disablePadding>
-                  {criticalAlerts.map((item) => (
-                    <ListItem key={item.medicalVisitId} divider sx={{ px: 0, py: 1 }}>
-                      <ListItemText
-                        primary={<Typography variant="body1" sx={{ fontWeight: 600 }}>{`${item.employeeFullName} (${item.companyName})`}</Typography>}
-                        secondary={<Typography variant="body2" color="text.secondary">Scadenza: {formatDate(item.nextDeadlineDate)} • {item.outcome || 'Nessun esito'}</Typography>}
-                      />
-                      <Chip size="small" className={`status-chip status-chip-${item.severity.color}`} label={item.severity.label} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </Paper>
-
-            {/* Quick Actions & Compliance */}
-            <Stack spacing={2}>
-              <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                  <BoltIcon color="primary" fontSize="small" />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Quick Actions</Typography>
-                </Stack>
-                <Stack spacing={1}>
-                  <Button className="btn-primary-modern" fullWidth onClick={onOpenMedicalVisitCreate} startIcon={<span style={{fontSize: 18}}>+</span>}>
-                    Nuova Visita Medica
-                  </Button>
-                  <Button className="btn-secondary-modern" fullWidth onClick={onOpenEmployeeCreate} startIcon={<span style={{fontSize: 18}}>👤</span>}>
-                    Aggiungi Dipendente
-                  </Button>
-                  <Button className="btn-secondary-modern" fullWidth onClick={caricaScadenze} startIcon={<span style={{fontSize: 18}}>💾</span>}>
-                    Backup Dati Now
-                  </Button>
-                </Stack>
-              </Paper>
-
-              <Paper className="modern-card" sx={{ p: 2, borderRadius: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Compliance Globale</Typography>
-                <div className="progress-modern" sx={{ mb: 1.5 }}>
-                  <div className="progress-modern-bar" style={{ width: `${compliance.global}%` }}></div>
-                </div>
-                <Typography variant="caption" color="text.secondary">Il {compliance.global}% dei dipendenti è in regola con le visite.</Typography>
-                <Stack sx={{ mt: 1.5 }} spacing={0.6}>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Vaccini</Typography><Typography variant="body2" fontWeight={700} color={compliance.vaccines >= 80 ? 'success.main' : compliance.vaccines >= 60 ? 'warning.main' : 'error.main'}>{compliance.vaccines}%</Typography></Stack>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Visite Mediche</Typography><Typography variant="body2" fontWeight={700} color={compliance.visits >= 80 ? 'success.main' : compliance.visits >= 60 ? 'warning.main' : 'error.main'}>{compliance.visits}%</Typography></Stack>
-                  <Stack direction="row" justifyContent="space-between"><Typography variant="body2">Corsi Sicurezza</Typography><Typography variant="body2" fontWeight={700} color={compliance.training >= 80 ? 'success.main' : compliance.training >= 60 ? 'warning.main' : 'error.main'}>{compliance.training}%</Typography></Stack>
-                </Stack>
-              </Paper>
-            </Stack>
-          </Box>
-
-          {/* Recent Appointments & Upcoming */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 2 }}>
-            <Paper className="modern-card-elevated" sx={{ p: 2, borderRadius: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Appuntamenti Recenti</Typography>
-              <TableContainer className="modern-table-sticky">
-                <Table className="modern-table" size="small" stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Paziente</TableCell>
-                      <TableCell>Azienda</TableCell>
-                      <TableCell>Tipo Visita</TableCell>
-                      <TableCell>Data/Ora</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recentAppointments.map((appointment) => (
-                      <TableRow key={appointment.id} hover>
-                        <TableCell>{appointment.patient}</TableCell>
-                        <TableCell>{appointment.company}</TableCell>
-                        <TableCell>{appointment.type}</TableCell>
-                        <TableCell>{formatDateTime(appointment.when)}</TableCell>
+          {/* Main Data Table */}
+          <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {viewMode === 'aziende' ? (
+                    <>
+                      <TableCell style={{ width: 40 }} />
+                      <TableCell><strong>Azienda</strong></TableCell>
+                      <TableCell align="right"><strong>Accertamenti</strong></TableCell>
+                      <TableCell align="right"><strong>Dipendenti</strong></TableCell>
+                      <TableCell><strong>Stato prevalente</strong></TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell><strong>Lavoratore</strong></TableCell>
+                      <TableCell><strong>Azienda</strong></TableCell>
+                      <TableCell><strong>Scadenza</strong></TableCell>
+                      <TableCell><strong>Tipo</strong></TableCell>
+                      <TableCell><strong>Esito</strong></TableCell>
+                      <TableCell align="center"><strong>Stato</strong></TableCell>
+                    </>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {viewMode === 'aziende' ? (
+                  companyGroups.map((group) => (
+                    <>
+                      <TableRow key={group.name} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                         <TableCell>
-                          <Chip size="small" className={`status-chip status-chip-${appointment.status.color === 'success.main' ? 'success' : appointment.status.color === 'primary.main' ? 'info' : 'default'}`} label={appointment.status.label} variant="outlined" />
+                          <IconButton
+                            size="small"
+                            onClick={() => toggleRowExpand(group.name)}
+                            aria-expanded={group.expanded}
+                            aria-controls={`panel-${group.name}`}
+                          >
+                            <ExpandMoreIcon style={{ transform: group.expanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                          </IconButton>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>{group.name}</Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2">{group.assessments}</Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2">{group.employees}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          {group.items.length > 0 && (
+                            <Chip
+                              size="small"
+                              color={alertSeverityLabel(Math.min(...group.items.map(i => i.DaysRemaining ?? daysDiffFromToday(i.nextDeadlineDate || i.DueDate)))).color}
+                              label={group.items.some(i => (i.DaysRemaining ?? daysDiffFromToday(i.nextDeadlineDate || i.DueDate)) < 0) ? 'Scaduto' : 
+                                    group.items.some(i => (i.DaysRemaining ?? daysDiffFromToday(i.nextDeadlineDate || i.DueDate)) <= 5) ? 'In scadenza' : 'Programmato'}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+                      <TableRow>
+                        <TableCell style={{ padding: 0 }} colSpan={5}>
+                          <TableRow key={`panel-${group.name}`} sx={{ display: group.expanded ? 'table-row' : 'none' }}>
+                            <TableCell colSpan={5} style={{ padding: 0 }}>
+                              <Box sx={{ bgcolor: '#fafafa', borderTop: '1px solid #e0e0e0', p: 1 }}>
+                                <Table size="small">
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell><strong>Lavoratore</strong></TableCell>
+                                      <TableCell><strong>Scadenza</strong></TableCell>
+                                      <TableCell><strong>Tipo</strong></TableCell>
+                                      <TableCell><strong>Esito</strong></TableCell>
+                                      <TableCell align="center"><strong>Stato</strong></TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {group.items.map((item) => (
+                                      <TableRow key={item.medicalVisitId || item.id} hover>
+                                        <TableCell>{item.employeeFullName || 'Sconosciuto'}</TableCell>
+                                        <TableCell>{formatDate(item.nextDeadlineDate || item.DueDate)}</TableCell>
+                                        <TableCell>{item.Kind || item.kind || 'Visita'}</TableCell>
+                                        <TableCell>{item.outcome || item.Severity || '-'}</TableCell>
+                                        <TableCell align="center">
+                                          <Chip
+                                            size="small"
+                                            color={alertSeverityLabel(item.DaysRemaining ?? daysDiffFromToday(item.nextDeadlineDate || item.DueDate)).color}
+                                            label={alertSeverityLabel(item.DaysRemaining ?? daysDiffFromToday(item.nextDeadlineDate || item.DueDate)).label}
+                                          />
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        </TableCell>
+                      </TableRow>
+                    </>
+                  ))
+                ) : (
+                  workerRows.map((row) => (
+                    <TableRow key={row.id} hover>
+                      <TableCell>{row.employeeName}</TableCell>
+                      <TableCell>{row.companyName}</TableCell>
+                      <TableCell>{formatDate(row.nextDeadlineDate)}</TableCell>
+                      <TableCell>{row.kind}</TableCell>
+                      <TableCell>{row.outcome || '-'}</TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          size="small"
+                          color={row.severity.color}
+                          label={row.severity.label}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+                {(viewMode === 'aziende' ? companyGroups.length : workerRows.length) === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={viewMode === 'aziende' ? 5 : 6} align="center">
+                      <Typography variant="body2" color="text.secondary">Nessun risultato per i filtri selezionati</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <TablePagination
+              component="div"
+              count={viewMode === 'aziende' ? companyGroups.length : workerRows.length}
+              rowsPerPage={15}
+              page={0}
+              onPageChange={() => {}}
+            />
+          </Paper>
 
-            <Paper className="modern-card-gradient" sx={{ p: 2, borderRadius: 3, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Prossimi 30 Giorni</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Pianificati {upcoming7 + scopedExpiringVisits.length} interventi medici tra visite ed esami.
-                </Typography>
-              </Box>
-              <Button className="btn-secondary-modern" sx={{ mt: 1.5, alignSelf: 'flex-start' }} variant="text" onClick={onOpenReports}>Vedi Calendario Completo</Button>
-            </Paper>
-          </Box>
+          {/* Compliance Summary */}
+          <Paper sx={{ p: 2, borderRadius: 3, mt: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 700 }}>Compliance Globale</Typography>
+            <LinearProgress variant="determinate" value={compliance.global} sx={{ height: 12, borderRadius: 6, mb: 1.5 }} />
+            <Typography variant="caption" color="text.secondary">Il {compliance.global}% dei dipendenti è in regola con le visite.</Typography>
+            <Grid container spacing={2} sx={{ mt: 1.5 }}>
+              <Grid item xs={4}>
+                <Typography variant="body2">Vaccini</Typography>
+                <Typography variant="h6" color={compliance.vaccines >= 80 ? 'success.main' : compliance.vaccines >= 60 ? 'warning.main' : 'error.main'}>{compliance.vaccines}%</Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2">Visite Mediche</Typography>
+                <Typography variant="h6" color={compliance.visits >= 80 ? 'success.main' : compliance.visits >= 60 ? 'warning.main' : 'error.main'}>{compliance.visits}%</Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body2">Corsi Sicurezza</Typography>
+                <Typography variant="h6" color={compliance.training >= 80 ? 'success.main' : compliance.training >= 60 ? 'warning.main' : 'error.main'}>{compliance.training}%</Typography>
+              </Grid>
+            </Grid>
+          </Paper>
         </>
       )}
     </Stack>
   )
 }
-
-export default DashboardScadenze

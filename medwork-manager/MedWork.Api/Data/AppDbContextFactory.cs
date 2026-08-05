@@ -23,16 +23,14 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         optionsBuilder.UseSqlServer(connectionString);
 
         // For design-time, we need to provide the required services
-                var serviceCollection = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
-                serviceCollection.AddDataProtection();
-                serviceCollection.AddSingleton<IFieldEncryptionService, FieldEncryptionService>();
-                serviceCollection.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.HttpContextAccessor>();
-                serviceCollection.AddScoped<ICurrentContextService, CurrentContextService>();
-                var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceCollection = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        serviceCollection.AddDataProtection();
+        serviceCollection.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.HttpContextAccessor>();
+        serviceCollection.AddScoped<ICurrentContextService, CurrentContextService>();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
 
-                var encryptionService = serviceProvider.GetRequiredService<IFieldEncryptionService>();
-                var contextService = serviceProvider.GetRequiredService<ICurrentContextService>();
+        var contextService = serviceProvider.GetRequiredService<ICurrentContextService>();
 
-                return new AppDbContext(optionsBuilder.Options, encryptionService, contextService);
+        return new AppDbContext(optionsBuilder.Options, contextService);
     }
 }

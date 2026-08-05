@@ -7,13 +7,11 @@ namespace MedWork.Api.Data
 {
     public class AppDbContext : DbContext
     {
-        private readonly IFieldEncryptionService _fieldEncryptionService;
         private readonly ICurrentContextService? _currentContext;
 
-        public AppDbContext(DbContextOptions<AppDbContext> options, IFieldEncryptionService fieldEncryptionService, ICurrentContextService? currentContext = null)
+        public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentContextService? currentContext = null)
             : base(options)
         {
-            _fieldEncryptionService = fieldEncryptionService;
             _currentContext = currentContext;
         }
 
@@ -46,18 +44,6 @@ namespace MedWork.Api.Data
         public DbSet<WorkLocation> WorkLocations => Set<WorkLocation>();
         public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
 
-        // PPE (DPI) entities
-        public DbSet<Ppe> Ppes => Set<Ppe>();
-        public DbSet<EmployeePpe> EmployeePpes => Set<EmployeePpe>();
-        public DbSet<JobRolePpe> JobRolePpes => Set<JobRolePpe>();
-
-        // Document entities
-        public DbSet<Attachment> Attachments => Set<Attachment>();
-
-        // Injury entities
-        public DbSet<Injury> Injuries => Set<Injury>();
-        public DbSet<InjuryAttachment> InjuryAttachments => Set<InjuryAttachment>();
-
         // Fatturazione Elettronica entities
         public DbSet<ElectronicInvoice> ElectronicInvoices => Set<ElectronicInvoice>();
         public DbSet<SdiConfiguration> SdiConfigurations => Set<SdiConfiguration>();
@@ -65,29 +51,10 @@ namespace MedWork.Api.Data
         public DbSet<SdiNotificationLog> SdiNotificationLogs => Set<SdiNotificationLog>();
 
         // Listini prezzi entities
-                public DbSet<PriceList> PriceLists => Set<PriceList>();
+        public DbSet<PriceList> PriceLists => Set<PriceList>();
 
         // Preventivi entities
         public DbSet<Quote> Quotes => Set<Quote>();
-
-        // Diagnostic devices entities
-        public DbSet<DiagnosticDevice> DiagnosticDevices => Set<DiagnosticDevice>();
-        public DbSet<DeviceExamLog> DeviceExamLogs => Set<DeviceExamLog>();
-        public DbSet<DeviceParserConfig> DeviceParserConfigs => Set<DeviceParserConfig>();
-
-        // Graphic signature entities
-        public DbSet<GraphicSignature> GraphicSignatures => Set<GraphicSignature>();
-
-        // Cardiologist report entities (for ECG tele-reporting)
-        public DbSet<CardiologistReport> CardiologistReports => Set<CardiologistReport>();
-
-        public DbSet<AppUser> Users => Set<AppUser>();
-
-        public DbSet<LisConfiguration> LisConfigurations => Set<LisConfiguration>();
-        public DbSet<Hl7Message> Hl7Messages => Set<Hl7Message>();
-
-        // Safety/Risk Management entities
-        public DbSet<RiskAssessment> RiskAssessments => Set<RiskAssessment>();
 
         // Scadenzario/Accreditamenti entities
         public DbSet<Accreditation> Accreditations => Set<Accreditation>();
@@ -95,37 +62,17 @@ namespace MedWork.Api.Data
         // Laboratorio entities
         public DbSet<LabAccreditation> LabAccreditations => Set<LabAccreditation>();
 
-        // Export entities
-        public DbSet<HealthRecordExport> HealthRecordExports => Set<HealthRecordExport>();
-
         // Activity/Task entities
         public DbSet<Activity> Activities => Set<Activity>();
+        public DbSet<AppUser> Users => Set<AppUser>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            var encryptedRequiredStringConverter = new ValueConverter<string, string>(
-                value => _fieldEncryptionService.Encrypt(value),
-                value => _fieldEncryptionService.Decrypt(value));
-
-            var encryptedNullableStringConverter = new ValueConverter<string?, string?>(
-                value => string.IsNullOrWhiteSpace(value) ? value : _fieldEncryptionService.Encrypt(value),
-                value => string.IsNullOrWhiteSpace(value) ? value : _fieldEncryptionService.Decrypt(value));
-
             var medicalVisitTypeConverter = new ValueConverter<MedicalVisitType, string>(
                 value => value.ToString(),
                 value => ParseMedicalVisitType(value));
-
-            modelBuilder.Entity<AppUser>(entity =>
-            {
-                entity.HasIndex(x => x.Username).IsUnique();
-                entity.Property(x => x.Username).HasMaxLength(120).IsRequired();
-                entity.Property(x => x.PasswordHash).HasMaxLength(200).IsRequired();
-                entity.Property(x => x.Role).HasMaxLength(40).IsRequired();
-                entity.Property(x => x.TaxCode).HasMaxLength(32);
-                entity.Property(x => x.Email).HasMaxLength(120);
-            });
 
             modelBuilder.Entity<Company>(entity =>
             {
@@ -261,10 +208,10 @@ namespace MedWork.Api.Data
 
             modelBuilder.Entity<MedicalRecord>(entity =>
             {
-                entity.Property(x => x.MedicalHistory).HasMaxLength(4000).HasConversion(encryptedRequiredStringConverter).IsRequired();
+                entity.Property(x => x.MedicalHistory).HasMaxLength(4000).IsRequired();
                 entity.Property(x => x.Notes).HasMaxLength(2000);
                 entity.Property(x => x.CurrentTherapies).HasMaxLength(2000);
-                entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+                entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
 
                 entity.HasOne(x => x.Employee)
                     .WithOne(x => x.MedicalRecord)
@@ -275,15 +222,15 @@ namespace MedWork.Api.Data
             });
 
             modelBuilder.Entity<MedicalVisit>(entity =>
-                        {
-                            entity.Property(x => x.Outcome).HasMaxLength(250).IsRequired();
-                            entity.Property(x => x.ClinicalNotes).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-                            entity.Property(x => x.VisitType).HasConversion(medicalVisitTypeConverter).HasMaxLength(40).IsRequired();
-                            entity.Property(x => x.TargetOrgans).HasMaxLength(2000);
-                            entity.Property(x => x.ObjectiveExam).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-                            entity.Property(x => x.Weight).HasPrecision(18, 2);
+            {
+                entity.Property(x => x.Outcome).HasMaxLength(250).IsRequired();
+                entity.Property(x => x.ClinicalNotes).HasMaxLength(4000);
+                entity.Property(x => x.VisitType).HasMaxLength(40).IsRequired();
+                entity.Property(x => x.TargetOrgans).HasMaxLength(2000);
+                entity.Property(x => x.ObjectiveExam).HasMaxLength(4000);
+                entity.Property(x => x.Weight).HasPrecision(18, 2);
 
-                            entity.HasOne(x => x.Employee)
+                entity.HasOne(x => x.Employee)
                     .WithMany(x => x.MedicalVisits)
                     .HasForeignKey(x => x.EmployeeId)
                     .OnDelete(DeleteBehavior.Cascade);
@@ -296,10 +243,10 @@ namespace MedWork.Api.Data
 
             modelBuilder.Entity<Anamnesis>(entity =>
             {
-                entity.Property(x => x.WorkHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-                entity.Property(x => x.PersonalHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-                entity.Property(x => x.FamilyHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
-                entity.Property(x => x.RemotePathology).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
+                entity.Property(x => x.WorkHistory).HasMaxLength(4000);
+                entity.Property(x => x.PersonalHistory).HasMaxLength(4000);
+                entity.Property(x => x.FamilyHistory).HasMaxLength(4000);
+                entity.Property(x => x.RemotePathology).HasMaxLength(4000);
 
                 entity.HasOne(x => x.MedicalVisit)
                     .WithOne(x => x.Anamnesis)
@@ -317,7 +264,7 @@ namespace MedWork.Api.Data
 
             modelBuilder.Entity<VisitExam>(entity =>
             {
-                entity.Property(x => x.Result).HasMaxLength(3000).HasConversion(encryptedRequiredStringConverter).IsRequired();
+                entity.Property(x => x.Result).HasMaxLength(3000).IsRequired();
                 entity.Property(x => x.Notes).HasMaxLength(2000);
                 entity.Property(x => x.ReferenceRange).HasMaxLength(300);
 
@@ -376,181 +323,47 @@ namespace MedWork.Api.Data
             });
 
             modelBuilder.Entity<NotificationLog>(entity =>
-                        {
-                            entity.Property(x => x.Channel)
-                                .HasConversion<string>()
-                                .HasMaxLength(20)
-                                .IsRequired();
-                            entity.Property(x => x.MessageText).HasMaxLength(2000).HasConversion(encryptedRequiredStringConverter).IsRequired();
-                            entity.Property(x => x.ReminderKey).HasMaxLength(120);
-
-                            entity.HasOne(x => x.Employee)
-                                .WithMany(x => x.NotificationLogs)
-                                .HasForeignKey(x => x.EmployeeId)
-                                .OnDelete(DeleteBehavior.Cascade);
-                        });
-
-            // PPE (DPI) configurations
-            modelBuilder.Entity<Ppe>(entity =>
             {
-                entity.HasKey(x => x.Id);
-                entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
-                entity.Property(x => x.Category).HasMaxLength(50);
-                entity.Property(x => x.Standard).HasMaxLength(100);
-                entity.Property(x => x.ProtectionLevel).HasMaxLength(100);
-                entity.Property(x => x.Description).HasMaxLength(500);
-                entity.Property(x => x.Manufacturer).HasMaxLength(100);
-                entity.Property(x => x.Model).HasMaxLength(100);
-                entity.Property(x => x.IsActive).IsRequired();
-                entity.Property(x => x.CreatedAt).IsRequired();
-                entity.Property(x => x.UpdatedAt).IsRequired();
-            });
-
-            modelBuilder.Entity<EmployeePpe>(entity =>
-            {
-                entity.HasKey(x => new { x.EmployeeId, x.PpeId });
-                entity.Property(x => x.AssignedDate).IsRequired();
-                entity.Property(x => x.ExpiryDate);
-                entity.Property(x => x.Size).HasMaxLength(50);
-                entity.Property(x => x.SerialNumber).HasMaxLength(100);
-                entity.Property(x => x.Notes).HasMaxLength(500);
-                entity.Property(x => x.IsReturned).IsRequired();
-                entity.Property(x => x.ReturnedDate);
+                entity.Property(x => x.Channel)
+                    .HasMaxLength(20)
+                    .IsRequired();
+                entity.Property(x => x.MessageText).HasMaxLength(2000).IsRequired();
+                entity.Property(x => x.ReminderKey).HasMaxLength(120);
 
                 entity.HasOne(x => x.Employee)
-                    .WithMany(x => x.EmployeePpes)
-                    .HasForeignKey(x => x.PpeId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(x => x.Ppe)
-                    .WithMany(x => x.EmployeePpes)
-                    .HasForeignKey(x => x.PpeId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            modelBuilder.Entity<JobRolePpe>(entity =>
-            {
-                entity.HasKey(x => new { x.JobRoleId, x.PpeId });
-                entity.Property(x => x.IsMandatory).IsRequired();
-                entity.Property(x => x.Notes).HasMaxLength(500);
-
-                entity.HasOne(x => x.JobRole)
-                    .WithMany(x => x.JobRolePpes)
-                    .HasForeignKey(x => x.JobRoleId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(x => x.Ppe)
-                    .WithMany(x => x.JobRolePpes)
-                    .HasForeignKey(x => x.PpeId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // Document entities
-            modelBuilder.Entity<Attachment>(entity =>
-            {
-                entity.Property(x => x.FileName).HasMaxLength(500).IsRequired();
-                entity.Property(x => x.ContentType).HasMaxLength(100).IsRequired();
-                entity.Property(x => x.FileSize).IsRequired();
-                entity.Property(x => x.StoragePath).HasMaxLength(500).IsRequired();
-                entity.Property(x => x.Checksum).HasMaxLength(100);
-                entity.Property(x => x.IsConfidential).IsRequired();
-                entity.Property(x => x.IsArchived).IsRequired();
-                entity.Property(x => x.UploadedAt).IsRequired();
-                entity.Property(x => x.UploadedBy).HasMaxLength(120);
-                entity.Property(x => x.ExpiresAt);
-
-                entity.HasOne(x => x.Employee)
-                    .WithMany()
+                    .WithMany(x => x.NotificationLogs)
                     .HasForeignKey(x => x.EmployeeId)
-                    .OnDelete(DeleteBehavior.SetNull);
-
-                entity.HasOne(x => x.Company)
-                    .WithMany()
-                    .HasForeignKey(x => x.CompanyId)
-                    .OnDelete(DeleteBehavior.SetNull);
-
-                entity.HasOne(x => x.MedicalVisit)
-                    .WithMany()
-                    .HasForeignKey(x => x.MedicalVisitId)
-                    .OnDelete(DeleteBehavior.SetNull);
-
-                entity.HasOne(x => x.RiskFactor)
-                    .WithMany()
-                    .HasForeignKey(x => x.RiskFactorId)
-                    .OnDelete(DeleteBehavior.SetNull);
-
-                entity.HasOne(x => x.SiteVisit)
-                    .WithMany()
-                    .HasForeignKey(x => x.SiteVisitId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Injury configurations
-                        modelBuilder.Entity<Injury>(entity =>
-                        {
-                            entity.HasKey(x => x.Id);
-                            entity.Property(x => x.EmployeeId).IsRequired();
-                            entity.Property(x => x.CompanyId).IsRequired();
-                            entity.Property(x => x.InjuryDate).IsRequired();
-                            entity.Property(x => x.ReportDate).IsRequired();
-                            entity.Property(x => x.InjuryType).HasMaxLength(50).IsRequired(); // "Lieve", "Grave", "Mortale", "In itinere"
-                            entity.Property(x => x.BodyPart).HasMaxLength(120).IsRequired();
-                            entity.Property(x => x.InjuryNature).HasMaxLength(120); // "Frattura", "Contusione", "Taglio", "Ustione", ecc.
-                            entity.Property(x => x.Cause).HasMaxLength(500).IsRequired();
-                            entity.Property(x => x.Location).HasMaxLength(250);
-                            entity.Property(x => x.Description).HasMaxLength(2000);
-                            entity.Property(x => x.DaysLost).IsRequired();
-                            entity.Property(x => x.IsReportedToInail).IsRequired();
-                            entity.Property(x => x.InailReportNumber).HasMaxLength(100);
-                            entity.Property(x => x.InailReportDate);
-                            entity.Property(x => x.Status).HasMaxLength(50).IsRequired(); // "Aperto", "In corso", "Chiuso", "Contestato"
-                            entity.Property(x => x.CreatedAt).IsRequired();
-                            entity.Property(x => x.UpdatedAt).IsRequired();
-                            entity.Property(x => x.CreatedBy).HasMaxLength(120).IsRequired();
+            modelBuilder.Entity<CompanyGroup>(entity =>
+            {
+                entity.HasIndex(x => x.RagioneSociale);
+            });
 
-                            entity.HasOne(x => x.Employee)
-                                .WithMany()
-                                .HasForeignKey(x => x.EmployeeId)
-                                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CompanyContact>(entity =>
+            {
+                entity.HasIndex(x => x.CompanyId);
+            });
 
-                            entity.HasOne(x => x.Company)
-                                .WithMany()
-                                .HasForeignKey(x => x.CompanyId)
-                                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Department>(entity =>
+            {
+                entity.HasIndex(x => x.CompanyId);
+            });
 
-                            entity.HasIndex(x => x.EmployeeId);
-                            entity.HasIndex(x => x.CompanyId);
-                            entity.HasIndex(x => x.InjuryDate);
-                            entity.HasIndex(x => x.Status);
-                        });
+            modelBuilder.Entity<WorkLocation>(entity =>
+            {
+                entity.HasIndex(x => x.CompanyId);
+            });
 
-                        // SiteVisit configurations
-                        modelBuilder.Entity<SiteVisit>(entity =>
-                        {
-                            entity.HasIndex(x => x.CompanyId);
-                            entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-                            entity.Property(x => x.Price).HasPrecision(18, 2);
-                            entity.Property(x => x.Vat).HasPrecision(18, 2);
-                        });
+            modelBuilder.Entity<SiteVisit>(entity =>
+            {
+                entity.HasIndex(x => x.CompanyId);
+                entity.Property(x => x.Price).HasPrecision(18, 2);
+                entity.Property(x => x.Vat).HasPrecision(18, 2);
+            });
 
-                        // InjuryAttachment configurations
-                        modelBuilder.Entity<InjuryAttachment>(entity =>
-                        {
-                            entity.HasKey(x => new { x.InjuryId, x.AttachmentId });
-
-                            entity.HasOne(x => x.Injury)
-                                .WithMany(x => x.InjuryAttachments)
-                                .HasForeignKey(x => x.InjuryId)
-                                .OnDelete(DeleteBehavior.Cascade);
-
-                            entity.HasOne(x => x.Attachment)
-                                .WithMany()
-                                .HasForeignKey(x => x.AttachmentId)
-                                .OnDelete(DeleteBehavior.Cascade);
-                        });
-
-                        // ===== GLOBAL QUERY FILTERS: scoping automatico per contesto (companyId/siteId dai claim JWT) =====
-                        // Se i claim sono assenti (es. admin senza contesto, seeder, job) i filtri sono no-op.
+            // ===== GLOBAL QUERY FILTERS =====
             modelBuilder.Entity<Company>().HasQueryFilter(x =>
                 CurrentCompanyId == null || x.Id == CurrentCompanyId);
 
@@ -610,26 +423,26 @@ namespace MedWork.Api.Data
 
             // Fatturazione Elettronica configurations
             modelBuilder.Entity<ElectronicInvoice>(entity =>
-                                                {
-                                                    entity.HasIndex(x => new { x.CompanyId, x.Year, x.Number }).IsUnique();
-                                                    entity.HasIndex(x => x.SdiIdentifier);
-                                                    entity.HasIndex(x => x.Status);
-                                                    entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-                                                    entity.Property(x => x.TotalAmount).HasPrecision(18, 2);
-                                                    entity.Property(x => x.TaxableAmount).HasPrecision(18, 2);
-                                                    entity.Property(x => x.VatAmount).HasPrecision(18, 2);
-                                                });
+            {
+                entity.HasIndex(x => new { x.CompanyId, x.Year, x.Number }).IsUnique();
+                entity.HasIndex(x => x.SdiIdentifier);
+                entity.HasIndex(x => x.Status);
+                entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
+                entity.Property(x => x.TotalAmount).HasPrecision(18, 2);
+                entity.Property(x => x.TaxableAmount).HasPrecision(18, 2);
+                entity.Property(x => x.VatAmount).HasPrecision(18, 2);
+            });
 
-                        modelBuilder.Entity<ElectronicInvoiceLine>(entity =>
-                                                {
-                                                    entity.HasQueryFilter(x => CurrentCompanyId == null || x.ElectronicInvoice!.CompanyId == CurrentCompanyId);
-                                                    entity.Property(x => x.Quantity).HasPrecision(18, 4);
-                                                    entity.Property(x => x.UnitPrice).HasPrecision(18, 4);
-                                                    entity.Property(x => x.DiscountRate).HasPrecision(18, 4);
-                                                    entity.Property(x => x.NetAmount).HasPrecision(18, 2);
-                                                    entity.Property(x => x.VatRate).HasPrecision(18, 2);
-                                                    entity.Property(x => x.Amount).HasPrecision(18, 2);
-                                                });
+            modelBuilder.Entity<ElectronicInvoiceLine>(entity =>
+            {
+                entity.HasQueryFilter(x => CurrentCompanyId == null || x.ElectronicInvoice!.CompanyId == CurrentCompanyId);
+                entity.Property(x => x.Quantity).HasPrecision(18, 4);
+                entity.Property(x => x.UnitPrice).HasPrecision(18, 4);
+                entity.Property(x => x.DiscountRate).HasPrecision(18, 4);
+                entity.Property(x => x.NetAmount).HasPrecision(18, 2);
+                entity.Property(x => x.VatRate).HasPrecision(18, 2);
+                entity.Property(x => x.Amount).HasPrecision(18, 2);
+            });
 
             modelBuilder.Entity<SdiConfiguration>(entity =>
             {
@@ -648,64 +461,20 @@ namespace MedWork.Api.Data
             });
 
             modelBuilder.Entity<Quote>(entity =>
-                        {
-                            entity.HasIndex(x => new { x.CompanyId, x.Year, x.Number }).IsUnique();
-                            entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-                            entity.Property(x => x.TaxableAmount).HasPrecision(18, 2);
-                            entity.Property(x => x.VatAmount).HasPrecision(18, 2);
-                            entity.Property(x => x.TotalAmount).HasPrecision(18, 2);
-                        });
-
-                        modelBuilder.Entity<PriceList>(entity =>
-                                                {
-                                                    entity.HasIndex(x => x.CompanyId);
-                                                    entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-                                                    entity.Property(x => x.Price).HasPrecision(18, 2);
-                                                    entity.Property(x => x.Vat).HasPrecision(18, 2);
-                                                });
-
-            // Diagnostic devices configurations
-            modelBuilder.Entity<DiagnosticDevice>(entity =>
             {
+                entity.HasIndex(x => new { x.CompanyId, x.Year, x.Number }).IsUnique();
                 entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
+                entity.Property(x => x.TaxableAmount).HasPrecision(18, 2);
+                entity.Property(x => x.VatAmount).HasPrecision(18, 2);
+                entity.Property(x => x.TotalAmount).HasPrecision(18, 2);
             });
 
-            modelBuilder.Entity<DeviceExamLog>(entity =>
+            modelBuilder.Entity<PriceList>(entity =>
             {
-                entity.HasQueryFilter(x => CurrentCompanyId == null || x.Device!.CompanyId == CurrentCompanyId);
-            });
-
-            // DeviceParserConfig does not have CompanyId, so no filter
-            // modelBuilder.Entity<DeviceParserConfig>(entity =>
-            // {
-            //     entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-            // });
-
-            // Graphic signature configurations
-            modelBuilder.Entity<GraphicSignature>(entity =>
-            {
+                entity.HasIndex(x => x.CompanyId);
                 entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-            });
-
-            // Cardiologist report configurations (for ECG tele-reporting)
-            modelBuilder.Entity<CardiologistReport>(entity =>
-            {
-                entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-            });
-
-            // Safety/Risk Management configurations
-            modelBuilder.Entity<RiskAssessment>(entity =>
-            {
-                // Removed CompanyId filter because RiskAssessment does not have CompanyId property
-                entity.HasOne(x => x.RiskFactor)
-                    .WithMany()
-                    .HasForeignKey(x => x.RiskFactorId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(x => x.JobRole)
-                    .WithMany()
-                    .HasForeignKey(x => x.JobRoleId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(x => x.Price).HasPrecision(18, 2);
+                entity.Property(x => x.Vat).HasPrecision(18, 2);
             });
 
             // Accreditation configurations
@@ -761,30 +530,6 @@ namespace MedWork.Api.Data
                     .WithMany()
                     .HasForeignKey(x => x.CompanyId)
                     .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // HealthRecordExport configurations
-            modelBuilder.Entity<HealthRecordExport>(entity =>
-            {
-                entity.HasQueryFilter(x => CurrentCompanyId == null || x.CompanyId == CurrentCompanyId);
-                entity.HasIndex(x => x.EmployeeId);
-                entity.HasIndex(x => x.Status);
-                entity.HasIndex(x => x.RequestedAt);
-
-                entity.HasOne(x => x.Company)
-                    .WithMany()
-                    .HasForeignKey(x => x.CompanyId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(x => x.Employee)
-                    .WithMany()
-                    .HasForeignKey(x => x.EmployeeId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(x => x.RequestedByUser)
-                    .WithMany()
-                    .HasForeignKey(x => x.RequestedByUserId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Activity configurations

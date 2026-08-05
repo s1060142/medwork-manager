@@ -59,10 +59,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<ICurrentContextService, CurrentContextService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPersonalProtocolAssignmentService, PersonalProtocolAssignmentService>();
-builder.Services.AddScoped<INotificationService, MockNotificationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IConvocationService, ConvocationService>();
-builder.Services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
 builder.Services.AddScoped<IPasswordHasher, Argon2PasswordHasher>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IElectronicInvoiceService, ElectronicInvoiceService>();
@@ -73,14 +71,6 @@ builder.Services.AddScoped<ISdiClient>(sp =>
     sp.GetRequiredService<SdiClientFactory>().CreateClient(
         new MedWork.Api.Models.SdiConfiguration { Channel = "SDICOOP" }));
 builder.Services.AddScoped<IElectronicInvoiceXmlService, ElectronicInvoiceXmlService>();
-builder.Services.AddScoped<IGraphicSignatureService, GraphicSignatureService>();
-builder.Services.AddScoped<ICardiologistReportService, CardiologistReportService>();
-builder.Services.AddScoped<ILisConfigurationService, LisConfigurationService>();
-builder.Services.AddScoped<IHl7MessageService, Hl7MessageService>();
-builder.Services.AddScoped<IDiagnosticDeviceService, DiagnosticDeviceService>();
-builder.Services.AddScoped<IHrIntegrationService, HrIntegrationService>();
-builder.Services.AddScoped<ISafetyRiskManagementService, SafetyRiskManagementService>();
-builder.Services.AddScoped<IFieldEncryptionService, FieldEncryptionService>();
 
 if (!builder.Environment.IsEnvironment("Testing"))
 {

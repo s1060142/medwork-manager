@@ -14,12 +14,10 @@ namespace MedWork.Api.Controllers;
 public class DoctorCrudController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
-    private readonly INotificationService _notificationService;
 
-    public DoctorCrudController(AppDbContext dbContext, INotificationService notificationService)
+    public DoctorCrudController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-        _notificationService = notificationService;
     }
 
     [HttpPost("medical-records")]
@@ -267,25 +265,5 @@ public class DoctorCrudController : ControllerBase
         _dbContext.Vaccinations.Remove(entity);
         await _dbContext.SaveChangesAsync();
         return NoContent();
-    }
-
-    [HttpPost("convocations")]
-    public async Task<IActionResult> ConvocateEmployee([FromBody] ConvocationRequest request)
-    {
-        var employeeExists = await _dbContext.Employees.AnyAsync(x => x.Id == request.EmployeeId);
-        if (!employeeExists)
-        {
-            return NotFound("Employee not found.");
-        }
-
-        var log = await _notificationService.SendConvocationAsync(request.EmployeeId, request.Channel, request.MessageText);
-        return Ok(log);
-    }
-
-    public class ConvocationRequest
-    {
-        public int EmployeeId { get; set; }
-        public NotificationChannel Channel { get; set; } = NotificationChannel.Email;
-        public string MessageText { get; set; } = string.Empty;
     }
 }

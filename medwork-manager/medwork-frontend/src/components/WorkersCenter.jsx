@@ -74,9 +74,9 @@ export default function WorkersCenter() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Button startIcon={<Refresh />} size="small">
-          Reset
-        </Button>
+        <Button startIcon={<RefreshIcon />} size="small">
+                  Reset
+                </Button>
       </Box>
 
       {/* Table */}

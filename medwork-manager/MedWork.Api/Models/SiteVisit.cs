@@ -66,6 +66,4 @@ public class SiteVisit
     /// </summary>
     [StringLength(120)]
     public string? CreatedBy { get; set; }
-
-    public ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 }

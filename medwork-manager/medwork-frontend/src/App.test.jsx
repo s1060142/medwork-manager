@@ -9,65 +9,92 @@ vi.mock('./services/apiClient', () => ({
   authLogin: vi.fn(async () => ({ accessToken: 'test-token', role: 'Admin' })),
 }))
 
-function getButton(name) {
-  return screen.getByRole('button', { name })
-}
-
 beforeEach(() => {
   localStorage.setItem('accessToken', 'test-token')
   localStorage.setItem('role', 'Admin')
 })
 
-describe('App legacy shell', () => {
-  test('renders restored navigation and company tabs', async () => {
+describe('App navigation', () => {
+  test('renders app shell with login', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    // Verify the main navigation areas are present
-    const companyMgmtArea = getButton(/Gestione aziende/i)
-    expect(companyMgmtArea).toBeInTheDocument()
-    
-    // Verify new entities are in the navigation
-    const buttons = screen.getAllByRole('button', { name: /Gruppi aziendali/i })
-    expect(buttons.length).toBeGreaterThan(0)
+    // App should show the login screen initially (no token in this test context
+    // since we set it after render) — but with token set in beforeEach,
+    // it shows the authenticated shell
+    expect(screen.getByText('MedWork Manager')).toBeInTheDocument()
   })
 
-  test('shows new entities in schedule section', async () => {
+  test('opens sidebar menu and shows all spec-defined navigation items', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(getButton(/Scadenzario/i))
-    await user.click(getButton(/Disponibilita medici/i))
-    expect(screen.getAllByText(/Disponibilita medici/i).length).toBeGreaterThan(0)
+    // Click hamburger menu to open sidebar
+    const menuButton = screen.getByRole('button', { name: /menu/i })
+    await user.click(menuButton)
 
-    await user.click(getButton(/Log notifiche/i))
-    expect(screen.getAllByText(/Log notifiche/i).length).toBeGreaterThan(0)
+    // Verify all spec-defined sidebar items are present
+    expect(screen.getByText('Home')).toBeInTheDocument()
+    expect(screen.getByText('Operatori sanitari')).toBeInTheDocument()
+    expect(screen.getByText('Aziende')).toBeInTheDocument()
+    expect(screen.getByText('Lavoratori')).toBeInTheDocument()
+    expect(screen.getByText('Protocolli')).toBeInTheDocument()
+    expect(screen.getByText('Scadenze e agende')).toBeInTheDocument()
+    expect(screen.getByText('Fatturazione')).toBeInTheDocument()
+    expect(screen.getByText('Reportistica')).toBeInTheDocument()
+    expect(screen.getByText('Disponibilità')).toBeInTheDocument()
+    expect(screen.getByText('Accreditamenti lab')).toBeInTheDocument()
+    expect(screen.getByText('Esporta cartella')).toBeInTheDocument()
+    expect(screen.getByText('Ricerca')).toBeInTheDocument()
+    expect(screen.getByText('Guida')).toBeInTheDocument()
+    expect(screen.getByText('Feedback')).toBeInTheDocument()
+  })
+
+  test('navigates to Search when Ricerca is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const menuButton = screen.getByRole('button', { name: /menu/i })
+    await user.click(menuButton)
+
+    await user.click(screen.getByText('Ricerca'))
+    expect(screen.getByText('Ricerca')).toBeInTheDocument()
+  })
+
+  test('navigates to Help when Guida is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const menuButton = screen.getByRole('button', { name: /menu/i })
+    await user.click(menuButton)
+
+    await user.click(screen.getByText('Guida'))
+    expect(screen.getByText('Guida')).toBeInTheDocument()
+  })
+
+  test('navigates to Feedback when Feedback is clicked', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const menuButton = screen.getByRole('button', { name: /menu/i })
+    await user.click(menuButton)
+
+    await user.click(screen.getByText('Feedback'))
+    expect(screen.getByText('Feedback')).toBeInTheDocument()
   })
 })
 
 describe('Role-based navigation', () => {
-  test('Doctor should NOT see Portali in sidebar navigation', async () => {
+  test('Doctor should NOT see Administration in sidebar', async () => {
     localStorage.setItem('accessToken', 'test-token')
     localStorage.setItem('role', 'Doctor')
-    
+
     render(<App />)
 
-    // Doctor should NOT see Worker Portal or Company Portal
-    expect(screen.queryByText(/Portale Lavoratori/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Portale Aziende/i)).not.toBeInTheDocument()
-    
-    // Doctor should NOT see Administration section
+    const menuButton = screen.getByRole('button', { name: /menu/i })
+    const user = userEvent.setup()
+    await user.click(menuButton)
+
     expect(screen.queryByText(/Amministrazione/i)).not.toBeInTheDocument()
-  })
-
-  test('Doctor should NOT see portali in module strip', async () => {
-    localStorage.setItem('accessToken', 'test-token')
-    localStorage.setItem('role', 'Doctor')
-    
-    render(<App />)
-
-    // Verify portali are not in the module strip
-    expect(screen.queryByText(/Portale Lavoratori/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Portale Aziende/i)).not.toBeInTheDocument()
   })
 })

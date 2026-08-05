@@ -40,6 +40,9 @@ import InsertChartIcon from '@mui/icons-material/InsertChart'
 import SearchIcon from '@mui/icons-material/Search'
 import HelpIcon from '@mui/icons-material/Help'
 import FeedbackIcon from '@mui/icons-material/Feedback'
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
+import DateRangeIcon from '@mui/icons-material/DateRange'
+import DownloadIcon from '@mui/icons-material/Download'
 import IconButton from '@mui/material/IconButton'
 import LogoutIcon from '@mui/icons-material/Logout'
 import { apiGet, apiSend } from './services/apiClient'
@@ -48,11 +51,8 @@ import './App.css'
 // Lazy-loaded components (solo ciò che serve a app-spec.md)
 const HomeDashboard = lazy(() => import('./components/HomeDashboard'))
 const WorkersCenter = lazy(() => import('./components/WorkersCenter'))
-const CompanyPortal = lazy(() => import('./components/CompanyPortal'))
-const WorkerPortal = lazy(() => import('./components/WorkerPortal'))
 const BillingCenter = lazy(() => import('./components/BillingCenter'))
 const PriceListCenter = lazy(() => import('./components/PriceListCenter'))
-const QuoteCenter = lazy(() => import('./components/QuoteCenter'))
 const ReportsCenter = lazy(() => import('./components/ReportsCenter'))
 const DashboardScadenze = lazy(() => import('./components/DashboardScadenze'))
 const ProtocolsCenter = lazy(() => import('./components/ProtocolsCenter'))
@@ -60,16 +60,33 @@ const ToolsCenter = lazy(() => import('./components/ToolsCenter'))
 const SettingsCenter = lazy(() => import('./components/SettingsCenter'))
 const AuditCenter = lazy(() => import('./components/AuditCenter'))
 const LoginCard = lazy(() => import('./components/LoginCard'))
+const SearchCenter = lazy(() => import('./components/SearchCenter'))
+const HelpCenter = lazy(() => import('./components/HelpCenter'))
+const FeedbackCenter = lazy(() => import('./components/FeedbackCenter'))
+const AvailabilityCenter = lazy(() => import('./components/AvailabilityCenter'))
+const LabAccreditationCenter = lazy(() => import('./components/LabAccreditationCenter'))
+const HealthRecordExport = lazy(() => import('./components/HealthRecordExport'))
+const HealthcareProfessionalsCenter = lazy(() => import('./components/HealthcareProfessionalsCenter'))
+const AziendeCenter = lazy(() => import('./components/AziendeCenter'))
+const HealthRecordCenter = lazy(() => import('./components/HealthRecordCenter'))
+const PreventiviCenter = lazy(() => import('./components/PreventiviCenter'))
+const CreditNoteCenter = lazy(() => import('./components/CreditNoteCenter'))
 
-// Menu laterale
+// Menu laterale — solo voci presenti in app-spec.md
 const SIDEBAR_ITEMS = [
   { key: 'home', label: 'Home', icon: HomeIcon },
+  { key: 'healthcare', label: 'Operatori sanitari', icon: LocalHospitalIcon },
   { key: 'companies', label: 'Aziende', icon: BusinessIcon },
   { key: 'employees', label: 'Lavoratori', icon: GroupIcon },
   { key: 'protocols', label: 'Protocolli', icon: DescriptionIcon },
   { key: 'schedules', label: 'Scadenze e agende', icon: EventIcon },
   { key: 'billing', label: 'Fatturazione', icon: MonetizationOnIcon },
+  { key: 'preventivi', label: 'Preventivi', icon: DescriptionIcon },
+  { key: 'credit-notes', label: 'Note di credito', icon: DescriptionIcon },
   { key: 'reports', label: 'Reportistica', icon: InsertChartIcon },
+  { key: 'availability', label: 'Disponibilità', icon: DateRangeIcon },
+  { key: 'lab-accreditation', label: 'Accreditamenti lab', icon: LocalHospitalIcon },
+  { key: 'health-export', label: 'Esporta cartella', icon: DownloadIcon },
   { key: 'tools', label: 'Strumenti', icon: SettingsApplicationsIcon },
   { key: 'settings', label: 'Impostazioni', icon: SettingsApplicationsIcon },
   { key: 'audit', label: 'Audit', icon: AssessmentIcon },
@@ -124,31 +141,51 @@ function App() {
   }
 
   const renderContent = () => {
-    switch (selectedModule) {
-      case 'home':
-        return <HomeDashboard userName={currentUserName} />
-      case 'companies':
-        return <WorkersCenter />
-      case 'employees':
-        return <WorkersCenter />
-      case 'protocols':
-        return <ProtocolsCenter />
-      case 'schedules':
-        return <DashboardScadenze />
-      case 'billing':
-        return <BillingCenter />
-      case 'reports':
-        return <ReportsCenter />
-      case 'tools':
-        return <ToolsCenter />
-      case 'settings':
-        return <SettingsCenter />
-      case 'audit':
-        return <AuditCenter />
-      default:
-        return <Typography>Sezione in costruzione</Typography>
+      switch (selectedModule) {
+        case 'home':
+          return <HomeDashboard userName={currentUserName} />
+        case 'healthcare':
+          return <HealthcareProfessionalsCenter />
+        case 'companies':
+          return <AziendeCenter />
+        case 'employees':
+          return <WorkersCenter />
+        case 'protocols':
+          return <ProtocolsCenter />
+        case 'schedules':
+          return <DashboardScadenze />
+        case 'billing':
+          return <BillingCenter />
+        case 'preventivi':
+          return <PreventiviCenter />
+        case 'credit-notes':
+          return <CreditNoteCenter />
+        case 'reports':
+          return <ReportsCenter />
+        case 'availability':
+          return <AvailabilityCenter />
+        case 'lab-accreditation':
+          return <LabAccreditationCenter />
+        case 'health-export':
+          return <HealthRecordExport />
+        case 'health-record':
+          return <HealthRecordCenter />
+        case 'tools':
+          return <ToolsCenter />
+        case 'settings':
+          return <SettingsCenter />
+        case 'audit':
+          return <AuditCenter />
+        case 'search':
+          return <SearchCenter />
+        case 'help':
+          return <HelpCenter />
+        case 'feedback':
+          return <FeedbackCenter />
+        default:
+          return <Typography>Sezione in costruzione</Typography>
+      }
     }
-  }
 
   return (
     <>
