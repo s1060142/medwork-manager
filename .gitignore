@@ -1,6 +1,32 @@
-# ===== Repo-root artifacts (not covered by medwork-manager/.gitignore) =====
+# ===== .NET build output =====
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# ===== Visual Studio / Rider =====
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# ===== Build/test artifacts =====
 *.log
 api-*.log
 publish-test/
 sample-pdfs/
-**/medwork-frontend/tmp/
+
+# ===== Frontend (medwork-frontend) =====
+medwork-frontend/node_modules/
+medwork-frontend/dist/
+medwork-frontend/.vite/
+medwork-frontend/tmp/
+medwork-frontend/**/tmp/
+
+# ===== Misc =====
+*.swp
+.DS_Store
+Thumbs.db
