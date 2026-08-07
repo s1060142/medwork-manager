@@ -57,8 +57,16 @@ builder.Services.AddScoped<IPersonalProtocolAssignmentService, PersonalProtocolA
 builder.Services.AddScoped<INotificationService, MockNotificationService>();
 builder.Services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseInMemoryDatabase("MedWorkTestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                   ?? throw new InvalidOperationException("JWT configuration is missing.");
