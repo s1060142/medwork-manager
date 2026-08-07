@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Serialization;
 using MedWork.Api.Data;
 using MedWork.Api.Security;
 using MedWork.Api.Services;
@@ -7,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "MedWork API", Version = "v1" });
+    
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -29,18 +30,23 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Insert JWT token",
-        Reference = new OpenApiReference
-        {
-            Type = ReferenceType.SecurityScheme,
-            Id = JwtBearerDefaults.AuthenticationScheme
-        }
+        Description = "Insert JWT token"
     };
 
-    options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securityScheme);
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        { securityScheme, Array.Empty<string>() }
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = JwtBearerDefaults.AuthenticationScheme
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
