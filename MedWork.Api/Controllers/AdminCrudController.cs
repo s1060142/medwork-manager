@@ -28,6 +28,11 @@ public class AdminCrudController : ControllerBase
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(request.VATNumber))
+            {
+                request.VATNumber = null;
+            }
+
             _dbContext.Companies.Add(request);
             await _dbContext.SaveChangesAsync();
             return Ok(request);
@@ -41,15 +46,76 @@ public class AdminCrudController : ControllerBase
     [HttpPut("companies/{id:int}")]
     public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company request)
     {
-        var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id);
-        if (entity is null) return NotFound();
+        try
+        {
+            var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id);
+            if (entity is null) return NotFound();
 
-        entity.Name = request.Name;
-        entity.VATNumber = request.VATNumber;
-        entity.ContactEmail = request.ContactEmail;
-        entity.ContactPhone = request.ContactPhone;
+            entity.Name = request.Name;
+
+            var incomingVat = string.IsNullOrWhiteSpace(request.VATNumber) ? null : request.VATNumber;
+            if (incomingVat != entity.VATNumber)
+            {
+                // Only reassign when the value actually changed. Setting the same
+                // value would issue an UPDATE that trips the unique index against
+                // the very same row.
+                entity.VATNumber = incomingVat;
+            }
+
+            entity.ContactEmail = request.ContactEmail;
+            entity.ContactPhone = request.ContactPhone;
+            await _dbContext.SaveChangesAsync();
+            return Ok(entity);
+        }
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            return Conflict("Esiste gia un'azienda con la stessa Partita IVA.");
+        }
+    }
+
+    public class CompanyDoctorAssignmentRequest
+    {
+        public int CompanyId { get; set; }
+        public List<int> DoctorIds { get; set; } = new();
+        public int? CoordinatorDoctorId { get; set; }
+    }
+
+    [HttpPut("company-doctors")]
+    public async Task<IActionResult> UpdateCompanyDoctors([FromBody] CompanyDoctorAssignmentRequest request)
+    {
+        if (request.CompanyId <= 0) return BadRequest("CompanyId non valido.");
+
+        var companyExists = await _dbContext.Companies.AnyAsync(x => x.Id == request.CompanyId);
+        if (!companyExists) return NotFound("Azienda non trovata.");
+
+        var doctorIds = request.DoctorIds.Distinct().ToList();
+        var coordinatorId = request.CoordinatorDoctorId;
+
+        if (coordinatorId.HasValue && !doctorIds.Contains(coordinatorId.Value))
+        {
+            doctorIds.Add(coordinatorId.Value);
+        }
+
+        var validDoctorIds = await _dbContext.Doctors
+            .Where(x => doctorIds.Contains(x.Id))
+            .Select(x => x.Id)
+            .ToListAsync();
+
+        var existing = _dbContext.CompanyDoctors.Where(x => x.CompanyId == request.CompanyId);
+        _dbContext.CompanyDoctors.RemoveRange(existing);
+
+        foreach (var doctorId in validDoctorIds)
+        {
+            _dbContext.CompanyDoctors.Add(new CompanyDoctor
+            {
+                CompanyId = request.CompanyId,
+                DoctorId = doctorId,
+                IsCoordinator = coordinatorId.HasValue && coordinatorId.Value == doctorId
+            });
+        }
+
         await _dbContext.SaveChangesAsync();
-        return Ok(entity);
+        return Ok(new { companyId = request.CompanyId, assigned = validDoctorIds.Count });
     }
 
     [HttpDelete("companies/{id:int}")]

@@ -9,6 +9,7 @@ export default defineConfig({
     setupFiles: './src/test/setupTests.js',
     globals: true,
     testTimeout: 15000,
+    include: ['src/**/*.test.{js,jsx}'],
   },
   server: {
     host: '127.0.0.1',
@@ -19,6 +20,13 @@ export default defineConfig({
       protocol: 'ws',
       port: 5173,
       clientPort: 5173,
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5279',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

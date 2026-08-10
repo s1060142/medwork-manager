@@ -8,11 +8,19 @@ import {
   MenuItem,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material'
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import SearchIcon from '@mui/icons-material/Search'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { apiGet } from '../services/apiClient'
@@ -104,7 +112,14 @@ function genderColumns(counts) {
   return [String(counts.male), String(counts.female)]
 }
 
-function ReportsCenter() {
+const ANALYSIS_TABS = [
+  { key: 'visits', label: 'Elenco visite' },
+  { key: 'activities', label: 'Elenco attività' },
+  { key: 'relations', label: 'Relazioni aziendali' },
+  { key: 'charts', label: 'Grafici e analisi' },
+]
+
+function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
   const [loadingKey, setLoadingKey] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -740,57 +755,158 @@ function ReportsCenter() {
         </Stack>
       </Stack>
 
-      <Paper variant="outlined" sx={{ p: 2, mb: 2, backgroundColor: '#fafcff' }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>Filtri report</Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+      <Box className="legacy-table-toolbar">
+        <Box className="legacy-table-toolbar-filters">
           <TextField
             select
             size="small"
-            label="Azienda"
+            label="Seleziona azienda"
             value={companyId}
             onChange={(event) => {
               setCompanyId(event.target.value)
               setBranchId('')
             }}
           >
-            <MenuItem value="">Tutte</MenuItem>
+            <MenuItem value="">Seleziona azienda</MenuItem>
             {companies.map((company) => (
               <MenuItem key={company.id} value={company.id}>{company.name}</MenuItem>
             ))}
           </TextField>
-
           <TextField
             select
             size="small"
-            label="Sede"
+            label="Seleziona sede"
             value={branchId}
             onChange={(event) => setBranchId(event.target.value)}
           >
-            <MenuItem value="">Tutte</MenuItem>
+            <MenuItem value="">Seleziona sede (opzionale)</MenuItem>
             {filteredBranches.map((branch) => (
-              <MenuItem key={branch.id} value={branch.id}>{branch.address}</MenuItem>
+              <MenuItem key={branch.id} value={branch.id}>{branch.address || branch.city || `Sede #${branch.id}`}</MenuItem>
             ))}
           </TextField>
-
-          <TextField
-            size="small"
-            label="Da data"
-            type="date"
-            value={dateFrom}
-            onChange={(event) => setDateFrom(event.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
-
-          <TextField
-            size="small"
-            label="A data"
-            type="date"
-            value={dateTo}
-            onChange={(event) => setDateTo(event.target.value)}
-            InputLabelProps={{ shrink: true }}
-          />
+          <Button variant="outlined">Mostra archiviate</Button>
+          <TextField size="small" label="Nominativo" variant="outlined" value="" onChange={() => {}} />
+          <Button className="legacy-btn">Ricerca avanzata</Button>
+          <Button className="legacy-btn" startIcon={<RefreshIcon />}>Ricarica elenco</Button>
         </Box>
-      </Paper>
+      </Box>
+
+      {activeAnalysisTab === 'visits' && (
+        <Box sx={{ mt: 2 }}>
+          <Box className="legacy-table-toolbar">
+            <Box className="legacy-table-toolbar-filters">
+              <TextField size="small" label="Data Da*" type="date" variant="outlined" value="2026-01-01" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+              <TextField size="small" label="Data A*" type="date" variant="outlined" value="2026-12-31" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+              <TextField size="small" label="Tipologia" variant="outlined" select value="" onChange={() => {}}>
+                <MenuItem value="">Seleziona</MenuItem>
+              </TextField>
+              <TextField size="small" label="Medico" variant="outlined" select value="" onChange={() => {}}>
+                <MenuItem value="">Seleziona</MenuItem>
+              </TextField>
+              <TextField size="small" label="Stato visite" variant="outlined" select value="all" onChange={() => {}}>
+                <MenuItem value="all">Tutte</MenuItem>
+              </TextField>
+            </Box>
+            <Box className="legacy-table-toolbar-filters">
+              <Button className="legacy-btn" variant="outlined">Altri filtri</Button>
+              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
+              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+            </Box>
+          </Box>
+
+          <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <TableContainer sx={{ overflowX: 'auto' }}>
+              <Table size="small" sx={{ minWidth: 1100 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox" />
+                    <TableCell>Azienda</TableCell>
+                    <TableCell>Lavoratore</TableCell>
+                    <TableCell>Mansione</TableCell>
+                    <TableCell>Data visita</TableCell>
+                    <TableCell>Tipologia</TableCell>
+                    <TableCell>Rif</TableCell>
+                    <TableCell>Data scadenza</TableCell>
+                    <TableCell>Giudizio idoneità</TableCell>
+                    <TableCell>Completata</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={10}>
+                      <Typography variant="body2" color="text.secondary">Nessuna visita trovata.</Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+
+          <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1.5 }}>
+            <Button variant="outlined">Esporta dati in excel</Button>
+            <Button variant="outlined">Salva giudizi</Button>
+            <Button variant="outlined">Salva visite</Button>
+            <Button variant="outlined">Invia</Button>
+            <Button variant="outlined">Stampa</Button>
+          </Stack>
+        </Box>
+      )}
+
+      {activeAnalysisTab !== 'visits' && (
+        <Box sx={{ mt: 2 }}>
+          <Stack spacing={2}>
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                <TextField size="small" label="Anno*" type="number" variant="outlined" value={2026} onChange={() => {}} />
+                <TextField size="small" label="Intervallo date" variant="outlined" select value="" onChange={() => {}}>
+                  <MenuItem value="">Seleziona</MenuItem>
+                </TextField>
+                <TextField size="small" label="Data Da*" type="date" variant="outlined" value="2026-01-01" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+                <TextField size="small" label="Data a" type="date" variant="outlined" value="2026-12-31" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+                <TextField size="small" label="Tipo analisi*" variant="outlined" select value="" onChange={() => {}}>
+                  <MenuItem value="">Seleziona</MenuItem>
+                </TextField>
+              </Box>
+              <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />}>Vedi analisi</Button>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Relazioni</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
+                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria annuale predefinita</Typography>
+                </Paper>
+                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
+                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria personalizzata</Typography>
+                </Paper>
+                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
+                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria comparativa</Typography>
+                </Paper>
+                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
+                  <Typography variant="body2" fontWeight={700}>Resoconto aziendale</Typography>
+                </Paper>
+              </Box>
+              <Button className="legacy-btn" sx={{ mt: 1.5 }}>+ Nuovo documento</Button>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Esportazione Dati</Typography>
+              <Stack direction="row" spacing={1}>
+                <Button variant="outlined">Esporta</Button>
+                <Button variant="outlined">Esporta</Button>
+              </Stack>
+            </Paper>
+
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Allegato 3B</Typography>
+              <Stack direction="row" spacing={1}>
+                <Button variant="outlined">File excel</Button>
+                <Button variant="outlined">File inail</Button>
+              </Stack>
+            </Paper>
+          </Stack>
+        </Box>
+      )}
 
       {!!error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {!!success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}

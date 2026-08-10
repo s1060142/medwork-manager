@@ -9,8 +9,6 @@ import {
   Paper,
   Stack,
   Switch,
-  Tab,
-  Tabs,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +19,9 @@ import {
   Typography,
 } from '@mui/material'
 import { apiGet } from '../services/apiClient'
+import SearchIcon from '@mui/icons-material/Search'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import AddIcon from '@mui/icons-material/Add'
 
 const STORAGE_KEY = 'medwork.archivedEmployees'
 
@@ -62,8 +63,7 @@ function saveArchived(ids) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
 }
 
-function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud }) {
-  const [activeTab, setActiveTab] = useState('workers')
+function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud, onOpenEmployeeProfile }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
@@ -72,16 +72,17 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [search, setSearch] = useState('')
-  const [companyFilter, setCompanyFilter] = useState('all')
-  const [branchFilter, setBranchFilter] = useState('all')
-  const [fitnessFilter, setFitnessFilter] = useState('all')
-  const [showArchived, setShowArchived] = useState(false)
+  const [workerSearch, setWorkerSearch] = useState('')
+  const [workerStatus, setWorkerStatus] = useState('active')
+  const [companySearch, setCompanySearch] = useState('')
+  const [companyArchiviation, setCompanyArchiviation] = useState('active')
   const [archivedIds, setArchivedIds] = useState(() => loadArchived())
   const [companyContext, setCompanyContext] = useState(activeCompanyId || 'all')
+  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId || '')
 
   useEffect(() => {
     setCompanyContext(activeCompanyId || 'all')
+    setSelectedCompanyId(activeCompanyId || '')
   }, [activeCompanyId])
 
   useEffect(() => {
@@ -143,128 +144,75 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
   }, [employees, latestVisitByEmployee, archivedIds])
 
-  const visibleBranches = useMemo(() => {
-    if (companyFilter === 'all') return branches
-    return branches.filter((item) => Number(item.companyId) === Number(companyFilter))
-  }, [branches, companyFilter])
-
   useEffect(() => {
     if (companyContext === 'all') {
-      setCompanyFilter('all')
-      setBranchFilter('all')
       return
     }
-
-    setCompanyFilter(companyContext)
-    setBranchFilter('all')
   }, [companyContext])
 
   useEffect(() => {
     if (!activeCompanyId || activeCompanyId === 'all') {
-      setCompanyContext('all')
-      setCompanyFilter('all')
-      setBranchFilter('all')
       return
-    }
-
-    setCompanyContext(activeCompanyId)
-    setCompanyFilter(activeCompanyId)
-
-    if (activeBranchId) {
-      setBranchFilter(activeBranchId)
-    } else {
-      setBranchFilter('all')
     }
   }, [activeCompanyId, activeBranchId])
 
-  const filteredRows = useMemo(() => {
-    const needle = normalizeText(search)
+  const filteredCompanyRows = useMemo(() => {
+    const needle = normalizeText(companySearch)
 
-    return workerRows.filter((row) => {
-      if (!showArchived && row.isArchived) return false
-      if (companyFilter !== 'all' && Number(row.companyId) !== Number(companyFilter)) return false
-      if (branchFilter !== 'all' && Number(row.branchId) !== Number(branchFilter)) return false
-      if (fitnessFilter !== 'all' && row.fitness.key !== fitnessFilter) return false
-
+    return companies.filter((row) => {
+      const isArchived = row.status === 'Archiviata'
+      if (companyArchiviation === 'active' && isArchived) return false
+      if (companyArchiviation === 'archived' && !isArchived) return false
       if (!needle) return true
-
-      const searchable = `${row.lastName} ${row.firstName} ${row.taxCode} ${row.jobRoleDisplay} ${row.companyName || ''}`.toLowerCase()
+      const searchable = `${row.name || ''} ${row.ragioneSociale || ''} ${row.cittaUnitaLocal || ''} ${row.provincia || ''}`.toLowerCase()
       return searchable.includes(needle)
     })
-  }, [workerRows, showArchived, companyFilter, branchFilter, fitnessFilter, search])
+  }, [companies, companySearch, companyArchiviation])
 
-  const contextualRows = useMemo(() => {
-    if (companyContext === 'all') {
-      return workerRows
-    }
-
-    return workerRows.filter((row) => Number(row.companyId) === Number(companyContext))
-  }, [workerRows, companyContext])
-
-  const contextualRolesCount = useMemo(() => {
-    const roleSet = new Set(
-      contextualRows
-        .filter((row) => !row.isArchived)
-        .map((row) => row.jobRoleDisplay || '-')
-        .filter((value) => String(value).trim().length > 0),
-    )
-
-    return roleSet.size
-  }, [contextualRows])
-
-  const generalKpi = useMemo(() => {
-    const companiesCount = companyContext === 'all'
-      ? companies.length
-      : companies.filter((item) => Number(item.id) === Number(companyContext)).length
-
-    const placesCount = companyContext === 'all'
-      ? branches.length
-      : visibleBranches.length
-
-    return {
-      companies: companiesCount,
-      places: placesCount,
-      roles: contextualRolesCount,
-      activeWorkers: contextualRows.filter((row) => !row.isArchived).length,
-    }
-  }, [companyContext, companies, branches, visibleBranches, contextualRolesCount, contextualRows])
-
-  const kpi = useMemo(() => {
-    const source = contextualRows.filter((row) => !row.isArchived)
-    return {
-      fit: source.filter((item) => item.fitness.key === 'fit').length,
-      partial: source.filter((item) => item.fitness.key === 'partial').length,
-      notFit: source.filter((item) => item.fitness.key === 'not-fit').length,
-      none: source.filter((item) => item.fitness.key === 'none').length,
-    }
-  }, [contextualRows])
-
-  const currentCompanyName = useMemo(() => {
-    if (companyContext === 'all') return 'Tutte le aziende'
-    return companies.find((item) => Number(item.id) === Number(companyContext))?.name || 'Azienda'
-  }, [companies, companyContext])
-
-  const contextualRolesWithCount = useMemo(() => {
-    const counts = contextualRows
-      .filter((row) => !row.isArchived)
-      .reduce((accumulator, row) => {
-      const key = row.jobRoleDisplay || '-'
-      accumulator[key] = (accumulator[key] || 0) + 1
-      return accumulator
-    }, {})
-
-    const rows = []
-    Object.keys(counts).forEach((name) => {
-      const role = jobRoles.find((item) => item.name === name)
-      rows.push({
-        id: role?.id || name,
-        name,
-        count: counts[name],
-      })
+  const filteredWorkerRows = useMemo(() => {
+    const needle = normalizeText(workerSearch)
+    const source = employees.filter((row) => {
+      if (!companyContext || companyContext === 'all') return true
+      return Number(row.companyId) === Number(companyContext)
     })
 
-    return rows.sort((a, b) => b.count - a.count)
-  }, [contextualRows, jobRoles])
+    const statusFiltered = employeeStatusFilter(source, workerStatus, archivedIds)
+
+    return statusFiltered
+      .map((employee) => {
+        const latestVisit = latestVisitByEmployee[Number(employee.id)]
+        const fitness = classifyFitness(latestVisit?.outcome)
+        return {
+          ...employee,
+          latestVisitDate: latestVisit?.visitDate || null,
+          latestOutcome: latestVisit?.outcome || '',
+          fitness,
+          isArchived: archivedIds.includes(Number(employee.id)),
+          jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
+          workingStatus: 'Attivo',
+        }
+      })
+      .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
+      .filter((row) => {
+        if (!needle) return true
+        const searchable = `${row.lastName || ''} ${row.firstName || ''} ${row.taxCode || ''} ${row.jobRoleDisplay || ''}`.toLowerCase()
+        return searchable.includes(needle)
+      })
+  }, [employees, workerSearch, workerStatus, archivedIds, latestVisitByEmployee, companyContext])
+
+  function employeeStatusFilter(list, status, archived) {
+    if (status === 'all') return list
+    if (status === 'active') return list.filter((item) => !archived.includes(Number(item.id)))
+    if (status === 'archived') return list.filter((item) => archived.includes(Number(item.id)))
+    return list
+  }
+
+  const visibleBranches = useMemo(() => {
+    if (!companyContext || companyContext === 'all') return branches
+    return branches.filter((item) => Number(item.companyId) === Number(companyContext))
+  }, [branches, companyContext])
+
+  const visibleCompanyRows = useMemo(() => filteredCompanyRows, [filteredCompanyRows])
 
   const toggleArchived = (employeeId) => {
     const id = Number(employeeId)
@@ -279,270 +227,264 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={1}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Box>
             <Typography variant="h6">Aziende / Lavoratori</Typography>
-            <Typography variant="body2" color="text.secondary">Vista operativa con KPI idoneità, filtri avanzati e stato lavorativo.</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Vista operativa con filtri avanzati e stato lavorativo.
+            </Typography>
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button variant="outlined" onClick={onOpenEmployeeCrud}>Gestione completa</Button>
-            <Button variant="contained" onClick={onOpenEmployeeCreate}>Aggiungi</Button>
+            <Button variant="outlined" onClick={onOpenEmployeeCrud} className="legacy-btn-secondary">Gestione completa</Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate} className="legacy-btn">Aggiungi</Button>
           </Stack>
-        </Stack>
+        </Box>
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.2} alignItems={{ md: 'center' }} sx={{ mt: 1.5 }}>
-          <Stack direction="row" spacing={0.8} alignItems="center">
-            <Typography variant="body2" color="text.secondary">Aziende</Typography>
-            <Typography variant="body2" color="text.secondary">›</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>{currentCompanyName}</Typography>
-            <Chip size="small" variant="outlined" label={`${contextualRows.filter((x) => !x.isArchived).length} lavoratori`} />
-          </Stack>
-
-          <TextField
-            select
-            size="small"
-            label="Contesto azienda"
-            value={companyContext}
-            onChange={(event) => setCompanyContext(event.target.value)}
-            sx={{ minWidth: { md: 300 }, ml: { md: 'auto' } }}
-          >
-            <MenuItem value="all">Tutte le aziende</MenuItem>
-            {companies.map((item) => (
-              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-            ))}
-          </TextField>
-        </Stack>
-
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mt: 1.5 }} variant="scrollable" allowScrollButtonsMobile>
-          <Tab value="general" label="Generali" />
-          <Tab value="places" label={`Luoghi (${companyContext === 'all' ? branches.length : visibleBranches.length})`} />
-          <Tab value="roles" label={`Mansioni (${contextualRolesCount})`} />
-          <Tab value="workers" label={`Lavoratori (${contextualRows.filter((x) => !x.isArchived).length})`} />
-        </Tabs>
-      </Paper>
-
-      {!!error && <Alert severity="error">{error}</Alert>}
-      {loading && <Alert severity="info">Caricamento dati in corso...</Alert>}
-
-      {!loading && activeTab === 'workers' && (
-        <>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Lavoratori idonei</Typography>
-              <Typography variant="h5">{kpi.fit}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Parzialmente idonei</Typography>
-              <Typography variant="h5">{kpi.partial}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Non idonei</Typography>
-              <Typography variant="h5">{kpi.notFit}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Senza idoneità</Typography>
-              <Typography variant="h5">{kpi.none}</Typography>
-            </Paper>
+        <Box className="legacy-table-toolbar">
+          <Box className="legacy-table-toolbar-filters">
+            <TextField
+              size="small"
+              label="Nominativo"
+              variant="outlined"
+              value={companySearch}
+              onChange={(event) => setCompanySearch(event.target.value)}
+            />
+            <TextField
+              size="small"
+              label="Provincia"
+              variant="outlined"
+              value=""
+              onChange={() => {}}
+            />
+            <TextField
+              size="small"
+              label="Comune"
+              variant="outlined"
+              value=""
+              onChange={() => {}}
+            />
+            <TextField
+              size="small"
+              label="Archiviazione"
+              select
+              variant="outlined"
+              value={companyArchiviation}
+              onChange={(event) => setCompanyArchiviation(event.target.value)}
+            >
+              <MenuItem value="active">Attive</MenuItem>
+              <MenuItem value="archived">Archiviate</MenuItem>
+            </TextField>
           </Box>
-
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-            <Stack direction={{ xs: 'column', lg: 'row' }} spacing={1.2}>
-              <TextField
-                size="small"
-                label="Cerca lavoratore"
-                placeholder="Cognome, nome, codice fiscale, mansione..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                sx={{ minWidth: { lg: 260 } }}
-              />
-
-              <TextField
-                select
-                size="small"
-                label="Azienda"
-                value={companyFilter}
-                onChange={(event) => {
-                  setCompanyFilter(event.target.value)
-                  setBranchFilter('all')
-                }}
-                sx={{ minWidth: { lg: 210 } }}
-              >
-                <MenuItem value="all">Tutte</MenuItem>
-                {companies.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                size="small"
-                label="Luogo"
-                value={branchFilter}
-                onChange={(event) => setBranchFilter(event.target.value)}
-                sx={{ minWidth: { lg: 210 } }}
-              >
-                <MenuItem value="all">Tutti</MenuItem>
-                {visibleBranches.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>{`${item.city} • ${item.address}`}</MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                size="small"
-                label="Stato idoneità"
-                value={fitnessFilter}
-                onChange={(event) => setFitnessFilter(event.target.value)}
-                sx={{ minWidth: { lg: 200 } }}
-              >
-                <MenuItem value="all">Tutti</MenuItem>
-                <MenuItem value="fit">Idoneo</MenuItem>
-                <MenuItem value="partial">Parzialmente idoneo</MenuItem>
-                <MenuItem value="not-fit">Non idoneo</MenuItem>
-                <MenuItem value="none">Senza idoneità</MenuItem>
-              </TextField>
-
-              <FormControlLabel
-                sx={{ ml: { lg: 'auto' } }}
-                control={<Switch checked={showArchived} onChange={(event) => setShowArchived(event.target.checked)} />}
-                label="Mostra archiviati"
-              />
-            </Stack>
-          </Paper>
-
-          <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-            <TableContainer sx={{ overflowX: 'auto' }}>
-            <Table size="small" sx={{ minWidth: 980 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Cognome</TableCell>
-                  <TableCell>Nome</TableCell>
-                  <TableCell>Codice fiscale</TableCell>
-                  <TableCell>Mansione</TableCell>
-                  <TableCell>Stato idoneità</TableCell>
-                  <TableCell>Data ultimo giudizio</TableCell>
-                  <TableCell>Stato lavorativo</TableCell>
-                  <TableCell align="right">Azione</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow key={row.id} hover>
-                    <TableCell>{row.lastName}</TableCell>
-                    <TableCell>{row.firstName}</TableCell>
-                    <TableCell>{row.taxCode || '-'}</TableCell>
-                    <TableCell>{row.jobRoleDisplay}</TableCell>
-                    <TableCell>
-                      <Chip size="small" color={row.fitness.color} label={row.fitness.label} variant="outlined" />
-                    </TableCell>
-                    <TableCell>{formatDate(row.latestVisitDate)}</TableCell>
-                    <TableCell>
-                      <Chip size="small" color="success" label={row.workingStatus} />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button size="small" onClick={() => toggleArchived(row.id)}>
-                        {row.isArchived ? 'Ripristina' : 'Archivia'}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredRows.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8}>
-                      <Typography variant="body2" color="text.secondary">Nessun lavoratore trovato con i filtri correnti.</Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-            </TableContainer>
-          </Paper>
-        </>
-      )}
-
-      {!loading && activeTab === 'general' && (
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Aziende</Typography>
-              <Typography variant="h5">{generalKpi.companies}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Luoghi</Typography>
-              <Typography variant="h5">{generalKpi.places}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Mansioni</Typography>
-              <Typography variant="h5">{generalKpi.roles}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2.5 }}>
-              <Typography variant="caption" color="text.secondary">Lavoratori attivi</Typography>
-              <Typography variant="h5">{generalKpi.activeWorkers}</Typography>
-            </Paper>
+          <Box className="legacy-table-toolbar-filters">
+            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
+            <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+            <Button className="legacy-btn" onClick={onOpenEmployeeCreate}>Ricerca lavoratori</Button>
           </Box>
-        </Paper>
-      )}
+        </Box>
 
-      {!loading && activeTab === 'places' && (
-        <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 760 }}>
+        <Box className="legacy-data-table">
+          <Table size="small" sx={{ minWidth: 980 }}>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox" />
                 <TableCell>Azienda</TableCell>
-                <TableCell>Città</TableCell>
                 <TableCell>Indirizzo</TableCell>
-                <TableCell>Provincia</TableCell>
-                <TableCell>Dipendenti</TableCell>
+                <TableCell>P.Iva</TableCell>
+                <TableCell>Medico</TableCell>
+                <TableCell>Coordinati</TableCell>
+                <TableCell>Dip.</TableCell>
+                <TableCell>Archiviata</TableCell>
+                <TableCell>Archivio</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {(companyContext === 'all' ? branches : visibleBranches).map((row) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>{row.companyName || '-'}</TableCell>
-                  <TableCell>{row.city || '-'}</TableCell>
-                  <TableCell>{row.address || '-'}</TableCell>
-                  <TableCell>{row.province || '-'}</TableCell>
+              {visibleCompanyRows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  hover
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    const next = Number(row.id)
+                    setCompanyContext(next)
+                    setSelectedCompanyId(next)
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      const next = Number(row.id)
+                      setCompanyContext(next)
+                      setSelectedCompanyId(next)
+                    }
+                  }}
+                  sx={{
+                    ...(Number(selectedCompanyId) === Number(row.id)
+                      ? { backgroundColor: 'rgba(25, 118, 210, 0.08)' }
+                      : { backgroundColor: 'transparent' }),
+                  }}
+                >
+                  <TableCell padding="checkbox" />
+                  <TableCell>{`${String(row.id || '').padStart(3, '0')} - ${row.name || '-'} - ${row.companyGroupCode || 1}`}</TableCell>
+                  <TableCell>{`${row.indirizzoUnitaLocal || ''}${row.cittaUnitaLocal ? ` - ${row.cittaUnitaLocal}` : ''}${row.provincia ? ` (${row.provincia})` : ''}`}</TableCell>
+                  <TableCell>{row.vatNumber || '-'}</TableCell>
+                  <TableCell>{row.doctorName || '-'}</TableCell>
+                  <TableCell>-</TableCell>
                   <TableCell>{row.employeesCount ?? '-'}</TableCell>
+                  <TableCell>{row.status === 'Archiviata' ? 'Sì' : 'No'}</TableCell>
+                  <TableCell>
+                    <Box className="row-actions">
+                      <button type="button" className="legacy-icon-btn-sm" aria-label="Archivio">📁</button>
+                    </Box>
+                  </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      {!loading && activeTab === 'roles' && (
-        <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-          <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 680 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Mansione</TableCell>
-                <TableCell>Dipendenti</TableCell>
-                <TableCell>Descrizione</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {contextualRolesWithCount.map((row) => (
-                <TableRow key={row.id} hover>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.count}</TableCell>
-                  <TableCell>{jobRoles.find((x) => x.name === row.name)?.description || '-'}</TableCell>
-                </TableRow>
-              ))}
-              {contextualRolesWithCount.length === 0 && (
+              {visibleCompanyRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3}>
-                    <Typography variant="body2" color="text.secondary">Nessuna mansione presente nel contesto selezionato.</Typography>
+                  <TableCell colSpan={9}>
+                    <Typography variant="body2" color="text.secondary">Nessuna azienda trovata.</Typography>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-          </TableContainer>
-        </Paper>
-      )}
+        </Box>
+
+        <Box className="legacy-table-footer">
+          <Stack direction="row" spacing={1}>
+            <Button variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
+            <Button variant="outlined">Stampa</Button>
+            <Button variant="outlined">Stampe massive</Button>
+            <Button variant="outlined">Operazioni massive</Button>
+            <Button variant="outlined">Esporta dati in excel</Button>
+            <Button variant="outlined">Importa lavoratori</Button>
+          </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
+            <TextField size="small" select sx={{ minWidth: 90 }} value={20} onChange={() => {}}>
+              <MenuItem value={20}>20</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </TextField>
+            <Typography variant="caption" color="text.secondary">
+              {visibleCompanyRows.length ? `1 - ${visibleCompanyRows.length} of ${filteredCompanyRows.length}` : '0 of 0'}
+            </Typography>
+          </Stack>
+        </Box>
+      </Paper>
+
+      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography variant="subtitle1">Lavoratori</Typography>
+        </Box>
+
+        <Box className="legacy-table-toolbar">
+          <Box className="legacy-table-toolbar-filters">
+            <TextField
+              size="small"
+              label="Cognome"
+              variant="outlined"
+              value={workerSearch}
+              onChange={(event) => setWorkerSearch(event.target.value)}
+            />
+            <TextField size="small" label="Nome" variant="outlined" value="" onChange={() => {}} />
+            <TextField size="small" label="Codice fiscale" variant="outlined" value="" onChange={() => {}} />
+            <TextField
+              size="small"
+              label="Stato"
+              select
+              variant="outlined"
+              value={workerStatus}
+              onChange={(event) => setWorkerStatus(event.target.value)}
+            >
+              <MenuItem value="active">Non cessati</MenuItem>
+              <MenuItem value="all">Tutti</MenuItem>
+              <MenuItem value="archived">Archiviati</MenuItem>
+            </TextField>
+          </Box>
+          <Box className="legacy-table-toolbar-filters">
+            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
+            <Button className="legacy-btn" startIcon={<SearchIcon />}>Filtra</Button>
+          </Box>
+        </Box>
+
+        <Box className="legacy-data-table">
+          <Table size="small" sx={{ minWidth: 1100 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox" />
+                <TableCell>Lavoratore</TableCell>
+                <TableCell>Data nascita</TableCell>
+                <TableCell>Mansione</TableCell>
+                <TableCell>Reparto</TableCell>
+                <TableCell>Luogo di lavoro</TableCell>
+                <TableCell>Periodicità</TableCell>
+                <TableCell>Ultima visita</TableCell>
+                <TableCell>Prossima visita</TableCell>
+                <TableCell>Scadenza</TableCell>
+                <TableCell>Visita</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredWorkerRows.map((row) => {
+                const latestVisit = latestVisitByEmployee[Number(row.id)]
+                return (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    onDoubleClick={() => {
+                      onOpenEmployeeProfile?.(row)
+                    }}
+                  >
+                    <TableCell padding="checkbox" />
+                    <TableCell sx={{ fontWeight: 600 }}>{`${row.lastName || ''} ${row.firstName || ''}`.trim()}</TableCell>
+                    <TableCell>{formatDate(row.birthDate)}</TableCell>
+                    <TableCell>{row.jobRoleDisplay}</TableCell>
+                    <TableCell>{row.reparto || '-'}</TableCell>
+                    <TableCell>{row.luogoDiLavoro || '-'}</TableCell>
+                    <TableCell>{row.periodicita || '-'}</TableCell>
+                    <TableCell>{formatDate(row.dataUltimaVisita || latestVisit?.visitDate)}</TableCell>
+                    <TableCell>{formatDate(row.dataProssimaVisita || latestVisit?.nextDeadlineDate)}</TableCell>
+                    <TableCell>{formatDate(latestVisit?.nextDeadlineDate)}</TableCell>
+                    <TableCell>
+                      <Box className="row-actions">
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Lista">📋</button>
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Aggiungi">➕</button>
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Scudo">🛡️</button>
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Archivio">📁</button>
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Altro">⋯</button>
+                        <button type="button" className="legacy-icon-btn-sm" aria-label="Elimina">🗑️</button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+              {filteredWorkerRows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={11}>
+                    <Typography variant="body2" color="text.secondary">Nessun lavoratore trovato.</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Box>
+
+        <Box className="legacy-table-footer">
+          <Box />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
+            <TextField size="small" select sx={{ minWidth: 90 }} value={50} onChange={() => {}}>
+              <MenuItem value={20}>20</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+            </TextField>
+            <Typography variant="caption" color="text.secondary">
+              {filteredWorkerRows.length ? `1 - ${filteredWorkerRows.length} of ${filteredWorkerRows.length}` : '0 of 0'}
+            </Typography>
+          </Stack>
+        </Box>
+      </Paper>
+
+      {!!error && <Alert severity="error">{error}</Alert>}
+      {loading && <Alert severity="info">Caricamento dati in corso...</Alert>}
     </Stack>
   )
 }

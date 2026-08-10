@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
-  Autocomplete,
   Box,
   Button,
-  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  IconButton,
   InputAdornment,
   MenuItem,
   Paper,
@@ -29,6 +28,11 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import AddIcon from '@mui/icons-material/Add'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
+import PrintIcon from '@mui/icons-material/Print'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
+import CloseIcon from '@mui/icons-material/Close'
 import { apiGet, apiSend } from '../services/apiClient'
 import { getItalianMunicipalities } from '../services/municipalityService'
 import { calculateItalianTaxCode } from '../utils/taxCode'
@@ -217,6 +221,7 @@ function CrudEntityView({
   activeBranchId = '',
   externalCreateToken = 0,
   onExternalCreateConsumed,
+  onOpenCompanyProfile,
 }) {
   const [rows, setRows] = useState([])
   const [contextEmployees, setContextEmployees] = useState([])
@@ -237,6 +242,7 @@ function CrudEntityView({
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [successMessage, setSuccessMessage] = useState('')
   const [profileEmployee, setProfileEmployee] = useState(null)
+  const [profileCompany, setProfileCompany] = useState(null)
   const [queryRules, setQueryRules] = useState([])
 
   const canEdit = !config.readOnly && (currentRole === 'Admin' || currentRole === config.role)
@@ -500,148 +506,101 @@ function CrudEntityView({
 
   const openEdit = (row) => {
     setEditingRow(row)
-    const nextData = defaultFormData(config.fields)
-    config.fields.forEach((field) => {
-      const value = row[field.name]
-      if (field.type === 'date' && value) {
-        nextData[field.name] = String(value).split('T')[0]
-      } else {
-        nextData[field.name] = value ?? ''
-      }
-    })
-    setFormData(nextData)
+    setFormData(
+      config.fields.reduce((accumulator, field) => {
+        accumulator[field.name] = row[field.name]
+        return accumulator
+      }, {}),
+    )
     setFormErrors({})
     setDialogOpen(true)
   }
 
-  const closeDialog = () => {
-    if (saving) return
-    setDialogOpen(false)
+  const handleDelete = async (row) => {
+    setConfirmDelete(row)
   }
 
-  const handleChange = (field, value) => {
-    const nextValue = field.transform ? field.transform(value) : value
-    setFormData((current) => {
-      if (config.key === 'employees' && field.name === 'companyId') {
-        return { ...current, companyId: nextValue, branchId: '' }
-      }
+  const confirmDeleteRow = async () => {
+    if (!confirmDelete || !config.deleteEndpoint) return
 
-      return { ...current, [field.name]: nextValue }
-    })
-    setFormErrors((current) => ({ ...current, [field.name]: undefined }))
-  }
-
-  const handleGenerateTaxCode = () => {
     try {
-      const taxCode = calculateItalianTaxCode({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        birthDate: formData.birthDate,
-        gender: formData.gender,
-        birthCityCode: formData.birthCityCode,
-      })
+      setSaving(true)
 
-      setFormData((current) => ({ ...current, taxCode }))
-      setFormErrors((current) => ({ ...current, taxCode: undefined }))
-    } catch (taxCodeError) {
-      setFormErrors((current) => ({ ...current, taxCode: taxCodeError.message }))
-    }
-  }
-
-  const validateField = (field, value) => {
-    const textValue = typeof value === 'string' ? value.trim() : value
-
-    if (field.required && (textValue === '' || textValue === null || textValue === undefined)) {
-      return 'Campo obbligatorio.'
-    }
-
-    if (typeof textValue === 'string' && field.minLength && textValue.length < field.minLength) {
-      return `Minimo ${field.minLength} caratteri.`
-    }
-
-    if (typeof textValue === 'string' && field.maxLength && textValue.length > field.maxLength) {
-      return `Massimo ${field.maxLength} caratteri.`
-    }
-
-    if (typeof textValue === 'string' && textValue && field.pattern && !field.pattern.test(textValue)) {
-      return field.patternMessage || 'Formato non valido.'
-    }
-
-    if (field.type === 'number' && textValue !== '' && textValue !== null && textValue !== undefined) {
-      const numericValue = Number(textValue)
-      if (Number.isNaN(numericValue)) {
-        return 'Valore numerico non valido.'
-      }
-      if (typeof field.min === 'number' && numericValue < field.min) {
-        return `Valore minimo: ${field.min}.`
-      }
-      if (typeof field.max === 'number' && numericValue > field.max) {
-        return `Valore massimo: ${field.max}.`
-      }
-    }
-
-    return undefined
-  }
-
-  const validateForm = () => {
-    const nextErrors = {}
-    config.fields.forEach((field) => {
-      const error = validateField(field, formData[field.name])
-      if (error) {
-        nextErrors[field.name] = error
-      }
-    })
-
-    if (typeof config.customValidate === 'function') {
-      const customErrors = config.customValidate(formData)
-      Object.assign(nextErrors, customErrors)
-    }
-
-    setFormErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
-  }
-
-  const normalizePayload = () => {
-    const payload = {}
-    config.fields.forEach((field) => {
-      const rawValue = formData[field.name]
-      if (field.type === 'number') {
-        payload[field.name] = rawValue === '' ? null : Number(rawValue)
-      } else if (field.type === 'select') {
-        payload[field.name] = field.options ? rawValue : (rawValue === '' ? null : Number(rawValue))
-      } else if (field.type === 'date') {
-        payload[field.name] = rawValue ? new Date(rawValue).toISOString() : null
+      let deletePayload
+      if (config.compositeKey && config.compositeKey.length) {
+        deletePayload = buildCompositeQuery(config, confirmDelete)
+      } else if (config.idField && confirmDelete[config.idField] != null) {
+        const idValue = confirmDelete[config.idField]
+        const deleteUrl = `${config.deleteEndpoint}/${encodeURIComponent(idValue)}`
+        await apiSend('DELETE', deleteUrl)
+        setRows((current) => current.filter((row) => row !== confirmDelete))
+        setSuccessMessage('Elemento eliminato correttamente.')
+        setSaving(false)
+        setConfirmDelete(null)
+        return
       } else {
-        payload[field.name] = rawValue === '' ? null : rawValue
+        deletePayload = ''
       }
-    })
-    return payload
+
+      if (deletePayload) {
+        await apiSend('DELETE', `${config.deleteEndpoint}?${deletePayload}`)
+      } else {
+        await apiSend('DELETE', config.deleteEndpoint)
+      }
+
+      setRows((current) => current.filter((row) => row !== confirmDelete))
+      setSuccessMessage('Elemento eliminato correttamente.')
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      setSaving(false)
+      setConfirmDelete(null)
+    }
   }
 
   const handleSave = async () => {
-    if (!validateForm()) {
+    const errors = config.customValidate ? config.customValidate(formData) : {}
+    const requiredErrors = config.fields.reduce((accumulator, field) => {
+      if (field.required && String(formData[field.name] ?? '').trim() === '') {
+        accumulator[field.name] = 'Campo obbligatorio'
+      }
+      return accumulator
+    }, {})
+
+    const finalErrors = { ...requiredErrors, ...errors }
+    if (Object.keys(finalErrors).length) {
+      setFormErrors(finalErrors)
       return
     }
 
+    setFormErrors({})
     setSaving(true)
-    setError('')
     try {
-      const payload = normalizePayload()
+      const payload = { ...formData }
+
+      config.fields.forEach((field) => {
+        if (field.transform && typeof field.transform === 'function') {
+          payload[field.name] = field.transform(payload[field.name])
+        }
+      })
 
       if (editingRow) {
-        if (config.compositeKey) {
-          const query = buildCompositeQuery(config, editingRow)
-          await apiSend('PUT', `${config.updateEndpoint}?${query}`, payload)
-        } else {
-          await apiSend('PUT', `${config.updateEndpoint}/${editingRow[config.idField]}`, payload)
-        }
+        const rowId = editingRow[config.idField || 'id']
+        const updateUrl = rowId != null ? `${config.updateEndpoint}/${rowId}` : config.updateEndpoint
+        const updated = await apiSend('PUT', updateUrl, payload)
+        setRows((current) =>
+          current.map((row) => (row === editingRow ? { ...row, ...updated } : row)),
+        )
+        setSuccessMessage('Elemento aggiornato correttamente.')
       } else {
-        await apiSend('POST', config.createEndpoint, payload)
+        const created = await apiSend('POST', config.createEndpoint, payload)
+        setRows((current) => [created, ...current])
+        setSuccessMessage('Elemento creato correttamente.')
       }
 
       setDialogOpen(false)
-      setSuccessMessage(editingRow ? 'Record aggiornato con successo.' : 'Record creato con successo.')
-      await loadRows()
+      setEditingRow(null)
+      setFormData(defaultFormData(config.fields))
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -649,446 +608,272 @@ function CrudEntityView({
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirmDelete) return
-    setSaving(true)
-    setError('')
-    try {
-      if (config.compositeKey) {
-        const query = buildCompositeQuery(config, confirmDelete)
-        await apiSend('DELETE', `${config.deleteEndpoint}?${query}`)
-      } else {
-        await apiSend('DELETE', `${config.deleteEndpoint}/${confirmDelete[config.idField]}`)
-      }
+  const renderSelectField = (field) => {
+    const options = field.options || selectOptions[field.optionsEndpoint] || []
+    const resolvedValue = formData[field.name]
 
-      setConfirmDelete(null)
-      setSuccessMessage('Record eliminato con successo.')
-      await loadRows()
-    } catch (requestError) {
-      setError(requestError.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleExportCsv = () => {
-    const exportColumns = defaultColumns.length ? defaultColumns : configuredColumns
-    const headers = exportColumns.map((column) => fieldLabels[column] || keyToLabel(column))
-    const dataRows = filteredRows.map((row) => exportColumns.map((column) => displayValue(row[column])))
-    downloadCsv(`${config.key}-export.csv`, headers, dataRows)
-    setSuccessMessage('Export CSV completato.')
-  }
-
-  const addQueryRule = () => {
-    setQueryRules((current) => [...current, createQueryRule(configuredColumns)])
-  }
-
-  const removeQueryRule = (id) => {
-    setQueryRules((current) => current.filter((rule) => rule.id !== id))
-  }
-
-  const updateQueryRule = (id, patch) => {
-    setQueryRules((current) =>
-      current.map((rule) =>
-        rule.id === id
-          ? {
-              ...rule,
-              ...patch,
-              value: patch.operator && !operatorNeedsValue(patch.operator) ? '' : (patch.value ?? rule.value),
-            }
-          : rule,
-      ),
+    return (
+      <TextField
+        key={field.name}
+        select
+        size="small"
+        label={field.label}
+        error={Boolean(formErrors[field.name])}
+        helperText={formErrors[field.name]}
+        value={resolvedValue ?? ''}
+        onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+      >
+        <MenuItem value="">Seleziona</MenuItem>
+        {options.map((option) => (
+          <MenuItem key={option[field.optionValue]} value={option[field.optionValue]}>
+            {getOptionLabel(option, field)}
+          </MenuItem>
+        ))}
+      </TextField>
     )
   }
 
-  const openProfile = (row) => {
-    setProfileEmployee(row)
+  const renderFormField = (field) => {
+    if (field.hiddenInForm) return null
+
+    if (field.type === 'select') {
+      return renderSelectField(field)
+    }
+
+    if (field.type === 'textarea') {
+      return (
+        <TextField
+          key={field.name}
+          size="small"
+          label={field.label}
+          multiline
+          minRows={3}
+          error={Boolean(formErrors[field.name])}
+          helperText={formErrors[field.name]}
+          value={formData[field.name]}
+          onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+        />
+      )
+    }
+
+    const inputProps = {}
+    if (field.type === 'number') {
+      inputProps.inputMode = 'numeric'
+      inputProps.pattern = '[0-9]*'
+    }
+    if (field.type === 'date') {
+      inputProps.type = 'date'
+    }
+    if (field.type === 'email') {
+      inputProps.type = 'email'
+    }
+    if (field.type === 'tel') {
+      inputProps.type = 'tel'
+    }
+
+    return (
+      <TextField
+        key={field.name}
+        size="small"
+        label={field.label}
+        error={Boolean(formErrors[field.name])}
+        helperText={formErrors[field.name]}
+        value={formData[field.name]}
+        inputProps={Object.keys(inputProps).length ? inputProps : undefined}
+        onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+      />
+    )
   }
 
-  const closeProfile = () => {
-    setProfileEmployee(null)
-  }
-
-  const handleEditFromProfile = (row) => {
-    closeProfile()
-    openEdit(row)
-  }
+  const visibleFields = useMemo(() => config.fields.filter((field) => !field.hiddenInForm), [config])
 
   return (
-    <Paper elevation={2} sx={{ p: 3, borderRadius: 3, border: '1px solid #e6ebf2' }}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
-        <Box>
-          <Typography variant="h6">{config.label}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {config.readOnly
-              ? 'Vista informativa in sola lettura sincronizzata dal backend.'
-              : 'Gestione completa: inserimento, modifica con doppio click sulla riga e cancellazione.'}
-          </Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 0.8 }}>
-            <Chip size="small" label={`Totale: ${scopedRows.length}`} variant="outlined" />
-            <Chip size="small" label={`Filtrati: ${filteredRows.length}`} variant="outlined" />
+    <Stack spacing={2}>
+      {config.key !== 'companies' && (
+        <Box className="legacy-table-toolbar">
+          <Box className="legacy-table-toolbar-filters">
+            <TextField
+              size="small"
+              label="Cerca"
+              variant="outlined"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button variant="outlined" onClick={loadRows}>Aggiorna</Button>
+            {canEdit && <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>}
+          </Box>
+          <Stack direction="row" spacing={1}>
+            <Button variant="outlined" onClick={() => downloadCsv(`${config.key}.csv`, configuredColumns, filteredRows)}>
+              Esporta CSV
+            </Button>
+            <Button variant="outlined" onClick={() => setQueryRules([createQueryRule(configuredColumns)])}>
+              Filtro avanzato
+            </Button>
           </Stack>
         </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-          <Button variant="outlined" onClick={handleExportCsv} disabled={!filteredRows.length}>Export CSV</Button>
-          {canEdit && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>
-          )}
-        </Stack>
-      </Stack>
-
-      {!canEdit && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {config.readOnly
-            ? 'Visualizzazione in sola lettura: questa entita e disponibile solo per consultazione.'
-            : `Visualizzazione in sola lettura: per modificare questa entita e richiesto il ruolo ${config.role}.`}
-        </Alert>
       )}
 
-      <TextField
-        value={searchText}
-        onChange={(event) => setSearchText(event.target.value)}
-        placeholder="Cerca nei dati visualizzati..."
-        size="small"
-        fullWidth
-        sx={{ mb: 2 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          ),
-        }}
-      />
+      {!!error && <Alert severity="error">{error}</Alert>}
+      {!!successMessage && <Snackbar open autoHideDuration={3000} message={successMessage} onClose={() => setSuccessMessage('')} />}
 
-      <Paper variant="outlined" sx={{ p: 1.5, mb: 2, borderRadius: 2 }}>
-        <Stack spacing={1.2}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ md: 'center' }} justifyContent="space-between">
-            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" rowGap={0.8}>
-              <Typography variant="subtitle2">Filtri avanzati</Typography>
-              <Chip size="small" label={`Regole attive: ${queryRules.length}`} variant="outlined" />
-            </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap" rowGap={0.8}>
-              <Button size="small" variant="outlined" onClick={addQueryRule}>Aggiungi Filtro</Button>
-              <Button size="small" onClick={() => setQueryRules([])}>Reset Filtri</Button>
-            </Stack>
-          </Stack>
-
-          {queryRules.map((rule) => (
-            <Stack key={rule.id} direction={{ xs: 'column', md: 'row' }} spacing={1}>
-              <TextField
-                select
-                size="small"
-                label="Campo"
-                value={rule.field}
-                onChange={(event) => updateQueryRule(rule.id, { field: event.target.value })}
-                sx={{ minWidth: { md: 220 } }}
-              >
-                {configuredColumns.map((column) => (
-                  <MenuItem key={column} value={column}>{fieldLabels[column] || keyToLabel(column)}</MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                size="small"
-                label="Operatore"
-                value={rule.operator}
-                onChange={(event) => updateQueryRule(rule.id, { operator: event.target.value })}
-                sx={{ minWidth: { md: 190 } }}
-              >
-                {QUERY_OPERATORS.map((operator) => (
-                  <MenuItem key={operator.value} value={operator.value}>{operator.label}</MenuItem>
-                ))}
-              </TextField>
-
-              {operatorNeedsValue(rule.operator) && (
-                <TextField
-                  size="small"
-                  label="Valore"
-                  value={rule.value}
-                  onChange={(event) => updateQueryRule(rule.id, { value: event.target.value })}
-                  fullWidth
-                />
-              )}
-
-              <Button color="error" onClick={() => removeQueryRule(rule.id)}>Rimuovi</Button>
-            </Stack>
-          ))}
-        </Stack>
-      </Paper>
-
-      {!!error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : filteredRows.length === 0 ? (
-        <Alert severity="info">Nessun dato disponibile.</Alert>
-      ) : (
-        <TableContainer sx={{ borderRadius: 2, border: '1px solid #e6ebf2', overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 820 }}>
+      <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+        <TableContainer sx={{ overflowX: 'auto' }}>
+          <Table size="small" sx={{ minWidth: 980 }}>
             <TableHead>
-              <TableRow sx={{ backgroundColor: '#f7f9fc' }}>
-                {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
+              <TableRow>
+                <TableCell padding="checkbox" />
+                {configuredColumns.map((column) => (
                   <TableCell key={column}>{fieldLabels[column] || keyToLabel(column)}</TableCell>
                 ))}
-                {(canEdit || config.key === 'employees') && <TableCell align="right">Azioni</TableCell>}
+                {canEdit && <TableCell align="right">Azione</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagedRows.map((row, index) => (
+              {pagedRows.map((row) => (
                 <TableRow
-                  key={
-                    config.compositeKey
-                      ? config.compositeKey.map((field) => row[field]).join('-')
-                      : row[config.idField] ?? index
-                  }
+                  key={row.id ?? row._id}
                   hover
-                  onDoubleClick={canEdit ? () => openEdit(row) : undefined}
-                  sx={canEdit ? { cursor: 'pointer' } : undefined}
+                  onDoubleClick={
+                    config.key === 'companies' && onOpenCompanyProfile
+                      ? () => onOpenCompanyProfile(row)
+                      : undefined
+                  }
                 >
-                  {(defaultColumns.length ? defaultColumns : configuredColumns).map((column) => (
-                    <TableCell key={`${index}-${column}`}>{displayValue(row[column])}</TableCell>
+                  <TableCell padding="checkbox" />
+                  {configuredColumns.map((column) => (
+                    <TableCell key={column}>{displayValue(row[column])}</TableCell>
                   ))}
-                  {(canEdit || config.key === 'employees') && (
+                  {canEdit && (
                     <TableCell align="right">
-                      <Stack direction="row" justifyContent="flex-end" spacing={1}>
-                        {config.key === 'employees' && (
-                          <Button size="small" variant="outlined" onClick={() => openProfile(row)}>Profilo</Button>
-                        )}
-                        {canEdit && <Button size="small" color="error" variant="outlined" onClick={() => setConfirmDelete(row)}>Elimina</Button>}
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Button size="small" onClick={() => openEdit(row)}>Modifica</Button>
+                        <Button size="small" color="error" onClick={() => handleDelete(row)}>Elimina</Button>
+                        <Button size="small" onClick={() => setProfileEmployee(row)}>Profilo</Button>
                       </Stack>
                     </TableCell>
                   )}
                 </TableRow>
               ))}
+              {pagedRows.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={canEdit ? configuredColumns.length + 2 : configuredColumns.length + 1}>
+                    <Typography variant="body2" color="text.secondary">Nessun elemento disponibile.</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
+        </TableContainer>
+      </Paper>
+
+      {config.key === 'companies' && (
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          {canEdit && (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} className="legacy-btn">
+              Nuova azienda
+            </Button>
+          )}
+          <Button variant="outlined" startIcon={<PrintIcon />} className="legacy-btn-secondary">Stampa</Button>
+          <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={() => downloadCsv('companies', configuredColumns, filteredRows)} className="legacy-btn-success">
+            Esporta dati in excel
+          </Button>
+          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary">Operazioni massive</Button>
+          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary">Importa dati</Button>
+        </Stack>
+      )}
+
+      <Box className="legacy-table-footer">
+        <Typography variant="caption" color="text.secondary">
+          {filteredRows.length} elementi
+        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <TextField
+            size="small"
+            select
+            sx={{ minWidth: 110 }}
+            value={rowsPerPage}
+            onChange={(event) => setRowsPerPage(Number(event.target.value))}
+          >
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+            <MenuItem value={200}>200</MenuItem>
+          </TextField>
           <TablePagination
             component="div"
             count={filteredRows.length}
             page={page}
             onPageChange={(_, nextPage) => setPage(nextPage)}
             rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(event) => {
-              setRowsPerPage(Number(event.target.value))
-              setPage(0)
-            }}
-            rowsPerPageOptions={[10, 25, 50]}
-            labelRowsPerPage="Righe per pagina"
-            sx={{
-              '& .MuiTablePagination-toolbar': {
-                flexWrap: 'wrap',
-                rowGap: 0.5,
-                px: { xs: 1, sm: 2 },
-              },
-              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                m: 0,
-              },
-            }}
+            onRowsPerPageChange={(event) => setRowsPerPage(Number(event.target.value))}
+            rowsPerPageOptions={[]}
           />
-        </TableContainer>
-      )}
+        </Stack>
+      </Box>
 
-      <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="md">
-        <DialogTitle>{editingRow ? `Modifica ${config.label}` : `Nuovo ${config.label}`}</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Compila i campi richiesti. Le validazioni vengono applicate prima del salvataggio.
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            {config.fields.map((field) => {
-              if (field.hiddenInForm) {
-                return null
-              }
-
-              if (config.key === 'employees' && field.name === 'birthCity') {
-                const selectedMunicipality = municipalities.find(
-                  (item) =>
-                    item.cadastralCode === formData.birthCityCode ||
-                    item.name.toLowerCase() === String(formData.birthCity || '').toLowerCase(),
-                ) || null
-
-                return (
-                  <Autocomplete
-                    key={field.name}
-                    options={municipalities}
-                    value={selectedMunicipality}
-                    onChange={(_, value) => {
-                      if (!value) {
-                        handleChange(field, '')
-                        return
-                      }
-
-                      handleChange(field, value.name)
-                      setFormData((current) => ({
-                        ...current,
-                        birthCity: value.name,
-                        birthCityCode: value.cadastralCode,
-                      }))
-                      setFormErrors((current) => ({
-                        ...current,
-                        birthCity: undefined,
-                        birthCityCode: undefined,
-                      }))
-                    }}
-                    onInputChange={(_, inputValue, reason) => {
-                      if (reason === 'input') {
-                        handleChange(field, inputValue)
-                      }
-                    }}
-                    getOptionLabel={(option) =>
-                      typeof option === 'string'
-                        ? option
-                        : `${option.name}${option.provinceCode ? ` (${option.provinceCode})` : ''}`
-                    }
-                    isOptionEqualToValue={(option, value) => option.cadastralCode === value.cadastralCode}
-                    filterOptions={(options, state) => {
-                      const query = state.inputValue.trim().toLowerCase()
-                      if (!query) return options
-                      return options
-                        .filter(
-                          (item) =>
-                            item.name.toLowerCase().includes(query) ||
-                            (item.provinceCode || '').toLowerCase().includes(query),
-                        )
-                    }}
-                    noOptionsText="Nessun comune trovato"
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={field.label}
-                        required={field.required}
-                        fullWidth
-                        placeholder="Cerca comune..."
-                        error={Boolean(formErrors[field.name])}
-                        helperText={formErrors[field.name] || municipalitiesError || 'Selezionando un comune, il codice viene compilato automaticamente in background.'}
-                      />
-                    )}
-                  />
-                )
-              }
-
-              if (field.type === 'select') {
-                const options = field.options || selectOptions[field.optionsEndpoint] || []
-                const filteredOptions =
-                  config.key === 'employees' && field.name === 'branchId' && formData.companyId
-                    ? options.filter((option) => Number(option.companyId) === Number(formData.companyId))
-                    : options
-                return (
-                  <TextField
-                    key={field.name}
-                    select
-                    label={field.label}
-                    value={formData[field.name] ?? ''}
-                    onChange={(event) => handleChange(field, event.target.value)}
-                    required={field.required}
-                    fullWidth
-                    error={Boolean(formErrors[field.name])}
-                    helperText={formErrors[field.name]}
-                  >
-                    <MenuItem value="">Seleziona...</MenuItem>
-                    {filteredOptions.map((option) => {
-                      const value = field.options ? option.value : option[field.optionValue]
-                      const label = field.options ? option.label : getOptionLabel(option, field)
-                      return (
-                      <MenuItem key={value} value={value}>
-                        {label}
-                      </MenuItem>
-                    )})}
-                  </TextField>
-                )
-              }
-
-              if (config.key === 'employees' && field.name === 'taxCode') {
-                return (
-                  <Stack key={field.name} direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems="flex-start">
-                    <TextField
-                      label={field.label}
-                      value={formData[field.name] ?? ''}
-                      onChange={(event) => handleChange(field, event.target.value)}
-                      required={field.required}
-                      fullWidth
-                      placeholder={field.placeholder}
-                      type="text"
-                      inputProps={{ maxLength: field.maxLength }}
-                      error={Boolean(formErrors[field.name])}
-                      helperText={formErrors[field.name]}
-                    />
-                    <Button
-                      variant="outlined"
-                      startIcon={<AutoFixHighIcon />}
-                      onClick={handleGenerateTaxCode}
-                      sx={{ minWidth: { xs: '100%', md: 240 }, height: 56 }}
-                    >
-                      Calcola Codice Fiscale
-                    </Button>
-                  </Stack>
-                )
-              }
-
-              return (
-                <TextField
-                  key={field.name}
-                  label={field.label}
-                  value={formData[field.name] ?? ''}
-                  onChange={(event) => handleChange(field, event.target.value)}
-                  required={field.required}
-                  fullWidth
-                  placeholder={field.placeholder}
-                  type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'text'}
-                  multiline={field.type === 'textarea'}
-                  minRows={field.type === 'textarea' ? 3 : undefined}
-                  InputLabelProps={field.type === 'date' ? { shrink: true } : undefined}
-                  inputProps={{ maxLength: field.maxLength, min: field.min, max: field.max }}
-                  error={Boolean(formErrors[field.name])}
-                  helperText={formErrors[field.name]}
-                  sx={field.type === 'textarea' ? { gridColumn: { xs: '1 / -1', md: '1 / -1' } } : undefined}
-                />
-              )
-            })}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeDialog} disabled={saving}>Annulla</Button>
-          <Button onClick={handleSave} variant="contained" disabled={saving}>
-            {saving ? 'Salvataggio...' : 'Salva'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)}>
+      <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Conferma eliminazione</DialogTitle>
         <DialogContent>
-          <Typography>Questa operazione non può essere annullata. Vuoi continuare?</Typography>
+          <Typography variant="body2">L'elemento selezionato verrà rimosso in modo definitivo. Procedere?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDelete(null)} disabled={saving}>Annulla</Button>
-          <Button color="error" variant="contained" onClick={handleDelete} disabled={saving}>
+          <Button onClick={() => setConfirmDelete(null)}>Annulla</Button>
+          <Button color="error" onClick={confirmDeleteRow} disabled={saving}>
             Elimina
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={Boolean(successMessage)}
-        autoHideDuration={2500}
-        onClose={() => setSuccessMessage('')}
-        message={successMessage}
-      />
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {editingRow ? 'Modifica elemento' : 'Nuovo elemento'}
+          <IconButton size="small" onClick={() => setDialogOpen(false)} aria-label="Chiudi">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={1.5} sx={{ mt: 0.5 }}>
+            {visibleFields.map((field) => renderFormField(field))}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
+          <Button variant="contained" onClick={handleSave} disabled={saving}>
+            Salva
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      {config.key === 'employees' && (
-        <EmployeeProfileDialog
-          open={Boolean(profileEmployee)}
-          onClose={closeProfile}
-          employee={profileEmployee}
-          onEditEmployee={handleEditFromProfile}
-        />
-      )}
-    </Paper>
+      <EmployeeProfileDialog
+        open={Boolean(profileEmployee)}
+        onClose={() => setProfileEmployee(null)}
+        employee={profileEmployee}
+        onSaveEmployee={(updated) => {
+          setProfileEmployee((current) =>
+            current ? { ...current, ...updated } : current,
+          )
+          loadRows()
+        }}
+        onEditEmployee={(employee) => {
+          setProfileEmployee(null)
+          setEditingRow(employee)
+          setFormData(
+            config.fields.reduce((accumulator, field) => {
+              accumulator[field.name] = employee[field.name] ?? ''
+              return accumulator
+            }, {}),
+          )
+          setDialogOpen(true)
+        }}
+      />
+    </Stack>
   )
 }
 

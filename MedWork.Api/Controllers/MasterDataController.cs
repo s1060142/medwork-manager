@@ -97,6 +97,47 @@ public class MasterDataController : ControllerBase
         return Ok(data);
     }
 
+    [HttpGet("doctors")]
+    [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
+    public async Task<IActionResult> GetDoctors()
+    {
+        var data = await _dbContext.Doctors
+            .AsNoTracking()
+            .OrderBy(x => x.LastName)
+            .ThenBy(x => x.FirstName)
+            .Select(x => new
+            {
+                x.Id,
+                x.FirstName,
+                x.LastName,
+                x.MedicalLicenseNumber,
+                x.Specialty,
+                x.Email
+            })
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
+    [HttpGet("company-doctors")]
+    [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
+    public async Task<IActionResult> GetCompanyDoctors([FromQuery] int companyId)
+    {
+        if (companyId <= 0) return BadRequest("companyId non valido.");
+
+        var data = await _dbContext.CompanyDoctors
+            .AsNoTracking()
+            .Where(x => x.CompanyId == companyId)
+            .Select(x => new
+            {
+                x.DoctorId,
+                x.IsCoordinator
+            })
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
     [HttpGet("risk-factors")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetRiskFactors()

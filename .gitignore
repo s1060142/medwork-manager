@@ -26,6 +26,16 @@ medwork-frontend/.vite/
 medwork-frontend/tmp/
 medwork-frontend/**/tmp/
 
+# ===== Root node_modules (repo-level playwright install) =====
+node_modules/
+
+# ===== Test artifacts =====
+test-results/
+medwork-frontend/test-results/
+
+# ===== Serena project cache =====
+.serena/
+
 # ===== Misc =====
 *.swp
 .DS_Store

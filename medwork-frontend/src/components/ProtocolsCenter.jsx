@@ -12,9 +12,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableContainer,
   TextField,
   Typography,
 } from '@mui/material'
+import SearchIcon from '@mui/icons-material/Search'
 import { apiGet } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 
@@ -33,7 +35,7 @@ function saveProtocols(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
 }
 
-function ProtocolsCenter() {
+function ProtocolsCenter({ activeTab, onTabChange }) {
   const [protocols, setProtocols] = useState(() => readProtocols())
   const [riskFactors, setRiskFactors] = useState([])
   const [examTypes, setExamTypes] = useState([])
@@ -104,73 +106,23 @@ function ProtocolsCenter() {
 
   return (
     <Stack spacing={2}>
-      <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-        <Typography variant="h6">Protocolli sanitari</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Configura protocolli clinici per rischio, periodicità e set esami.
-        </Typography>
-
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(5, 1fr)' }, gap: 1.5, mt: 2 }}>
-          <TextField
-            label="Nome protocollo"
-            size="small"
-            value={formData.name}
-            onChange={(event) => setFormData((current) => ({ ...current, name: event.target.value }))}
-          />
-          <TextField
-            type="number"
-            label="Cadenza (giorni)"
-            size="small"
-            value={formData.cadenceDays}
-            onChange={(event) => setFormData((current) => ({ ...current, cadenceDays: Math.max(1, Number(event.target.value) || 365) }))}
-          />
-          <TextField
-            select
-            label="Rischio prevalente"
-            size="small"
-            value={formData.riskFactorId}
-            onChange={(event) => setFormData((current) => ({ ...current, riskFactorId: event.target.value }))}
-          >
-            <MenuItem value="">Nessuno</MenuItem>
-            {riskFactors.map((item) => (
-              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label="Esame principale"
-            size="small"
-            value={formData.examTypeId}
-            onChange={(event) => setFormData((current) => ({ ...current, examTypeId: event.target.value }))}
-          >
-            <MenuItem value="">Nessuno</MenuItem>
-            {examTypes.map((item) => (
-              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-            ))}
-          </TextField>
-          <Button variant="contained" onClick={handleSave}>
-            Salva protocollo
-          </Button>
+      <Box className="legacy-table-toolbar">
+        <Box className="legacy-table-toolbar-filters">
+          <TextField size="small" label="Cerca" variant="outlined" value="" onChange={() => {}} />
+          <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
         </Box>
-
-        <TextField
-          label="Obiettivo clinico"
-          size="small"
-          multiline
-          minRows={2}
-          fullWidth
-          sx={{ mt: 1.5 }}
-          value={formData.objective}
-          onChange={(event) => setFormData((current) => ({ ...current, objective: event.target.value }))}
-        />
-
-        {!!error && <Alert severity="warning" sx={{ mt: 1.5 }}>{error}</Alert>}
-      </Paper>
+        <Box className="legacy-table-toolbar-filters">
+          <Button variant="outlined" onClick={() => {}}>Stampa</Button>
+          <Button variant="outlined" onClick={() => {}}>Esporta excel</Button>
+          <Button className="legacy-btn" onClick={handleSave}>+ Nuovo protocollo</Button>
+        </Box>
+      </Box>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Table size="small">
+        <Table size="small" sx={{ minWidth: 980 }}>
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox" />
               <TableCell>Protocollo</TableCell>
               <TableCell>Rischio</TableCell>
               <TableCell>Esame</TableCell>
@@ -182,6 +134,7 @@ function ProtocolsCenter() {
           <TableBody>
             {protocols.map((row) => (
               <TableRow key={row.id} hover>
+                <TableCell padding="checkbox" />
                 <TableCell>
                   <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
                   <Typography variant="caption" color="text.secondary">{row.objective || 'Nessun obiettivo specificato.'}</Typography>
@@ -201,7 +154,7 @@ function ProtocolsCenter() {
             ))}
             {protocols.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   <Typography variant="body2" color="text.secondary">Nessun protocollo configurato.</Typography>
                 </TableCell>
               </TableRow>
@@ -209,6 +162,8 @@ function ProtocolsCenter() {
           </TableBody>
         </Table>
       </Paper>
+
+      {!!error && <Alert severity="error">{error}</Alert>}
     </Stack>
   )
 }

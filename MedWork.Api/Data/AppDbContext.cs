@@ -39,6 +39,7 @@ public class AppDbContext : DbContext
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<WorkLocation> WorkLocations => Set<WorkLocation>();
     public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
+    public DbSet<CompanyDoctor> CompanyDoctors => Set<CompanyDoctor>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,10 +60,24 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Company>(entity =>
         {
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
-            entity.Property(x => x.VATNumber).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.VATNumber).HasMaxLength(30);
             entity.Property(x => x.ContactEmail).HasMaxLength(150);
             entity.Property(x => x.ContactPhone).HasMaxLength(30);
             entity.HasIndex(x => x.VATNumber).IsUnique();
+        });
+
+        modelBuilder.Entity<CompanyDoctor>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasIndex(x => new { x.CompanyId, x.DoctorId }).IsUnique();
+            entity.HasOne(x => x.Company)
+                .WithMany()
+                .HasForeignKey(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Doctor)
+                .WithMany()
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Branch>(entity =>

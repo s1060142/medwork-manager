@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert,
   Box,
   Button,
   CssBaseline,
-  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -39,6 +37,8 @@ import SettingsCenter from './components/SettingsCenter'
 import VisitPlanningCenter from './components/VisitPlanningCenter'
 import MedicalVisitStepper from './components/MedicalVisitStepper'
 import WorkersCenter from './components/WorkersCenter'
+import EmployeeProfileDialog from './components/EmployeeProfileDialog'
+import CompanyProfileDialog from './components/CompanyProfileDialog'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet } from './services/apiClient'
@@ -46,40 +46,12 @@ import './App.css'
 
 const SETTINGS_STORAGE_KEY = 'medwork.runtime.settings'
 
-function readWorkContextFromSettings() {
+function readActiveCompanyFromSettings() {
   try {
     const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-    return {
-      activeCompanyId: parsed.activeCompanyId || '',
-      activeBranchId: parsed.activeBranchId || '',
-    }
+    return parsed.activeCompanyId || ''
   } catch {
-    return {
-      activeCompanyId: '',
-      activeBranchId: '',
-    }
-  }
-}
-
-function persistWorkContextToSettings(activeCompanyId, activeBranchId) {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-    localStorage.setItem(
-      SETTINGS_STORAGE_KEY,
-      JSON.stringify({
-        ...parsed,
-        activeCompanyId: activeCompanyId || '',
-        activeBranchId: activeBranchId || '',
-      }),
-    )
-  } catch {
-    localStorage.setItem(
-      SETTINGS_STORAGE_KEY,
-      JSON.stringify({
-        activeCompanyId: activeCompanyId || '',
-        activeBranchId: activeBranchId || '',
-      }),
-    )
+    return ''
   }
 }
 
@@ -102,11 +74,35 @@ const COMPANY_TABS = [
 ]
 
 const COMPANY_TAB_TO_MODULE = {
-  groups: 'companies',
-  registry: 'employees',
+  groups: 'company-groups',
+  registry: 'companies',
   checklist: 'protocols',
   activities: 'schedules',
 }
+
+const SCHEDULE_TABS = [
+  { key: 'agenda', label: 'Agenda' },
+  { key: 'appointments', label: 'Prenotazioni' },
+  { key: 'visit-deadlines', label: 'Scadenzario Visite' },
+  { key: 'activity-deadlines', label: 'Scadenzario Attività' },
+  { key: 'site-visit-deadlines', label: 'Scadenzario sopralluoghi' },
+  { key: 'nominations', label: 'Scadenzario Nomine' },
+  { key: 'vaccination-deadlines', label: 'Scadenzario Vaccinazioni' },
+]
+
+const ANALYSIS_TABS = [
+  { key: 'visits', label: 'Elenco visite' },
+  { key: 'activities', label: 'Elenco attività' },
+  { key: 'relations', label: 'Relazioni aziendali' },
+  { key: 'charts', label: 'Grafici e analisi' },
+]
+
+const HEALTH_TABS = [
+  { key: 'work-locations', label: 'Gestione luoghi di lavoro' },
+  { key: 'protocols', label: 'Gestione protocolli' },
+  { key: 'departments', label: 'Gestione reparti' },
+  { key: 'site-visits', label: 'Gestione sopralluoghi' },
+]
 
 const MODULE_ITEMS = [
   { key: 'home', label: 'Home' },
@@ -144,7 +140,7 @@ const MODULE_ITEMS = [
 ]
 
 const AREA_MODULE_KEYS = {
-  'company-management': ['companies', 'company-groups', 'company-contacts', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
+  'company-management': ['companies', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
   analysis: ['reporting', 'audit'],
   'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits'],
@@ -161,7 +157,6 @@ const AREA_DEFAULT_MODULE = {
   administration: 'settings',
 }
 
-// Hierarchical nav structure for sidebar
 const HIERARCHICAL_SIDE_NAV = [
   {
     key: 'company-management',
@@ -202,61 +197,39 @@ const HIERARCHICAL_SIDE_NAV = [
 ]
 
 function App() {
-  const storedWorkContext = useMemo(() => readWorkContextFromSettings(), [])
   const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
   const [role, setRole] = useState(() => localStorage.getItem('role') || '')
-  const [selectedArea, setSelectedArea] = useState('schedule')
+  const [selectedArea, setSelectedArea] = useState('company-management')
   const [selectedCompanyTab, setSelectedCompanyTab] = useState('groups')
-  const [selectedModuleKey, setSelectedModuleKey] = useState('home')
+  const [selectedScheduleTab, setSelectedScheduleTab] = useState('visit-deadlines')
+  const [selectedAnalysisTab, setSelectedAnalysisTab] = useState('visits')
+  const [selectedHealthTab, setSelectedHealthTab] = useState('protocols')
+  const [selectedModuleKey, setSelectedModuleKey] = useState('companies')
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
-  const [activeCompanyId, setActiveCompanyId] = useState(storedWorkContext.activeCompanyId)
-  const [activeBranchId, setActiveBranchId] = useState(storedWorkContext.activeBranchId)
-  const [workCompanies, setWorkCompanies] = useState([])
-  const [workBranches, setWorkBranches] = useState([])
-  const [expandedAreas, setExpandedAreas] = useState(new Set(['schedule']))
-
-  const toggleAreaExpanded = (areaKey) => {
-    const newExpanded = new Set(expandedAreas)
-    if (newExpanded.has(areaKey)) {
-      newExpanded.delete(areaKey)
-    } else {
-      newExpanded.add(areaKey)
-    }
-    setExpandedAreas(newExpanded)
-  }
+  const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
+  const [profileEmployee, setProfileEmployee] = useState(null)
+  const [profileCompany, setProfileCompany] = useState(null)
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role])
 
   useEffect(() => {
     if (!isAuthenticated) return
 
-    Promise.all([
-      apiGet('/api/master-data/companies'),
-      apiGet('/api/master-data/branches'),
-    ])
-      .then(([companiesData, branchesData]) => {
-        setWorkCompanies(Array.isArray(companiesData) ? companiesData : [])
-        setWorkBranches(Array.isArray(branchesData) ? branchesData : [])
-      })
-      .catch((error) => {
-        if (error?.status === 401) {
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('role')
-          setToken('')
-          setRole('')
-          setSelectedArea('company-management')
-          setSelectedModuleKey('companies')
-          return
-        }
-
-        setWorkCompanies([])
-        setWorkBranches([])
-      })
+    apiGet('/api/master-data/companies').catch((error) => {
+      if (error?.status === 401) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('role')
+        setToken('')
+        setRole('')
+        setSelectedArea('company-management')
+        setSelectedModuleKey('companies')
+      }
+    })
   }, [isAuthenticated])
 
   const roleAwareSideMenu = useMemo(() => {
-    if (role === 'Admin') return HIERARCHICAL_SIDE_NAV
-    return HIERARCHICAL_SIDE_NAV.filter((item) => item.key !== 'administration')
+    if (role === 'Admin') return SIDE_NAV_ITEMS
+    return SIDE_NAV_ITEMS.filter((item) => item.key !== 'administration')
   }, [role])
 
   const roleAwareModules = useMemo(() => {
@@ -298,13 +271,6 @@ function App() {
     localStorage.setItem('role', userRole)
     setToken(accessToken)
     setRole(userRole)
-    setSelectedArea('schedule')
-    setSelectedModuleKey('home')
-    setExpandedAreas((previous) => {
-      const next = new Set(previous)
-      next.add('schedule')
-      return next
-    })
     appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
 
@@ -313,15 +279,28 @@ function App() {
     localStorage.removeItem('role')
     setToken('')
     setRole('')
-    setSelectedArea('schedule')
+    setSelectedArea('company-management')
     setSelectedCompanyTab('groups')
-    setSelectedModuleKey('home')
+    setSelectedScheduleTab('visit-deadlines')
+    setSelectedAnalysisTab('visits')
+    setSelectedHealthTab('protocols')
+    setSelectedModuleKey('companies')
     setQuickCreateRequest(null)
+    setProfileEmployee(null)
+    setProfileCompany(null)
     appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
   }
 
   const handleQuickCreateConsumed = () => {
     setQuickCreateRequest(null)
+  }
+
+  const handleOpenEmployeeProfile = (employee) => {
+    setProfileEmployee(employee)
+  }
+
+  const handleOpenCompanyProfile = (company) => {
+    setProfileCompany(company)
   }
 
   const handleAreaNavigation = (nextArea) => {
@@ -334,80 +313,7 @@ function App() {
   }
 
   const handleSettingsChange = (nextSettings) => {
-    const nextCompanyId = nextSettings?.activeCompanyId || ''
-    const nextBranchId = nextSettings?.activeBranchId || ''
-    setActiveCompanyId(nextCompanyId)
-    setActiveBranchId(nextBranchId)
-    persistWorkContextToSettings(nextCompanyId, nextBranchId)
-  }
-
-  const hasWorkingContext = Boolean(activeCompanyId || activeBranchId)
-
-  const displayedCompanyName = useMemo(() => {
-    if (!activeCompanyId) return '-'
-    const selected = workCompanies.find((item) => Number(item.id) === Number(activeCompanyId))
-    return selected?.name || `Azienda #${activeCompanyId}`
-  }, [activeCompanyId, workCompanies])
-
-  const displayedBranchName = useMemo(() => {
-    if (!activeBranchId) return '-'
-    const selected = workBranches.find((item) => Number(item.id) === Number(activeBranchId))
-    if (!selected) return `Sede #${activeBranchId}`
-    return `${selected.city || ''} ${selected.address || ''}`.trim()
-  }, [activeBranchId, workBranches])
-
-  const selectableBranches = useMemo(() => {
-    if (!activeCompanyId) return workBranches
-    return workBranches.filter((item) => Number(item.companyId) === Number(activeCompanyId))
-  }, [workBranches, activeCompanyId])
-
-  const companiesWithBranches = useMemo(() => {
-    return workCompanies
-      .map((company) => ({
-        ...company,
-        branches: workBranches
-          .filter((branch) => Number(branch.companyId) === Number(company.id))
-          .sort((left, right) => String(left.city || '').localeCompare(String(right.city || ''))),
-      }))
-      .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')))
-  }, [workCompanies, workBranches])
-
-  const onWorkCompanyChange = (nextCompanyId) => {
-    setActiveCompanyId(nextCompanyId)
-
-    if (!nextCompanyId) {
-      setActiveBranchId('')
-      persistWorkContextToSettings('', '')
-      return
-    }
-
-    const branchStillValid = workBranches.some(
-      (item) => Number(item.id) === Number(activeBranchId) && Number(item.companyId) === Number(nextCompanyId),
-    )
-
-    const nextBranchId = branchStillValid ? activeBranchId : ''
-    setActiveBranchId(nextBranchId)
-    persistWorkContextToSettings(nextCompanyId, nextBranchId)
-  }
-
-  const onWorkBranchChange = (nextBranchId) => {
-    setActiveBranchId(nextBranchId)
-
-    if (!nextBranchId) {
-      persistWorkContextToSettings(activeCompanyId, '')
-      return
-    }
-
-    const selectedBranch = workBranches.find((item) => Number(item.id) === Number(nextBranchId))
-    const nextCompanyId = selectedBranch ? String(selectedBranch.companyId) : activeCompanyId
-    setActiveCompanyId(nextCompanyId)
-    persistWorkContextToSettings(nextCompanyId, nextBranchId)
-  }
-
-  const clearWorkContext = () => {
-    setActiveCompanyId('')
-    setActiveBranchId('')
-    persistWorkContextToSettings('', '')
+    setActiveCompanyId(nextSettings?.activeCompanyId || '')
   }
 
   const renderModuleContent = (moduleKey) => {
@@ -415,7 +321,6 @@ function App() {
       return (
         <DashboardScadenze
           activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
           onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
           onOpenEmployeeCreate={() => setSelectedModuleKey('employees-crud')}
           onOpenReports={() => setSelectedModuleKey('reporting')}
@@ -428,10 +333,9 @@ function App() {
         <CrudEntityView
           config={ENTITY_BY_KEY.companies}
           currentRole={role}
-          activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
           externalCreateToken={0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
+          onOpenCompanyProfile={handleOpenCompanyProfile}
         />
       )
     }
@@ -440,12 +344,9 @@ function App() {
       return (
         <WorkersCenter
           activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
           onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-          onOpenEmployeeCrud={() => {
-            setSelectedArea('workers-management')
-            setSelectedModuleKey('employees-crud')
-          }}
+          onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
+          onOpenEmployeeProfile={handleOpenEmployeeProfile}
         />
       )
     }
@@ -455,8 +356,6 @@ function App() {
         <CrudEntityView
           config={ENTITY_BY_KEY.employees}
           currentRole={role}
-          activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
           externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
         />
@@ -464,11 +363,18 @@ function App() {
     }
 
     if (moduleKey === 'protocols') {
-      return <ProtocolsCenter />
+      return <ProtocolsCenter activeTab={selectedHealthTab} onTabChange={setSelectedHealthTab} />
     }
 
     if (moduleKey === 'schedules') {
-      return <VisitPlanningCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
+      return (
+        <VisitPlanningCenter
+          activeCompanyId={activeCompanyId}
+          activeScheduleTab={selectedScheduleTab}
+          onScheduleTabChange={setSelectedScheduleTab}
+          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+        />
+      )
     }
 
     if (moduleKey === 'medical-visit-stepper') {
@@ -496,7 +402,13 @@ function App() {
     }
 
     if (moduleKey === 'reporting') {
-      return <ReportsCenter />
+      return (
+        <ReportsCenter
+          activeCompanyId={activeCompanyId}
+          activeAnalysisTab={selectedAnalysisTab}
+          onAnalysisTabChange={setSelectedAnalysisTab}
+        />
+      )
     }
 
     const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
@@ -507,8 +419,6 @@ function App() {
         <CrudEntityView
           config={currentEntityConfig}
           currentRole={role}
-          activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
           externalCreateToken={quickCreateRequest?.entityKey === currentEntityConfig?.key ? quickCreateRequest.token : 0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
         />
@@ -563,7 +473,80 @@ function App() {
       )
     }
 
-    return renderModuleContent(selectedModuleKey)
+    const scheduleMode = selectedArea === 'schedule' && selectedModuleKey === 'schedules'
+
+    if (scheduleMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {SCHEDULE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedScheduleTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const analysisMode = selectedArea === 'analysis' && selectedModuleKey === 'reporting'
+
+    if (analysisMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ANALYSIS_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedAnalysisTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const healthMode = selectedArea === 'health-surveillance' && selectedModuleKey === 'protocols'
+
+    if (healthMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {HEALTH_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedHealthTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    return (
+      <Box className="legacy-workspace-card">
+        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+      </Box>
+    )
   }
 
   return (
@@ -615,183 +598,48 @@ function App() {
 
             <Box className="legacy-body">
               <aside className="legacy-sidebar">
-                <button
-                  type="button"
-                  className={`legacy-side-item legacy-home-shortcut ${selectedModuleKey === 'home' ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setSelectedArea('schedule')
-                    setSelectedModuleKey('home')
-                    setExpandedAreas((previous) => {
-                      const next = new Set(previous)
-                      next.add('schedule')
-                      return next
-                    })
-                    appendAuditEvent({ module: 'Navigation', action: 'Open', detail: 'home-shortcut' })
-                  }}
-                >
-                  <HomeIcon fontSize="small" />
-                  <span>Home</span>
-                </button>
-
-                {roleAwareSideMenu.map((areaItem) => {
-                  const Icon = areaItem.icon
-                  const isExpanded = expandedAreas.has(areaItem.key)
-                  const visibleChildren = areaItem.children
-                    .map(childKey => roleAwareModules.find(m => m.key === childKey))
-                    .filter(m => m !== undefined)
+                {roleAwareSideMenu.map((item) => {
+                  const Icon = item.icon
+                  const isActive = selectedArea === item.key
 
                   return (
-                    <div key={areaItem.key}>
-                      <button
-                        type="button"
-                        className="legacy-side-item legacy-area-header"
-                        onClick={() => toggleAreaExpanded(areaItem.key)}
-                      >
-                        <Icon fontSize="small" />
-                        <span>{areaItem.label}</span>
-                        <span style={{ marginLeft: 'auto', display: 'flex' }}>
-                          {isExpanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                        </span>
-                      </button>
-                      {isExpanded && (
-                        <div className="legacy-area-children">
-                          {visibleChildren.map((moduleItem) => (
-                            <button
-                              key={moduleItem.key}
-                              type="button"
-                              className={`legacy-side-item legacy-module-item ${selectedModuleKey === moduleItem.key ? 'is-active' : ''}`}
-                              onClick={() => {
-                                setSelectedModuleKey(moduleItem.key)
-                                appendAuditEvent({ module: 'Navigation', action: 'Open', detail: moduleItem.key })
-                              }}
-                            >
-                              <span style={{ marginLeft: '24px' }}>{moduleItem.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`legacy-side-item ${isActive ? 'is-active' : ''}`}
+                      onClick={() => handleAreaNavigation(item.key)}
+                    >
+                      <Icon fontSize="small" />
+                      <span>{item.label}</span>
+                    </button>
                   )
                 })}
               </aside>
 
               <main className="legacy-main-content">
-                <Box className="legacy-context-line">
-                  <Typography variant="body2">Ruolo: {role}</Typography>
-                  <Typography variant="body2">Azienda: {displayedCompanyName}</Typography>
-                  <Typography variant="body2">Sede: {displayedBranchName}</Typography>
-                </Box>
-
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.2} sx={{ mb: 1.5 }}>
-                    <TextField
-                      select
-                      size="small"
-                      label="Contesto azienda"
-                      value={activeCompanyId}
-                      onChange={(event) => onWorkCompanyChange(event.target.value)}
-                      sx={{ minWidth: 260 }}
-                    >
-                      <MenuItem value="">Seleziona azienda</MenuItem>
-                      {workCompanies.map((item) => (
-                        <MenuItem key={item.id} value={String(item.id)}>{item.name}</MenuItem>
-                      ))}
-                    </TextField>
-
-                    <TextField
-                      select
-                      size="small"
-                      label="Contesto sede"
-                      value={activeBranchId}
-                      onChange={(event) => onWorkBranchChange(event.target.value)}
-                      sx={{ minWidth: 300 }}
-                    >
-                      <MenuItem value="">Seleziona sede (opzionale)</MenuItem>
-                      {selectableBranches.map((item) => (
-                        <MenuItem key={item.id} value={String(item.id)}>{`${item.city || '-'} • ${item.address || '-'}`}</MenuItem>
-                      ))}
-                    </TextField>
-
-                    <Button variant="text" color="inherit" onClick={clearWorkContext} sx={{ alignSelf: 'center' }}>
-                      Reimposta contesto
-                    </Button>
-                  </Stack>
-
-                  {!companiesWithBranches.length ? (
-                    <Alert severity="info">Nessuna azienda disponibile al momento.</Alert>
-                  ) : (
-                    <Stack spacing={1.1}>
-                      {companiesWithBranches.map((company) => (
-                        <Paper key={company.id} variant="outlined" sx={{ p: 1.2 }}>
-                          <Button
-                            variant={Number(activeCompanyId) === Number(company.id) && !activeBranchId ? 'contained' : 'outlined'}
-                            size="small"
-                            onClick={() => onWorkCompanyChange(String(company.id))}
-                          >
-                            {company.name}
-                          </Button>
-
-                          {!!company.branches.length && (
-                            <Stack spacing={0.7} sx={{ mt: 1.1, pl: 2 }}>
-                              {company.branches.map((branch) => {
-                                const isBranchActive = Number(activeBranchId) === Number(branch.id)
-                                return (
-                                  <Button
-                                    key={branch.id}
-                                    variant={isBranchActive ? 'contained' : 'text'}
-                                    size="small"
-                                    sx={{ justifyContent: 'flex-start' }}
-                                    onClick={() => onWorkBranchChange(String(branch.id))}
-                                  >
-                                    {`${branch.city || '-'} • ${branch.address || '-'}`}
-                                  </Button>
-                                )
-                              })}
-                            </Stack>
-                          )}
-                        </Paper>
-                      ))}
-                    </Stack>
-                  )}
-                </Paper>
-
-                {!!areaModuleItems.length && (
-                  <Box className="legacy-module-strip has-modules">
-                    {areaModuleItems.map((item) => (
-                      <button
-                        key={item.key}
-                        type="button"
-                        className={`legacy-module-chip ${selectedModuleKey === item.key ? 'is-active' : ''}`}
-                        onClick={() => {
-                          setSelectedModuleKey(item.key)
-                          const matchingTab = Object.entries(COMPANY_TAB_TO_MODULE).find(([, value]) => value === item.key)?.[0]
-                          if (matchingTab) {
-                            setSelectedCompanyTab(matchingTab)
-                          }
-                          appendAuditEvent({ module: 'Navigation', action: 'Open', detail: item.key })
-                        }}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </Box>
-                )}
-                {hasWorkingContext ? renderWorkspaceContent() : (
-                  <Paper variant="outlined" sx={{ p: 2.5 }}>
-                    <Typography variant="h6">Seleziona il contesto per continuare</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.8 }}>
-                      Il flusso resta contestuale: scegli azienda o sede dal pannello sopra e vedrai solo i dati pertinenti.
-                    </Typography>
-                  </Paper>
-                )}
+                {renderWorkspaceContent()}
               </main>
             </Box>
           </Box>
         )}
+        <EmployeeProfileDialog
+          open={Boolean(profileEmployee)}
+          onClose={() => setProfileEmployee(null)}
+          employee={profileEmployee}
+          onSaveEmployee={(updated) => {
+            setProfileEmployee((current) =>
+              current ? { ...current, ...updated } : current,
+            )
+          }}
+        />
+        <CompanyProfileDialog
+          open={Boolean(profileCompany)}
+          onClose={() => setProfileCompany(null)}
+          company={profileCompany}
+        />
       </Box>
     </>
   )
 }
 
 export default App
-

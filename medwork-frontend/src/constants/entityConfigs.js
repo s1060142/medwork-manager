@@ -320,7 +320,7 @@ export const ENTITY_CONFIGS = [
     },
     fields: [
       { name: 'employeeId', label: 'Dipendente', type: 'select', required: true, optionsEndpoint: '/api/master-data/employees', optionValue: 'id', optionLabel: 'lastName' },
-      { name: 'doctorId', label: 'Medico', type: 'number', required: false, hiddenInForm: true },
+      { name: 'doctorId', label: 'Medico', type: 'select', required: true, optionsEndpoint: '/api/master-data/doctors', optionValue: 'id', optionLabel: 'lastName' },
       { name: 'visitDate', label: 'Data Visita', type: 'date', required: true },
       { name: 'nextDeadlineDate', label: 'Prossima Scadenza', type: 'date', required: true },
       {

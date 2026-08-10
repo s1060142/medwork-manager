@@ -75,7 +75,7 @@ function safeList(data) {
   return Array.isArray(data) ? data : []
 }
 
-function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate, onOpenEmployeeCreate, onOpenReports }) {
+function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate, onOpenEmployeeCreate, onOpenReports, role, displayedCompanyName }) {
   const [expiringVisits, setExpiringVisits] = useState([])
   const [medicalVisits, setMedicalVisits] = useState([])
   const [employees, setEmployees] = useState([])

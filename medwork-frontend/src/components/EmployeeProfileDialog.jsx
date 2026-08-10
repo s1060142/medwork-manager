@@ -7,23 +7,29 @@ import {
   Chip,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
+  DialogTitle,
   Divider,
+  FormControlLabel,
+  IconButton,
   LinearProgress,
+  MenuItem,
   Paper,
   Stack,
+  Switch,
   Tab,
   Tabs,
+  TextField,
   Typography,
 } from '@mui/material'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import BiotechIcon from '@mui/icons-material/Biotech'
-import EditIcon from '@mui/icons-material/Edit'
-import DownloadIcon from '@mui/icons-material/Download'
-import jsPDF from 'jspdf'
-import { apiGet } from '../services/apiClient'
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
+import ShieldIcon from '@mui/icons-material/Shield'
+import SaveIcon from '@mui/icons-material/Save'
+import { apiGet, apiSend } from '../services/apiClient'
+import CloseIcon from '@mui/icons-material/Close'
 
 function toDate(value) {
   const parsed = new Date(value)
@@ -44,17 +50,79 @@ function formatDate(value) {
   return date ? date.toLocaleDateString('it-IT') : '-'
 }
 
-function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee }) {
+function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSaveEmployee }) {
   const [tab, setTab] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [visits, setVisits] = useState([])
   const [visitExams, setVisitExams] = useState([])
   const [employeeRisks, setEmployeeRisks] = useState([])
   const [riskFactors, setRiskFactors] = useState([])
 
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    birthDate: '',
+    gender: '',
+    birthCity: '',
+    birthCityCode: '',
+    taxCode: '',
+    nazionalita: '',
+    domicilio: '',
+    indirizzoDomicilio: '',
+    jobRole: '',
+    personalEmail: '',
+    phoneNumber: '',
+    medicoCarante: '',
+    indirizzoMedico: '',
+    telefonoMedico: '',
+    gruppoSanguigno: '',
+    dataUltimaVisita: '',
+    periodicita: '',
+    dataProssimaVisita: '',
+    tipoProssimaVisita: '',
+    dataUltimaVisitaRI: '',
+    periodicitaVisitaRI: '',
+    dataProssimaVisitaRI: '',
+    dataAssunzione: '',
+    dataAttualeMansione: '',
+    referenteAziendale: '',
+    identificativoMPI: '',
+    statoRisorsa: 'Attivo',
+    motivazione: '',
+    dataCessazione: '',
+    dataRiattivazione: '',
+    categoriaProtetta: false,
+    documentiPrivacy: false,
+    noteRiservate: '',
+    notePerAzienda: '',
+  })
+
   useEffect(() => {
     if (!open || !employee?.id) return
+
+    setFormData((current) => ({
+      ...current,
+      firstName: employee.firstName || current.firstName,
+      lastName: employee.lastName || current.lastName,
+      birthDate: employee.birthDate || current.birthDate,
+      gender: employee.gender || current.gender,
+      birthCity: employee.birthCity || current.birthCity,
+      taxCode: employee.taxCode || current.taxCode,
+      jobRole: employee.jobRole || current.jobRole,
+      phoneNumber: employee.phoneNumber || current.phoneNumber,
+      personalEmail: employee.personalEmail || current.personalEmail,
+      domicilio: employee.domicilio || current.domicilio,
+      indirizzoDomicilio: employee.indirizzoDomicilio || current.indirizzoDomicilio,
+      nazionalita: employee.nazionalita || current.nazionalita,
+      matricola: employee.matricola || current.matricola,
+      referenteAziendale: employee.referenteAziendale || current.referenteAziendale,
+      identificativoMPI: employee.identificativoMPI || current.identificativoMPI,
+      statoRisorsa: employee.statoRisorsa || current.statoRisorsa,
+      noteRiservate: employee.noteRiservate || current.noteRiservate,
+      notePerAzienda: employee.notePerAzienda || current.notePerAzienda,
+    }))
 
     const load = async () => {
       try {
@@ -130,203 +198,237 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee }) {
 
   const initials = `${employee?.firstName?.[0] || ''}${employee?.lastName?.[0] || ''}`.toUpperCase()
 
-  const handleExportHealthRecord = () => {
-    if (!employee) return
+  const handleFieldChange = (field) => (event) => {
+    const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
+    setFormData((current) => ({ ...current, [field]: value }))
+  }
 
-    const doc = new jsPDF()
-    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim()
-    const latestVisitDate = latestVisit?.visitDate ? formatDate(latestVisit.visitDate) : '-'
-    const nextDeadline = latestVisit?.nextDeadlineDate ? formatDate(latestVisit.nextDeadlineDate) : '-'
-
-    doc.setFontSize(16)
-    doc.text('Health Record - Employee Profile', 14, 18)
-
-    doc.setFontSize(11)
-    doc.text(`Employee: ${fullName || '-'}`, 14, 30)
-    doc.text(`Tax Code: ${employee.taxCode || '-'}`, 14, 37)
-    doc.text(`Company: ${employee.companyName || '-'}`, 14, 44)
-    doc.text(`Role: ${employee.jobRole || '-'}`, 14, 51)
-    doc.text(`Health Status: ${healthStatus.label}`, 14, 58)
-
-    doc.setFontSize(12)
-    doc.text('Medical Summary', 14, 71)
-    doc.setFontSize(10)
-    doc.text(`Latest Visit: ${latestVisitDate}`, 14, 79)
-    doc.text(`Next Checkup: ${nextDeadline}`, 14, 85)
-    doc.text(`Visits Count: ${visits.length}`, 14, 91)
-    doc.text(`Exams Count: ${visitExams.length}`, 14, 97)
-    doc.text(`Compliance Rate: ${complianceRate}%`, 14, 103)
-
-    doc.setFontSize(12)
-    doc.text('Risk Exposure', 14, 116)
-    doc.setFontSize(10)
-    if (!risksWithSeverity.length) {
-      doc.text('No active risks.', 14, 124)
-    } else {
-      risksWithSeverity.slice(0, 8).forEach((risk, index) => {
-        doc.text(`- ${risk.riskFactorName} (L${risk.severityLevel}/5)`, 14, 124 + index * 6)
-      })
+  const handleSave = async () => {
+    if (!employee?.id) return
+    setSaving(true)
+    setError('')
+    try {
+      const payload = {
+        id: employee.id,
+        ...formData,
+      }
+      const updated = await apiSend('PUT', '/api/admin-data/employees', payload)
+      if (typeof onSaveEmployee === 'function') {
+        onSaveEmployee(updated)
+      }
+    } catch (requestError) {
+      setError(requestError.message || 'Errore durante il salvataggio.')
+    } finally {
+      setSaving(false)
     }
-
-    const safeName = (fullName || 'employee').replace(/\s+/g, '-').toLowerCase()
-    doc.save(`health-record-${safeName}.pdf`)
   }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
       <DialogContent sx={{ p: 0 }}>
-        <Box sx={{ p: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ p: 2.5, background: '#0f1f3d', color: '#ffffff' }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ md: 'center' }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar sx={{ width: 62, height: 62 }}>{initials || 'DP'}</Avatar>
               <Box>
-                <Typography variant="h6">{employee?.firstName} {employee?.lastName}</Typography>
-                <Typography variant="body2" color="text.secondary">{employee?.jobRole || '-'}</Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="h6" sx={{ color: '#ffffff' }}>{employee?.firstName} {employee?.lastName}</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>{employee?.jobRole || '-'}</Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)' }}>
                   {employee?.companyName || '-'} • {employee?.branchAddress || '-'}
                 </Typography>
               </Box>
             </Stack>
             <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => onEditEmployee?.(employee)}
-              >
-                Edit Profile
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<DownloadIcon />}
-                onClick={handleExportHealthRecord}
-              >
-                Export Health Record
-              </Button>
               <Chip icon={<HealthAndSafetyIcon />} label={healthStatus.label} color={healthStatus.color} />
-              <Chip label={`CF: ${employee?.taxCode || '-'}`} variant="outlined" />
+              <Chip label={`CF: ${employee?.taxCode || '-'}`} variant="outlined" sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.35)' }} />
+              <IconButton size="small" onClick={onClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Stack>
           </Stack>
-
-          <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.2 }}>
-            <Paper variant="outlined" sx={{ p: 1.2, borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary">Ultima Visita</Typography>
-              <Typography variant="body2" fontWeight={700}>{formatDate(latestVisit?.visitDate)}</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.2, borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary">Prossimo Checkup</Typography>
-              <Typography variant="body2" fontWeight={700}>
-                {daysToDeadline === null ? '-' : `${Math.max(daysToDeadline, 0)} giorni`}
-              </Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.2, borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary">Compliance</Typography>
-              <Typography variant="body2" fontWeight={700}>{complianceRate}%</Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 1.2, borderRadius: 2 }}>
-              <Typography variant="caption" color="text.secondary">Rischi Attivi</Typography>
-              <Typography variant="body2" fontWeight={700}>{risksWithSeverity.length}</Typography>
-            </Paper>
-          </Box>
         </Box>
 
-        <Box sx={{ px: 2.5, pt: 1.5 }}>
+        <Box sx={{ px: 2.5, pt: 1.5, background: '#ffffff' }}>
           <Tabs value={tab} onChange={(_, value) => setTab(value)}>
-            <Tab label="Overview" />
-            <Tab label={`Visite (${visits.length})`} />
-            <Tab label={`Esami (${visitExams.length})`} />
-            <Tab label={`Rischi (${risksWithSeverity.length})`} />
+            <Tab label="Scheda lavoratore" />
+            <Tab label={`Elenco attività (${visits.length})`} />
           </Tabs>
         </Box>
 
         <Divider />
 
         <Box sx={{ p: 2.5 }}>
-          {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          )}
-
-          {!!error && <Alert severity="error">{error}</Alert>}
-
-          {!loading && !error && tab === 0 && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.4fr 1fr' }, gap: 2 }}>
+          {tab === 0 && (
+            <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                  <CalendarMonthIcon color="primary" fontSize="small" />
-                  <Typography variant="subtitle2">Attività Recenti</Typography>
-                </Stack>
-                {sortedVisits.slice(0, 4).map((visit) => (
-                  <Box key={visit.id} sx={{ py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="body2" fontWeight={700}>{visit.visitType || 'Visita Medica'} • {formatDate(visit.visitDate)}</Typography>
-                    <Typography variant="caption" color="text.secondary">Esito: {visit.outcome || '-'}</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Dati lavoratore</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                  <TextField size="small" label="Cognome*" value={formData.lastName} onChange={handleFieldChange('lastName')} />
+                  <TextField size="small" label="Nome*" value={formData.firstName} onChange={handleFieldChange('firstName')} />
+                  <TextField size="small" label="Data nascita*" type="date" value={formData.birthDate} onChange={handleFieldChange('birthDate')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Sesso*" select value={formData.gender} onChange={handleFieldChange('gender')}>
+                    <MenuItem value="M">Maschio</MenuItem>
+                    <MenuItem value="F">Femmina</MenuItem>
+                  </TextField>
+                  <TextField size="small" label="Matricola" value={formData.matricola} onChange={handleFieldChange('matricola')} />
+                  <TextField size="small" label="Città di nascita" value={formData.birthCity} onChange={handleFieldChange('birthCity')} />
+                  <TextField size="small" label="Nazionalità" value={formData.nazionalita} onChange={handleFieldChange('nazionalita')} />
+                  <TextField size="small" label="Codice fiscale" value={formData.taxCode} onChange={handleFieldChange('taxCode')} />
+                  <TextField size="small" label="Telefono" value={formData.phoneNumber} onChange={handleFieldChange('phoneNumber')} />
+                  <TextField size="small" label="E-mail" type="email" value={formData.personalEmail} onChange={handleFieldChange('personalEmail')} />
+                  <TextField size="small" label="Domicilio" value={formData.domicilio} onChange={handleFieldChange('domicilio')} />
+                  <TextField size="small" label="Indirizzo domicilio" value={formData.indirizzoDomicilio} onChange={handleFieldChange('indirizzoDomicilio')} />
+                </Box>
+              </Paper>
+
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Riferimenti medici</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                  <TextField size="small" label="Medico curante" value={formData.medicoCarante} onChange={handleFieldChange('medicoCarante')} />
+                  <TextField size="small" label="Indirizzo medico" value={formData.indirizzoMedico} onChange={handleFieldChange('indirizzoMedico')} />
+                  <TextField size="small" label="Telefono medico" value={formData.telefonoMedico} onChange={handleFieldChange('telefonoMedico')} />
+                  <TextField size="small" label="Gruppo sanguigno" select value={formData.gruppoSanguigno} onChange={handleFieldChange('gruppoSanguigno')}>
+                    <MenuItem value="">Seleziona</MenuItem>
+                    <MenuItem value="A+">A+</MenuItem>
+                    <MenuItem value="A-">A-</MenuItem>
+                    <MenuItem value="B+">B+</MenuItem>
+                    <MenuItem value="B-">B-</MenuItem>
+                    <MenuItem value="AB+">AB+</MenuItem>
+                    <MenuItem value="AB-">AB-</MenuItem>
+                    <MenuItem value="0+">0+</MenuItem>
+                    <MenuItem value="0-">0-</MenuItem>
+                  </TextField>
+                </Box>
+              </Paper>
+
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Sorveglianza</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                  <TextField size="small" label="Mansione aziendale" value={formData.jobRole} onChange={handleFieldChange('jobRole')} />
+                  <TextField size="small" label="Ruoli" value="" onChange={() => {}} />
+                  <TextField size="small" label="Reparto" value="" onChange={() => {}} />
+                  <TextField size="small" label="Luogo di lavoro" value="" onChange={() => {}} />
+                  <TextField size="small" label="Data ultima visita" type="date" value={formData.dataUltimaVisita} onChange={handleFieldChange('dataUltimaVisita')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Periodicità" select value={formData.periodicita} onChange={handleFieldChange('periodicita')}>
+                    <MenuItem value="">Seleziona</MenuItem>
+                    <MenuItem value="Annuale">Annuale</MenuItem>
+                    <MenuItem value="Biennale">Biennale</MenuItem>
+                    <MenuItem value="Triennale">Triennale</MenuItem>
+                  </TextField>
+                  <TextField size="small" label="Data prossima visita" type="date" value={formData.dataProssimaVisita} onChange={handleFieldChange('dataProssimaVisita')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Tipo prossima visita" select value={formData.tipoProssimaVisita} onChange={handleFieldChange('tipoProssimaVisita')}>
+                    <MenuItem value="">Seleziona</MenuItem>
+                    <MenuItem value="Periodica">Periodica</MenuItem>
+                    <MenuItem value="Preventiva">Preventiva</MenuItem>
+                  </TextField>
+                  <TextField size="small" label="Data ultima visita RI" type="date" value={formData.dataUltimaVisitaRI} onChange={handleFieldChange('dataUltimaVisitaRI')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Periodicità visita RI" select value={formData.periodicitaVisitaRI} onChange={handleFieldChange('periodicitaVisitaRI')}>
+                    <MenuItem value="">Seleziona</MenuItem>
+                    <MenuItem value="Annuale">Annuale</MenuItem>
+                    <MenuItem value="Biennale">Biennale</MenuItem>
+                  </TextField>
+                  <TextField size="small" label="Data prossima visita RI" type="date" value={formData.dataProssimaVisitaRI} onChange={handleFieldChange('dataProssimaVisitaRI')} InputLabelProps={{ shrink: true }} />
+                </Box>
+              </Paper>
+
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Dati aziendali</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                  <TextField size="small" label="Data assunzione" type="date" value={formData.dataAssunzione} onChange={handleFieldChange('dataAssunzione')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Data attuale mansione" type="date" value={formData.dataAttualeMansione} onChange={handleFieldChange('dataAttualeMansione')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Referente aziendale" value={formData.referenteAziendale} onChange={handleFieldChange('referenteAziendale')} />
+                  <TextField size="small" label="Identificativo MPI" value={formData.identificativoMPI} onChange={handleFieldChange('identificativoMPI')} />
+                  <TextField size="small" label="Stato risorsa" select value={formData.statoRisorsa} onChange={handleFieldChange('statoRisorsa')}>
+                    <MenuItem value="Attivo">Attivo</MenuItem>
+                    <MenuItem value="Cessato">Cessato</MenuItem>
+                    <MenuItem value="Sospeso">Sospeso</MenuItem>
+                  </TextField>
+                  <TextField size="small" label="Motivazione" value={formData.motivazione} onChange={handleFieldChange('motivazione')} />
+                  <TextField size="small" label="Data cessazione/assenza" type="date" value={formData.dataCessazione} onChange={handleFieldChange('dataCessazione')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Data riattivazione" type="date" value={formData.dataRiattivazione} onChange={handleFieldChange('dataRiattivazione')} InputLabelProps={{ shrink: true }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <FormControlLabel
+                      control={<Switch size="small" checked={formData.categoriaProtetta} onChange={handleFieldChange('categoriaProtetta')} />}
+                      label="Categoria protetta"
+                    />
+                    <FormControlLabel
+                      control={<Switch size="small" checked={formData.documentiPrivacy} onChange={handleFieldChange('documentiPrivacy')} />}
+                      label="Documenti privacy raccolti"
+                    />
                   </Box>
-                ))}
-                {!sortedVisits.length && <Typography variant="body2" color="text.secondary">Nessuna attività disponibile.</Typography>}
+                </Box>
               </Paper>
 
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                  <WarningAmberIcon color="warning" fontSize="small" />
-                  <Typography variant="subtitle2">Rischi (esposizione)</Typography>
-                </Stack>
-                <Stack spacing={1.2}>
-                  {risksWithSeverity.map((risk) => (
-                    <Box key={`${risk.employeeId}-${risk.riskFactorId}`}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="body2">{risk.riskFactorName}</Typography>
-                        <Typography variant="caption" color="text.secondary">L{risk.severityLevel}</Typography>
-                      </Stack>
-                      <LinearProgress variant="determinate" value={Math.min(100, risk.severityLevel * 20)} sx={{ mt: 0.5, borderRadius: 999 }} />
-                    </Box>
-                  ))}
-                  {!risksWithSeverity.length && <Typography variant="body2" color="text.secondary">Nessun rischio assegnato.</Typography>}
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Note</Typography>
+                <Stack spacing={1.5}>
+                  <TextField
+                    size="small"
+                    label="Note riservate"
+                    multiline
+                    minRows={3}
+                    value={formData.noteRiservate}
+                    onChange={handleFieldChange('noteRiservate')}
+                  />
+                  <TextField
+                    size="small"
+                    label="Note per l'azienda"
+                    multiline
+                    minRows={3}
+                    value={formData.notePerAzienda}
+                    onChange={handleFieldChange('notePerAzienda')}
+                  />
                 </Stack>
               </Paper>
-            </Box>
+            </Stack>
           )}
 
-          {!loading && !error && tab === 1 && (
+          {tab === 1 && (
             <Stack spacing={1}>
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="subtitle2">Elenco attività</Typography>
+                <Typography variant="caption" color="text.secondary">Attività sanitarie registrate per il lavoratore.</Typography>
+              </Box>
               {sortedVisits.map((visit) => (
-                <Paper key={visit.id} variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>{visit.visitType || 'Visita'} • {formatDate(visit.visitDate)}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Scadenza: {formatDate(visit.nextDeadlineDate)} • Esito: {visit.outcome || '-'}
-                  </Typography>
-                </Paper>
-              ))}
-              {!sortedVisits.length && <Alert severity="info">Nessuna visita registrata.</Alert>}
-            </Stack>
-          )}
-
-          {!loading && !error && tab === 2 && (
-            <Stack spacing={1}>
-              {visitExams.map((exam) => (
-                <Paper key={exam.id} variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <BiotechIcon fontSize="small" color="primary" />
-                    <Typography variant="body2" fontWeight={700}>{exam.examTypeName || 'Esame'}</Typography>
+                <Paper key={visit.id} variant="outlined" sx={{ p: 1.5, borderRadius: 2, borderLeft: '4px solid', borderLeftColor: 'primary.main' }}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1}>
+                    <Box>
+                      <Typography variant="body2" fontWeight={700}>{visit.visitType || 'Visita'} • {formatDate(visit.visitDate)}</Typography>
+                      <Typography variant="caption" color="text.secondary">Esito: {visit.outcome || '-'}</Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary">Scadenza: {formatDate(visit.nextDeadlineDate)}</Typography>
+                    </Box>
                   </Stack>
-                  <Typography variant="caption" color="text.secondary">Risultato: {exam.result || '-'}</Typography>
                 </Paper>
               ))}
-              {!visitExams.length && <Alert severity="info">Nessun esame associato.</Alert>}
-            </Stack>
-          )}
-
-          {!loading && !error && tab === 3 && (
-            <Stack spacing={1}>
-              {risksWithSeverity.map((risk) => (
-                <Paper key={`${risk.employeeId}-${risk.riskFactorId}`} variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>{risk.riskFactorName}</Typography>
-                  <Typography variant="caption" color="text.secondary">Livello severità: {risk.severityLevel}/5</Typography>
-                </Paper>
-              ))}
-              {!risksWithSeverity.length && <Alert severity="success">Nessun rischio attivo.</Alert>}
+              {sortedVisits.length === 0 && <Alert severity="info">Nessuna attività registrata.</Alert>}
             </Stack>
           )}
         </Box>
+
+        {!!error && (
+          <Box sx={{ px: 2.5, pb: 1 }}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        )}
+
+        <DialogActions sx={{ px: 2.5, py: 2, borderTop: '1px solid #eaeef5' }}>
+          <Stack direction="row" spacing={1}>
+            <Button variant="contained" startIcon={<MedicalServicesIcon />}>
+              Nuova visita
+            </Button>
+            <Button variant="contained" startIcon={<ShieldIcon />}>
+              Controllo periodico
+            </Button>
+          </Stack>
+          <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+            <Button variant="outlined" onClick={onClose}>Chiudi</Button>
+            <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
+              {saving ? 'Salvataggio...' : 'Salva'}
+            </Button>
+          </Stack>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

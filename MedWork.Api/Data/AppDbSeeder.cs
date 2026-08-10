@@ -27,7 +27,9 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var companiesByVat = await dbContext.Companies.ToDictionaryAsync(x => x.VATNumber, x => x);
+        var companiesByVat = await dbContext.Companies
+            .Where(x => x.VATNumber != null)
+            .ToDictionaryAsync(x => x.VATNumber!, x => x);
 
         var branchSeeds = new[]
         {
