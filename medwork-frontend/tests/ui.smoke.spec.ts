@@ -92,3 +92,34 @@ test('employee area opens and create button is reachable', async ({ page }) => {
   // The create button is present
   await expect(page.locator('button:has-text("+ Nuovo lavoratore")')).toBeVisible()
 })
+
+test('company group create flow sends boolean archivioUnico (no 400)', async ({ page }) => {
+  await loginAsAdmin(page)
+
+  // Open Gruppi Aziendali (under company-management)
+  await page.click('button:has-text("Gestione aziende")')
+  await page.waitForSelector('button:has-text("Gruppi aziendali")', { timeout: 10000 })
+  await page.click('button:has-text("Gruppi aziendali")')
+  await page.waitForSelector('text=Gruppi Aziendali', { timeout: 5000 })
+
+  const createButton = page.locator('button:has-text("Nuovo")')
+  await expect(createButton.first()).toBeVisible({ timeout: 10000 })
+  await createButton.first().click()
+
+  // Dialog opens; fill required text fields
+  await expect(page.getByText('Nuovo elemento')).toBeVisible({ timeout: 10000 })
+  const groupName = `GRUPPO TEST ${Date.now()}`
+  await page.getByLabel('Descrizione').fill(groupName)
+  await page.getByLabel('Ragione Sociale').fill('Gruppo Test SRL')
+  // Archivio Documentale Unico must submit a boolean (regression for 400 archivioUnico)
+  const archivio = page.getByLabel('Archivio Documentale Unico')
+  await expect(archivio).toBeVisible()
+  // default is "No" (false) -> selecting it ensures a bool value is sent
+  await archivio.click()
+  await page.locator('li[role="option"]:has-text("No")').click()
+
+  await page.click('button:has-text("Salva")')
+  // On success the new group appears in the table (proves POST returned 200, not 400)
+  await expect(page.getByText(groupName, { exact: true })).toBeVisible({ timeout: 8000 })
+})
+

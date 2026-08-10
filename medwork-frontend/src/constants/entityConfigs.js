@@ -451,7 +451,7 @@ export const ENTITY_CONFIGS = [
       { name: 'provincia', label: 'Provincia', type: 'text', required: false, maxLength: 100 },
       { name: 'partitaIva', label: 'Partita IVA', type: 'text', required: false, maxLength: 13 },
       { name: 'codiceFiscale', label: 'Codice Fiscale', type: 'text', required: false, maxLength: 16 },
-      { name: 'archivioUnico', label: 'Archivio Documentale Unico', type: 'text', required: false, maxLength: 250 },
+      { name: 'archivioUnico', label: 'Archivio Documentale Unico', type: 'select', required: false, defaultValue: false, optionValue: 'value', optionLabel: 'label', options: [{ value: true, label: 'Sì' }, { value: false, label: 'No' }], transform: (v) => v === true || v === 'true' || v === 'on' },
     ],
   },
   {

@@ -40,7 +40,7 @@ import EmployeeProfileDialog from './EmployeeProfileDialog'
 
 function defaultFormData(fields) {
   return fields.reduce((accumulator, field) => {
-    accumulator[field.name] = ''
+    accumulator[field.name] = field.defaultValue ?? ''
     return accumulator
   }, {})
 }
