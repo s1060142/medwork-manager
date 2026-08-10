@@ -29,6 +29,7 @@ import VaccinesIcon from '@mui/icons-material/Vaccines'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import { apiGet } from '../services/apiClient'
+import { downloadCsv } from '../utils/csv'
 
 function toDate(value) {
   const date = new Date(value)
@@ -109,6 +110,21 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
     } finally {
       setCaricamento(false)
     }
+  }
+
+  const handleExportReport = () => {
+    const headers = [
+      { label: 'Lavoratore', value: 'employeeFullName' },
+      { label: 'Azienda', value: 'companyName' },
+      { label: 'Scadenza', value: 'nextDeadlineDate' },
+      { label: 'Esito', value: 'outcome' },
+      { label: 'Severità', value: 'severityLabel' },
+    ]
+    const rows = criticalAlerts.map((item) => ({
+      ...item,
+      severityLabel: item.severity?.label || '',
+    }))
+    downloadCsv('report-scadenze', headers, rows)
   }
 
   useEffect(() => {
@@ -335,7 +351,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
                   <WarningAmberIcon color="error" fontSize="small" />
                   <Typography variant="subtitle1">Alert Critici & Scadenze</Typography>
                 </Stack>
-                <Button size="small">Esporta Report</Button>
+                <Button size="small" onClick={handleExportReport}>Esporta Report</Button>
               </Stack>
 
               {criticalAlerts.length === 0 ? (

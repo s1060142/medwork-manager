@@ -123,3 +123,56 @@ test('company group create flow sends boolean archivioUnico (no 400)', async ({ 
   await expect(page.getByText(groupName, { exact: true })).toBeVisible({ timeout: 8000 })
 })
 
+test('employee profile "Nuova visita" opens the visit stepper', async ({ page }) => {
+  await loginAsAdmin(page)
+
+  // Ensure a company is selected so the workers list is populated
+  const companyButton = page.locator("button:has-text('Acme Industria S.p.A.')")
+  if (await companyButton.count() > 0) {
+    await companyButton.first().click()
+    await page.waitForTimeout(500)
+  }
+
+  // Create a test employee via the authenticated API (reuse browser session token)
+  const created = await page.evaluate(async () => {
+    const token = localStorage.getItem('accessToken')
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+    const cj = await fetch('/api/master-data/companies', { headers }).then((r) => r.json())
+    const companies = Array.isArray(cj) ? cj : (cj.items || [])
+    const company = companies[0]
+    if (!company) return { error: 'no company' }
+    const bj = await fetch(`/api/master-data/branches?companyId=${company.id}`, { headers }).then((r) => r.json())
+    const branches = Array.isArray(bj) ? bj : (bj.items || [])
+    const branch = branches[0]
+    const unique = `TESTPV${Date.now()}`
+    // Build a unique, valid-looking tax code to avoid collisions
+    const rand = Math.random().toString(36).slice(2, 9).toUpperCase().padEnd(7, 'X').slice(0, 7)
+    const taxCode = `RSSMRA${rand}F205X`.slice(0, 16)
+    const payload = { companyId: company.id, branchId: branch?.id, firstName: 'Prova', lastName: unique, birthDate: '1990-01-01', gender: 'M', birthCity: 'Milano', birthCityCode: 'F205', taxCode, jobRole: 'Operaio' }
+    const res = await fetch('/api/admin-data/employees', { method: 'POST', headers, body: JSON.stringify(payload) })
+    return res.ok ? res.json() : { error: res.status, txt: await res.text() }
+  })
+
+  // If we couldn't create a test employee (no seed data), skip rather than fail
+  if (!created || created.error) test.skip()
+
+  // Gestione lavoratori -> workers list (profile opens on row double-click)
+  await page.click('button:has-text("Gestione lavoratori")')
+  await page.waitForSelector('text=Aziende / Lavoratori', { timeout: 10000 })
+
+  // Locate the row for the created employee and open its profile
+  const row = page.locator('table tbody tr', { hasText: created.lastName })
+  await expect(row).toBeVisible({ timeout: 10000 })
+  await row.dblclick()
+
+  // The employee profile dialog should show the "Nuova visita" button
+  const nuovaVisita = page.locator('[role="dialog"] button:has-text("Nuova visita")')
+  await expect(nuovaVisita).toBeVisible({ timeout: 10000 })
+  await nuovaVisita.click()
+
+  // Clicking it should close the profile and open the medical-visit stepper
+  await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: 10000 })
+  await expect(page.getByText('Inserimento Visita Medica', { exact: false })).toBeVisible({ timeout: 15000 })
+})
+
+

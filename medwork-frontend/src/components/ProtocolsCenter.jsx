@@ -19,6 +19,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import { apiGet } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
+import { downloadCsv } from '../utils/csv'
 
 const STORAGE_KEY = 'medwork.protocols'
 
@@ -47,6 +48,33 @@ function ProtocolsCenter({ activeTab, onTabChange }) {
     riskFactorId: '',
     examTypeId: '',
   })
+  const [searchText, setSearchText] = useState('')
+
+  const visibleProtocols = useMemo(() => {
+    const needle = (searchText || '').toLowerCase()
+    if (!needle) return protocols
+    return protocols.filter((row) =>
+      `${row.name || ''} ${row.objective || ''}`.toLowerCase().includes(needle),
+    )
+  }, [protocols, searchText])
+
+  const handleExport = () => {
+    const headers = [
+      { label: 'Protocollo', value: 'name' },
+      { label: 'Obiettivo', value: 'objective' },
+      { label: 'Rischio', value: 'riskLabel' },
+      { label: 'Esame', value: 'examLabel' },
+      { label: 'Cadenza (gg)', value: 'cadenceDays' },
+      { label: 'Stato', value: 'statusLabel' },
+    ]
+    const rows = visibleProtocols.map((row) => ({
+      ...row,
+      riskLabel: riskMap[row.riskFactorId] || '-',
+      examLabel: examMap[row.examTypeId] || '-',
+      statusLabel: row.active ? 'Attivo' : 'Disattivo',
+    }))
+    downloadCsv('protocolli', headers, rows)
+  }
 
   useEffect(() => {
     Promise.all([apiGet('/api/master-data/risk-factors'), apiGet('/api/master-data/exam-types')])
@@ -108,12 +136,12 @@ function ProtocolsCenter({ activeTab, onTabChange }) {
     <Stack spacing={2}>
       <Box className="legacy-table-toolbar">
         <Box className="legacy-table-toolbar-filters">
-          <TextField size="small" label="Cerca" variant="outlined" value="" onChange={() => {}} />
-          <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+          <TextField size="small" label="Cerca" variant="outlined" value={searchText} onChange={(event) => setSearchText(event.target.value)} />
+          <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={() => setSearchText(searchText)}>Ricerca</Button>
         </Box>
         <Box className="legacy-table-toolbar-filters">
-          <Button variant="outlined" onClick={() => {}}>Stampa</Button>
-          <Button variant="outlined" onClick={() => {}}>Esporta excel</Button>
+          <Button variant="outlined" onClick={() => window.print()}>Stampa</Button>
+          <Button variant="outlined" onClick={handleExport}>Esporta excel</Button>
           <Button className="legacy-btn" onClick={handleSave}>+ Nuovo protocollo</Button>
         </Box>
       </Box>
@@ -132,7 +160,7 @@ function ProtocolsCenter({ activeTab, onTabChange }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {protocols.map((row) => (
+            {visibleProtocols.map((row) => (
               <TableRow key={row.id} hover>
                 <TableCell padding="checkbox" />
                 <TableCell>
@@ -152,7 +180,7 @@ function ProtocolsCenter({ activeTab, onTabChange }) {
                 </TableCell>
               </TableRow>
             ))}
-            {protocols.length === 0 && (
+            {visibleProtocols.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7}>
                   <Typography variant="body2" color="text.secondary">Nessun protocollo configurato.</Typography>

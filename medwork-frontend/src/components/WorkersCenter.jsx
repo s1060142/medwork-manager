@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material'
 import { apiGet } from '../services/apiClient'
+import { downloadCsv } from '../utils/csv'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import AddIcon from '@mui/icons-material/Add'
@@ -85,34 +86,68 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     setSelectedCompanyId(activeCompanyId || '')
   }, [activeCompanyId])
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setLoading(true)
-        setError('')
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      setError('')
 
-        const [employeesData, visitsData, companiesData, branchesData, rolesData] = await Promise.all([
-          apiGet('/api/master-data/employees'),
-          apiGet('/api/master-data/medical-visits'),
-          apiGet('/api/master-data/companies'),
-          apiGet('/api/master-data/branches'),
-          apiGet('/api/master-data/job-roles'),
-        ])
+      const [employeesData, visitsData, companiesData, branchesData, rolesData] = await Promise.all([
+        apiGet('/api/master-data/employees'),
+        apiGet('/api/master-data/medical-visits'),
+        apiGet('/api/master-data/companies'),
+        apiGet('/api/master-data/branches'),
+        apiGet('/api/master-data/job-roles'),
+      ])
 
-        setEmployees(Array.isArray(employeesData) ? employeesData : [])
-        setVisits(Array.isArray(visitsData) ? visitsData : [])
-        setCompanies(Array.isArray(companiesData) ? companiesData : [])
-        setBranches(Array.isArray(branchesData) ? branchesData : [])
-        setJobRoles(Array.isArray(rolesData) ? rolesData : [])
-      } catch (requestError) {
-        setError(requestError.message || 'Errore nel caricamento dati lavoratori.')
-      } finally {
-        setLoading(false)
-      }
+      setEmployees(Array.isArray(employeesData) ? employeesData : [])
+      setVisits(Array.isArray(visitsData) ? visitsData : [])
+      setCompanies(Array.isArray(companiesData) ? companiesData : [])
+      setBranches(Array.isArray(branchesData) ? branchesData : [])
+      setJobRoles(Array.isArray(rolesData) ? rolesData : [])
+    } catch (requestError) {
+      setError(requestError.message || 'Errore nel caricamento dati lavoratori.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    load()
+  useEffect(() => {
+    loadData()
   }, [])
+
+  const handleResetFilters = () => {
+    setCompanySearch('')
+    setCompanyArchiviation('active')
+    setWorkerSearch('')
+    setWorkerStatus('active')
+    setCompanyContext('all')
+    setSelectedCompanyId('')
+  }
+
+  const handleExportCompanies = () => {
+    const headers = ['id', 'name', 'vatNumber', 'city', 'province', 'status']
+    const labelMap = {
+      id: 'ID',
+      name: 'Nome',
+      vatNumber: 'P.IVA',
+      city: 'Città',
+      province: 'Provincia',
+      status: 'Stato',
+    }
+    const rows = visibleCompanyRows.map((row) => ({
+      id: row.id,
+      name: row.name || row.ragioneSociale || '',
+      vatNumber: row.vatNumber || '',
+      city: row.cittaUnitaLocal || '',
+      province: row.provincia || '',
+      status: row.status || '',
+    }))
+    downloadCsv(
+      'aziende',
+      headers.map((key) => ({ label: labelMap[key], value: key })),
+      rows,
+    )
+  }
 
   const latestVisitByEmployee = useMemo(() => {
     return visits.reduce((accumulator, visit) => {
@@ -276,8 +311,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </TextField>
           </Box>
           <Box className="legacy-table-toolbar-filters">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+            <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+            <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={loadData}>Ricerca</Button>
             <Button className="legacy-btn" onClick={onOpenEmployeeCreate}>Ricerca lavoratori</Button>
           </Box>
         </Box>
@@ -352,11 +387,11 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         <Box className="legacy-table-footer">
           <Stack direction="row" spacing={1}>
             <Button variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
-            <Button variant="outlined">Stampa</Button>
-            <Button variant="outlined">Stampe massive</Button>
-            <Button variant="outlined">Operazioni massive</Button>
-            <Button variant="outlined">Esporta dati in excel</Button>
-            <Button variant="outlined">Importa lavoratori</Button>
+            <Button variant="outlined" onClick={() => window.print()}>Stampa</Button>
+            <Button variant="outlined" onClick={() => window.alert('Stampe massive non ancora disponibile')}>Stampe massive</Button>
+            <Button variant="outlined" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
+            <Button variant="outlined" onClick={handleExportCompanies}>Esporta dati in excel</Button>
+            <Button variant="outlined" onClick={() => window.alert('Importazione lavoratori non ancora disponibile')}>Importa lavoratori</Button>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>

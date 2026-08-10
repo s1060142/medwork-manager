@@ -36,6 +36,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { apiGet, apiSend } from '../services/apiClient'
 import { getItalianMunicipalities } from '../services/municipalityService'
 import { calculateItalianTaxCode } from '../utils/taxCode'
+import { downloadCsv } from '../utils/csv'
 import EmployeeProfileDialog from './EmployeeProfileDialog'
 
 function defaultFormData(fields) {
@@ -69,29 +70,6 @@ function buildCompositeQuery(config, row) {
   return config.compositeKey
     .map((field) => `${field}=${encodeURIComponent(row[field])}`)
     .join('&')
-}
-
-function escapeCsvCell(value) {
-  const text = String(value ?? '')
-  if (text.includes(';') || text.includes('"') || text.includes('\n')) {
-    return `"${text.replace(/"/g, '""')}"`
-  }
-  return text
-}
-
-function downloadCsv(filename, headers, rows) {
-  const csvRows = [headers.map(escapeCsvCell).join(';')]
-  rows.forEach((row) => {
-    csvRows.push(row.map(escapeCsvCell).join(';'))
-  })
-
-  const blob = new Blob([`\uFEFF${csvRows.join('\n')}`], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  link.click()
-  URL.revokeObjectURL(url)
 }
 
 function getOptionLabel(option, field) {
@@ -780,12 +758,12 @@ function CrudEntityView({
               Nuova azienda
             </Button>
           )}
-          <Button variant="outlined" startIcon={<PrintIcon />} className="legacy-btn-secondary">Stampa</Button>
+          <Button variant="outlined" startIcon={<PrintIcon />} className="legacy-btn-secondary" onClick={() => window.print()}>Stampa</Button>
           <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={() => downloadCsv('companies', configuredColumns, filteredRows)} className="legacy-btn-success">
             Esporta dati in excel
           </Button>
-          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary">Operazioni massive</Button>
-          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary">Importa dati</Button>
+          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
+          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary" onClick={() => window.alert('Importazione dati non ancora disponibile')}>Importa dati</Button>
         </Stack>
       )}
 

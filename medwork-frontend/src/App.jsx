@@ -98,10 +98,16 @@ const ANALYSIS_TABS = [
 ]
 
 const HEALTH_TABS = [
-  { key: 'work-locations', label: 'Gestione luoghi di lavoro' },
-  { key: 'protocols', label: 'Gestione protocolli' },
-  { key: 'departments', label: 'Gestione reparti' },
-  { key: 'site-visits', label: 'Gestione sopralluoghi' },
+  { key: 'protocols', label: 'Protocolli', moduleKey: 'protocols' },
+  { key: 'appointments-calendar', label: 'Appuntamenti', moduleKey: 'appointments-calendar' },
+  { key: 'medical-visit-stepper', label: 'Nuova visita', moduleKey: 'medical-visit-stepper' },
+]
+
+const ADMIN_TABS = [
+  { key: 'settings', label: 'Impostazioni', moduleKey: 'settings' },
+  { key: 'billing', label: 'Fatturazione', moduleKey: 'billing' },
+  { key: 'tools', label: 'Strumenti', moduleKey: 'tools' },
+  { key: 'audit', label: 'Audit', moduleKey: 'audit' },
 ]
 
 const MODULE_ITEMS = [
@@ -204,6 +210,7 @@ function App() {
   const [selectedScheduleTab, setSelectedScheduleTab] = useState('visit-deadlines')
   const [selectedAnalysisTab, setSelectedAnalysisTab] = useState('visits')
   const [selectedHealthTab, setSelectedHealthTab] = useState('protocols')
+  const [selectedAdminTab, setSelectedAdminTab] = useState('settings')
   const [selectedModuleKey, setSelectedModuleKey] = useState('companies')
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
   const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
@@ -519,7 +526,33 @@ function App() {
       )
     }
 
-    const healthMode = selectedArea === 'health-surveillance' && selectedModuleKey === 'protocols'
+    const administrationMode = selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
+
+    if (administrationMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ADMIN_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSelectedAdminTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const healthMode = selectedArea === 'health-surveillance'
 
     if (healthMode) {
       return (
@@ -530,7 +563,10 @@ function App() {
                 key={tab.key}
                 type="button"
                 className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => setSelectedHealthTab(tab.key)}
+                onClick={() => {
+                  setSelectedHealthTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
               >
                 {tab.label}
               </button>
@@ -631,6 +667,7 @@ function App() {
               current ? { ...current, ...updated } : current,
             )
           }}
+          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
         />
         <CompanyProfileDialog
           open={Boolean(profileCompany)}

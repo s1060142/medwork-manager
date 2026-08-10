@@ -784,10 +784,10 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
               <MenuItem key={branch.id} value={branch.id}>{branch.address || branch.city || `Sede #${branch.id}`}</MenuItem>
             ))}
           </TextField>
-          <Button variant="outlined">Mostra archiviate</Button>
+          <Button variant="outlined" onClick={() => window.alert('Mostra archiviate non ancora disponibile')}>Mostra archiviate</Button>
           <TextField size="small" label="Nominativo" variant="outlined" value="" onChange={() => {}} />
-          <Button className="legacy-btn">Ricerca avanzata</Button>
-          <Button className="legacy-btn" startIcon={<RefreshIcon />}>Ricarica elenco</Button>
+          <Button className="legacy-btn" onClick={() => window.alert('Ricerca avanzata non ancora disponibile')}>Ricerca avanzata</Button>
+          <Button className="legacy-btn" startIcon={<RefreshIcon />} onClick={() => window.alert('Ricarica elenco non ancora disponibile')}>Ricarica elenco</Button>
         </Box>
       </Box>
 
@@ -808,9 +808,9 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
               </TextField>
             </Box>
             <Box className="legacy-table-toolbar-filters">
-              <Button className="legacy-btn" variant="outlined">Altri filtri</Button>
-              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+              <Button className="legacy-btn" variant="outlined" onClick={() => window.alert('Altri filtri non ancora disponibile')}>Altri filtri</Button>
+              <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={() => window.alert('Reset filtri non ancora disponibile')}>Reset</Button>
+              <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={() => window.alert('Ricerca non ancora disponibile')}>Ricerca</Button>
             </Box>
           </Box>
 
@@ -843,11 +843,11 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
           </Paper>
 
           <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 1.5 }}>
-            <Button variant="outlined">Esporta dati in excel</Button>
-            <Button variant="outlined">Salva giudizi</Button>
-            <Button variant="outlined">Salva visite</Button>
-            <Button variant="outlined">Invia</Button>
-            <Button variant="outlined">Stampa</Button>
+            <Button variant="outlined" onClick={() => window.alert('Esporta dati in excel non ancora disponibile')}>Esporta dati in excel</Button>
+            <Button variant="outlined" onClick={() => window.alert('Salva giudizi non ancora disponibile')}>Salva giudizi</Button>
+            <Button variant="outlined" onClick={() => window.alert('Salva visite non ancora disponibile')}>Salva visite</Button>
+            <Button variant="outlined" onClick={() => window.alert('Invia non ancora disponibile')}>Invia</Button>
+            <Button variant="outlined" onClick={() => window.print()}>Stampa</Button>
           </Stack>
         </Box>
       )}
@@ -867,7 +867,7 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                   <MenuItem value="">Seleziona</MenuItem>
                 </TextField>
               </Box>
-              <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />}>Vedi analisi</Button>
+              <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />} onClick={() => window.alert('Vedi analisi non ancora disponibile')}>Vedi analisi</Button>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
@@ -886,22 +886,22 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                   <Typography variant="body2" fontWeight={700}>Resoconto aziendale</Typography>
                 </Paper>
               </Box>
-              <Button className="legacy-btn" sx={{ mt: 1.5 }}>+ Nuovo documento</Button>
+              <Button className="legacy-btn" sx={{ mt: 1.5 }} onClick={() => window.alert('Nuovo documento non ancora disponibile')}>+ Nuovo documento</Button>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Esportazione Dati</Typography>
               <Stack direction="row" spacing={1}>
-                <Button variant="outlined">Esporta</Button>
-                <Button variant="outlined">Esporta</Button>
+                <Button variant="outlined" onClick={() => window.alert('Esportazione dati non ancora disponibile')}>Esporta</Button>
+                <Button variant="outlined" onClick={() => window.alert('Esportazione dati non ancora disponibile')}>Esporta</Button>
               </Stack>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Allegato 3B</Typography>
               <Stack direction="row" spacing={1}>
-                <Button variant="outlined">File excel</Button>
-                <Button variant="outlined">File inail</Button>
+                <Button variant="outlined" onClick={() => window.alert('File excel non ancora disponibile')}>File excel</Button>
+                <Button variant="outlined" onClick={() => window.alert('File inail non ancora disponibile')}>File inail</Button>
               </Stack>
             </Paper>
           </Stack>

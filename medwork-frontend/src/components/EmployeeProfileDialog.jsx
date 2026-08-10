@@ -50,7 +50,7 @@ function formatDate(value) {
   return date ? date.toLocaleDateString('it-IT') : '-'
 }
 
-function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSaveEmployee }) {
+function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSaveEmployee, onOpenMedicalVisitCreate }) {
   const [tab, setTab] = useState(0)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -415,10 +415,30 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
 
         <DialogActions sx={{ px: 2.5, py: 2, borderTop: '1px solid #eaeef5' }}>
           <Stack direction="row" spacing={1}>
-            <Button variant="contained" startIcon={<MedicalServicesIcon />}>
+            <Button
+              variant="contained"
+              startIcon={<MedicalServicesIcon />}
+              disabled={!onOpenMedicalVisitCreate}
+              onClick={() => {
+                if (onOpenMedicalVisitCreate) {
+                  onClose()
+                  onOpenMedicalVisitCreate()
+                }
+              }}
+            >
               Nuova visita
             </Button>
-            <Button variant="contained" startIcon={<ShieldIcon />}>
+            <Button
+              variant="contained"
+              startIcon={<ShieldIcon />}
+              disabled={!onOpenMedicalVisitCreate}
+              onClick={() => {
+                if (onOpenMedicalVisitCreate) {
+                  onClose()
+                  onOpenMedicalVisitCreate()
+                }
+              }}
+            >
               Controllo periodico
             </Button>
           </Stack>
