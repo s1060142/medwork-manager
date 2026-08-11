@@ -212,6 +212,7 @@ function App() {
   const [selectedHealthTab, setSelectedHealthTab] = useState('protocols')
   const [selectedAdminTab, setSelectedAdminTab] = useState('settings')
   const [selectedModuleKey, setSelectedModuleKey] = useState('companies')
+  const [preSelectedEmployeeId, setPreSelectedEmployeeId] = useState(null)
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
   const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
   const [profileEmployee, setProfileEmployee] = useState(null)
@@ -659,16 +660,19 @@ function App() {
           </Box>
         )}
         <EmployeeProfileDialog
-          open={Boolean(profileEmployee)}
-          onClose={() => setProfileEmployee(null)}
-          employee={profileEmployee}
-          onSaveEmployee={(updated) => {
-            setProfileEmployee((current) =>
-              current ? { ...current, ...updated } : current,
-            )
-          }}
-          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
-        />
+                  open={Boolean(profileEmployee)}
+                  onClose={() => setProfileEmployee(null)}
+                  employee={profileEmployee}
+                  onSaveEmployee={(updated) => {
+                    setProfileEmployee((current) =>
+                      current ? { ...current, ...updated } : current,
+                    )
+                  }}
+                  onOpenMedicalVisitCreate={(employeeId) => {
+                    setPreSelectedEmployeeId(employeeId)
+                    setSelectedModuleKey('medical-visit-stepper')
+                  }}
+                />
         <CompanyProfileDialog
           open={Boolean(profileCompany)}
           onClose={() => setProfileCompany(null)}
