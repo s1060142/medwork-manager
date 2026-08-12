@@ -10,13 +10,29 @@ public static class AppDbSeeder
     {
         await dbContext.Database.MigrateAsync();
 
+        // Ensure a default tenant exists (multi-tenant model requires TenantId on every entity)
+        var defaultTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug == "default");
+        if (defaultTenant == null)
+        {
+            defaultTenant = new Tenant
+            {
+                Name = "Default Tenant",
+                Slug = "default",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            dbContext.Tenants.Add(defaultTenant);
+            await dbContext.SaveChangesAsync();
+        }
+        var tid = defaultTenant.Id;
+
         await EnsureEncryptedDataReadableAsync(dbContext);
 
         var companySeeds = new[]
         {
-            new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890", ContactEmail = "hr@acme-industria.it", ContactPhone = "+39 02 1234567" },
-            new Company { Name = "Nord Logistics S.r.l.", VATNumber = "IT09876543210", ContactEmail = "people@nordlogistics.it", ContactPhone = "+39 035 7654321" },
-            new Company { Name = "TechFab Engineering S.p.A.", VATNumber = "IT04561230987", ContactEmail = "hr@techfab.it", ContactPhone = "+39 011 5557788" },
+            new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890", ContactEmail = "hr@acme-industria.it", ContactPhone = "+39 02 1234567", TenantId = tid },
+            new Company { Name = "Nord Logistics S.r.l.", VATNumber = "IT09876543210", ContactEmail = "people@nordlogistics.it", ContactPhone = "+39 035 7654321", TenantId = tid },
+            new Company { Name = "TechFab Engineering S.p.A.", VATNumber = "IT04561230987", ContactEmail = "hr@techfab.it", ContactPhone = "+39 011 5557788", TenantId = tid },
         };
 
         var existingVat = (await dbContext.Companies.Select(x => x.VATNumber).ToListAsync()).ToHashSet();
@@ -51,6 +67,7 @@ public static class AppDbSeeder
             dbContext.Branches.Add(new Branch
             {
                 CompanyId = company.Id,
+                TenantId = tid,
                 Address = seed.Address,
                 City = seed.City,
                 Province = seed.Province,
@@ -62,10 +79,10 @@ public static class AppDbSeeder
 
         var jobRoleSeeds = new[]
         {
-            new JobRole { Name = "Operatore Linea", Description = "Mansione operativa con esposizione a rumore e movimentazione." },
-            new JobRole { Name = "Magazziniere", Description = "Gestione logistica interna e movimentazione merci." },
-            new JobRole { Name = "Saldatore", Description = "Lavorazioni con esposizione a fumi metallici e calore." },
-            new JobRole { Name = "Impiegato Amministrativo", Description = "Attività VDT e carico mentale." },
+            new JobRole { Name = "Operatore Linea", Description = "Mansione operativa con esposizione a rumore e movimentazione.", TenantId = tid },
+            new JobRole { Name = "Magazziniere", Description = "Gestione logistica interna e movimentazione merci.", TenantId = tid },
+            new JobRole { Name = "Saldatore", Description = "Lavorazioni con esposizione a fumi metallici e calore.", TenantId = tid },
+            new JobRole { Name = "Impiegato Amministrativo", Description = "Attività VDT e carico mentale.", TenantId = tid },
         };
 
         var existingRoles = (await dbContext.JobRoles.Select(x => x.Name).ToListAsync()).ToHashSet();
@@ -80,9 +97,9 @@ public static class AppDbSeeder
 
         var doctorSeeds = new[]
         {
-            new Doctor { FirstName = "Laura", LastName = "Bianchi", MedicalLicenseNumber = "MED-LOM-98765", Specialty = "Medicina del Lavoro", Email = "laura.bianchi@medwork.it" },
-            new Doctor { FirstName = "Paolo", LastName = "Verdi", MedicalLicenseNumber = "MED-PIE-44112", Specialty = "Medicina del Lavoro", Email = "paolo.verdi@medwork.it" },
-            new Doctor { FirstName = "Giulia", LastName = "Neri", MedicalLicenseNumber = "MED-LOM-77231", Specialty = "Igiene industriale", Email = "giulia.neri@medwork.it" },
+            new Doctor { FirstName = "Laura", LastName = "Bianchi", MedicalLicenseNumber = "MED-LOM-98765", Specialty = "Medicina del Lavoro", Email = "laura.bianchi@medwork.it", TenantId = tid },
+            new Doctor { FirstName = "Paolo", LastName = "Verdi", MedicalLicenseNumber = "MED-PIE-44112", Specialty = "Medicina del Lavoro", Email = "paolo.verdi@medwork.it", TenantId = tid },
+            new Doctor { FirstName = "Giulia", LastName = "Neri", MedicalLicenseNumber = "MED-LOM-77231", Specialty = "Igiene industriale", Email = "giulia.neri@medwork.it", TenantId = tid },
         };
 
         var existingDoctors = (await dbContext.Doctors.Select(x => x.MedicalLicenseNumber).ToListAsync()).ToHashSet();
@@ -123,6 +140,7 @@ public static class AppDbSeeder
             dbContext.DoctorAvailabilities.Add(new DoctorAvailability
             {
                 DoctorId = doctor.Id,
+                TenantId = tid,
                 DayOfWeek = seed.Day,
                 StartTime = seed.Start,
                 EndTime = seed.End
@@ -133,10 +151,10 @@ public static class AppDbSeeder
 
         var riskSeeds = new[]
         {
-            new RiskFactor { Name = "Rumore", Description = "Esposizione continuativa a rumore industriale.", SeverityLevel = 4, Allegato3BCategory = "Agenti fisici" },
-            new RiskFactor { Name = "Agenti Chimici", Description = "Esposizione a solventi e detergenti tecnici.", SeverityLevel = 3, Allegato3BCategory = "Agenti chimici" },
-            new RiskFactor { Name = "Movimentazione Carichi", Description = "Rischio biomeccanico da sollevamento e trasporto.", SeverityLevel = 4, Allegato3BCategory = "Movimentazione manuale carichi" },
-            new RiskFactor { Name = "Videoterminali", Description = "Esposizione prolungata a videoterminali.", SeverityLevel = 2, Allegato3BCategory = "Rischi ergonomici" },
+            new RiskFactor { Name = "Rumore", Description = "Esposizione continuativa a rumore industriale.", SeverityLevel = 4, Allegato3BCategory = "Agenti fisici", TenantId = tid },
+            new RiskFactor { Name = "Agenti Chimici", Description = "Esposizione a solventi e detergenti tecnici.", SeverityLevel = 3, Allegato3BCategory = "Agenti chimici", TenantId = tid },
+            new RiskFactor { Name = "Movimentazione Carichi", Description = "Rischio biomeccanico da sollevamento e trasporto.", SeverityLevel = 4, Allegato3BCategory = "Movimentazione manuale carichi", TenantId = tid },
+            new RiskFactor { Name = "Videoterminali", Description = "Esposizione prolungata a videoterminali.", SeverityLevel = 2, Allegato3BCategory = "Rischi ergonomici", TenantId = tid },
         };
 
         var existingRisks = (await dbContext.RiskFactors.Select(x => x.Name).ToListAsync()).ToHashSet();
@@ -151,11 +169,11 @@ public static class AppDbSeeder
 
         var examTypeSeeds = new[]
         {
-            new ExamType { Name = "Esame Ematochimico", Category = "Laboratorio" },
-            new ExamType { Name = "Spirometria", Category = "Funzionale Respiratorio" },
-            new ExamType { Name = "Audiometria", Category = "Funzionale Uditivo" },
-            new ExamType { Name = "Visiotest", Category = "Screening" },
-            new ExamType { Name = "ECG", Category = "Cardiologico" },
+            new ExamType { Name = "Esame Ematochimico", Category = "Laboratorio", TenantId = tid },
+            new ExamType { Name = "Spirometria", Category = "Funzionale Respiratorio", TenantId = tid },
+            new ExamType { Name = "Audiometria", Category = "Funzionale Uditivo", TenantId = tid },
+            new ExamType { Name = "Visiotest", Category = "Screening", TenantId = tid },
+            new ExamType { Name = "ECG", Category = "Cardiologico", TenantId = tid },
         };
 
         var existingExamTypes = (await dbContext.ExamTypes.Select(x => x.Name).ToListAsync()).ToHashSet();
@@ -190,7 +208,8 @@ public static class AppDbSeeder
             dbContext.JobRoleRiskFactors.Add(new JobRoleRiskFactor
             {
                 JobRoleId = role.Id,
-                RiskFactorId = risk.Id
+                RiskFactorId = risk.Id,
+                TenantId = tid
             });
         }
 
@@ -217,7 +236,8 @@ public static class AppDbSeeder
                 LawReference = seed.Law,
                 CadenceDays = seed.Cadence,
                 Objective = seed.Objective,
-                JobRoleId = role.Id
+                JobRoleId = role.Id,
+                TenantId = tid
             });
         }
 
@@ -251,6 +271,7 @@ public static class AppDbSeeder
             dbContext.Employees.Add(new Employee
             {
                 CompanyId = company.Id,
+                TenantId = tid,
                 BranchId = ResolveBranchId(seed.Vat, seed.City),
                 JobRole = seed.Role,
                 JobRoleId = role.Id,
@@ -293,7 +314,8 @@ public static class AppDbSeeder
             dbContext.EmployeeRisks.Add(new EmployeeRisk
             {
                 EmployeeId = employee.Id,
-                RiskFactorId = risk.Id
+                RiskFactorId = risk.Id,
+                TenantId = tid
             });
         }
 
@@ -325,6 +347,7 @@ public static class AppDbSeeder
             {
                 EmployeeId = employee.Id,
                 ProtocolId = protocol.Id,
+                TenantId = tid,
                 AssignedAt = DateTime.UtcNow,
                 IsOverride = false,
                 Notes = "Auto demo assignment"
@@ -341,6 +364,7 @@ public static class AppDbSeeder
             dbContext.MedicalRecords.Add(new MedicalRecord
             {
                 EmployeeId = employee.Id,
+                TenantId = tid,
                 MedicalHistory = "Anamnesi demo completa: nessuna patologia invalidante, monitoraggio periodico previsto dal protocollo.",
                 Notes = "Dati di test per validazione UX e reportistica.",
                 CurrentTherapies = "Nessuna terapia continuativa rilevante.",
@@ -364,6 +388,7 @@ public static class AppDbSeeder
             {
                 EmployeeId = employee.Id,
                 DoctorId = doctor.Id,
+                TenantId = tid,
                 VisitDate = DateTime.UtcNow.Date.AddDays(-(15 + employee.Id * 3)),
                 NextDeadlineDate = DateTime.UtcNow.Date.AddDays(20 + employee.Id * 5),
                 Outcome = employee.Id % 4 == 0 ? "Parzialmente idoneo con limitazioni" : "Idoneo con prescrizioni",
@@ -388,6 +413,7 @@ public static class AppDbSeeder
                 dbContext.Anamneses.Add(new Anamnesis
                 {
                     MedicalVisitId = visitId,
+                    TenantId = tid,
                     WorkHistory = "Storico lavorativo test con esposizioni coerenti alla mansione.",
                     PersonalHistory = "Anamnesi personale negativa per patologie maggiori.",
                     FamilyHistory = "Familiarità per ipertensione.",
@@ -402,6 +428,7 @@ public static class AppDbSeeder
                 dbContext.VisitExams.Add(new VisitExam
                 {
                     MedicalVisitId = visitId,
+                    TenantId = tid,
                     ExamTypeId = examTypesByName["Esame Ematochimico"].Id,
                     Result = "Valori ematici nella norma",
                     Notes = "Nessuna alterazione significativa.",
@@ -411,6 +438,7 @@ public static class AppDbSeeder
                 dbContext.VisitExams.Add(new VisitExam
                 {
                     MedicalVisitId = visitId,
+                    TenantId = tid,
                     ExamTypeId = examTypesByName["Spirometria"].Id,
                     Result = "Funzionalità respiratoria regolare",
                     Notes = "Controllo periodico consigliato.",
@@ -429,6 +457,7 @@ public static class AppDbSeeder
                 dbContext.ScheduledExams.Add(new ScheduledExam
                 {
                     EmployeeId = employee.Id,
+                    TenantId = tid,
                     ExamTypeId = examTypesByName[employee.Id % 2 == 0 ? "Audiometria" : "Spirometria"].Id,
                     DueDate = DateTime.UtcNow.Date.AddDays(25 + employee.Id * 4),
                     Status = ScheduledExamStatus.Planned
@@ -441,6 +470,7 @@ public static class AppDbSeeder
                 dbContext.Vaccinations.Add(new Vaccination
                 {
                     EmployeeId = employee.Id,
+                    TenantId = tid,
                     VaccineName = employee.Id % 2 == 0 ? "Antitetanica" : "Antinfluenzale",
                     DateAdministered = DateTime.UtcNow.Date.AddMonths(-(8 + employee.Id)),
                     NextDueDate = DateTime.UtcNow.Date.AddMonths(6 + employee.Id)
@@ -453,6 +483,7 @@ public static class AppDbSeeder
                 dbContext.NotificationLogs.Add(new NotificationLog
                 {
                     EmployeeId = employee.Id,
+                    TenantId = tid,
                     Channel = employee.Id % 2 == 0 ? NotificationChannel.Email : NotificationChannel.Sms,
                     SentDate = DateTime.UtcNow.AddDays(-employee.Id),
                     MessageText = "Convocazione visita medica periodica inviata (dataset demo)."
@@ -461,6 +492,11 @@ public static class AppDbSeeder
         }
 
         await dbContext.SaveChangesAsync();
+
+        await dbContext.SaveChangesAsync();
+
+        // FASE 1 - seed phrase library for the Cartella Sanitaria 3A.
+        await PhraseTemplateSeed.SeedAsync(dbContext);
 
         await dbContext.SaveChangesAsync();
     }
