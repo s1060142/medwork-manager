@@ -15,6 +15,17 @@ public class AppDbContext : DbContext
         _fieldEncryptionService = fieldEncryptionService;
     }
 
+    // Multi-tenant core
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<TenantSettings> TenantSettings => Set<TenantSettings>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+
+    // Domain entities
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Employee> Employees => Set<Employee>();
@@ -28,6 +39,7 @@ public class AppDbContext : DbContext
     public DbSet<JobRole> JobRoles => Set<JobRole>();
     public DbSet<JobRoleRiskFactor> JobRoleRiskFactors => Set<JobRoleRiskFactor>();
     public DbSet<Protocol> Protocols => Set<Protocol>();
+    public DbSet<ProtocolStep> ProtocolSteps => Set<ProtocolStep>();
     public DbSet<PersonalProtocol> PersonalProtocols => Set<PersonalProtocol>();
     public DbSet<Anamnesis> Anamneses => Set<Anamnesis>();
     public DbSet<ScheduledExam> ScheduledExams => Set<ScheduledExam>();
@@ -40,6 +52,10 @@ public class AppDbContext : DbContext
     public DbSet<WorkLocation> WorkLocations => Set<WorkLocation>();
     public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
     public DbSet<CompanyDoctor> CompanyDoctors => Set<CompanyDoctor>();
+    public DbSet<RiskLevel> RiskLevels => Set<RiskLevel>();
+    public DbSet<PhraseTemplate> PhraseTemplates => Set<PhraseTemplate>();
+    public DbSet<Questionnaire> Questionnaires => Set<Questionnaire>();
+    public DbSet<QuestionnaireResponse> QuestionnaireResponses => Set<QuestionnaireResponse>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -235,6 +251,11 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.MedicalVisits)
                 .HasForeignKey(x => x.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.PersonalProtocol)
+                .WithMany()
+                .HasForeignKey(x => x.PersonalProtocolId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Anamnesis>(entity =>
@@ -319,6 +340,164 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        // Multi-tenant core entities
+        modelBuilder.Entity<Tenant>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Slug).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(500);
+            entity.Property(x => x.LogoUrl).HasMaxLength(200);
+            entity.Property(x => x.PrimaryColor).HasMaxLength(200);
+            entity.Property(x => x.SecondaryColor).HasMaxLength(200);
+            entity.HasIndex(x => x.Slug).IsUnique();
+        });
+
+        modelBuilder.Entity<TenantSettings>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Key).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Value).HasMaxLength(4000);
+            entity.Property(x => x.Description).HasMaxLength(500);
+            entity.HasOne(x => x.Tenant)
+                .WithMany(x => x.Settings)
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.TenantId, x.Key }).IsUnique();
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(x => x.Email).HasMaxLength(150).IsRequired();
+            entity.Property(x => x.PasswordHash).HasMaxLength(256);
+            entity.Property(x => x.FirstName).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.LastName).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Role).HasMaxLength(50);
+            entity.Property(x => x.ExternalId).HasMaxLength(100);
+            entity.Property(x => x.ExternalProvider).HasMaxLength(50);
+            entity.HasIndex(x => new { x.TenantId, x.Email }).IsUnique();
+            entity.HasOne(x => x.Tenant)
+                .WithMany(x => x.Users)
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(200);
+            entity.HasOne(x => x.Tenant)
+                .WithMany()
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(200);
+            entity.Property(x => x.Category).HasMaxLength(50);
+            entity.HasIndex(x => x.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.User)
+                .WithMany(x => x.UserRoles)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Role)
+                .WithMany(x => x.UserRoles)
+                .HasForeignKey(x => x.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.UserId, x.RoleId }).IsUnique();
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.Role)
+                .WithMany(x => x.RolePermissions)
+                .HasForeignKey(x => x.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Permission)
+                .WithMany(x => x.RolePermissions)
+                .HasForeignKey(x => x.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.RoleId, x.PermissionId }).IsUnique();
+        });
+
+        modelBuilder.Entity<UserPermission>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.HasOne(x => x.User)
+                .WithMany(x => x.UserPermissions)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Permission)
+                .WithMany(x => x.UserPermissions)
+                .HasForeignKey(x => x.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.UserId, x.PermissionId }).IsUnique();
+        });
+
+        // ProtocolStep configuration
+        modelBuilder.Entity<ProtocolStep>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(500);
+            entity.Property(x => x.StepType).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.ConfigurationJson).HasMaxLength(4000);
+            entity.HasOne(x => x.Protocol)
+                .WithMany(x => x.Steps)
+                .HasForeignKey(x => x.ProtocolId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Tenant)
+                .WithMany()
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // RiskLevel configuration
+        modelBuilder.Entity<RiskLevel>(entity =>
+        {
+            entity.Property(x => x.Name).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(200);
+            entity.Property(x => x.Color).HasMaxLength(20);
+            entity.HasOne(x => x.Tenant)
+                .WithMany()
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Add TenantId foreign key to all existing entities
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.ClrType != typeof(Tenant) &&
+                entityType.ClrType != typeof(TenantSettings) &&
+                entityType.ClrType != typeof(User) &&
+                entityType.ClrType != typeof(Role) &&
+                entityType.ClrType != typeof(Permission) &&
+                entityType.ClrType != typeof(UserRole) &&
+                entityType.ClrType != typeof(RolePermission) &&
+                entityType.ClrType != typeof(UserPermission) &&
+                entityType.ClrType != typeof(ProtocolStep) &&
+                entityType.ClrType != typeof(RiskLevel))
+            {
+                var tenantIdProperty = entityType.FindProperty("TenantId");
+                if (tenantIdProperty != null)
+                {
+                    entityType.GetForeignKeys().Where(fk => fk.Properties.Contains(tenantIdProperty)).ToList().ForEach(fk => modelBuilder.Entity(entityType.ClrType).Metadata.RemoveForeignKey(fk));
+
+                    modelBuilder.Entity(entityType.ClrType).HasOne(typeof(Tenant), "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                }
+            }
+        }
     }
 
     private static MedicalVisitType ParseMedicalVisitType(string? value)

@@ -40,7 +40,7 @@ namespace MedWork.Api.Migrations
                 column: "PersonalProtocolId",
                 principalTable: "PersonalProtocols",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
