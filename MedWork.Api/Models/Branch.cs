@@ -7,6 +7,9 @@ public class Branch
     public int Id { get; set; }
 
     [Range(1, int.MaxValue)]
+    public int TenantId { get; set; }
+
+    [Range(1, int.MaxValue)]
     public int CompanyId { get; set; }
 
     [Required]
@@ -23,6 +26,20 @@ public class Branch
     [StringLength(10)]
     public string? PostalCode { get; set; }
 
+    [StringLength(100)]
+    public string? Name { get; set; }
+
+    [StringLength(500)]
+    public string? Notes { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? UpdatedAt { get; set; }
+
+    // Navigation properties
+    public Tenant? Tenant { get; set; }
     public Company? Company { get; set; }
     public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

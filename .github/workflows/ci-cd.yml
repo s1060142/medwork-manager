@@ -1,0 +1,292 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  release:
+    types: [published]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20.x'
+  SOLUTION_FILE: 'medwork-manager.sln'
+  API_PROJECT: 'MedWork.Api/MedWork.Api.csproj'
+  FRONTEND_DIR: 'medwork-frontend'
+  TEST_PROJECT: 'MedWork.Api.Tests/MedWork.Api.Tests.csproj'
+
+jobs:
+  # =========================================================================
+  # BACKEND: Build, Test, Security Scan
+  # =========================================================================
+  backend-build-test:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test ${{ env.TEST_PROJECT }} --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./TestResults/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+
+      - name: Security scan (SonarCloud)
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        if: env.SONAR_TOKEN != ''
+
+      - name: Dependency vulnerability scan
+        run: |
+          dotnet tool install --global dotnet-outdated-tool
+          dotnet outdated ${{ env.API_PROJECT }} --exclude-auto-transitive --include-transitive || true
+
+      - name: Build Docker image (Backend)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./MedWork.Api/Dockerfile
+          push: false
+          tags: medwork-api:${{ github.sha }}
+          load: true
+
+  # =========================================================================
+  # FRONTEND: Lint, Test, Build
+  # =========================================================================
+  frontend-lint-test-build:
+    name: Frontend Lint, Test & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm ci
+
+      - name: Run linting
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run test
+
+      - name: Run E2E tests
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e || true
+
+      - name: Build production bundle
+        working-directory: ${{ env.FRONTEND_DIR }}
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: ${{ env.FRONTEND_DIR }}/dist
+          retention-days: 7
+
+      - name: Build Docker image (Frontend)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./${{ env.FRONTEND_DIR }}/Dockerfile
+          push: false
+          tags: medwork-frontend:${{ github.sha }}
+          load: true
+
+  # =========================================================================
+  # INTEGRATION TESTS (requires database)
+  # =========================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [backend-build-test]
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: 'Strong!Passw0rd'
+          MSSQL_PID: Express
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong!Passw0rd' -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Wait for SQL Server to be ready
+        run: |
+          for i in {1..30}; do
+            /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong!Passw0rd' -Q 'SELECT 1' && break
+            sleep 2
+          done
+
+      - name: Run integration tests
+        env:
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=MedWorkTest;User Id=sa;Password=Strong!Passw0rd;TrustServerCertificate=true;"
+          ASPNETCORE_ENVIRONMENT: Testing
+        run: |
+          dotnet test ${{ env.TEST_PROJECT }} --configuration Release --filter "FullyQualifiedName~Integration" --verbosity normal
+
+  # =========================================================================
+  # SECURITY & QUALITY GATES
+  # =========================================================================
+  security-quality-gates:
+    name: Security & Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [backend-build-test, frontend-lint-test-build]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (Docker images)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          scan-ref: 'medwork-api:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-api.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-api.sarif'
+        if: always()
+
+      - name: Trivy scan (Frontend image)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          scan-ref: 'medwork-frontend:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-frontend.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy results (Frontend)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-frontend.sarif'
+        if: always()
+
+      - name: Check for secrets (TruffleHog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+  # =========================================================================
+  # DEPLOY TO STAGING (on develop branch)
+  # =========================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [backend-build-test, frontend-lint-test-build, integration-tests, security-quality-gates]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - name: Deploy to Staging (placeholder)
+        run: |
+          echo "Deploy to staging environment"
+          echo "This would typically use kubectl, helm, or terraform"
+          echo "Image tags: medwork-api:${{ github.sha }}, medwork-frontend:${{ github.sha }}"
+
+  # =========================================================================
+  # DEPLOY TO PRODUCTION (on release)
+  # =========================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [backend-build-test, frontend-lint-test-build, integration-tests, security-quality-gates]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./MedWork.Api/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/medwork-api:${{ github.event.release.tag_name }}
+            ${{ secrets.DOCKER_REGISTRY }}/medwork-api:latest
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./${{ env.FRONTEND_DIR }}/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/medwork-frontend:${{ github.event.release.tag_name }}
+            ${{ secrets.DOCKER_REGISTRY }}/medwork-frontend:latest
+
+      - name: Deploy to Production (placeholder)
+        run: |
+          echo "Deploy to production using kubectl/helm/terraform"
+          echo "Version: ${{ github.event.release.tag_name }}"
+          echo "This step would typically apply Kubernetes manifests or run Helm upgrade"
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Deployment ${{ job.status }} for version ${{ github.event.release.tag_name }}"
+          # Add Slack/Teams/Email notification here

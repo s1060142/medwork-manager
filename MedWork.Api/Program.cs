@@ -1,6 +1,10 @@
 using MedWork.Api.Data;
 using MedWork.Api.Security;
 using MedWork.Api.Services;
+using MedWork.Api.Compliance;
+using MedWork.Api.Integrations;
+using MedWork.Api.Analytics;
+using MedWork.Api.Enterprise;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,8 +16,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("Auth"));
+builder.Services.Configure<SPIDAuthOptions>(builder.Configuration.GetSection("Auth:SPID"));
+builder.Services.Configure<CIEAuthOptions>(builder.Configuration.GetSection("Auth:CIE"));
+builder.Services.Configure<KeycloakAuthOptions>(builder.Configuration.GetSection("Auth:Keycloak"));
 
-builder.Services.AddControllers()
+builder.Services.AddHttpClient();
+
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<TenantContextFilter>(order: int.MinValue);
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -22,7 +34,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "MedWork API", Version = "v1" });
-    
+
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -53,9 +65,34 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDataProtection();
 builder.Services.AddScoped<IFieldEncryptionService, FieldEncryptionService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// Multi-tenant & Auth services
+builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
+
+// Domain services
 builder.Services.AddScoped<IPersonalProtocolAssignmentService, PersonalProtocolAssignmentService>();
 builder.Services.AddScoped<INotificationService, MockNotificationService>();
+builder.Services.AddScoped<IAlertService, AlertMultiChannelService>();
+builder.Services.AddScoped<INotificationTransport, ConsoleNotificationTransport>();
+builder.Services.AddScoped<ISignatureService, SignatureService>();
 builder.Services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
+builder.Services.AddScoped<IAIChartingService, AIChartingService>();
+builder.Services.AddScoped<IQuestionnaireScoringService, QuestionnaireScoringService>();
+builder.Services.AddScoped<IComplianceRuleEngine, ComplianceRuleEngine>();
+builder.Services.AddScoped<IRegulatoryChangelogParser, RegulatoryChangelogParser>();
+builder.Services.AddScoped<IDpiaAssistant, DpiaAssistant>();
+builder.Services.AddScoped<IConsentManager, ConsentManager>();
+builder.Services.AddScoped<IFatturaPaBuilder, FatturaPaBuilder>();
+builder.Services.AddScoped<HrImportExportService>();
+builder.Services.AddScoped<IAnomalyDetectionService, AnomalyDetectionService>();
+builder.Services.AddScoped<INoShowPredictionService, NoShowPredictionService>();
+builder.Services.AddScoped<ISlotOptimizationService, SlotOptimizationService>();
+builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
+builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
 
 if (builder.Environment.IsEnvironment("Testing"))
 {

@@ -5,6 +5,7 @@ using MedWork.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace MedWork.Api.Controllers;
 
@@ -64,6 +65,12 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("medical-visits")]
     public async Task<IActionResult> CreateMedicalVisit([FromBody] MedicalVisit request)
     {
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(request, new ValidationContext(request), validationResults, true))
+        {
+            return BadRequest(validationResults);
+        }
+
         if (request.DoctorId <= 0)
         {
             request.DoctorId = await _dbContext.Doctors
@@ -86,6 +93,11 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("medical-visits/{id:int}")]
     public async Task<IActionResult> UpdateMedicalVisit(int id, [FromBody] MedicalVisit request)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id);
         if (entity is null) return NotFound();
 

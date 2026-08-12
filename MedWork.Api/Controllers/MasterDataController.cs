@@ -455,19 +455,19 @@ public class MasterDataController : ControllerBase
     {
         var data = await _dbContext.CompanyGroups
             .AsNoTracking()
-            .OrderBy(x => x.RagioneSociale)
+            .OrderBy(x => x.LegalName)
             .Select(x => new
             {
                 x.Id,
-                x.Descrizione,
-                x.RagioneSociale,
-                x.Indirizzo,
-                x.Citta,
-                x.Cap,
-                x.Provincia,
-                x.PartitaIva,
-                x.CodiceFiscale,
-                x.ArchivioUnico
+                x.Name,
+                x.LegalName,
+                x.Address,
+                x.City,
+                x.PostalCode,
+                x.Province,
+                x.VATNumber,
+                x.TaxCode,
+                x.SingleArchive
             })
             .ToListAsync();
 
@@ -481,16 +481,16 @@ public class MasterDataController : ControllerBase
         var data = await _dbContext.CompanyContacts
             .AsNoTracking()
             .OrderBy(x => x.CompanyId)
-            .ThenBy(x => x.Ruolo)
+            .ThenBy(x => x.Role)
             .Select(x => new
             {
                 x.Id,
                 x.CompanyId,
                 CompanyName = x.Company!.Name,
-                x.Ruolo,
-                x.Nominativo,
+                x.Role,
+                x.FullName,
                 x.Email,
-                x.Telefono
+                x.Phone
             })
             .ToListAsync();
 
@@ -504,16 +504,16 @@ public class MasterDataController : ControllerBase
         var data = await _dbContext.Departments
             .AsNoTracking()
             .OrderBy(x => x.CompanyId)
-            .ThenBy(x => x.Nome)
+            .ThenBy(x => x.Name)
             .Select(x => new
             {
                 x.Id,
                 x.CompanyId,
                 CompanyName = x.Company!.Name,
-                x.Nome,
-                x.Referente,
-                x.EmailReferente,
-                x.Attivo
+                x.Name,
+                x.Manager,
+                x.ManagerEmail,
+                x.IsActive
             })
             .ToListAsync();
 
@@ -527,17 +527,17 @@ public class MasterDataController : ControllerBase
         var data = await _dbContext.WorkLocations
             .AsNoTracking()
             .OrderBy(x => x.CompanyId)
-            .ThenBy(x => x.Descrizione)
+            .ThenBy(x => x.Notes)
             .Select(x => new
             {
                 x.Id,
                 x.CompanyId,
                 CompanyName = x.Company!.Name,
-                x.Descrizione,
-                x.Citta,
-                x.Cap,
-                x.Provincia,
-                x.Attivo
+                x.Notes,
+                x.City,
+                x.PostalCode,
+                x.Province,
+                x.IsActive
             })
             .ToListAsync();
 
@@ -550,18 +550,18 @@ public class MasterDataController : ControllerBase
     {
         var data = await _dbContext.SiteVisits
             .AsNoTracking()
-            .OrderByDescending(x => x.Data)
+            .OrderByDescending(x => x.VisitDate)
             .Select(x => new
             {
                 x.Id,
                 x.CompanyId,
                 CompanyName = x.Company!.Name,
-                x.StrutturaVisitata,
-                x.Luogo,
-                x.Medico,
-                x.Data,
-                x.Periodicita,
-                x.Scadenza
+                x.VisitedStructure,
+                x.Location,
+                x.DoctorName,
+                x.VisitDate,
+                x.Frequency,
+                x.NextDueDate
             })
             .ToListAsync();
 

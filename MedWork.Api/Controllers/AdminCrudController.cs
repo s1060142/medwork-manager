@@ -465,15 +465,15 @@ public class AdminCrudController : ControllerBase
         var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id);
         if (entity is null) return NotFound();
 
-        entity.Descrizione = request.Descrizione;
-        entity.RagioneSociale = request.RagioneSociale;
-        entity.Indirizzo = request.Indirizzo;
-        entity.Citta = request.Citta;
-        entity.Cap = request.Cap;
-        entity.Provincia = request.Provincia;
-        entity.PartitaIva = request.PartitaIva;
-        entity.CodiceFiscale = request.CodiceFiscale;
-        entity.ArchivioUnico = request.ArchivioUnico;
+        entity.LegalName = request.LegalName;
+        entity.LegalName = request.LegalName;
+        entity.Address = request.Address;
+        entity.City = request.City;
+        entity.PostalCode = request.PostalCode;
+        entity.Province = request.Province;
+        entity.VATNumber = request.VATNumber;
+        entity.TaxCode = request.TaxCode;
+        entity.SingleArchive = request.SingleArchive;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }
@@ -504,10 +504,10 @@ public class AdminCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
-        entity.Ruolo = request.Ruolo;
-        entity.Nominativo = request.Nominativo;
+        entity.Role = request.Role;
+        entity.FullName = request.FullName;
         entity.Email = request.Email;
-        entity.Telefono = request.Telefono;
+        entity.Phone = request.Phone;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }
@@ -538,10 +538,10 @@ public class AdminCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
-        entity.Nome = request.Nome;
-        entity.Referente = request.Referente;
-        entity.EmailReferente = request.EmailReferente;
-        entity.Attivo = request.Attivo;
+        entity.Name = request.Name;
+        entity.Manager = request.Manager;
+        entity.ManagerEmail = request.ManagerEmail;
+        entity.IsActive = request.IsActive;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }
@@ -572,11 +572,11 @@ public class AdminCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
-        entity.Descrizione = request.Descrizione;
-        entity.Citta = request.Citta;
-        entity.Cap = request.Cap;
-        entity.Provincia = request.Provincia;
-        entity.Attivo = request.Attivo;
+        entity.Notes = request.Notes;
+        entity.City = request.City;
+        entity.PostalCode = request.PostalCode;
+        entity.Province = request.Province;
+        entity.IsActive = request.IsActive;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }
@@ -607,12 +607,12 @@ public class AdminCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
-        entity.StrutturaVisitata = request.StrutturaVisitata;
-        entity.Luogo = request.Luogo;
-        entity.Medico = request.Medico;
-        entity.Data = request.Data;
-        entity.Periodicita = request.Periodicita;
-        entity.Scadenza = request.Scadenza;
+        entity.VisitedStructure = request.VisitedStructure;
+        entity.Location = request.Location;
+        entity.DoctorName = request.DoctorName;
+        entity.VisitDate = request.VisitDate;
+        entity.Frequency = request.Frequency;
+        entity.NextDueDate = request.NextDueDate;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }

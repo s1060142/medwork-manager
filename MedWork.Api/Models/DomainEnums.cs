@@ -26,5 +26,8 @@ public enum ScheduledExamStatus
 public enum NotificationChannel
 {
     Sms = 1,
-    Email = 2
+    Email = 2,
+    Pec = 3,
+    Push = 4,
+    WhatsApp = 5
 }

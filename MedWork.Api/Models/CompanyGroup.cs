@@ -1,25 +1,48 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MedWork.Api.Models;
 
-/// <summary>
-/// Represents a group of companies for organizational purposes
-/// </summary>
 public class CompanyGroup
 {
     public int Id { get; set; }
-    public string Descrizione { get; set; } = string.Empty;
-    public string RagioneSociale { get; set; } = string.Empty;
-    public string Indirizzo { get; set; } = string.Empty;
-    public string Citta { get; set; } = string.Empty;
-    public string Cap { get; set; } = string.Empty;
-    public string Provincia { get; set; } = string.Empty;
-    public string PartitaIva { get; set; } = string.Empty;
-    public string CodiceFiscale { get; set; } = string.Empty;
-    public bool ArchivioUnico { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int TenantId { get; set; }
+
+    [Required]
+    [StringLength(200, MinimumLength = 2)]
+    public string Name { get; set; } = string.Empty;
+
+    [StringLength(200)]
+    public string? LegalName { get; set; }
+
+    [StringLength(250)]
+    public string? Address { get; set; }
+
+    [StringLength(100)]
+    public string? City { get; set; }
+
+    [StringLength(10)]
+    public string? PostalCode { get; set; }
+
+    [StringLength(100)]
+    public string? Province { get; set; }
+
+    [RegularExpression("^[A-Z]{2}[0-9]{11}$|^[0-9]{11}$")]
+    public string? VATNumber { get; set; }
+
+    [StringLength(16)]
+    public string? TaxCode { get; set; }
+
+    public bool SingleArchive { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public string CreatedBy { get; set; } = "system";
-    public string UpdatedBy { get; set; } = "system";
+
+    public DateTime? UpdatedAt { get; set; }
 
     // Navigation properties
-    public virtual ICollection<Company>? Companies { get; set; } = new List<Company>();
+    public Tenant? Tenant { get; set; }
+    public ICollection<Company> Companies { get; set; } = new List<Company>();
 }

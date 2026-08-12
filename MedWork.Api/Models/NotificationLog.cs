@@ -7,6 +7,9 @@ public class NotificationLog
     public int Id { get; set; }
 
     [Range(1, int.MaxValue)]
+    public int TenantId { get; set; }
+
+    [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
 
     public NotificationChannel Channel { get; set; }
@@ -17,5 +20,16 @@ public class NotificationLog
     [StringLength(2000, MinimumLength = 2)]
     public string MessageText { get; set; } = string.Empty;
 
+    public bool IsDelivered { get; set; } = false;
+
+    public DateTime? DeliveredAt { get; set; }
+
+    [StringLength(500)]
+    public string? ErrorMessage { get; set; }
+
+    public int RetryCount { get; set; } = 0;
+
+    // Navigation properties
+    public Tenant? Tenant { get; set; }
     public Employee? Employee { get; set; }
 }

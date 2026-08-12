@@ -11,6 +11,7 @@ public class EntityValidationTests
         {
             new Company
             {
+                TenantId = 1,
                 Name = "Acme Industria S.p.A.",
                 VATNumber = "IT01234567890",
                 ContactEmail = "hr@acme.it",
@@ -22,6 +23,7 @@ public class EntityValidationTests
         {
             new Branch
             {
+                TenantId = 1,
                 CompanyId = 1,
                 Address = "Via Roma 10",
                 City = "Milano",
@@ -34,6 +36,7 @@ public class EntityValidationTests
         {
             new Employee
             {
+                TenantId = 1,
                 CompanyId = 1,
                 BranchId = 1,
                 FirstName = "Mario",
@@ -53,6 +56,7 @@ public class EntityValidationTests
         {
             new Doctor
             {
+                TenantId = 1,
                 FirstName = "Laura",
                 LastName = "Bianchi",
                 MedicalLicenseNumber = "MED-LOM-98765",
@@ -65,6 +69,7 @@ public class EntityValidationTests
         {
             new RiskFactor
             {
+                TenantId = 1,
                 Name = "Rumore",
                 Description = "Esposizione continuativa a livelli elevati di rumore in produzione.",
                 SeverityLevel = 3
@@ -75,6 +80,7 @@ public class EntityValidationTests
         {
             new EmployeeRisk
             {
+                TenantId = 1,
                 EmployeeId = 1,
                 RiskFactorId = 1
             }
@@ -84,6 +90,7 @@ public class EntityValidationTests
         {
             new MedicalRecord
             {
+                TenantId = 1,
                 EmployeeId = 1,
                 MedicalHistory = "Anamnesi lavorativa e clinica rilevante, nessuna controindicazione significativa.",
                 Notes = "Controllo annuale.",
@@ -95,6 +102,7 @@ public class EntityValidationTests
         {
             new MedicalVisit
             {
+                TenantId = 1,
                 EmployeeId = 1,
                 DoctorId = 1,
                 VisitDate = new DateTime(2026, 3, 1),
@@ -109,6 +117,7 @@ public class EntityValidationTests
         {
             new ExamType
             {
+                TenantId = 1,
                 Name = "Spirometria",
                 Category = "Funzionale Respiratorio"
             }
@@ -118,6 +127,7 @@ public class EntityValidationTests
         {
             new VisitExam
             {
+                TenantId = 1,
                 MedicalVisitId = 1,
                 ExamTypeId = 1,
                 Result = "Valori nella norma",
@@ -141,6 +151,7 @@ public class EntityValidationTests
     {
         var invalidVisit = new MedicalVisit
         {
+            TenantId = 1,
             EmployeeId = 1,
             DoctorId = 1,
             VisitDate = new DateTime(2026, 3, 10),

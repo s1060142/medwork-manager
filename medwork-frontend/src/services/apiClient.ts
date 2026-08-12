@@ -4,19 +4,34 @@ export function getApiBaseUrl() {
   return API_BASE_URL
 }
 
-function getHeaders() {
+export function getHeaders(tenantId?) {
   const token = localStorage.getItem('accessToken')
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+
+  if (!token) {
+    return {}
   }
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  }
+
+  if (tenantId) {
+    headers['X-Tenant-Id'] = tenantId
+  }
+
+  return headers
 }
 
-export async function apiGet(endpoint) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin?: boolean }) {
+  const headers = options?.tenantId ? getHeaders(options.tenantId) : getHeaders()
+
+  const config = {
     method: 'GET',
-    headers: getHeaders(),
-  })
+    headers: headers,
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
 
   if (!response.ok) {
     const message = await safeReadError(response)
@@ -41,10 +56,26 @@ export async function authLogin(username, password) {
   return readJsonResponse(response)
 }
 
+export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | 'keycloak', token: string) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/external/${provider}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message || 'Autenticazione esterna fallita.', response.status)
+  }
+
+  return readJsonResponse(response)
+}
+
 export async function apiSend(method, endpoint, payload) {
+  const headers = getHeaders()
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
-    headers: getHeaders(),
+    headers,
     body: payload ? JSON.stringify(payload) : undefined,
   })
 
@@ -91,7 +122,7 @@ async function safeReadError(response) {
   try {
     const text = await response.text()
     if (!text) {
-      return 'Errore durante l’operazione.'
+      return 'Errore durante l\'operazione.'
     }
 
     const contentType = response.headers.get('content-type') || ''
@@ -118,12 +149,44 @@ async function safeReadError(response) {
 
     return text
   } catch {
-    return 'Errore durante l’operazione.'
+    return 'Errore durante l\'operazione.'
   }
 }
 
-function buildApiError(message, status) {
+export function buildApiError(message, status) {
   const error = new Error(message)
   error.status = status
   return error
+}
+
+export { readJsonResponse, safeReadError, buildApiError }
+
+export function getToken() {
+  return localStorage.getItem('accessToken')
+}
+
+export function getRole() {
+  return localStorage.getItem('role')
+}
+
+export function getTenantId() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.tenantId || null
+}
+
+export function setTenantId(tenantId: string) {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  settings.tenantId = tenantId
+  localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
+}
+
+export function getActiveCompanyId() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.activeCompanyId || null
+}
+
+export function setActiveCompanyId(companyId: string) {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  settings.activeCompanyId = companyId
+  localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
 }

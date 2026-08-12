@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 
@@ -15,6 +15,11 @@ vi.mock('./services/apiClient', () => ({
   }),
   apiSend: vi.fn(async () => ({})),
   authLogin: vi.fn(async () => ({ accessToken: 'test-token', role: 'Admin' })),
+  getHeaders: vi.fn(() => ({ 'Content-Type': 'application/json' })),
+  getTenantId: vi.fn(() => null),
+  getToken: vi.fn(() => 'test-token'),
+  getUserId: vi.fn(() => '1'),
+  getRole: vi.fn(() => 'Admin'),
 }))
 
 function getButton(name) {
@@ -28,30 +33,25 @@ beforeEach(() => {
 })
 
 describe('App legacy shell', () => {
-  test('renders company registry as default home view', async () => {
-    const user = userEvent.setup()
+  test('renders the main navigation areas after login', async () => {
     render(<App />)
 
-    // Default view is company registry from Gestione aziende
-    expect(screen.getByRole('button', { name: /Home/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Gestione aziende/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Anagrafica/i })).toBeInTheDocument()
-
-    // Open schedule area and verify its items are available
-    await user.click(screen.getByRole('button', { name: /Scadenzario/i }))
-    const scheduleButtons = screen.getAllByRole('button', { name: /Disponibilita medici/i })
-    expect(scheduleButtons.length).toBeGreaterThan(0)
+    // The left sidebar should expose the primary areas defined in SIDE_NAV_ITEMS
+    expect(await screen.findByRole('button', { name: /Gestione aziende/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Scadenzario/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Sorveglianza sanitaria/i })).toBeInTheDocument()
   })
 
-  test('shows schedule entities after switching area', async () => {
+  test('shows schedule tabs after switching to the schedule area', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: /Scadenzario/i }))
-    await user.click(screen.getByRole('button', { name: /Disponibilita medici/i }))
-    expect(screen.getAllByText(/Disponibilita medici/i).length).toBeGreaterThan(0)
+    const scheduleButton = await screen.findByRole('button', { name: /Scadenzario/i })
+    await user.click(scheduleButton)
 
-    await user.click(screen.getByRole('button', { name: /Log notifiche/i }))
-    expect(screen.getAllByText(/Log notifiche/i).length).toBeGreaterThan(0)
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /Scadenzario Visite/i }).length).toBeGreaterThan(0)
+    })
+    expect(screen.getAllByText(/Agenda/i).length).toBeGreaterThan(0)
   })
 })

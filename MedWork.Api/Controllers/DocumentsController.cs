@@ -37,4 +37,18 @@ public class DocumentsController : ControllerBase
         var result = await _documentGenerationService.GenerateFitnessJudgment(medicalVisitId);
         return Ok(new { message = result });
     }
+
+    [HttpPost("allegato-3b/{companyId:int}/validate")]
+    public async Task<IActionResult> ValidateAllegato3B(int companyId)
+    {
+        var result = await _documentGenerationService.ValidateAllegato3BXsd(companyId);
+        return Ok(result);
+    }
+
+    [HttpPost("allegato-3b/{companyId:int}/submit")]
+    public async Task<IActionResult> SubmitAllegato3B(int companyId)
+    {
+        var result = await _documentGenerationService.SubmitAllegato3B(companyId);
+        return Ok(result);
+    }
 }

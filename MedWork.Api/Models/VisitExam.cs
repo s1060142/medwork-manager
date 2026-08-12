@@ -7,6 +7,9 @@ public class VisitExam
     public int Id { get; set; }
 
     [Range(1, int.MaxValue)]
+    public int TenantId { get; set; }
+
+    [Range(1, int.MaxValue)]
     public int MedicalVisitId { get; set; }
 
     [Range(1, int.MaxValue)]
@@ -22,6 +25,14 @@ public class VisitExam
     [StringLength(300)]
     public string? ReferenceRange { get; set; }
 
+    public bool IsAbnormal { get; set; } = false;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? UpdatedAt { get; set; }
+
+    // Navigation properties
+    public Tenant? Tenant { get; set; }
     public MedicalVisit? MedicalVisit { get; set; }
     public ExamType? ExamType { get; set; }
 }
