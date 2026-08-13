@@ -23,6 +23,53 @@ export function getHeaders(tenantId?) {
   return headers
 }
 
+export async function hrExportCsv() {
+  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-csv`, {
+    method: 'GET',
+    headers: getHeaders(tenantId),
+  })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'esportazione CSV.')
+  }
+
+  const blob = await response.blob()
+  return blob
+}
+
+export async function hrImportCsv(file: File, fileName: string) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('fileName', fileName)
+
+  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/import-csv`, {
+    method: 'POST',
+    headers: getHeaders(tenantId),
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'importazione CSV.')
+  }
+
+  const blob = await response.blob()
+  return blob
+}
+
+export async function hrExportExcel() {
+  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-excel`, {
+    method: 'GET',
+    headers: getHeaders(tenantId),
+  })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'esportazione Excel.')
+  }
+
+  const blob = await response.blob()
+  return blob
+}
+
 export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin?: boolean }) {
   const headers = options?.tenantId ? getHeaders(options.tenantId) : getHeaders()
 
@@ -159,7 +206,7 @@ export function buildApiError(message, status) {
   return error
 }
 
-export { readJsonResponse, safeReadError, buildApiError }
+export { readJsonResponse, safeReadError }
 
 export function getToken() {
   return localStorage.getItem('accessToken')

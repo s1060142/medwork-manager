@@ -362,7 +362,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Tenant)
                 .WithMany(x => x.Settings)
                 .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
             entity.HasIndex(x => new { x.TenantId, x.Key }).IsUnique();
         });
 
@@ -379,7 +379,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Tenant)
                 .WithMany(x => x.Users)
                 .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -389,7 +389,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Tenant)
                 .WithMany()
                 .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<Permission>(entity =>
@@ -406,7 +406,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.User)
                 .WithMany(x => x.UserRoles)
                 .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
             entity.HasOne(x => x.Role)
                 .WithMany(x => x.UserRoles)
                 .HasForeignKey(x => x.RoleId)
@@ -456,7 +456,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Tenant)
                 .WithMany()
                 .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         // RiskLevel configuration
@@ -468,7 +468,7 @@ public class AppDbContext : DbContext
             entity.HasOne(x => x.Tenant)
                 .WithMany()
                 .HasForeignKey(x => x.TenantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         // Add TenantId foreign key to all existing entities
@@ -493,7 +493,7 @@ public class AppDbContext : DbContext
                     modelBuilder.Entity(entityType.ClrType).HasOne(typeof(Tenant), "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 }
             }

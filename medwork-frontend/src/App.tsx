@@ -68,6 +68,7 @@ import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getUserId, getRole } from './services/apiClient'
+import { HrImportExportDialog } from './components/HrImportExportDialog'
 import './App.css'
 
 const SETTINGS_STORAGE_KEY = 'medwork.runtime.settings'
@@ -278,6 +279,9 @@ const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
 // Quick create state
 const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
 
+const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
+const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
+
 const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
 
 useEffect(() => {
@@ -372,6 +376,69 @@ const handleLogout = () => {
   setProfileCompany(null)
   appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
 }
+
+const handleHRImport = async () => {
+  setHrImportExportOpen(true)
+  setHrImportExportType('import')
+}
+
+const handleHRExportCsv = async () => {
+  try {
+    const blob = await hrExportCsv()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'employees.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    setError('Errore durante l\'esportazione CSV.')
+  }
+}
+
+const handleHRExportExcel = async () => {
+  try {
+    const blob = await hrExportExcel()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'employees.xlsx'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    setError('Errore durante l\'esportazione Excel.')
+  }
+}
+
+// Add HR import/export dialog to the return statement
+const renderHRButtons = () => (
+  <Box className="legacy-topbar-right">
+    <Button
+      variant="outlined"
+      startIcon={<DownloadIcon fontSize="small" />}
+      onClick={handleHRExportCsv}
+      sx={{ ml: 1 }}
+    >
+      Esporta CSV
+    </Button>
+    <Button
+      variant="outlined"
+      startIcon={<FileDownloadIcon fontSize="small" />}
+      onClick={handleHRExportExcel}
+      sx={{ ml: 1 }}
+    >
+      Esporta Excel
+    </Button>
+    <Button
+      variant="outlined"
+      startIcon={<UploadIcon fontSize="small" />}
+      onClick={handleHRImport}
+      sx={{ ml: 1 }}
+    >
+      Importa HR
+    </Button>
+  </Box>
+)
 
 const handleQuickCreateConsumed = () => {
   setQuickCreateRequest(null)
@@ -869,6 +936,22 @@ return (
                 <LogoutIcon fontSize="small" />
                 Logout
               </button>
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon fontSize="small" />}
+                onClick={handleHRExportCsv}
+                sx={{ ml: 1 }}
+              >
+                Esporta CSV
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<FileDownloadIcon fontSize="small" />}
+                onClick={handleHRExportExcel}
+                sx={{ ml: 1 }}
+              >
+                Esporta Excel
+              </Button>
             </Box>
           </header>
 
@@ -918,6 +1001,18 @@ return (
         open={Boolean(profileCompany)}
         onClose={() => setProfileCompany(null)}
         company={profileCompany}
+      />
+      <HrImportExportDialog
+        open={hrImportExportOpen}
+        onClose={() => setHrImportExportOpen(false)}
+        onImportSuccess={() => {
+          setHrImportExportOpen(false)
+          setHrImportExportType(null)
+        }}
+        onExportSuccess={() => {
+          setHrImportExportOpen(false)
+          setHrImportExportType(null)
+        }}
       />
     </Box>
   </>

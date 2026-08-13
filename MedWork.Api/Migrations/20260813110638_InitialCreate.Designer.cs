@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedWork.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260812143453_ExtendCompanyFields")]
-    partial class ExtendCompanyFields
+    [Migration("20260813110638_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -668,6 +668,10 @@ namespace MedWork.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("EducationLevel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ExternalId")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -2170,7 +2174,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("MedicalVisit");
@@ -2189,7 +2193,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -2206,7 +2210,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.Tenant", null)
@@ -2227,7 +2231,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -2260,7 +2264,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -2275,7 +2279,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2292,7 +2296,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Company");
@@ -2305,7 +2309,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.Tenant", null)
@@ -2326,7 +2330,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -2364,7 +2368,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.WorkLocation", "WorkLocation")
@@ -2403,7 +2407,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2418,7 +2422,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2429,7 +2433,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2452,7 +2456,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("JobRole");
@@ -2473,7 +2477,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2503,7 +2507,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -2526,7 +2530,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2551,7 +2555,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2570,7 +2574,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -2592,7 +2596,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("JobRole");
@@ -2613,7 +2617,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Protocol");
@@ -2626,7 +2630,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2655,7 +2659,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2672,7 +2676,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2683,7 +2687,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2694,7 +2698,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2740,7 +2744,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2765,7 +2769,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("MedWork.Api.Models.WorkLocation", "WorkLocation")
@@ -2786,7 +2790,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany("Settings")
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2797,7 +2801,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany("Users")
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -2833,7 +2837,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Role");
@@ -2852,7 +2856,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2877,7 +2881,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ExamType");
@@ -2898,7 +2902,7 @@ namespace MedWork.Api.Migrations
                     b.HasOne("MedWork.Api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Company");

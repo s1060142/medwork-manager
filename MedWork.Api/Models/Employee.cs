@@ -6,6 +6,9 @@ public class Employee
 {
     public int Id { get; set; }
 
+    [StringLength(100)]
+    public string? ExternalId { get; set; }
+
     [Range(1, int.MaxValue)]
     public int TenantId { get; set; }
 

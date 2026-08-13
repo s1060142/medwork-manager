@@ -24,6 +24,7 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Sub, username),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Name, username),
+            new(ClaimTypes.NameIdentifier, username),
             new(ClaimTypes.Role, role),
             new("tenant_id", tenantId.ToString())
         };

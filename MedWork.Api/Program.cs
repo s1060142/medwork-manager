@@ -35,6 +35,10 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "MedWork API", Version = "v1" });
 
+        // Register the custom operation filter to handle IFormFile parameters
+        // This fixes the SwaggerGeneratorException: "Error reading parameter(s) for action ... as [FromForm] attribute used with IFormFile"
+        options.OperationFilter<MedWork.Api.Swagger.FormFileOperationFilter>();
+
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -86,7 +90,6 @@ builder.Services.AddScoped<IComplianceRuleEngine, ComplianceRuleEngine>();
 builder.Services.AddScoped<IRegulatoryChangelogParser, RegulatoryChangelogParser>();
 builder.Services.AddScoped<IDpiaAssistant, DpiaAssistant>();
 builder.Services.AddScoped<IConsentManager, ConsentManager>();
-builder.Services.AddScoped<IFatturaPaBuilder, FatturaPaBuilder>();
 builder.Services.AddScoped<HrImportExportService>();
 builder.Services.AddScoped<IAnomalyDetectionService, AnomalyDetectionService>();
 builder.Services.AddScoped<INoShowPredictionService, NoShowPredictionService>();

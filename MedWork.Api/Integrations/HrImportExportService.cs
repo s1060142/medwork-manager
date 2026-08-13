@@ -1,12 +1,16 @@
-namespace MedWork.Api.Integrations;
-
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using MedWork.Api.Data;
 using MedWork.Api.Models;
+using MedWork.Api.Security;
+
+namespace MedWork.Api.Integrations;
+
 
 /// <summary>
 /// Handles HR import/export of employee data via CSV and Excel formats.
@@ -15,7 +19,7 @@ using MedWork.Api.Models;
 [ApiController]
 [Route("api/integrations/hr")]
 [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-public sealed class HrImportExportService
+public sealed class HrImportExportService : ControllerBase
 {
     private readonly AppDbContext _dbContext;
 
@@ -29,11 +33,12 @@ public sealed class HrImportExportService
     /// Expected columns: ExternalId, FirstName, LastName, TaxCode, JobRole, HireDate, RiskFactors, Email, Phone
     /// </summary>
     [HttpPost("import-csv")]
-    public IActionResult ImportCsv([FromForm] string fileContent, [FromForm] string fileName)
+    public IActionResult ImportCsv([FromForm] IFormFile file, [FromForm] string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileContent))
-            return BadRequest("File content is empty.");
+        if (file == null || file.Length == 0)
+            return BadRequest("File is empty.");
 
+        var fileContent = new StreamReader(file.OpenReadStream()).ReadToEnd();
         var rows = ParseCsv(fileContent, fileName);
         var imported = 0;
         var errors = new List<string>();
@@ -86,7 +91,7 @@ public sealed class HrImportExportService
             sb.AppendLine(
                 $"{emp.Id},{emp.ExternalId ?? ""},{emp.FirstName},{emp.LastName}," +
                 $"{emp.TaxCode ?? ""},{emp.JobRole ?? ""},{hireDateStr}," +
-                $"{emp.PersonalEmail ?? ""},{emp.PhoneNumber ?? ""},{emp.IsActive ? "Active" : "Inactive"}");
+                $"{emp.PersonalEmail ?? ""},{emp.PhoneNumber ?? ""},{(emp.IsActive ? "Active" : "Inactive")}");
         }
 
         var fileBytes = Encoding.UTF8.GetBytes(sb.ToString());
@@ -112,127 +117,36 @@ public sealed class HrImportExportService
     }
 
     /// <summary>
-    /// Generates a proper XLSX file using OpenXML SDK.
+    /// Generates a proper XLSX file using EPPlus.
     /// </summary>
     private byte[] GenerateXlsx(List<Employee> employees)
     {
-        using var package = new DocumentFormat.OpenXml.Packages.DocumentPackage();
-        using var workbookPart = package.AddPart(new DocumentFormat.OpenXml.Packages.WorkbookPart());
-        using var sheetDataPart = package.AddPart(new DocumentFormat.OpenXml.Packages.WorksheetPart());
+        using var package = new ExcelPackage();
+        var worksheet = package.Workbook.Worksheets.Add("Employees");
 
-        // Create the workbook
-        var workbook = new Workbook();
-        var sheets = new Sheets();
-        var sheet = new Sheet()
-        {
-            SheetId = 1,
-            Name = "Employees",
-            Id = workbookPart.GetIdPart()
-        };
-        sheets.Add(sheet);
-        workbook.Sheets = sheets;
-        workbookPart.Workbook = workbook;
-
-        // Create first sheet
-        var firstSheet = sheetDataPart.Worksheet;
-
-        // Add header row
-        var headerRow = new DocumentFormat.OpenXml.Packages.Worksheet.Row(1);
         var headers = new[] { "ID", "ExternalId", "FirstName", "LastName", "TaxCode", "JobRole", "HireDate", "Email", "Phone", "Status" };
-        foreach (var header in headers)
+        for (var c = 0; c < headers.Length; c++)
         {
-            var cell = new DocumentFormat.OpenXml.Packages.Worksheet.Cell();
-            cell.Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData();
-            cell.Data.Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = header });
-            headerRow.Add(cell);
+            worksheet.Cells[1, c + 1].Value = headers[c];
         }
-        firstSheet.Add(headerRow);
 
-        // Add data rows
+        var r = 2;
         foreach (var emp in employees)
         {
-            var row = new DocumentFormat.OpenXml.Packages.Worksheet.Row(employees.IndexOf(emp) + 2);
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.Id.ToString() })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.ExternalId ?? "" })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.FirstName })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.LastName })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.TaxCode ?? "" })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.JobRole ?? "" })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.HireDate.ToString("yyyy-MM-dd") })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.PersonalEmail ?? "" })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.PhoneNumber ?? "" })
-                }
-            });
-            row.Add(new DocumentFormat.OpenXml.Packages.Worksheet.Cell()
-            {
-                Data = new DocumentFormat.OpenXml.Packages.Worksheet.CellData
-                {
-                    Value = new DocumentFormat.OpenXml.Packages.Worksheet.Text(new TextFormat { Text = emp.IsActive ? "Active" : "Inactive" })
-                }
-            });
-            firstSheet.Add(row);
+            worksheet.Cells[r, 1].Value = emp.Id;
+            worksheet.Cells[r, 2].Value = emp.ExternalId ?? "";
+            worksheet.Cells[r, 3].Value = emp.FirstName;
+            worksheet.Cells[r, 4].Value = emp.LastName;
+            worksheet.Cells[r, 5].Value = emp.TaxCode ?? "";
+            worksheet.Cells[r, 6].Value = emp.JobRole ?? "";
+            worksheet.Cells[r, 7].Value = emp.HireDate.ToString("yyyy-MM-dd");
+            worksheet.Cells[r, 8].Value = emp.PersonalEmail ?? "";
+            worksheet.Cells[r, 9].Value = emp.PhoneNumber ?? "";
+            worksheet.Cells[r, 10].Value = emp.IsActive ? "Active" : "Inactive";
+            r++;
         }
 
-        // Save the package to a memory stream
-        var memStream = new MemoryStream();
-        var writer = new StreamWriter(memStream);
-        package.Save(writer);
-        writer.Flush();
-        memStream.Position = 0;
-
-        return memStream.ToArray();
+        return package.GetAsByteArray();
     }
 
     /// <summary>
@@ -274,6 +188,7 @@ public sealed class HrImportExportService
             var email = "";
             var phone = "";
             var status = "Active";
+            int? riskLevelId = null;
 
             // Try to find values by column name
             for (var i = 0; i < row.Length; i++)
@@ -298,10 +213,9 @@ public sealed class HrImportExportService
                 }
                 else if (col == "riskfactors" || col == "risks")
                 {
-                    if (!string.IsNullOrWhiteSpace(row[i]))
-                    {
-                        jobRole = row[i].Trim();
-                    }
+                    var riskVal = row[i].Trim();
+                    if (!string.IsNullOrWhiteSpace(riskVal) && int.TryParse(riskVal, out var riskId) && riskId >= 1)
+                        riskLevelId = riskId;
                 }
                 else if (col == "email")
                     email = row[i].Trim();
@@ -343,12 +257,13 @@ public sealed class HrImportExportService
                 TaxCode = taxCode,
                 JobRole = jobRole,
                 HireDate = hireDate,
-                Email = email,
+                PersonalEmail = email,
                 PhoneNumber = phone,
                 IsActive = status == "Active",
                 ConsentGDPR = false,
                 ConsentHealthData = false,
-                ExternalId = externalId
+                ExternalId = externalId,
+                RiskLevelId = riskLevelId
             };
 
             return employee;
