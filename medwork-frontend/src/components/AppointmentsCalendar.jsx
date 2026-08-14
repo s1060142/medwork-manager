@@ -7,6 +7,7 @@ import {
   CircularProgress,
   MenuItem,
   Paper,
+  Popover,
   Select,
   Stack,
   Typography,
@@ -15,7 +16,7 @@ import AddIcon from '@mui/icons-material/Add'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import TodayIcon from '@mui/icons-material/Today'
-import { apiGet } from '../services/apiClient'
+import { apiGet, apiSend } from '../services/apiClient'
 
 const WEEK_DAYS = ['LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB', 'DOM']
 
@@ -74,11 +75,16 @@ function AppointmentsCalendar({ onCreateAppointment }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [visits, setVisits] = useState([])
-  const [employees, setEmployees] = useState([])
   const [monthDate, setMonthDate] = useState(() => new Date())
+  const monthDays = useMemo(() => buildMonthGrid(monthDate), [monthDate])
+  
   const [selectedDate, setSelectedDate] = useState(() => atStartOfDay(new Date()))
   const [selectedCompany, setSelectedCompany] = useState('all')
   const [selectedType, setSelectedType] = useState('all')
+
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [magicLinkStatus, setMagicLinkStatus] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -86,13 +92,13 @@ function AppointmentsCalendar({ onCreateAppointment }) {
         setLoading(true)
         setError('')
 
-        const [visitData, employeeData] = await Promise.all([
-          apiGet('/api/master-data/medical-visits'),
-          apiGet('/api/master-data/employees'),
-        ])
+        if (!monthDays || monthDays.length === 0) return
+        
+        const start = monthDays[0].toISOString()
+        const end = new Date(monthDays[monthDays.length - 1].getTime() + 86400000).toISOString()
 
+        const visitData = await apiGet(`/api/doctor-data/calendar-events?start=${start}&end=${end}`)
         setVisits(Array.isArray(visitData) ? visitData : [])
-        setEmployees(Array.isArray(employeeData) ? employeeData : [])
       } catch (requestError) {
         setError(requestError.message || 'Errore nel caricamento calendario.')
       } finally {
@@ -101,45 +107,51 @@ function AppointmentsCalendar({ onCreateAppointment }) {
     }
 
     load()
-  }, [])
+  }, [monthDate, monthDays])
+
+  const handleSendMagicLink = async () => {
+    if (!selectedEvent) return
+    
+    try {
+      setMagicLinkStatus('Invio...')
+      await apiSend('/api/doctor-data/anamnesis-magic-link', 'POST', { visitId: selectedEvent.id })
+      setMagicLinkStatus('Inviato!')
+      setTimeout(() => setMagicLinkStatus(''), 3000)
+    } catch (err) {
+      setMagicLinkStatus('Errore')
+      setTimeout(() => setMagicLinkStatus(''), 3000)
+    }
+  }
 
   const companyOptions = useMemo(() => {
     const map = new Map()
-    employees.forEach((employee) => {
-      const id = Number(employee.companyId)
+    visits.forEach((visit) => {
+      const id = Number(visit.companyId)
       if (!id || map.has(id)) return
-      map.set(id, employee.companyName || `Azienda #${id}`)
+      map.set(id, visit.companyName || `Azienda #${id}`)
     })
     return [...map.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name))
-  }, [employees])
-
-  const employeeById = useMemo(() => {
-    return employees.reduce((accumulator, employee) => {
-      accumulator[Number(employee.id)] = employee
-      return accumulator
-    }, {})
-  }, [employees])
+  }, [visits])
 
   const normalizedVisits = useMemo(() => {
     return visits
       .map((visit) => {
-        const employee = employeeById[Number(visit.employeeId)]
-        const date = new Date(visit.visitDate)
+        const date = new Date(visit.eventDate)
         if (Number.isNaN(date.getTime())) return null
-        const category = visitCategory(visit.visitType)
+        const category = visitCategory(visit.eventType)
 
         return {
           ...visit,
           date,
           dayKey: atStartOfDay(date).toISOString(),
           category,
-          companyId: Number(employee?.companyId || 0),
-          companyName: employee?.companyName || '-',
-          employeeName: visit.employeeFullName || `Dipendente #${visit.employeeId}`,
+          companyId: Number(visit.companyId || 0),
+          companyName: visit.companyName || '-',
+          employeeName: visit.employeeName || `Dipendente #${visit.employeeId}`,
         }
       })
       .filter(Boolean)
-  }, [visits, employeeById])
+  }, [visits])
 
   const filteredVisits = useMemo(() => {
     return normalizedVisits.filter((visit) => {
@@ -156,8 +168,6 @@ function AppointmentsCalendar({ onCreateAppointment }) {
       return accumulator
     }, {})
   }, [filteredVisits])
-
-  const monthDays = useMemo(() => buildMonthGrid(monthDate), [monthDate])
 
   const selectedDayEvents = useMemo(() => {
     const key = atStartOfDay(selectedDate).toISOString()
@@ -179,6 +189,11 @@ function AppointmentsCalendar({ onCreateAppointment }) {
     const today = new Date()
     setMonthDate(today)
     setSelectedDate(atStartOfDay(today))
+  }
+
+  const handleOpenPopover = (event, visit) => {
+    setAnchorEl(event.currentTarget)
+    setSelectedEvent(visit)
   }
 
   return (
@@ -272,6 +287,7 @@ function AppointmentsCalendar({ onCreateAppointment }) {
                           size="small"
                           color={categoryColor(event.category)}
                           label={`${formatDayTime(event.date)} • ${event.employeeName}`}
+                          onClick={(e) => { e.stopPropagation(); handleOpenPopover(e, event); }}
                           sx={{ justifyContent: 'flex-start', '& .MuiChip-label': { px: 0.8 } }}
                         />
                       ))}
@@ -295,7 +311,7 @@ function AppointmentsCalendar({ onCreateAppointment }) {
                 {selectedDayEvents.map((event) => (
                   <Box key={`${event.id}-${event.date.toISOString()}`} sx={{ p: 1.2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="body2" fontWeight={700}>{formatDayTime(event.date)} • {event.employeeName}</Typography>
-                    <Typography variant="caption" color="text.secondary">{event.visitType || event.category}</Typography>
+                    <Typography variant="caption" color="text.secondary">{event.eventType || event.category}</Typography>
                     <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>{event.companyName}</Typography>
                   </Box>
                 ))}
@@ -316,6 +332,44 @@ function AppointmentsCalendar({ onCreateAppointment }) {
           </Stack>
         </Box>
       )}
+
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Box sx={{ p: 2, minWidth: 250 }}>
+          {selectedEvent && (
+            <>
+              <Typography variant="subtitle1" fontWeight="bold">{selectedEvent.employeeName}</Typography>
+              <Typography variant="body2" color="text.secondary">{formatDayTime(selectedEvent.date)} - {selectedEvent.companyName}</Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>Tipo: <strong>{selectedEvent.eventType || selectedEvent.category}</strong></Typography>
+              
+              <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  onClick={() => setAnchorEl(null)}
+                >
+                  Chiudi
+                </Button>
+                
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="secondary"
+                  onClick={handleSendMagicLink}
+                  disabled={magicLinkStatus === 'Invio...'}
+                >
+                  {magicLinkStatus || 'Invia Link Anamnesi'}
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Popover>
     </Stack>
   )
 }

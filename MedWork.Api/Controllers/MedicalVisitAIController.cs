@@ -2,10 +2,14 @@ using MedWork.Api.Data;
 using MedWork.Api.Models;
 using MedWork.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using MedWork.Api.Security;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedWork.Api.Controllers;
 
 [ApiController]
+[Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
 [Route("api/[controller]")]
 public class MedicalVisitAIController : ControllerBase
 {
@@ -31,7 +35,13 @@ public class MedicalVisitAIController : ControllerBase
     [HttpPost("{visitId:int}/voice-transcribe")]
     public async Task<ActionResult<string>> TranscribeVoice(int visitId, [FromBody] VoiceNoteRequest request)
     {
-        var visit = await _dbContext.MedicalVisits.FindAsync(visitId);
+        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
+        {
+            return Unauthorized();
+        }
+
+        var visit = await _dbContext.MedicalVisits.FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId);
         if (visit == null)
         {
             return NotFound();
@@ -52,7 +62,13 @@ public class MedicalVisitAIController : ControllerBase
     [HttpPost("{visitId:int}/ocr-extract")]
     public async Task<ActionResult<string>> ExtractOcr(int visitId, [FromBody] OcrRequest request)
     {
-        var visit = await _dbContext.MedicalVisits.FindAsync(visitId);
+        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
+        {
+            return Unauthorized();
+        }
+
+        var visit = await _dbContext.MedicalVisits.FirstOrDefaultAsync(v => v.Id == visitId && v.TenantId == tenantId);
         if (visit == null)
         {
             return NotFound();

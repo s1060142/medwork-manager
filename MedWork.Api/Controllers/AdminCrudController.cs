@@ -48,7 +48,8 @@ public class AdminCrudController : ControllerBase
     {
         try
         {
-            var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id);
+            var tenantId = GetTenantId();
+        var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
             if (entity is null) return NotFound();
 
             entity.Name = request.Name;
@@ -85,7 +86,8 @@ public class AdminCrudController : ControllerBase
     {
         if (request.CompanyId <= 0) return BadRequest("CompanyId non valido.");
 
-        var companyExists = await _dbContext.Companies.AnyAsync(x => x.Id == request.CompanyId);
+        var tenantId = GetTenantId();
+        var companyExists = await _dbContext.Companies.AnyAsync(x => x.Id == request.CompanyId && x.TenantId == tenantId);
         if (!companyExists) return NotFound("Azienda non trovata.");
 
         var doctorIds = request.DoctorIds.Distinct().ToList();
@@ -110,7 +112,8 @@ public class AdminCrudController : ControllerBase
             {
                 CompanyId = request.CompanyId,
                 DoctorId = doctorId,
-                IsCoordinator = coordinatorId.HasValue && coordinatorId.Value == doctorId
+                IsCoordinator = coordinatorId.HasValue && coordinatorId.Value == doctorId,
+                TenantId = tenantId
             });
         }
 
@@ -121,7 +124,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("companies/{id:int}")]
     public async Task<IActionResult> DeleteCompany(int id)
     {
-        var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Companies.Remove(entity);
@@ -140,7 +144,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("branches/{id:int}")]
     public async Task<IActionResult> UpdateBranch(int id, [FromBody] Branch request)
     {
-        var entity = await _dbContext.Branches.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Branches.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -155,7 +160,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("branches/{id:int}")]
     public async Task<IActionResult> DeleteBranch(int id)
     {
-        var entity = await _dbContext.Branches.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Branches.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Branches.Remove(entity);
@@ -184,7 +190,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("employees/{id:int}")]
     public async Task<IActionResult> UpdateEmployee(int id, [FromBody] Employee request)
     {
-        var entity = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -206,7 +213,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("employees/{id:int}")]
     public async Task<IActionResult> DeleteEmployee(int id)
     {
-        var entity = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Employees.Remove(entity);
@@ -225,7 +233,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("risk-factors/{id:int}")]
     public async Task<IActionResult> UpdateRiskFactor(int id, [FromBody] RiskFactor request)
     {
-        var entity = await _dbContext.RiskFactors.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.RiskFactors.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.Name = request.Name;
@@ -239,7 +248,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("risk-factors/{id:int}")]
     public async Task<IActionResult> DeleteRiskFactor(int id)
     {
-        var entity = await _dbContext.RiskFactors.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.RiskFactors.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.RiskFactors.Remove(entity);
@@ -258,7 +268,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("exam-types/{id:int}")]
     public async Task<IActionResult> UpdateExamType(int id, [FromBody] ExamType request)
     {
-        var entity = await _dbContext.ExamTypes.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.ExamTypes.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.Name = request.Name;
@@ -270,7 +281,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("exam-types/{id:int}")]
     public async Task<IActionResult> DeleteExamType(int id)
     {
-        var entity = await _dbContext.ExamTypes.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.ExamTypes.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.ExamTypes.Remove(entity);
@@ -300,13 +312,14 @@ public class AdminCrudController : ControllerBase
         [FromQuery] int riskFactorId,
         [FromBody] EmployeeRisk request)
     {
+        var tenantId = GetTenantId();
         var entity = await _dbContext.EmployeeRisks
-            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.RiskFactorId == riskFactorId);
+            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.RiskFactorId == riskFactorId && x.TenantId == tenantId);
 
         if (entity is null) return NotFound();
 
         var targetExists = await _dbContext.EmployeeRisks
-            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.RiskFactorId == request.RiskFactorId);
+            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.RiskFactorId == request.RiskFactorId && x.TenantId == tenantId);
 
         if (targetExists && (request.EmployeeId != employeeId || request.RiskFactorId != riskFactorId))
         {
@@ -317,7 +330,8 @@ public class AdminCrudController : ControllerBase
         _dbContext.EmployeeRisks.Add(new EmployeeRisk
         {
             EmployeeId = request.EmployeeId,
-            RiskFactorId = request.RiskFactorId
+            RiskFactorId = request.RiskFactorId,
+            TenantId = tenantId
         });
 
         await _dbContext.SaveChangesAsync();
@@ -327,8 +341,9 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("employee-risks")]
     public async Task<IActionResult> DeleteEmployeeRisk([FromQuery] int employeeId, [FromQuery] int riskFactorId)
     {
+        var tenantId = GetTenantId();
         var entity = await _dbContext.EmployeeRisks
-            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.RiskFactorId == riskFactorId);
+            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.RiskFactorId == riskFactorId && x.TenantId == tenantId);
 
         if (entity is null) return NotFound();
 
@@ -355,7 +370,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("job-roles/{id:int}")]
     public async Task<IActionResult> UpdateJobRole(int id, [FromBody] JobRole request)
     {
-        var entity = await _dbContext.JobRoles.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.JobRoles.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.Name = request.Name;
@@ -367,7 +383,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("job-roles/{id:int}")]
     public async Task<IActionResult> DeleteJobRole(int id)
     {
-        var entity = await _dbContext.JobRoles.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.JobRoles.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.JobRoles.Remove(entity);
@@ -386,7 +403,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("protocols/{id:int}")]
     public async Task<IActionResult> UpdateProtocol(int id, [FromBody] Protocol request)
     {
-        var entity = await _dbContext.Protocols.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Protocols.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.Name = request.Name;
@@ -401,7 +419,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("protocols/{id:int}")]
     public async Task<IActionResult> DeleteProtocol(int id)
     {
-        var entity = await _dbContext.Protocols.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Protocols.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Protocols.Remove(entity);
@@ -428,7 +447,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("personal-protocols/{id:int}")]
     public async Task<IActionResult> UpdatePersonalProtocol(int id, [FromBody] PersonalProtocol request)
     {
-        var entity = await _dbContext.PersonalProtocols.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.PersonalProtocols.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -443,7 +463,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("personal-protocols/{id:int}")]
     public async Task<IActionResult> DeletePersonalProtocol(int id)
     {
-        var entity = await _dbContext.PersonalProtocols.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.PersonalProtocols.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.PersonalProtocols.Remove(entity);
@@ -462,7 +483,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("company-groups/{id:int}")]
     public async Task<IActionResult> UpdateCompanyGroup(int id, [FromBody] CompanyGroup request)
     {
-        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.LegalName = request.LegalName;
@@ -481,7 +503,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("company-groups/{id:int}")]
     public async Task<IActionResult> DeleteCompanyGroup(int id)
     {
-        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.CompanyGroups.Remove(entity);
@@ -500,7 +523,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("company-contacts/{id:int}")]
     public async Task<IActionResult> UpdateCompanyContact(int id, [FromBody] CompanyContact request)
     {
-        var entity = await _dbContext.CompanyContacts.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.CompanyContacts.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -515,7 +539,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("company-contacts/{id:int}")]
     public async Task<IActionResult> DeleteCompanyContact(int id)
     {
-        var entity = await _dbContext.CompanyContacts.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.CompanyContacts.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.CompanyContacts.Remove(entity);
@@ -534,7 +559,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("departments/{id:int}")]
     public async Task<IActionResult> UpdateDepartment(int id, [FromBody] Department request)
     {
-        var entity = await _dbContext.Departments.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Departments.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -549,7 +575,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("departments/{id:int}")]
     public async Task<IActionResult> DeleteDepartment(int id)
     {
-        var entity = await _dbContext.Departments.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Departments.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Departments.Remove(entity);
@@ -568,7 +595,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("work-locations/{id:int}")]
     public async Task<IActionResult> UpdateWorkLocation(int id, [FromBody] WorkLocation request)
     {
-        var entity = await _dbContext.WorkLocations.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.WorkLocations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -584,7 +612,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("work-locations/{id:int}")]
     public async Task<IActionResult> DeleteWorkLocation(int id)
     {
-        var entity = await _dbContext.WorkLocations.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.WorkLocations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.WorkLocations.Remove(entity);
@@ -603,7 +632,8 @@ public class AdminCrudController : ControllerBase
     [HttpPut("site-visits/{id:int}")]
     public async Task<IActionResult> UpdateSiteVisit(int id, [FromBody] SiteVisit request)
     {
-        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
@@ -620,7 +650,8 @@ public class AdminCrudController : ControllerBase
     [HttpDelete("site-visits/{id:int}")]
     public async Task<IActionResult> DeleteSiteVisit(int id)
     {
-        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id);
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.SiteVisits.Remove(entity);
@@ -631,5 +662,11 @@ public class AdminCrudController : ControllerBase
     private static bool IsUniqueConstraintViolation(DbUpdateException exception)
     {
         return exception.InnerException is SqlException { Number: 2601 or 2627 };
+    }
+
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        return int.TryParse(tenantClaim, out var tenantId) ? tenantId : 0;
     }
 }

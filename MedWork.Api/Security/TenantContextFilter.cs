@@ -22,7 +22,8 @@ public sealed class TenantContextFilter : IActionFilter
         var tenantClaim = context.HttpContext.User?.FindFirst("TenantId")?.Value;
         if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
         {
-            tenantId = 1; // Safe fallback for test/seed principals lacking the claim.
+            context.Result = new UnauthorizedResult();
+            return;
         }
 
         foreach (var arg in context.ActionArguments.Values)

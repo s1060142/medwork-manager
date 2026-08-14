@@ -31,6 +31,12 @@ import EmailIcon from '@mui/icons-material/Email'
 import { apiGet, apiSend } from '../services/apiClient'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
+import MedicalInformationIcon from '@mui/icons-material/MedicalInformation'
+import AssessmentIcon from '@mui/icons-material/Assessment'
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
+import HealthPlanPreview from './HealthPlanPreview'
+import EnterpriseAnalyticsDashboard from './EnterpriseAnalyticsDashboard'
+import Allegato3BPreview from './Allegato3BPreview'
 
 function formatDate(value) {
   if (!value) return '-'
@@ -108,6 +114,9 @@ function CompanyProfileDialog({ open, onClose, company }) {
   const [availableDoctors, setAvailableDoctors] = useState([])
   const [assignedDoctorIds, setAssignedDoctorIds] = useState([])
   const [coordinatorDoctorId, setCoordinatorDoctorId] = useState(null)
+  const [healthPlanOpen, setHealthPlanOpen] = useState(false)
+  const [analyticsOpen, setAnalyticsOpen] = useState(false)
+  const [allegato3bOpen, setAllegato3bOpen] = useState(false)
 
   useEffect(() => {
     if (!open || !company?.id) return
@@ -205,7 +214,16 @@ function CompanyProfileDialog({ open, onClose, company }) {
               </Box>
             </Stack>
             <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
-              <Button variant="outlined" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
+              <Button variant="outlined" startIcon={<FormatListNumberedIcon />} onClick={() => setAllegato3bOpen(true)} sx={{ color: 'white', borderColor: 'white' }}>
+                Allegato 3B
+              </Button>
+              <Button variant="outlined" startIcon={<AssessmentIcon />} onClick={() => setAnalyticsOpen(true)} sx={{ color: 'white', borderColor: 'white' }}>
+                Analytics
+              </Button>
+              <Button variant="outlined" startIcon={<MedicalInformationIcon />} onClick={() => setHealthPlanOpen(true)} sx={{ color: 'white', borderColor: 'white' }}>
+                Piano Sanitario
+              </Button>
+              <Button variant="outlined" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving} sx={{ color: 'white', borderColor: 'white' }}>
                 {saving ? 'Salvataggio...' : 'Salva'}
               </Button>
               <Button variant="contained" onClick={onClose}>
@@ -471,6 +489,23 @@ function CompanyProfileDialog({ open, onClose, company }) {
           )}
         </Box>
       </DialogContent>
+      <HealthPlanPreview 
+        open={healthPlanOpen} 
+        onClose={() => setHealthPlanOpen(false)} 
+        companyId={company?.id} 
+      />
+      <EnterpriseAnalyticsDashboard
+        open={analyticsOpen}
+        onClose={() => setAnalyticsOpen(false)}
+        companyId={company?.id}
+        companyName={company?.name}
+      />
+      <Allegato3BPreview
+        open={allegato3bOpen}
+        onClose={() => setAllegato3bOpen(false)}
+        companyId={company?.id}
+        companyName={company?.name}
+      />
     </Dialog>
   )
 }

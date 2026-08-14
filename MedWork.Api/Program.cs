@@ -96,6 +96,7 @@ builder.Services.AddScoped<INoShowPredictionService, NoShowPredictionService>();
 builder.Services.AddScoped<ISlotOptimizationService, SlotOptimizationService>();
 builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
 builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
+builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationService>();
 
 if (builder.Environment.IsEnvironment("Testing"))
 {

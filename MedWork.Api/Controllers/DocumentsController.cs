@@ -51,4 +51,29 @@ public class DocumentsController : ControllerBase
         var result = await _documentGenerationService.SubmitAllegato3B(companyId);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Returns a PDF binary of the fitness judgment for the given medical visit.
+    /// </summary>
+    [HttpGet("visits/{medicalVisitId:int}/fitness-judgment-pdf")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> DownloadFitnessJudgmentPdf(
+        int medicalVisitId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var pdfBytes = await _documentGenerationService
+                .GenerateFitnessJudgmentPdf(medicalVisitId, cancellationToken);
+
+            return File(
+                pdfBytes,
+                "application/pdf",
+                $"giudizio-idoneita-{medicalVisitId}.pdf");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Visita medica {medicalVisitId} non trovata.");
+        }
+    }
 }

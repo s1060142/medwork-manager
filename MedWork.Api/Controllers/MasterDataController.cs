@@ -567,4 +567,64 @@ public class MasterDataController : ControllerBase
 
         return Ok(data);
     }
+
+    [HttpGet("employees/search")]
+    [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
+    public async Task<IActionResult> SearchEmployees([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        {
+            return Ok(new List<EmployeeSearchDto>());
+        }
+
+        var tenantId = GetTenantId();
+        var query = q.ToLower();
+
+        var data = await _dbContext.Employees
+            .Include(e => e.Company)
+            .AsNoTracking()
+            .Where(e => e.TenantId == tenantId && 
+                        (e.FirstName.ToLower().Contains(query) || 
+                         e.LastName.ToLower().Contains(query) || 
+                         e.TaxCode.ToLower().Contains(query)))
+            .Take(10)
+            .Select(e => new EmployeeSearchDto(
+                e.Id,
+                e.FirstName,
+                e.LastName,
+                e.TaxCode,
+                e.Company != null ? e.Company.Name : "N/D"
+            ))
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
+    [HttpGet("phrase-templates")]
+    [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
+    public async Task<IActionResult> GetPhraseTemplates()
+    {
+        var tenantId = GetTenantId();
+        var data = await _dbContext.PhraseTemplates
+            .AsNoTracking()
+            .Where(p => p.TenantId == tenantId)
+            .Select(p => new PhraseTemplateDto(
+                p.Id,
+                p.Category,
+                p.Text,
+                p.Tags
+            ))
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
+    private int GetTenantId()
+    {
+        var claim = User.FindFirst("TenantId")?.Value;
+        return int.TryParse(claim, out var id) && id > 0 ? id : 1;
+    }
 }
+
+public record EmployeeSearchDto(int Id, string FirstName, string LastName, string TaxCode, string CompanyName);
+public record PhraseTemplateDto(int Id, string Category, string Text, string? Tags);

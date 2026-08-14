@@ -63,22 +63,7 @@ public class AuthController : ControllerBase
             }
         }
 
-        // Fallback to legacy config-based auth
-        var legacyUser = _authSettings.Users.FirstOrDefault(x =>
-            x.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase) &&
-            x.Password == request.Password);
-
-        if (legacyUser is null || (legacyUser.Role != AppRole.Admin && legacyUser.Role != AppRole.Doctor))
-        {
-            return Unauthorized();
-        }
-
-        var legacyToken = _jwtTokenService.GenerateToken(legacyUser.Username, legacyUser.Role);
-        return Ok(new LoginResponse
-        {
-            AccessToken = legacyToken,
-            Role = legacyUser.Role
-        });
+        return Unauthorized();
     }
 
     [HttpPost("external/spid")]

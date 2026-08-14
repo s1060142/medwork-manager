@@ -25,7 +25,7 @@ namespace MedWork.Api.Swagger
                 if (openApiParam != null)
                 {
                     // Use explicit cast to handle nullable ParameterLocation
-                    openApiParam.In = (Microsoft.OpenApi.Models.ParameterLocation)"FormData";
+                    openApiParam.In = Microsoft.OpenApi.Models.ParameterLocation.Query;
                     openApiParam.Schema = new OpenApiSchema
                     {
                         Type = "string",
@@ -39,7 +39,7 @@ namespace MedWork.Api.Swagger
                     {
                         Name = parameterName,
                         // Use explicit cast to handle nullable ParameterLocation
-                        In = (Microsoft.OpenApi.Models.ParameterLocation)"FormData",
+                        In = Microsoft.OpenApi.Models.ParameterLocation.Query,
                         Schema = new OpenApiSchema
                         {
                             Type = "string",

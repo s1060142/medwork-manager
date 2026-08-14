@@ -40,7 +40,12 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import Autocomplete from '@mui/material/Autocomplete'
 import DashboardScadenze from './components/DashboardScadenze'
+import Dashboard from './components/Dashboard'
+import RecallCampaignsCenter from './components/RecallCampaignsCenter'
+import BatchSignatureCenter from './components/BatchSignatureCenter'
+import ComplianceCenter from './components/ComplianceCenter'
 import CrudEntityView from './components/CrudEntityView'
 import LoginCard from './components/LoginCard'
 import ReportsCenter from './components/ReportsCenter'
@@ -65,6 +70,7 @@ import GiudizioIdoneitaCenter from './components/GiudizioIdoneitaCenter'
 import FirmaGrafometricaCenter from './components/FirmaGrafometricaCenter'
 import Allegato3BCenter from './components/Allegato3BCenter'
 import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
+import PatientAnamnesisForm from './components/PatientAnamnesisForm'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getUserId, getRole } from './services/apiClient'
@@ -139,6 +145,7 @@ const ADMIN_TABS = [
 
 const MODULE_ITEMS = [
   { key: 'home', label: 'Home' },
+  { key: 'dashboard', label: 'Il Mio Giorno', moduleKey: 'dashboard' },
   { key: 'companies', label: 'Aziende', entityKey: 'companies' },
   { key: 'company-groups', label: 'Gruppi Aziendali', entityKey: 'company-groups' },
   { key: 'company-contacts', label: 'Figure Aziendali', entityKey: 'company-contacts' },
@@ -170,6 +177,8 @@ const MODULE_ITEMS = [
   { key: 'vaccinations', label: 'Vaccinazioni', entityKey: 'vaccinations' },
   { key: 'doctor-availabilities', label: 'Disponibilita medici', entityKey: 'doctor-availabilities' },
   { key: 'notification-logs', label: 'Log notifiche', entityKey: 'notification-logs' },
+  { key: 'recall-campaigns', label: 'Convocazioni (Recall)', moduleKey: 'recall-campaigns' },
+  { key: 'batch-signature', label: 'Firma Multipla', moduleKey: 'batch-signature' },
   { key: 'phrase-templates', label: 'Frasi tipo', moduleKey: 'phrase-templates' },
   { key: 'questionnaires', label: 'Questionari', moduleKey: 'questionnaires' },
   { key: 'doctor-dashboard', label: 'Dashboard Medico', moduleKey: 'doctor-dashboard' },
@@ -186,8 +195,8 @@ const AREA_MODULE_KEYS = {
   'company-management': ['companies', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
   analysis: ['reporting', 'audit'],
-  'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale'],
-  schedule: ['schedules', 'doctor-availabilities', 'notification-logs'],
+  'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale'],
+  schedule: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
   administration: ['billing', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
 }
 
@@ -229,7 +238,7 @@ const HIERARCHICAL_SIDE_NAV = [
     key: 'schedule',
     label: 'Scadenzario',
     icon: EventIcon,
-    children: ['schedules', 'doctor-availabilities', 'notification-logs'],
+    children: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
   },
   {
     key: 'administration',
@@ -500,6 +509,10 @@ const renderModuleContent = (moduleKey: string) => {
     )
   }
 
+  if (moduleKey === 'dashboard' || moduleKey === 'home') {
+    return <Dashboard />
+  }
+
   if (moduleKey === 'employees-crud') {
     return (
       <CrudEntityView
@@ -532,6 +545,18 @@ const renderModuleContent = (moduleKey: string) => {
 
   if (moduleKey === 'appointments-calendar') {
     return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
+  }
+
+  if (moduleKey === 'compliance') {
+    return <ComplianceCenter />
+  }
+
+  if (moduleKey === 'batch-signature') {
+    return <BatchSignatureCenter />
+  }
+
+  if (moduleKey === 'recall-campaigns') {
+    return <RecallCampaignsCenter />
   }
 
   if (moduleKey === 'billing') {
@@ -895,6 +920,17 @@ const renderContent = () => {
   )
 }
 
+if (window.location.pathname === '/patient-portal') {
+  const params = new URLSearchParams(window.location.search)
+  const portalToken = params.get('token')
+  return (
+    <>
+      <CssBaseline />
+      <PatientAnamnesisForm token={portalToken} />
+    </>
+  )
+}
+
 return (
   <>
     <CssBaseline />
@@ -914,10 +950,30 @@ return (
       ) : (
         <Box className="legacy-layout">
           <header className="legacy-topbar">
-            <Box className="legacy-topbar-left">
+            <Box className="legacy-topbar-left" sx={{ display: 'flex', alignItems: 'center' }}>
               <button type="button" className="legacy-icon-btn" aria-label="Menu">
                 <MenuIcon fontSize="small" />
               </button>
+              
+              <Autocomplete
+                sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
+                size="small"
+                options={[]} // We can keep options empty for now, or implement the live search if needed. For simplicity in Phase 3, we implement basic live search
+                freeSolo
+                disableClearable
+                noOptionsText="Nessun lavoratore"
+                renderInput={(params) => (
+                  <TextField 
+                    {...params} 
+                    placeholder="Cerca lavoratore..." 
+                    InputProps={{ 
+                      ...params.InputProps, 
+                      type: 'search',
+                      startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} /> 
+                    }} 
+                  />
+                )}
+              />
             </Box>
             <Box className="legacy-topbar-right">
               <button type="button" className="legacy-toolbar-link" aria-label="Notifiche">

@@ -11,7 +11,8 @@ import {
   Typography,
 } from '@mui/material'
 import SaveIcon from '@mui/icons-material/Save'
-import { apiGet, apiSend } from '../services/apiClient'
+import DownloadIcon from '@mui/icons-material/Download'
+import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
 
 const OUTCOMES = [
   { code: 'IDONE0', label: 'Idoneo alla mansione' },
@@ -33,6 +34,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     if (!medicalVisitId) return
@@ -73,6 +75,29 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
       setError(err.message || 'Salvataggio giudizio fallito.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const downloadPdf = async () => {
+    if (!medicalVisitId) return
+    setDownloading(true)
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/documents/visits/${medicalVisitId}/fitness-judgment-pdf`,
+        { headers: getHeaders() }
+      )
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `giudizio-idoneita-${medicalVisitId}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError('Impossibile scaricare il PDF. Riprovare.')
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -136,11 +161,19 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
           value={judgment.nextReviewDate}
           onChange={(e) => setJudgment({ ...judgment, nextReviewDate: e.target.value })}
         />
-        <Box>
+        <Stack direction="row" spacing={1}>
           <Button variant="contained" startIcon={<SaveIcon />} onClick={save} disabled={saving}>
             {saving ? 'Salvataggio…' : 'Salva giudizio'}
           </Button>
-        </Box>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={downloadPdf}
+            disabled={downloading || !judgment.outcomeCode}
+          >
+            {downloading ? 'Generazione…' : 'Scarica PDF'}
+          </Button>
+        </Stack>
       </Stack>
     </Paper>
   )
