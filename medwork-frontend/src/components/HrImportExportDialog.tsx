@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from 'react'
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Typography, CircularProgress, Paper } from '@mui/material'
-import { getHeaders, hrImportCsv } from '../services/apiClient'
+import { getHeaders, hrImportCsv, hrExportCsv, hrExportExcel, API_BASE_URL } from '../services/apiClient'
 import { getTenantId, setTenantId } from '../services/apiClient'
 import { useAuth } from '../contexts/AuthContext'
-import { Employee } from '../models/Employee'
 
 interface HrImportExportDialogProps {
   open: boolean
@@ -37,16 +36,11 @@ export const HrImportExportDialog: React.FC<HrImportExportDialogProps> = ({ open
     setError('')
 
     try {
-      const response = await hrImportCsv(importFile, importFileName)
-      if (response.ok) {
-        const blob = await response.blob()
-        setImportProgress(100)
-        setImportStatus('Importazione completata!')
-        setError('')
-        if (onImportSuccess) onImportSuccess()
-      } else {
-        setError('Errore durante l\'importazione.')
-      }
+      await hrImportCsv(importFile, importFileName)
+      setImportProgress(100)
+      setImportStatus('Importazione completata!')
+      setError('')
+      if (onImportSuccess) onImportSuccess()
     } catch (err) {
       setError('Errore di connesso al backend.')
     } finally {
@@ -61,27 +55,19 @@ export const HrImportExportDialog: React.FC<HrImportExportDialogProps> = ({ open
     setError('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-csv`, {
-        method: 'GET',
-        headers: getHeaders(tenantId),
-      })
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'employees.csv'
-        a.click()
-        window.URL.revokeObjectURL(url)
-        setExportProgress(100)
-        setExportStatus('Esportazione completata!')
-        setError('')
-        if (onExportSuccess) onExportSuccess()
-      } else {
-        setError('Errore durante l\'esportazione.')
-      }
+      const blob = await hrExportCsv()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'employees.csv'
+      a.click()
+      window.URL.revokeObjectURL(url)
+      setExportProgress(100)
+      setExportStatus('Esportazione completata!')
+      setError('')
+      if (onExportSuccess) onExportSuccess()
     } catch (err) {
-      setError('Errore di connesso al backend.')
+      setError('Errore durante l\'esportazione CSV.')
     } finally {
       setIsExporting(false)
     }
@@ -94,27 +80,19 @@ export const HrImportExportDialog: React.FC<HrImportExportDialogProps> = ({ open
     setError('')
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-excel`, {
-        method: 'GET',
-        headers: getHeaders(tenantId),
-      })
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'employees.xlsx'
-        a.click()
-        window.URL.revokeObjectURL(url)
-        setExportProgress(100)
-        setExportStatus('Esportazione completata!')
-        setError('')
-        if (onExportSuccess) onExportSuccess()
-      } else {
-        setError('Errore durante l\'esportazione.')
-      }
+      const blob = await hrExportExcel()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'employees.xlsx'
+      a.click()
+      window.URL.revokeObjectURL(url)
+      setExportProgress(100)
+      setExportStatus('Esportazione completata!')
+      setError('')
+      if (onExportSuccess) onExportSuccess()
     } catch (err) {
-      setError('Errore di connesso al backend.')
+      setError('Errore durante l\'esportazione Excel.')
     } finally {
       setIsExporting(false)
     }
@@ -133,9 +111,10 @@ export const HrImportExportDialog: React.FC<HrImportExportDialogProps> = ({ open
     input.type = 'file'
     input.accept = '.csv,.xlsx,.xls'
     input.onchange = (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        setImportFile(e.target.files[0])
-        setImportFileName(e.target.files[0].name)
+      const target = e.target as HTMLInputElement
+      if (target && target.files && target.files.length > 0) {
+        setImportFile(target.files[0])
+        setImportFileName(target.files[0].name)
         setError('')
       }
     }

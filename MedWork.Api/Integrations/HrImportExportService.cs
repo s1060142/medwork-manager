@@ -33,7 +33,7 @@ public sealed class HrImportExportService : ControllerBase
     /// Expected columns: ExternalId, FirstName, LastName, TaxCode, JobRole, HireDate, RiskFactors, Email, Phone
     /// </summary>
     [HttpPost("import-csv")]
-    public IActionResult ImportCsv([FromForm] IFormFile file, [FromForm] string fileName)
+    public IActionResult ImportCsv(IFormFile file, string fileName)
     {
         if (file == null || file.Length == 0)
             return BadRequest("File is empty.");

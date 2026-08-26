@@ -1,10 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5279'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5279'
 
 export function getApiBaseUrl() {
   return API_BASE_URL
 }
 
-export function getHeaders(tenantId?) {
+export function getHeaders(tenantId?: string | null) {
   const token = localStorage.getItem('accessToken')
 
   if (!token) {
@@ -24,17 +24,16 @@ export function getHeaders(tenantId?) {
 }
 
 export async function hrExportCsv() {
-  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-csv`, {
+  const response = await fetch(`${API_BASE_URL}/api/integrations/export-employee-csv`, {
     method: 'GET',
-    headers: getHeaders(tenantId),
+    headers: getHeaders(),
   })
 
   if (!response.ok) {
     throw new Error('Errore durante l\'esportazione CSV.')
   }
 
-  const blob = await response.blob()
-  return blob
+  return response.blob()
 }
 
 export async function hrImportCsv(file: File, fileName: string) {
@@ -42,9 +41,12 @@ export async function hrImportCsv(file: File, fileName: string) {
   formData.append('file', file)
   formData.append('fileName', fileName)
 
-  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/import-csv`, {
+  const headers = getHeaders()
+  delete headers['Content-Type']
+
+  const response = await fetch(`${API_BASE_URL}/api/integrations/import-employee`, {
     method: 'POST',
-    headers: getHeaders(tenantId),
+    headers,
     body: formData,
   })
 
@@ -52,22 +54,20 @@ export async function hrImportCsv(file: File, fileName: string) {
     throw new Error('Errore durante l\'importazione CSV.')
   }
 
-  const blob = await response.blob()
-  return blob
+  return response.json()
 }
 
 export async function hrExportExcel() {
-  const response = await fetch(`${API_BASE_URL}/api/integrations/hr/export-excel`, {
+  const response = await fetch(`${API_BASE_URL}/api/integrations/export-employee-excel`, {
     method: 'GET',
-    headers: getHeaders(tenantId),
+    headers: getHeaders(),
   })
 
   if (!response.ok) {
     throw new Error('Errore durante l\'esportazione Excel.')
   }
 
-  const blob = await response.blob()
-  return blob
+  return response.blob()
 }
 
 export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin?: boolean }) {

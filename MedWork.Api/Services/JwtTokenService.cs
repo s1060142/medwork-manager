@@ -26,7 +26,8 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.Name, username),
             new(ClaimTypes.NameIdentifier, username),
             new(ClaimTypes.Role, role),
-            new("tenant_id", tenantId.ToString())
+            new("tenant_id", tenantId.ToString()),
+            new("TenantId", tenantId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
@@ -52,7 +53,8 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, email),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, email),
-            new("tenant_id", tenantId.ToString())
+            new("tenant_id", tenantId.ToString()),
+            new("TenantId", tenantId.ToString())
         };
 
         foreach (var role in roles)

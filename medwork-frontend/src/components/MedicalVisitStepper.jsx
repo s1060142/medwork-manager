@@ -35,7 +35,7 @@ const VISIT_TYPES = [
 
 const initialData = {
   employeeId: '',
-  doctorId: 0,
+  doctorId: '',
   visitDate: new Date().toISOString().split('T')[0],
   nextDeadlineDate: '',
   visitType: 'Periodic',
@@ -60,6 +60,7 @@ const initialData = {
 function MedicalVisitStepper({ onCreated }) {
   const [activeStep, setActiveStep] = useState(0)
   const [employees, setEmployees] = useState([])
+  const [doctors, setDoctors] = useState([])
   const [formData, setFormData] = useState(initialData)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -85,8 +86,14 @@ function MedicalVisitStepper({ onCreated }) {
         setEmployees(Array.isArray(employeeData) ? employeeData : [])
       })
       .catch((requestError) => {
-        setError(requestError.message || 'Errore nel caricamento dei dati.')
+        setError(requestError.message || 'Errore nel caricamento dei dati lavoratori.')
       })
+
+    apiGet('/api/master-data/doctors')
+      .then((doctorData) => {
+        setDoctors(Array.isArray(doctorData) ? doctorData : [])
+      })
+      .catch(() => {})
       
     apiGet('/api/master-data/phrase-templates')
       .then(data => setPhraseTemplates(Array.isArray(data) ? data : []))
@@ -288,6 +295,18 @@ function MedicalVisitStepper({ onCreated }) {
                     sx={{ flexGrow: 1 }}
                   >
                     {employees.map((item) => (
+                      <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    label="Medico *"
+                    size="small"
+                    value={formData.doctorId}
+                    onChange={(event) => setField('doctorId', event.target.value)}
+                    sx={{ flexGrow: 1 }}
+                  >
+                    {doctors.map((item) => (
                       <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
                     ))}
                   </TextField>

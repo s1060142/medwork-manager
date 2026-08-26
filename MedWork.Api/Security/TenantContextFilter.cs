@@ -19,7 +19,14 @@ public sealed class TenantContextFilter : IActionFilter
     {
         if (context == null) return;
 
-        var tenantClaim = context.HttpContext.User?.FindFirst("TenantId")?.Value;
+        var user = context.HttpContext.User;
+        if (user?.Identity == null || !user.Identity.IsAuthenticated)
+        {
+            // Skip tenant validation for anonymous endpoints like Login
+            return;
+        }
+
+        var tenantClaim = user.FindFirst("TenantId")?.Value ?? user.FindFirst("tenant_id")?.Value;
         if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
         {
             context.Result = new UnauthorizedResult();

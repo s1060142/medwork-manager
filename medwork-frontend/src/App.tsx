@@ -1,19 +1,4 @@
 
-export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | 'keycloak', token: string) {
-  const response = await fetch(`${API_BASE_URL}/api/auth/external/${provider}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-  })
-
-  if (!response.ok) {
-    const message = await safeReadError(response)
-    throw buildApiError(message || 'Autenticazione esterna fallita.', response.status)
-  }
-
-  return readJsonResponse(response)
-}
-
 import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
@@ -40,6 +25,9 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import DownloadIcon from '@mui/icons-material/Download'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import UploadIcon from '@mui/icons-material/Upload'
 import Autocomplete from '@mui/material/Autocomplete'
 import DashboardScadenze from './components/DashboardScadenze'
 import Dashboard from './components/Dashboard'
@@ -63,7 +51,6 @@ import CompanyProfileDialog from './components/CompanyProfileDialog'
 import PhraseTemplatesCenter from './components/PhraseTemplatesCenter'
 import QuestionnairesCenter from './components/QuestionnairesCenter'
 import DashboardMedico from './components/DashboardMedico'
-import ComplianceCenter from './components/ComplianceCenter'
 import AnalyticsCenter from './components/AnalyticsCenter'
 import CartellaSanitariaCenter from './components/CartellaSanitariaCenter'
 import GiudizioIdoneitaCenter from './components/GiudizioIdoneitaCenter'
@@ -73,7 +60,7 @@ import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
 import PatientAnamnesisForm from './components/PatientAnamnesisForm'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
-import { apiGet, apiSend, getHeaders, getTenantId, getToken, getUserId, getRole } from './services/apiClient'
+import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv } from './services/apiClient'
 import { HrImportExportDialog } from './components/HrImportExportDialog'
 import './App.css'
 
@@ -106,7 +93,7 @@ const COMPANY_TABS = [
   { key: 'activities', label: 'Attività' },
 ]
 
-const COMPANY_TAB_TO_MODULE = {
+const COMPANY_TAB_TO_MODULE: Record<string, string> = {
   groups: 'company-groups',
   registry: 'companies',
   checklist: 'protocols',
@@ -191,7 +178,7 @@ const MODULE_ITEMS = [
   { key: 'alert-multicanale', label: 'Alert Multi-canale', moduleKey: 'alert-multicanale' },
 ]
 
-const AREA_MODULE_KEYS = {
+const AREA_MODULE_KEYS: Record<string, string[]> = {
   'company-management': ['companies', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
   analysis: ['reporting', 'audit'],
@@ -249,830 +236,827 @@ const HIERARCHICAL_SIDE_NAV = [
 ]
 
 const App = () => {
-// State declarations
-const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
-const [role, setRole] = useState(() => localStorage.getItem('role') || '')
-const [activeCompanyId, setActiveCompanyIdLocal] = useState(() => readActiveCompanyFromSettings())
-const [profileEmployee, setProfileEmployee] = useState(null)
-const [profileCompany, setProfileCompany] = useState(null)
-const [externalAuthProvider, setExternalAuthProvider] = useState<string | null>(null)
-const [isExternalAuth, setIsExternalAuth] = useState(false)
+  // State declarations
+  const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
+  const [role, setRole] = useState(() => localStorage.getItem('role') || '')
+  const [activeCompanyId, setActiveCompanyIdLocal] = useState(() => readActiveCompanyFromSettings())
+  const [profileEmployee, setProfileEmployee] = useState(null)
+  const [profileCompany, setProfileCompany] = useState(null)
+  const [externalAuthProvider, setExternalAuthProvider] = useState<string | null>(null)
+  const [isExternalAuth, setIsExternalAuth] = useState(false)
 
-// Multi-tenant support
-const [tenantId, setTenantIdLocal] = useState<string | null>(() => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-    return parsed.tenantId || null
-  } catch {
-    return null
-  }
-})
-const [selectedTenantSlug, setSelectedTenantSlug] = useState<string | null>(() => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-    return parsed.tenantSlug || null
-  } catch {
-    return null
-  }
-})
-const [selectedCompanyTab, setSelectedCompanyTab] = useState<string>('groups')
-const [selectedScheduleTab, setSelectedScheduleTab] = useState<string>('visit-deadlines')
-const [selectedAnalysisTab, setSelectedAnalysisTab] = useState<string>('visits')
-const [selectedHealthTab, setSelectedHealthTab] = useState<string>('protocols')
-const [selectedAdminTab, setSelectedAdminTab] = useState<string>('settings')
-
-// Area / module navigation state
-const [selectedArea, setSelectedArea] = useState<string>('company-management')
-const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
-
-// Quick create state
-const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
-
-const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
-const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
-
-const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
-
-useEffect(() => {
-  if (!isAuthenticated) return
-
-  apiGet('/api/master-data/companies').catch((error) => {
-    if (error?.status === 401) {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('role')
-      setToken('')
-      setRole('')
-      setActiveCompanyIdLocal('')
-      setTenantIdLocal(null)
-      setSelectedTenantSlug(null)
-      setSelectedArea('company-management')
-      setSelectedModuleKey('companies')
-      setExternalAuthProvider(null)
-      setIsExternalAuth(false)
-      window.location.reload()
+  // Multi-tenant support
+  const [tenantId, setTenantIdLocal] = useState<string | null>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+      return parsed.tenantId || null
+    } catch {
+      return null
     }
   })
-}, [isAuthenticated])
+  const [selectedTenantSlug, setSelectedTenantSlug] = useState<string | null>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+      return parsed.tenantSlug || null
+    } catch {
+      return null
+    }
+  })
+  const [selectedCompanyTab, setSelectedCompanyTab] = useState<string>('groups')
+  const [selectedScheduleTab, setSelectedScheduleTab] = useState<string>('visit-deadlines')
+  const [selectedAnalysisTab, setSelectedAnalysisTab] = useState<string>('visits')
+  const [selectedHealthTab, setSelectedHealthTab] = useState<string>('protocols')
+  const [selectedAdminTab, setSelectedAdminTab] = useState<string>('settings')
 
-const roleAwareSideMenu = useMemo(() => {
-  if (role === 'Admin') return SIDE_NAV_ITEMS
-  return SIDE_NAV_ITEMS.filter((item) => item.key !== 'administration')
-}, [role])
+  // Area / module navigation state
+  const [selectedArea, setSelectedArea] = useState<string>('company-management')
+  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
 
-const roleAwareModules = useMemo(() => {
-  if (role === 'Admin') return MODULE_ITEMS
+  // Quick create state
+  const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
 
-  const doctorAllowed = new Set([
-    'home',
-    'employees',
-    'protocols',
-    'protocols-registry',
-    'personal-protocols',
-    'schedules',
-    'medical-visit-stepper',
-    'appointments-calendar',
-    'anamneses',
-    'scheduled-exams',
-    'vaccinations',
-    'doctor-availabilities',
-    'notification-logs',
-    'tools',
-    'reporting',
-    'medical-records',
-    'medical-visits',
-    'visit-exams',
-    'exam-types',
-    'job-roles',
-  ])
+  const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
+  const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
 
-  return MODULE_ITEMS.filter((item) => doctorAllowed.has(item.key))
-}, [role])
+  const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
 
-const areaModuleItems = useMemo(() => {
-  const keys = AREA_MODULE_KEYS[selectedArea] || []
-  const allowed = new Set(keys)
-  return roleAwareModules.filter((item) => allowed.has(item.key))
-}, [roleAwareModules, selectedArea])
+  useEffect(() => {
+    if (!isAuthenticated) return
 
-const handleLoginSuccess = (accessToken: string, userRole: string) => {
-  localStorage.setItem('accessToken', accessToken)
-  localStorage.setItem('role', userRole)
-  setToken(accessToken)
-  setRole(userRole)
-  appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
-}
+    apiGet('/api/master-data/companies').catch((error) => {
+      if (error?.status === 401) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('role')
+        setToken('')
+        setRole('')
+        setActiveCompanyIdLocal('')
+        setTenantIdLocal(null)
+        setSelectedTenantSlug(null)
+        setSelectedArea('company-management')
+        setSelectedModuleKey('companies')
+        setExternalAuthProvider(null)
+        setIsExternalAuth(false)
+        window.location.reload()
+      }
+    })
+  }, [isAuthenticated])
 
-const handleLogout = () => {
-  localStorage.removeItem('accessToken')
-  localStorage.removeItem('role')
-  localStorage.removeItem(SETTINGS_STORAGE_KEY)
-  setToken('')
-  setRole('')
-  setTenantIdLocal(null)
-  setSelectedTenantSlug(null)
-  setActiveCompanyIdLocal('')
-  setExternalAuthProvider(null)
-  setIsExternalAuth(false)
-  setSelectedArea('company-management')
-  setSelectedCompanyTab('groups')
-  setSelectedScheduleTab('visit-deadlines')
-  setSelectedAnalysisTab('visits')
-  setSelectedHealthTab('protocols')
-  setSelectedAdminTab('settings')
-  setSelectedModuleKey('companies')
-  setQuickCreateRequest(null)
-  setProfileEmployee(null)
-  setProfileCompany(null)
-  appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
-}
+  const roleAwareSideMenu = useMemo(() => {
+    if (role === 'Admin') return SIDE_NAV_ITEMS
+    return SIDE_NAV_ITEMS.filter((item) => item.key !== 'administration')
+  }, [role])
 
-const handleHRImport = async () => {
-  setHrImportExportOpen(true)
-  setHrImportExportType('import')
-}
+  const roleAwareModules = useMemo(() => {
+    if (role === 'Admin') return MODULE_ITEMS
 
-const handleHRExportCsv = async () => {
-  try {
-    const blob = await hrExportCsv()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'employees.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
-  } catch (err) {
-    setError('Errore durante l\'esportazione CSV.')
+    const doctorAllowed = new Set([
+      'home',
+      'employees',
+      'protocols',
+      'protocols-registry',
+      'personal-protocols',
+      'schedules',
+      'medical-visit-stepper',
+      'appointments-calendar',
+      'anamneses',
+      'scheduled-exams',
+      'vaccinations',
+      'doctor-availabilities',
+      'notification-logs',
+      'tools',
+      'reporting',
+      'medical-records',
+      'medical-visits',
+      'visit-exams',
+      'exam-types',
+      'job-roles',
+    ])
+
+    return MODULE_ITEMS.filter((item) => doctorAllowed.has(item.key))
+  }, [role])
+
+  const areaModuleItems = useMemo(() => {
+    const keys = AREA_MODULE_KEYS[selectedArea] || []
+    const allowed = new Set(keys)
+    return roleAwareModules.filter((item) => allowed.has(item.key))
+  }, [roleAwareModules, selectedArea])
+
+  const handleLoginSuccess = (accessToken: string, userRole: string) => {
+    localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('role', userRole)
+    setToken(accessToken)
+    setRole(userRole)
+    appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
-}
 
-const handleHRExportExcel = async () => {
-  try {
-    const blob = await hrExportExcel()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'employees.xlsx'
-    a.click()
-    window.URL.revokeObjectURL(url)
-  } catch (err) {
-    setError('Errore durante l\'esportazione Excel.')
-  }
-}
-
-// Add HR import/export dialog to the return statement
-const renderHRButtons = () => (
-  <Box className="legacy-topbar-right">
-    <Button
-      variant="outlined"
-      startIcon={<DownloadIcon fontSize="small" />}
-      onClick={handleHRExportCsv}
-      sx={{ ml: 1 }}
-    >
-      Esporta CSV
-    </Button>
-    <Button
-      variant="outlined"
-      startIcon={<FileDownloadIcon fontSize="small" />}
-      onClick={handleHRExportExcel}
-      sx={{ ml: 1 }}
-    >
-      Esporta Excel
-    </Button>
-    <Button
-      variant="outlined"
-      startIcon={<UploadIcon fontSize="small" />}
-      onClick={handleHRImport}
-      sx={{ ml: 1 }}
-    >
-      Importa HR
-    </Button>
-  </Box>
-)
-
-const handleQuickCreateConsumed = () => {
-  setQuickCreateRequest(null)
-}
-
-const handleOpenEmployeeProfile = (employee: any) => {
-  setProfileEmployee(employee)
-}
-
-const handleOpenCompanyProfile = (company: any) => {
-  setProfileCompany(company)
-}
-
-const handleAreaNavigation = (nextArea: string) => {
-  setSelectedArea(nextArea)
-  setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
-  if (nextArea === 'company-management') {
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('role')
+    localStorage.removeItem(SETTINGS_STORAGE_KEY)
+    setToken('')
+    setRole('')
+    setTenantIdLocal(null)
+    setSelectedTenantSlug(null)
+    setActiveCompanyIdLocal('')
+    setExternalAuthProvider(null)
+    setIsExternalAuth(false)
+    setSelectedArea('company-management')
     setSelectedCompanyTab('groups')
-  }
-  appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
-}
-
-const handleSettingsChange = (nextSettings: any) => {
-  setActiveCompanyIdLocal(nextSettings?.activeCompanyId || '')
-}
-
-const renderModuleContent = (moduleKey: string) => {
-  if (moduleKey === 'home') {
-    return (
-      <DashboardScadenze
-        activeCompanyId={activeCompanyId}
-        onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
-        onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-        onOpenReports={() => setSelectedModuleKey('reporting')}
-      />
-    )
+    setSelectedScheduleTab('visit-deadlines')
+    setSelectedAnalysisTab('visits')
+    setSelectedHealthTab('protocols')
+    setSelectedAdminTab('settings')
+    setSelectedModuleKey('companies')
+    setQuickCreateRequest(null)
+    setProfileEmployee(null)
+    setProfileCompany(null)
+    appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
   }
 
-  if (moduleKey === 'companies') {
-    return (
-      <CrudEntityView
-        config={ENTITY_BY_KEY.companies}
-        currentRole={role}
-        externalCreateToken={0}
-        onExternalCreateConsumed={handleQuickCreateConsumed}
-        onOpenCompanyProfile={handleOpenCompanyProfile}
-      />
-    )
+  const handleHRImport = async () => {
+    setHrImportExportOpen(true)
+    setHrImportExportType('import')
   }
 
-  if (moduleKey === 'employees') {
-    return (
-      <WorkersCenter
-        activeCompanyId={activeCompanyId}
-        onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-        onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
-        onOpenEmployeeProfile={handleOpenEmployeeProfile}
-      />
-    )
+  const handleHRExportCsv = async () => {
+    try {
+      const blob = await hrExportCsv()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'employees.csv'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+      alert('Errore durante l\'esportazione CSV.')
+    }
   }
 
-  if (moduleKey === 'dashboard' || moduleKey === 'home') {
-    return <Dashboard />
+  const handleHRExportExcel = async () => {
+    try {
+      const blob = await hrExportExcel()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'employees.xlsx'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+      alert('Errore durante l\'esportazione Excel.')
+    }
   }
 
-  if (moduleKey === 'employees-crud') {
-    return (
-      <CrudEntityView
-        config={ENTITY_BY_KEY.employees}
-        currentRole={role}
-        externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
-        onExternalCreateConsumed={handleQuickCreateConsumed}
-      />
-    )
-  }
-
-  if (moduleKey === 'protocols') {
-    return <ProtocolsCenter activeTab={selectedHealthTab} onTabChange={setSelectedHealthTab} />
-  }
-
-  if (moduleKey === 'schedules') {
-    return (
-      <VisitPlanningCenter
-        activeCompanyId={activeCompanyId}
-        activeScheduleTab={selectedScheduleTab}
-        onScheduleTabChange={setSelectedScheduleTab}
-        onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
-      />
-    )
-  }
-
-  if (moduleKey === 'medical-visit-stepper') {
-    return <MedicalVisitStepper onCreated={() => setSelectedModuleKey('medical-visits')} />
-  }
-
-  if (moduleKey === 'appointments-calendar') {
-    return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
-  }
-
-  if (moduleKey === 'compliance') {
-    return <ComplianceCenter />
-  }
-
-  if (moduleKey === 'batch-signature') {
-    return <BatchSignatureCenter />
-  }
-
-  if (moduleKey === 'recall-campaigns') {
-    return <RecallCampaignsCenter />
-  }
-
-  if (moduleKey === 'billing') {
-    return <BillingCenter />
-  }
-
-  if (moduleKey === 'audit') {
-    return <AuditCenter />
-  }
-
-  if (moduleKey === 'tools') {
-    return <ToolsCenter />
-  }
-
-  if (moduleKey === 'settings') {
-    return <SettingsCenter activeCompanyId={activeCompanyId} onSettingsChange={handleSettingsChange} />
-  }
-
-  if (moduleKey === 'reporting') {
-    return (
-      <ReportsCenter
-        activeCompanyId={activeCompanyId}
-        activeAnalysisTab={selectedAnalysisTab}
-        onAnalysisTabChange={setSelectedAnalysisTab}
-      />
-    )
-  }
-
-  const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
-  const currentEntityConfig = moduleItem?.entityKey ? ENTITY_BY_KEY[moduleItem.entityKey] : null
-
-  if (currentEntityConfig) {
-    return (
-      <CrudEntityView
-        config={currentEntityConfig}
-        currentRole={role}
-        externalCreateToken={quickCreateRequest?.entityKey === currentEntityConfig?.key ? quickCreateRequest.token : 0}
-        onExternalCreateConsumed={handleQuickCreateConsumed}
-      />
-    )
-  }
-
-  return <Typography variant="body2">Modulo non disponibile per il ruolo corrente.</Typography>
-}
-
-const renderWorkspaceContent = () => {
-  const companyMode =
-    selectedArea === 'company-management' &&
-    Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
-
-  if (companyMode) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {COMPANY_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
-                setSelectedCompanyTab(tab.key)
-                setSelectedModuleKey(moduleKey)
-                appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-toolbar">
-          <TextField size="small" label="Nominativo" variant="outlined" />
-          <TextField size="small" label="Medico" variant="outlined" />
-          <TextField size="small" label="Gruppo aziendale" variant="outlined" />
-          <TextField size="small" label="Provincia" variant="outlined" />
-          <TextField size="small" label="Comune" variant="outlined" />
-          <TextField size="small" label="Riferimento" variant="outlined" />
-          <TextField size="small" label="Status" variant="outlined" />
-          <Box className="legacy-toolbar-actions">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
-          </Box>
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  const scheduleMode = selectedArea === 'schedule' && selectedModuleKey === 'schedules'
-
-  if (scheduleMode) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {SCHEDULE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => setSelectedScheduleTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  const analysisMode = selectedArea === 'analysis' && selectedModuleKey === 'reporting'
-
-  if (analysisMode) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {ANALYSIS_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => setSelectedAnalysisTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  const administrationMode = selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
-
-  if (administrationMode) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {ADMIN_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                setSelectedAdminTab(tab.key)
-                setSelectedModuleKey(tab.moduleKey)
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  const healthMode = selectedArea === 'health-surveillance'
-
-  if (healthMode) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {HEALTH_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                setSelectedHealthTab(tab.key)
-                setSelectedModuleKey(tab.moduleKey)
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  return (
-    <Box className="legacy-workspace-card">
-      <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+  // Add HR import/export dialog to the return statement
+  const renderHRButtons = () => (
+    <Box className="legacy-topbar-right">
+      <Button
+        variant="outlined"
+        startIcon={<DownloadIcon fontSize="small" />}
+        onClick={handleHRExportCsv}
+        sx={{ ml: 1 }}
+      >
+        Esporta CSV
+      </Button>
+      <Button
+        variant="outlined"
+        startIcon={<FileDownloadIcon fontSize="small" />}
+        onClick={handleHRExportExcel}
+        sx={{ ml: 1 }}
+      >
+        Esporta Excel
+      </Button>
+      <Button
+        variant="outlined"
+        startIcon={<UploadIcon fontSize="small" />}
+        onClick={handleHRImport}
+        sx={{ ml: 1 }}
+      >
+        Importa HR
+      </Button>
     </Box>
   )
-}
 
-const isCompanyTabActive = useMemo(() => {
-  return selectedArea === 'company-management' && Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
-}, [selectedArea, selectedModuleKey])
+  const handleQuickCreateConsumed = () => {
+    setQuickCreateRequest(null)
+  }
 
-const isScheduleTabActive = useMemo(() => {
-  return selectedArea === 'schedule' && selectedModuleKey === 'schedules'
-}, [selectedArea, selectedModuleKey])
+  const handleOpenEmployeeProfile = (employee: any) => {
+    setProfileEmployee(employee)
+  }
 
-const isAnalysisTabActive = useMemo(() => {
-  return selectedArea === 'analysis' && selectedModuleKey === 'reporting'
-}, [selectedArea, selectedModuleKey])
+  const handleOpenCompanyProfile = (company: any) => {
+    setProfileCompany(company)
+  }
 
-const isAdministrationTabActive = useMemo(() => {
-  return selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
-}, [selectedArea, selectedModuleKey])
+  const handleAreaNavigation = (nextArea: string) => {
+    setSelectedArea(nextArea)
+    setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
+    if (nextArea === 'company-management') {
+      setSelectedCompanyTab('groups')
+    }
+    appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
+  }
 
-const isHealthTabActive = useMemo(() => {
-  return selectedArea === 'health-surveillance'
-}, [selectedArea])
+  const handleSettingsChange = (nextSettings: any) => {
+    setActiveCompanyIdLocal(nextSettings?.activeCompanyId || '')
+  }
 
-const isHealthTabMatch = useMemo(() => {
-  if (!selectedHealthTab) return false
-  const tab = HEALTH_TABS.find((t) => t.key === selectedHealthTab)
-  return tab && tab.moduleKey === selectedModuleKey
-}, [selectedHealthTab, selectedModuleKey])
+  const renderModuleContent = (moduleKey: string) => {
+    if (moduleKey === 'home') {
+      return (
+        <DashboardScadenze
+          activeCompanyId={activeCompanyId}
+          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
+          onOpenReports={() => setSelectedModuleKey('reporting')} role={undefined} displayedCompanyName={undefined} />
+      )
+    }
 
-const isSettingsTabActive = useMemo(() => {
-  return selectedArea === 'administration' && selectedModuleKey === 'settings'
-}, [selectedArea, selectedModuleKey])
+    if (moduleKey === 'companies') {
+      return (
+        <CrudEntityView
+          config={ENTITY_BY_KEY.companies}
+          currentRole={role}
+          externalCreateToken={0}
+          onExternalCreateConsumed={handleQuickCreateConsumed}
+          onOpenCompanyProfile={handleOpenCompanyProfile}
+        />
+      )
+    }
 
-const renderContent = () => {
-  if (isCompanyTabActive) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {COMPANY_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
-                setSelectedCompanyTab(tab.key)
-                setSelectedModuleKey(moduleKey)
-                appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
+    if (moduleKey === 'employees') {
+      return (
+        <WorkersCenter
+          activeCompanyId={activeCompanyId}
+          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
+          onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
+          onOpenEmployeeProfile={handleOpenEmployeeProfile}
+        />
+      )
+    }
 
-        <Box className="legacy-toolbar">
-          <TextField size="small" label="Nominativo" variant="outlined" />
-          <TextField size="small" label="Medico" variant="outlined" />
-          <TextField size="small" label="Gruppo aziendale" variant="outlined" />
-          <TextField size="small" label="Provincia" variant="outlined" />
-          <TextField size="small" label="Comune" variant="outlined" />
-          <TextField size="small" label="Riferimento" variant="outlined" />
-          <TextField size="small" label="Status" variant="outlined" />
-          <Box className="legacy-toolbar-actions">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+    if (moduleKey === 'dashboard' || moduleKey === 'home') {
+      return <Dashboard />
+    }
+
+    if (moduleKey === 'employees-crud') {
+      return (
+        <CrudEntityView
+          config={ENTITY_BY_KEY.employees}
+          currentRole={role}
+          externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
+          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} />
+      )
+    }
+
+    if (moduleKey === 'protocols') {
+      return <ProtocolsCenter activeTab={selectedHealthTab} onTabChange={setSelectedHealthTab} />
+    }
+
+    if (moduleKey === 'schedules') {
+      return (
+        <VisitPlanningCenter
+          activeCompanyId={activeCompanyId}
+          activeScheduleTab={selectedScheduleTab}
+          onScheduleTabChange={setSelectedScheduleTab}
+          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+        />
+      )
+    }
+
+    if (moduleKey === 'medical-visit-stepper') {
+      return <MedicalVisitStepper onCreated={() => setSelectedModuleKey('medical-visits')} />
+    }
+
+    if (moduleKey === 'appointments-calendar') {
+      return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
+    }
+
+    if (moduleKey === 'compliance') {
+      return <ComplianceCenter />
+    }
+
+    if (moduleKey === 'batch-signature') {
+      return <BatchSignatureCenter />
+    }
+
+    if (moduleKey === 'recall-campaigns') {
+      return <RecallCampaignsCenter />
+    }
+
+    if (moduleKey === 'billing') {
+      return <BillingCenter />
+    }
+
+    if (moduleKey === 'audit') {
+      return <AuditCenter />
+    }
+
+    if (moduleKey === 'tools') {
+      return <ToolsCenter />
+    }
+
+    if (moduleKey === 'settings') {
+      return <SettingsCenter activeCompanyId={activeCompanyId} onSettingsChange={handleSettingsChange} />
+    }
+
+    if (moduleKey === 'reporting') {
+      return (
+        <ReportsCenter
+          activeCompanyId={activeCompanyId}
+          activeAnalysisTab={selectedAnalysisTab}
+          onAnalysisTabChange={setSelectedAnalysisTab}
+        />
+      )
+    }
+
+    const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
+    const currentEntityConfig = moduleItem?.entityKey ? ENTITY_BY_KEY[moduleItem.entityKey] : null
+
+    if (currentEntityConfig) {
+      return (
+        <CrudEntityView
+          config={currentEntityConfig}
+          currentRole={role}
+          externalCreateToken={quickCreateRequest?.entityKey === currentEntityConfig?.key ? quickCreateRequest.token : 0}
+          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} />
+      )
+    }
+
+    return <Typography variant="body2">Modulo non disponibile per il ruolo corrente.</Typography>
+  }
+
+  const renderWorkspaceContent = () => {
+    const companyMode =
+      selectedArea === 'company-management' &&
+      Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
+
+    if (companyMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {COMPANY_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
+                  setSelectedCompanyTab(tab.key)
+                  setSelectedModuleKey(moduleKey)
+                  appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </Box>
+
+          <Box className="legacy-toolbar">
+            <TextField size="small" label="Nominativo" variant="outlined" />
+            <TextField size="small" label="Medico" variant="outlined" />
+            <TextField size="small" label="Gruppo aziendale" variant="outlined" />
+            <TextField size="small" label="Provincia" variant="outlined" />
+            <TextField size="small" label="Comune" variant="outlined" />
+            <TextField size="small" label="Riferimento" variant="outlined" />
+            <TextField size="small" label="Status" variant="outlined" />
+            <Box className="legacy-toolbar-actions">
+              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
+              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+            </Box>
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
         </Box>
+      )
+    }
 
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
+    const scheduleMode = selectedArea === 'schedule' && selectedModuleKey === 'schedules'
 
-  if (isScheduleTabActive) {
+    if (scheduleMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {SCHEDULE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedScheduleTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const analysisMode = selectedArea === 'analysis' && selectedModuleKey === 'reporting'
+
+    if (analysisMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ANALYSIS_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedAnalysisTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const administrationMode = selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
+
+    if (administrationMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ADMIN_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSelectedAdminTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    const healthMode = selectedArea === 'health-surveillance'
+
+    if (healthMode) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {HEALTH_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSelectedHealthTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
     return (
       <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {SCHEDULE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => setSelectedScheduleTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
         <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
       </Box>
     )
   }
 
-  if (isAnalysisTabActive) {
+  const isCompanyTabActive = useMemo(() => {
+    return selectedArea === 'company-management' && Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
+  }, [selectedArea, selectedModuleKey])
+
+  const isScheduleTabActive = useMemo(() => {
+    return selectedArea === 'schedule' && selectedModuleKey === 'schedules'
+  }, [selectedArea, selectedModuleKey])
+
+  const isAnalysisTabActive = useMemo(() => {
+    return selectedArea === 'analysis' && selectedModuleKey === 'reporting'
+  }, [selectedArea, selectedModuleKey])
+
+  const isAdministrationTabActive = useMemo(() => {
+    return selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
+  }, [selectedArea, selectedModuleKey])
+
+  const isHealthTabActive = useMemo(() => {
+    return selectedArea === 'health-surveillance'
+  }, [selectedArea])
+
+  const isHealthTabMatch = useMemo(() => {
+    if (!selectedHealthTab) return false
+    const tab = HEALTH_TABS.find((t) => t.key === selectedHealthTab)
+    return tab && tab.moduleKey === selectedModuleKey
+  }, [selectedHealthTab, selectedModuleKey])
+
+  const isSettingsTabActive = useMemo(() => {
+    return selectedArea === 'administration' && selectedModuleKey === 'settings'
+  }, [selectedArea, selectedModuleKey])
+
+  const renderContent = () => {
+    if (isCompanyTabActive) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {COMPANY_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
+                  setSelectedCompanyTab(tab.key)
+                  setSelectedModuleKey(moduleKey)
+                  appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-toolbar">
+            <TextField size="small" label="Nominativo" variant="outlined" />
+            <TextField size="small" label="Medico" variant="outlined" />
+            <TextField size="small" label="Gruppo aziendale" variant="outlined" />
+            <TextField size="small" label="Provincia" variant="outlined" />
+            <TextField size="small" label="Comune" variant="outlined" />
+            <TextField size="small" label="Riferimento" variant="outlined" />
+            <TextField size="small" label="Status" variant="outlined" />
+            <Box className="legacy-toolbar-actions">
+              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
+              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
+            </Box>
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    if (isScheduleTabActive) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {SCHEDULE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedScheduleTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    if (isAnalysisTabActive) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ANALYSIS_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => setSelectedAnalysisTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    if (isAdministrationTabActive) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {ADMIN_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSelectedAdminTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
+    if (isHealthTabMatch) {
+      return (
+        <Box className="legacy-workspace-card">
+          <Box className="legacy-tab-row">
+            {HEALTH_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSelectedHealthTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Box>
+
+          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
+        </Box>
+      )
+    }
+
     return (
       <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {ANALYSIS_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => setSelectedAnalysisTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
         <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
       </Box>
     )
   }
 
-  if (isAdministrationTabActive) {
+  if (window.location.pathname === '/patient-portal') {
+    const params = new URLSearchParams(window.location.search)
+    const portalToken = params.get('token')
     return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {ADMIN_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                setSelectedAdminTab(tab.key)
-                setSelectedModuleKey(tab.moduleKey)
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
+      <>
+        <CssBaseline />
+        <PatientAnamnesisForm token={portalToken} />
+      </>
     )
   }
 
-  if (isHealthTabMatch) {
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-tab-row">
-          {HEALTH_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
-              onClick={() => {
-                setSelectedHealthTab(tab.key)
-                setSelectedModuleKey(tab.moduleKey)
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Box>
-
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
-  return (
-    <Box className="legacy-workspace-card">
-      <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-    </Box>
-  )
-}
-
-if (window.location.pathname === '/patient-portal') {
-  const params = new URLSearchParams(window.location.search)
-  const portalToken = params.get('token')
   return (
     <>
       <CssBaseline />
-      <PatientAnamnesisForm token={portalToken} />
+      <Box className="legacy-shell">
+        {!isAuthenticated ? (
+          <Box className="legacy-login-wrap">
+            <Paper className="legacy-login-card" elevation={0}>
+              <Typography variant="h4" component="h1" sx={{ mb: 1 }}>
+                Gestionale Medicina del Lavoro
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2.2, color: '#5f6472' }}>
+                Accesso alla piattaforma amministrativa e sanitaria.
+              </Typography>
+              <LoginCard onLoginSuccess={handleLoginSuccess} />
+            </Paper>
+          </Box>
+        ) : (
+          <Box className="legacy-layout">
+            <header className="legacy-topbar">
+              <Box className="legacy-topbar-left" sx={{ display: 'flex', alignItems: 'center' }}>
+                <button type="button" className="legacy-icon-btn" aria-label="Menu">
+                  <MenuIcon fontSize="small" />
+                </button>
+
+                <Autocomplete
+                  sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
+                  size="small"
+                  options={[]} // We can keep options empty for now, or implement the live search if needed. For simplicity in Phase 3, we implement basic live search
+                  freeSolo
+                  disableClearable
+                  noOptionsText="Nessun lavoratore"
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Cerca lavoratore..."
+                      InputProps={{
+                        ...params.InputProps,
+                        type: 'search',
+                        startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+              <Box className="legacy-topbar-right">
+                <button type="button" className="legacy-toolbar-link" aria-label="Notifiche">
+                  <NotificationsNoneIcon fontSize="small" />
+                </button>
+                <span className="legacy-divider" />
+                <span className="legacy-language">(it)</span>
+                <span className="legacy-divider" />
+                <button type="button" className="legacy-toolbar-link">ChangeLog</button>
+                <button type="button" className="legacy-toolbar-link">Manuale</button>
+                <button type="button" className="legacy-toolbar-link">
+                  <ManageAccountsIcon fontSize="small" />
+                  Profilo
+                </button>
+                <button type="button" className="legacy-toolbar-link" onClick={handleLogout}>
+                  <LogoutIcon fontSize="small" />
+                  Logout
+                </button>
+                <Button
+                  variant="outlined"
+                  startIcon={<DownloadIcon fontSize="small" />}
+                  onClick={handleHRExportCsv}
+                  sx={{ ml: 1 }}
+                >
+                  Esporta CSV
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon fontSize="small" />}
+                  onClick={handleHRExportExcel}
+                  sx={{ ml: 1 }}
+                >
+                  Esporta Excel
+                </Button>
+              </Box>
+            </header>
+
+            <Box className="legacy-body">
+              <aside className="legacy-sidebar">
+                {roleAwareSideMenu.map((item) => {
+                  const Icon = item.icon
+                  const isActive = selectedArea === item.key
+
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`legacy-side-item ${isActive ? 'is-active' : ''}`}
+                      onClick={() => handleAreaNavigation(item.key)}
+                    >
+                      <Icon fontSize="small" />
+                      <span>{item.label}</span>
+                    </button>
+                  )
+                })}
+              </aside>
+
+              <main className="legacy-main-content">
+                {renderContent()}
+              </main>
+            </Box>
+          </Box>
+        )}
+        <EmployeeProfileDialog
+          open={Boolean(profileEmployee)}
+          onClose={() => setProfileEmployee(null)}
+          employee={profileEmployee}
+          onSaveEmployee={(updated: any) => {
+            setProfileEmployee((current: any) => current ? { ...current, ...updated } : current
+            )
+          }}
+          onOpenMedicalVisitCreate={(employeeId: any) => {
+            setProfileEmployee((prev: any) => {
+              if (!prev) return prev
+              return { ...prev, _needsVisit: employeeId }
+            })
+          }} onEditEmployee={undefined} />
+        <CompanyProfileDialog
+          open={Boolean(profileCompany)}
+          onClose={() => setProfileCompany(null)}
+          company={profileCompany}
+        />
+        <HrImportExportDialog
+          open={hrImportExportOpen}
+          onClose={() => setHrImportExportOpen(false)}
+          onImportSuccess={() => {
+            setHrImportExportOpen(false)
+            setHrImportExportType(null)
+          }}
+          onExportSuccess={() => {
+            setHrImportExportOpen(false)
+            setHrImportExportType(null)
+          }}
+        />
+      </Box>
     </>
   )
-}
-
-return (
-  <>
-    <CssBaseline />
-    <Box className="legacy-shell">
-      {!isAuthenticated ? (
-        <Box className="legacy-login-wrap">
-          <Paper className="legacy-login-card" elevation={0}>
-            <Typography variant="h4" component="h1" sx={{ mb: 1 }}>
-              Gestionale Medicina del Lavoro
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 2.2, color: '#5f6472' }}>
-              Accesso alla piattaforma amministrativa e sanitaria.
-            </Typography>
-            <LoginCard onLoginSuccess={handleLoginSuccess} />
-          </Paper>
-        </Box>
-      ) : (
-        <Box className="legacy-layout">
-          <header className="legacy-topbar">
-            <Box className="legacy-topbar-left" sx={{ display: 'flex', alignItems: 'center' }}>
-              <button type="button" className="legacy-icon-btn" aria-label="Menu">
-                <MenuIcon fontSize="small" />
-              </button>
-              
-              <Autocomplete
-                sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
-                size="small"
-                options={[]} // We can keep options empty for now, or implement the live search if needed. For simplicity in Phase 3, we implement basic live search
-                freeSolo
-                disableClearable
-                noOptionsText="Nessun lavoratore"
-                renderInput={(params) => (
-                  <TextField 
-                    {...params} 
-                    placeholder="Cerca lavoratore..." 
-                    InputProps={{ 
-                      ...params.InputProps, 
-                      type: 'search',
-                      startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} /> 
-                    }} 
-                  />
-                )}
-              />
-            </Box>
-            <Box className="legacy-topbar-right">
-              <button type="button" className="legacy-toolbar-link" aria-label="Notifiche">
-                <NotificationsNoneIcon fontSize="small" />
-              </button>
-              <span className="legacy-divider" />
-              <span className="legacy-language">(it)</span>
-              <span className="legacy-divider" />
-              <button type="button" className="legacy-toolbar-link">ChangeLog</button>
-              <button type="button" className="legacy-toolbar-link">Manuale</button>
-              <button type="button" className="legacy-toolbar-link">
-                <ManageAccountsIcon fontSize="small" />
-                Profilo
-              </button>
-              <button type="button" className="legacy-toolbar-link" onClick={handleLogout}>
-                <LogoutIcon fontSize="small" />
-                Logout
-              </button>
-              <Button
-                variant="outlined"
-                startIcon={<DownloadIcon fontSize="small" />}
-                onClick={handleHRExportCsv}
-                sx={{ ml: 1 }}
-              >
-                Esporta CSV
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<FileDownloadIcon fontSize="small" />}
-                onClick={handleHRExportExcel}
-                sx={{ ml: 1 }}
-              >
-                Esporta Excel
-              </Button>
-            </Box>
-          </header>
-
-          <Box className="legacy-body">
-            <aside className="legacy-sidebar">
-              {roleAwareSideMenu.map((item) => {
-                const Icon = item.icon
-                const isActive = selectedArea === item.key
-
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    className={`legacy-side-item ${isActive ? 'is-active' : ''}`}
-                    onClick={() => handleAreaNavigation(item.key)}
-                  >
-                    <Icon fontSize="small" />
-                    <span>{item.label}</span>
-                  </button>
-                )
-              })}
-            </aside>
-
-            <main className="legacy-main-content">
-              {renderContent()}
-            </main>
-          </Box>
-        </Box>
-      )}
-      <EmployeeProfileDialog
-        open={Boolean(profileEmployee)}
-        onClose={() => setProfileEmployee(null)}
-        employee={profileEmployee}
-        onSaveEmployee={(updated) => {
-          setProfileEmployee((current) =>
-            current ? { ...current, ...updated } : current,
-          )
-        }}
-        onOpenMedicalVisitCreate={(employeeId) => {
-          setProfileEmployee((prev) => {
-            if (!prev) return prev
-            return { ...prev, id: employeeId }
-          })
-        }}
-      />
-      <CompanyProfileDialog
-        open={Boolean(profileCompany)}
-        onClose={() => setProfileCompany(null)}
-        company={profileCompany}
-      />
-      <HrImportExportDialog
-        open={hrImportExportOpen}
-        onClose={() => setHrImportExportOpen(false)}
-        onImportSuccess={() => {
-          setHrImportExportOpen(false)
-          setHrImportExportType(null)
-        }}
-        onExportSuccess={() => {
-          setHrImportExportOpen(false)
-          setHrImportExportType(null)
-        }}
-      />
-    </Box>
-  </>
-)
 }
 
 export default App

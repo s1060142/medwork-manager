@@ -31,7 +31,7 @@ public sealed class IntegrationController : ControllerBase
 
     [HttpPost("import-employee")]
     [Authorize(Roles = "Admin")]
-    public IActionResult ImportEmployee([FromForm] IFormFile file, [FromForm] string fileName)
+    public IActionResult ImportEmployee(IFormFile file, string fileName)
     {
         if (file == null || file.Length == 0)
             return BadRequest("File is empty.");

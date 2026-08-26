@@ -63,6 +63,26 @@ public class AuthController : ControllerBase
             }
         }
 
+        // Fallback to legacy config-based auth (for demo and empty tenant)
+        var configUser = _authSettings.Users.FirstOrDefault(u => u.Username == request.Username && u.Password == request.Password);
+        if (configUser != null)
+        {
+            var roles = new List<string> { configUser.Role };
+            // Give them some default permissions for demo to avoid empty dashboard
+            var permissions = new List<string> { "companies.read", "employees.read", "admin.users" };
+            
+            var token = _jwtTokenService.GenerateToken(1, configUser.Username, roles, permissions, configUser.TenantId);
+            return Ok(new LoginResponse
+            {
+                AccessToken = token,
+                Role = configUser.Role,
+                TenantId = configUser.TenantId,
+                TenantSlug = "default",
+                UserId = 1,
+                ExpiresIn = 3600
+            });
+        }
+
         return Unauthorized();
     }
 
