@@ -8,11 +8,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { authLogin } from '../services/apiClient'
+import { authLogin, getTenantSlug } from '../services/apiClient'
 
 function LoginCard({ onLoginSuccess }) {
   const [username, setUsername] = useState('admin')
   const [password, setPassword] = useState('Admin123!')
+  const [tenantSlug, setTenantSlug] = useState(getTenantSlug())
   const [caricamento, setCaricamento] = useState(false)
   const [errore, setErrore] = useState('')
 
@@ -22,7 +23,7 @@ function LoginCard({ onLoginSuccess }) {
     setCaricamento(true)
 
     try {
-      const data = await authLogin(username, password)
+      const data = await authLogin(username, password, tenantSlug)
 
       onLoginSuccess(data.accessToken, data.role)
     } catch (error) {
@@ -63,6 +64,14 @@ function LoginCard({ onLoginSuccess }) {
             onChange={(event) => setPassword(event.target.value)}
             fullWidth
             required
+          />
+          <TextField
+            label="Tenant (slug)"
+            value={tenantSlug}
+            onChange={(event) => setTenantSlug(event.target.value)}
+            fullWidth
+            required
+            helperText="Es. default"
           />
           <Button type="submit" variant="contained" disabled={caricamento}>
             {caricamento ? 'Accesso in corso...' : 'Accedi'}

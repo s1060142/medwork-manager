@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MedWork.Api.Models;
 
@@ -30,6 +31,8 @@ public class NotificationLog
     public int RetryCount { get; set; } = 0;
 
     // Navigation properties
+    [JsonIgnore]
     public Tenant? Tenant { get; set; }
+    [JsonIgnore]
     public Employee? Employee { get; set; }
 }

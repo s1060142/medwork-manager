@@ -4,6 +4,7 @@ using MedWork.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MedWork.Api.Controllers;
 
@@ -57,7 +58,7 @@ public class PhraseTemplatesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] PhraseTemplate request)
     {
-        var entity = await _dbContext.PhraseTemplates.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.PhraseTemplates.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.Category = request.Category;
@@ -72,7 +73,7 @@ public class PhraseTemplatesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _dbContext.PhraseTemplates.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.PhraseTemplates.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.PhraseTemplates.Remove(entity);
@@ -122,5 +123,15 @@ public class PhraseTemplatesController : ControllerBase
                 d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
             }
         return d[m, n];
+    }
+
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId))
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
     }
 }

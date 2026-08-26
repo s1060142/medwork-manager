@@ -3,7 +3,9 @@ using MedWork.Api.Models;
 using MedWork.Api.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -120,26 +122,56 @@ public class ExternalAuthService : IExternalAuthService
 
     public async Task<ExternalAuthResult?> AuthenticateWithKeycloakAsync(string token, string provider)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            return null;
+
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadJwtToken(token);
 
-            // Validate issuer
-            var issuer = jsonToken.Issuer;
-            if (!_keycloakOptions.ValidIssuers.Contains(issuer))
-                return null;
+            // Resolve Keycloak signing keys (JWKS) from the realm certs endpoint.
+            var authority = (_keycloakOptions.Authority ?? string.Empty).TrimEnd('/');
+            var realm = _keycloakOptions.Realm ?? string.Empty;
+            var jwksUri = $"{authority}/realms/{realm}/protocol/openid-connect/certs";
+            var jwksJson = await _httpClient.GetStringAsync(jwksUri);
+            var signingKeys = new JsonWebKeySet(jwksJson).GetSigningKeys();
 
-            var claims = jsonToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = signingKeys,
+                ValidateIssuer = true,
+                ValidIssuers = _keycloakOptions.ValidIssuers,
+                ValidateAudience = true,
+                ValidAudience = _keycloakOptions.ClientId,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(1),
+                RequireSignedTokens = true
+            };
+
+            // Cryptographically validate the token; throws on invalid signature,
+            // issuer, audience or expiration.
+            var principal = handler.ValidateToken(token, validationParameters, out _);
+
+            var email = principal.FindFirst("email")?.Value
+                        ?? principal.FindFirst(ClaimTypes.Email)?.Value
+                        ?? string.Empty;
+            var sub = principal.FindFirst("sub")?.Value ?? string.Empty;
+            var givenName = principal.FindFirst("given_name")?.Value
+                            ?? principal.FindFirst(ClaimTypes.GivenName)?.Value
+                            ?? string.Empty;
+            var familyName = principal.FindFirst("family_name")?.Value
+                             ?? principal.FindFirst(ClaimTypes.Surname)?.Value
+                             ?? string.Empty;
 
             return new ExternalAuthResult
             {
-                ExternalId = claims.GetValueOrDefault("sub", string.Empty),
+                ExternalId = sub,
                 Provider = $"keycloak:{provider}",
-                Email = claims.GetValueOrDefault("email", string.Empty),
-                FirstName = claims.GetValueOrDefault("given_name", string.Empty),
-                LastName = claims.GetValueOrDefault("family_name", string.Empty),
-                Claims = claims.ToDictionary(k => k.Key, v => (object)v.Value)
+                Email = email,
+                FirstName = givenName,
+                LastName = familyName,
+                Claims = principal.Claims.ToDictionary(c => c.Type, c => (object)c.Value)
             };
         }
         catch

@@ -67,6 +67,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddDataProtection();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IFieldEncryptionService, FieldEncryptionService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 

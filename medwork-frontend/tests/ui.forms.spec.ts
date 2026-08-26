@@ -128,7 +128,7 @@ test('protocols center: + Nuovo protocollo button is present and clickable', asy
     await protocolliTab.click()
     await page.waitForTimeout(500)
   }
-  const nuovo = page.locator('button:has-text("+ Nuovo protocollo")').first()
+  const nuovo = page.locator('button:has-text("Nuovo protocollo")').first()
   await expect(nuovo).toBeVisible({ timeout: 10000 })
   // Clicking should not crash the app (component saves via inline form state)
   await nuovo.click()

@@ -3,6 +3,7 @@ using System.Xml.Schema;
 using MedWork.Api.Data;
 using MedWork.Api.Documents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 
@@ -11,6 +12,7 @@ namespace MedWork.Api.Services;
 public class DocumentGenerationService : IDocumentGenerationService
 {
     private readonly AppDbContext _db;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     // Required by QuestPDF licence declaration (community licence = free for revenue < $1M)
     static DocumentGenerationService()
@@ -18,9 +20,21 @@ public class DocumentGenerationService : IDocumentGenerationService
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public DocumentGenerationService(AppDbContext db)
+    public DocumentGenerationService(AppDbContext db, IHttpContextAccessor httpContextAccessor)
     {
         _db = db;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int GetTenantId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        var tenantClaim = user?.FindFirst("TenantId")?.Value ?? user?.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId) && tenantId > 0)
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
     }
 
     // ── STUB methods kept for backward compat ───────────────────────────────
@@ -43,7 +57,7 @@ public class DocumentGenerationService : IDocumentGenerationService
             .Include(v => v.Doctor)
             .Include(v => v.Employee)
                 .ThenInclude(e => e!.Company)
-            .FirstOrDefaultAsync(v => v.Id == medicalVisitId, cancellationToken)
+            .FirstOrDefaultAsync(v => v.Id == medicalVisitId && v.TenantId == GetTenantId(), cancellationToken)
             ?? throw new KeyNotFoundException($"Medical visit {medicalVisitId} not found.");
 
         // Count visits for this doctor+tenant to build progressive number

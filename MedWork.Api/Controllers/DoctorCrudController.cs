@@ -48,7 +48,7 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("medical-records/{id:int}")]
     public async Task<IActionResult> UpdateMedicalRecord(int id, [FromBody] MedicalRecord request)
     {
-        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -62,7 +62,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("medical-records/{id:int}")]
     public async Task<IActionResult> DeleteMedicalRecord(int id)
     {
-        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.MedicalRecords.Remove(entity);
@@ -132,7 +132,7 @@ public class DoctorCrudController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         var doctorId = request.DoctorId;
@@ -166,7 +166,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("medical-visits/{id:int}")]
     public async Task<IActionResult> DeleteMedicalVisit(int id)
     {
-        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.MedicalVisits.Remove(entity);
@@ -185,7 +185,7 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("visit-exams/{id:int}")]
     public async Task<IActionResult> UpdateVisitExam(int id, [FromBody] VisitExam request)
     {
-        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.MedicalVisitId = request.MedicalVisitId;
@@ -200,7 +200,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("visit-exams/{id:int}")]
     public async Task<IActionResult> DeleteVisitExam(int id)
     {
-        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.VisitExams.Remove(entity);
@@ -225,7 +225,7 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("anamneses/{id:int}")]
     public async Task<IActionResult> UpdateAnamnesis(int id, [FromBody] Anamnesis request)
     {
-        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.MedicalVisitId = request.MedicalVisitId;
@@ -241,7 +241,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("anamneses/{id:int}")]
     public async Task<IActionResult> DeleteAnamnesis(int id)
     {
-        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.Anamneses.Remove(entity);
@@ -260,7 +260,7 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("scheduled-exams/{id:int}")]
     public async Task<IActionResult> UpdateScheduledExam(int id, [FromBody] ScheduledExam request)
     {
-        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -274,7 +274,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("scheduled-exams/{id:int}")]
     public async Task<IActionResult> DeleteScheduledExam(int id)
     {
-        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.ScheduledExams.Remove(entity);
@@ -293,7 +293,7 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("vaccinations/{id:int}")]
     public async Task<IActionResult> UpdateVaccination(int id, [FromBody] Vaccination request)
     {
-        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -307,7 +307,7 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("vaccinations/{id:int}")]
     public async Task<IActionResult> DeleteVaccination(int id)
     {
-        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         _dbContext.Vaccinations.Remove(entity);
@@ -318,13 +318,19 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("convocations")]
     public async Task<IActionResult> ConvocateEmployee([FromBody] ConvocationRequest request)
     {
-        var employeeExists = await _dbContext.Employees.AnyAsync(x => x.Id == request.EmployeeId);
-        if (!employeeExists)
+        var employee = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == request.EmployeeId);
+        if (employee is null)
         {
             return NotFound("Employee not found.");
         }
 
-        var log = await _notificationService.SendConvocationAsync(request.EmployeeId, request.Channel, request.MessageText);
+        var tenantId = GetTenantId();
+        if (employee.TenantId != tenantId)
+        {
+            return Forbid();
+        }
+
+        var log = await _notificationService.SendConvocationAsync(tenantId, request.EmployeeId, request.Channel, request.MessageText);
         return Ok(log);
     }
 

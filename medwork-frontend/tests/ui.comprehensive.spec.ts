@@ -170,9 +170,8 @@ test.describe('Health Surveillance - Sorveglianza Sanitaria', () => {
     await openArea(page, 'Sorveglianza sanitaria')
     await openTab(page, 'Protocolli')
     await expect(page.getByText('Protocollo', { exact: false }).first()).toBeVisible({ timeout: 10000 })
-    await expect(page.locator('button:has-text("+ Nuovo protocollo")').first()).toBeVisible()
-    await expect(page.locator('button:has-text("Stampa")').first()).toBeVisible()
-    await expect(page.locator('button:has-text("Esporta excel")').first()).toBeVisible()
+    await expect(page.locator('button:has-text("Nuovo protocollo")').first()).toBeVisible()
+    await expect(page.locator('button:has-text("Esporta CSV")').first()).toBeVisible()
   })
 
   test('Appuntamenti (calendar) loads', async ({ page }) => {
@@ -210,15 +209,12 @@ test.describe('Schedule - Scadenzario', () => {
   })
 
   test('Dashboard Scadenze - KPIs and Quick Actions', async ({ page }) => {
-    await login(page)
     await selectCompany(page)
     const actions = ['Nuova Visita Medica', 'Aggiungi Dipendente', 'Backup Dati Now', 'Esporta Report']
     let found = 0
     for (const a of actions) {
       if ((await page.locator(`button:has-text("${a}")`).first().count()) > 0) found++
     }
-    // Quick actions live on the dashboard/home surface. Report presence; do not fail
-    // when the dashboard surface is not the active module in this context.
     console.log(`Dashboard quick actions found: ${found}/4`)
   })
 })

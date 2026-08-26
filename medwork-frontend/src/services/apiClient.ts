@@ -88,11 +88,12 @@ export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin
   return readJsonResponse(response)
 }
 
-export async function authLogin(username, password) {
+export async function authLogin(username, password, tenantSlug) {
+  const slug = tenantSlug || getTenantSlug()
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, tenantSlug: slug }),
   })
 
   if (!response.ok) {
@@ -219,6 +220,11 @@ export function getRole() {
 export function getTenantId() {
   const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
   return settings.tenantId || null
+}
+
+export function getTenantSlug() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.tenantSlug || 'default'
 }
 
 export function setTenantId(tenantId: string) {

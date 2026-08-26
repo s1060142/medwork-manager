@@ -5,6 +5,7 @@ using MedWork.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MedWork.Api.Controllers;
 
@@ -37,7 +38,7 @@ public class QuestionnairesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
     {
-        var entity = await _dbContext.Questionnaires.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _dbContext.Questionnaires.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         return entity is null ? NotFound() : Ok(entity);
     }
 
@@ -46,7 +47,7 @@ public class QuestionnairesController : ControllerBase
     {
         var questionnaire = await _dbContext.Questionnaires
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.QuestionnaireId);
+            .FirstOrDefaultAsync(x => x.Id == request.QuestionnaireId && x.TenantId == GetTenantId());
         if (questionnaire is null) return BadRequest("Questionnaire not found.");
 
         var (score, anomalous) = _scoring.Score(questionnaire.DefinitionJson, request.AnswersJson, questionnaire.AnomalyThreshold);
@@ -67,5 +68,15 @@ public class QuestionnairesController : ControllerBase
             .OrderByDescending(x => x.CompletedAt)
             .ToListAsync();
         return Ok(list);
+    }
+
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId))
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
     }
 }

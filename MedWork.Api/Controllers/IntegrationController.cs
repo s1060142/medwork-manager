@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System.Text;
+using System.Security.Claims;
 
 namespace MedWork.Api.Controllers;
 
@@ -29,6 +30,16 @@ public sealed class IntegrationController : ControllerBase
         _dbContext = dbContext;
     }
 
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId))
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
+    }
+
     [HttpPost("import-employee")]
     [Authorize(Roles = "Admin")]
     public IActionResult ImportEmployee(IFormFile file, string fileName)
@@ -46,7 +57,7 @@ public sealed class IntegrationController : ControllerBase
     {
         // Export all active employees to CSV
         var employees = _dbContext.Employees
-            .Where(e => e.IsActive)
+            .Where(e => e.IsActive && e.TenantId == GetTenantId())
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
             .ToList();
@@ -72,7 +83,7 @@ public sealed class IntegrationController : ControllerBase
     public IActionResult ExportEmployeeExcel()
     {
         var employees = _dbContext.Employees
-            .Where(e => e.IsActive)
+            .Where(e => e.IsActive && e.TenantId == GetTenantId())
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
             .ToList();

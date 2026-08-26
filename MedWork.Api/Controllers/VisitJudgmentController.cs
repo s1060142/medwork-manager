@@ -4,6 +4,7 @@ using MedWork.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MedWork.Api.Controllers;
 
@@ -34,7 +35,7 @@ public class VisitJudgmentController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.OutcomeCode) || string.IsNullOrWhiteSpace(request.Outcome))
             return BadRequest("OutcomeCode and Outcome are required.");
 
-        var visit = await _db.MedicalVisits.FirstOrDefaultAsync(x => x.Id == medicalVisitId);
+        var visit = await _db.MedicalVisits.FirstOrDefaultAsync(x => x.Id == medicalVisitId && x.TenantId == GetTenantId());
         if (visit is null) return NotFound();
 
         visit.OutcomeCode = request.OutcomeCode;
@@ -52,7 +53,7 @@ public class VisitJudgmentController : ControllerBase
     public async Task<IActionResult> Get(int medicalVisitId)
     {
         var visit = await _db.MedicalVisits.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == medicalVisitId);
+            .FirstOrDefaultAsync(x => x.Id == medicalVisitId && x.TenantId == GetTenantId());
         if (visit is null) return NotFound();
 
         return Ok(new
@@ -64,5 +65,15 @@ public class VisitJudgmentController : ControllerBase
             visit.ObjectiveExam,
             visit.NextDeadlineDate
         });
+    }
+
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId))
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
     }
 }

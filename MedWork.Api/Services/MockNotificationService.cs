@@ -12,10 +12,11 @@ public class MockNotificationService : INotificationService
         _dbContext = dbContext;
     }
 
-    public async Task<NotificationLog> SendConvocationAsync(int employeeId, NotificationChannel channel, string messageText, CancellationToken cancellationToken = default)
+    public async Task<NotificationLog> SendConvocationAsync(int tenantId, int employeeId, NotificationChannel channel, string messageText, CancellationToken cancellationToken = default)
     {
         var entry = new NotificationLog
         {
+            TenantId = tenantId,
             EmployeeId = employeeId,
             Channel = channel,
             SentDate = DateTime.UtcNow,

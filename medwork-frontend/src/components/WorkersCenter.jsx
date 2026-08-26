@@ -18,7 +18,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { apiGet } from '../services/apiClient'
+import { apiGet, apiSend } from '../services/apiClient'
 import { downloadCsv } from '../utils/csv'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
@@ -122,6 +122,31 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     setWorkerStatus('active')
     setCompanyContext('all')
     setSelectedCompanyId('')
+  }
+
+  const handleToggleArchive = (row) => {
+    const employeeId = Number(row.id)
+    setArchivedIds((previous) => {
+      const next = previous.includes(employeeId)
+        ? previous.filter((id) => id !== employeeId)
+        : [...previous, employeeId]
+      saveArchived(next)
+      return next
+    })
+  }
+
+  const handleDeleteEmployee = async (row) => {
+    const employeeId = Number(row.id)
+    const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+    if (!window.confirm(`Sei sicuro di voler eliminare il lavoratore "${label}"? L'operazione non è reversibile.`)) {
+      return
+    }
+    try {
+      await apiSend('DELETE', `/api/admin-data/employees/${employeeId}`)
+      setEmployees((previous) => previous.filter((item) => Number(item.id) !== employeeId))
+    } catch (requestError) {
+      window.alert(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.')
+    }
   }
 
   const handleExportCompanies = () => {
@@ -368,7 +393,22 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                   <TableCell>{row.status === 'Archiviata' ? 'Sì' : 'No'}</TableCell>
                   <TableCell>
                     <Box className="row-actions">
-                      <button type="button" className="legacy-icon-btn-sm" aria-label="Archivio">📁</button>
+                      <button
+                        type="button"
+                        className="legacy-icon-btn-sm"
+                        aria-label="Archivio"
+                        title={row.status === 'Archiviata' ? 'Ripristina azienda' : 'Archivia azienda'}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setCompanies((previous) =>
+                            previous.map((item) =>
+                              Number(item.id) === Number(row.id)
+                                ? { ...item, status: item.status === 'Archiviata' ? 'Attiva' : 'Archiviata' }
+                                : item,
+                            ),
+                          )
+                        }}
+                      >📁</button>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -481,12 +521,41 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     <TableCell>{formatDate(latestVisit?.nextDeadlineDate)}</TableCell>
                     <TableCell>
                       <Box className="row-actions">
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Lista">📋</button>
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Aggiungi">➕</button>
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Scudo">🛡️</button>
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Archivio">📁</button>
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Altro">⋯</button>
-                        <button type="button" className="legacy-icon-btn-sm" aria-label="Elimina">🗑️</button>
+                        <button
+                          type="button"
+                          className="legacy-icon-btn-sm"
+                          aria-label="Lista"
+                          title="Apri cartella lavoratore"
+                          onClick={() => onOpenEmployeeProfile?.(row)}
+                        >📋</button>
+                        <button
+                          type="button"
+                          className="legacy-icon-btn-sm"
+                          aria-label="Scudo"
+                          title="Idoneità / cartella sanitaria"
+                          onClick={() => onOpenEmployeeProfile?.(row)}
+                        >🛡️</button>
+                        <button
+                          type="button"
+                          className="legacy-icon-btn-sm"
+                          aria-label="Archivio"
+                          title={row.isArchived ? 'Ripristina' : 'Archivia'}
+                          onClick={() => handleToggleArchive(row)}
+                        >📁</button>
+                        <button
+                          type="button"
+                          className="legacy-icon-btn-sm"
+                          aria-label="Altro"
+                          title="Gestione / modifica"
+                          onClick={() => onOpenEmployeeCrud?.()}
+                        >⋯</button>
+                        <button
+                          type="button"
+                          className="legacy-icon-btn-sm"
+                          aria-label="Elimina"
+                          title="Elimina lavoratore"
+                          onClick={() => handleDeleteEmployee(row)}
+                        >🗑️</button>
                       </Box>
                     </TableCell>
                   </TableRow>

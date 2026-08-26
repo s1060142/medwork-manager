@@ -8,6 +8,8 @@ using OfficeOpenXml;
 using MedWork.Api.Data;
 using MedWork.Api.Models;
 using MedWork.Api.Security;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace MedWork.Api.Integrations;
 
@@ -22,10 +24,30 @@ namespace MedWork.Api.Integrations;
 public sealed class HrImportExportService : ControllerBase
 {
     private readonly AppDbContext _dbContext;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public HrImportExportService(AppDbContext dbContext)
+    public HrImportExportService(AppDbContext dbContext, IHttpContextAccessor httpContextAccessor)
     {
         _dbContext = dbContext;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int GetTenantId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        var tenantClaim = user?.FindFirst("TenantId")?.Value ?? user?.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId) && tenantId > 0)
+            return tenantId;
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
+    }
+
+    private int GetCompanyId(int tenantId)
+    {
+        return _dbContext.Companies
+            .Where(c => c.TenantId == tenantId)
+            .OrderBy(c => c.Id)
+            .Select(c => c.Id)
+            .FirstOrDefault();
     }
 
     /// <summary>
@@ -38,6 +60,9 @@ public sealed class HrImportExportService : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("File is empty.");
 
+        var tenantId = GetTenantId();
+        var companyId = GetCompanyId(tenantId);
+
         var fileContent = new StreamReader(file.OpenReadStream()).ReadToEnd();
         var rows = ParseCsv(fileContent, fileName);
         var imported = 0;
@@ -47,7 +72,7 @@ public sealed class HrImportExportService : ControllerBase
         {
             try
             {
-                var employee = MapToEmployee(row);
+                var employee = MapToEmployee(row, tenantId, companyId);
                 if (employee != null)
                 {
                     _dbContext.Employees.Add(employee);
@@ -175,7 +200,7 @@ public sealed class HrImportExportService : ControllerBase
     /// <summary>
     /// Maps a CSV row to an Employee entity.
     /// </summary>
-    private Employee? MapToEmployee(string[] row)
+    private Employee? MapToEmployee(string[] row, int tenantId, int companyId)
     {
         try
         {
@@ -244,14 +269,14 @@ public sealed class HrImportExportService : ControllerBase
 
             // Try to find the employee by ExternalId if it looks like an ID
             var existing = _dbContext.Employees
-                .FirstOrDefault(e => e.ExternalId == externalId && e.TenantId == 1);
+                .FirstOrDefault(e => e.ExternalId == externalId && e.TenantId == tenantId);
             if (existing != null)
                 return existing;
 
             var employee = new Employee
             {
-                TenantId = 1,
-                CompanyId = 1,
+                TenantId = tenantId,
+                CompanyId = companyId,
                 FirstName = firstName,
                 LastName = lastName,
                 TaxCode = taxCode,

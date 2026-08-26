@@ -4,6 +4,7 @@ using MedWork.Api.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 
 namespace MedWork.Api.Controllers;
@@ -63,7 +64,7 @@ public class MedicalRecordController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] MedicalRecord request)
     {
-        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         entity.MedicalHistory = request.MedicalHistory;
@@ -81,7 +82,7 @@ public class MedicalRecordController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
         _db.MedicalRecords.Remove(entity);
         await _db.SaveChangesAsync();
@@ -92,7 +93,7 @@ public class MedicalRecordController : ControllerBase
     [HttpPatch("{id:int}")]
     public async Task<IActionResult> Autosave(int id, [FromBody] MedicalRecordPatch patch)
     {
-        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id);
+        var entity = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
         if (entity is null) return NotFound();
 
         if (patch.MedicalHistory is not null) entity.MedicalHistory = patch.MedicalHistory;
@@ -104,6 +105,16 @@ public class MedicalRecordController : ControllerBase
 
         await _db.SaveChangesAsync();
         return Ok(entity);
+    }
+
+    private int GetTenantId()
+    {
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        if (int.TryParse(tenantClaim, out var tenantId))
+        {
+            return tenantId;
+        }
+        throw new UnauthorizedAccessException("Tenant ID non valido nel token.");
     }
 }
 

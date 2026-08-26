@@ -1,0 +1,1812 @@
+{
+  "total": 199,
+  "passed": 118,
+  "broken": 81,
+  "dialogsSeen": [
+    "Stampe massive non ancora disponibile",
+    "Importazione lavoratori non ancora disponibile",
+    "Sei sicuro di voler eliminare il lavoratore \"Ferrari Sara\"? L'operazione non è reversibile.",
+    "Sei sicuro di voler eliminare il lavoratore \"Greco Davide\"? L'operazione non è reversibile."
+  ],
+  "rawPageErrors": [],
+  "rawConsoleErrors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "items": [
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Gruppi aziendali",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Gruppi_aziendali.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Anagrafica",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Anagrafica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Checklist",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Checklist.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Attività",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Attivit_.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Reset.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Ricerca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Aggiorna",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Aggiorna.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "(Nuovo) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Gruppi_aziendali__Nuovo__Chiudi.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "(Nuovo) » Annulla",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Gruppi_aziendali__Nuovo__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "(Nuovo) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Gruppi_aziendali__Nuovo__Salva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Nuovo",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Nuovo.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Gruppi aziendali",
+      "button": "Filtro avanzato",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Gruppi_aziendali__Filtro_avanzato.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Gruppi aziendali",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Gruppi_aziendali.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Anagrafica",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Anagrafica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Checklist",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Checklist.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Attività",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Attivit_.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Reset.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Ricerca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Chiudi.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Annulla",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Salva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Modifica",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Modifica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Chiudi.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Annulla",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Salva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Modifica",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Modifica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Chiudi.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Annulla",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Modifica) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Modifica__Salva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Modifica",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Modifica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Nuova azienda) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Nuova_azienda__Chiudi.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Nuova azienda) » Annulla",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Nuova_azienda__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "(Nuova azienda) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Anagrafica__Nuova_azienda__Salva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Nuova azienda",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Nuova_azienda.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Stampa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Stampa.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Anagrafica",
+      "button": "Esporta dati in excel",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Anagrafica__Esporta_dati_in_excel.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Gruppi aziendali",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Gruppi_aziendali.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Anagrafica",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Anagrafica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Checklist",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Checklist.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Attività",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Attivit_.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Reset.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Ricerca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "(Nuovo protocollo) » Annulla",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Checklist__Nuovo_protocollo__Annulla.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "(Nuovo protocollo) » Salva protocollo",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_aziende__Checklist__Nuovo_protocollo__Salva_protocollo.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Nuovo protocollo",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Nuovo_protocollo.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Disattiva",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Disattiva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Disattiva",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Disattiva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Disattiva",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Disattiva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Disattiva",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Disattiva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Checklist",
+      "button": "Disattiva",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Checklist__Disattiva.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Gruppi aziendali",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Gruppi_aziendali.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Anagrafica",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Anagrafica.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Checklist",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Checklist.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Attività",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Attivit_.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Reset.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Ricerca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Aggiorna",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Aggiorna.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Nuova visita",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Nuova_visita.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Convoca",
+      "scope": "main",
+      "ok": false,
+      "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Convoca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Convoca",
+      "scope": "main",
+      "ok": false,
+      "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Convoca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Convoca",
+      "scope": "main",
+      "ok": false,
+      "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Convoca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Convoca",
+      "scope": "main",
+      "ok": false,
+      "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Convoca.png"
+    },
+    {
+      "area": "Gestione aziende",
+      "tab": "Attività",
+      "button": "Convoca",
+      "scope": "main",
+      "ok": false,
+      "error": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "shot": "dogfood-output/screenshots/main__Gestione_aziende__Attivit___Convoca.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Gestione completa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Gestione_completa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Aggiungi",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Aggiungi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Ricerca.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Ricerca lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Ricerca_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "+ Nuovo lavoratore",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___Nuovo_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Stampa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Stampa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Stampe massive",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Stampe_massive.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Esporta dati in excel",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Esporta_dati_in_excel.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Importa lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Importa_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "Filtra",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco__Filtra.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📋",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "🛡️",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "⋯",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "🗑️",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📋",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "🛡️",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "⋯",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "🗑️",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(📋) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📋",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "(🛡️) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Elenco_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "🛡️",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Elenco",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Elenco___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Gestione completa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Gestione_completa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Aggiungi",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Aggiungi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Ricerca.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Ricerca lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Ricerca_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "+ Nuovo lavoratore",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___Nuovo_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Stampa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Stampa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Stampe massive",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Stampe_massive.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Esporta dati in excel",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Esporta_dati_in_excel.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Importa lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Importa_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "Filtra",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi__Filtra.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(📋) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "📋",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "(🛡️) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Gruppi_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "🛡️",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "⋯",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Gruppi",
+      "button": "🗑️",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Gruppi___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Gestione completa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Gestione_completa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Aggiungi",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Aggiungi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Ricerca",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Ricerca.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Ricerca lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Ricerca_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "+ Nuovo lavoratore",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___Nuovo_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Stampa",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Stampa.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Stampe massive",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Stampe_massive.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Esporta dati in excel",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Esporta_dati_in_excel.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Importa lavoratori",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Importa_lavoratori.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Reset",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Reset.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "Filtra",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export__Filtra.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(📋) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "📋",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": true,
+      "error": "(dialog chiuso)",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Scheda lavoratore",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Scheda_lavoratore.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Elenco attività (1)",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Elenco_attivit_1_.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Nuova visita",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Nuova_visita.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Controllo periodico",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Controllo_periodico.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Chiudi",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Chiudi.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "(🛡️) » Salva",
+      "scope": "dialog",
+      "ok": false,
+      "error": "locator.click: Timeout 4000ms exceeded.",
+      "shot": "dogfood-output/screenshots/dlg__Gestione_lavoratori__Import_Export_____Salva.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "🛡️",
+      "scope": "main->dialog",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    },
+    {
+      "area": "Gestione lavoratori",
+      "tab": "Import/Export",
+      "button": "📁",
+      "scope": "main",
+      "ok": true,
+      "error": "",
+      "shot": "dogfood-output/screenshots/main__Gestione_lavoratori__Import_Export___.png"
+    }
+  ]
+}

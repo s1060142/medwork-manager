@@ -111,10 +111,10 @@ const SCHEDULE_TABS = [
 ]
 
 const ANALYSIS_TABS = [
-  { key: 'visits', label: 'Elenco visite' },
-  { key: 'activities', label: 'Elenco attività' },
-  { key: 'relations', label: 'Relazioni aziendali' },
-  { key: 'charts', label: 'Grafici e analisi' },
+  { key: 'visits', label: 'Elenco visite', moduleKey: 'reporting' },
+  { key: 'activities', label: 'Elenco attività', moduleKey: 'recall-campaigns' },
+  { key: 'relations', label: 'Relazioni aziendali', moduleKey: 'company-contacts' },
+  { key: 'charts', label: 'Grafici e analisi', moduleKey: 'analytics' },
 ]
 
 const HEALTH_TABS = [
@@ -558,6 +558,10 @@ const App = () => {
       return <ToolsCenter />
     }
 
+    if (moduleKey === 'analytics') {
+      return <AnalyticsCenter />
+    }
+
     if (moduleKey === 'settings') {
       return <SettingsCenter activeCompanyId={activeCompanyId} onSettingsChange={handleSettingsChange} />
     }
@@ -667,7 +671,10 @@ const App = () => {
                 key={tab.key}
                 type="button"
                 className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => setSelectedAnalysisTab(tab.key)}
+                onClick={() => {
+                  setSelectedAnalysisTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
               >
                 {tab.label}
               </button>
@@ -839,7 +846,10 @@ const App = () => {
                 key={tab.key}
                 type="button"
                 className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => setSelectedAnalysisTab(tab.key)}
+                onClick={() => {
+                  setSelectedAnalysisTab(tab.key)
+                  setSelectedModuleKey(tab.moduleKey)
+                }}
               >
                 {tab.label}
               </button>
@@ -875,7 +885,7 @@ const App = () => {
       )
     }
 
-    if (isHealthTabMatch) {
+    if (isHealthTabActive) {
       return (
         <Box className="legacy-workspace-card">
           <Box className="legacy-tab-row">
@@ -1032,10 +1042,8 @@ const App = () => {
             )
           }}
           onOpenMedicalVisitCreate={(employeeId: any) => {
-            setProfileEmployee((prev: any) => {
-              if (!prev) return prev
-              return { ...prev, _needsVisit: employeeId }
-            })
+            setProfileEmployee(null)
+            setSelectedModuleKey('medical-visit-stepper')
           }} onEditEmployee={undefined} />
         <CompanyProfileDialog
           open={Boolean(profileCompany)}
