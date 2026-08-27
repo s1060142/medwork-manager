@@ -97,14 +97,8 @@ public sealed class IntegrationController : ControllerBase
         return File(xlsxBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "employees.xlsx");
     }
 
-    private int GetTenantId()
+    private byte[] GenerateXlsx(List<Employee> employees)
     {
-        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
-    }
-
-        private byte[] GenerateXlsx(List<Employee> employees)
-        {
             using var package = new ExcelPackage();
             var worksheet = package.Workbook.Worksheets.Add("Employees");
 
