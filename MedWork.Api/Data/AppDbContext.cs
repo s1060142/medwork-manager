@@ -450,7 +450,7 @@ public class AppDbContext : DbContext
             entity.Property(x => x.StepType).HasMaxLength(50).IsRequired();
             entity.Property(x => x.ConfigurationJson).HasMaxLength(4000);
             entity.HasOne(x => x.Protocol)
-                .WithMany(x => x.Steps)
+                .WithMany()
                 .HasForeignKey(x => x.ProtocolId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(x => x.Tenant)

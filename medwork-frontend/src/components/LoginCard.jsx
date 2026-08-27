@@ -3,6 +3,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
+  Link,
   Paper,
   Stack,
   TextField,
@@ -10,10 +13,10 @@ import {
 } from '@mui/material'
 import { authLogin, getTenantSlug } from '../services/apiClient'
 
-function LoginCard({ onLoginSuccess }) {
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('Admin123!')
-  const [tenantSlug, setTenantSlug] = useState(getTenantSlug())
+function LoginCard({ onLoginSuccess, onForgotPassword }) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [caricamento, setCaricamento] = useState(false)
   const [errore, setErrore] = useState('')
 
@@ -23,8 +26,7 @@ function LoginCard({ onLoginSuccess }) {
     setCaricamento(true)
 
     try {
-      const data = await authLogin(username, password, tenantSlug)
-
+      const data = await authLogin(username, password, 'default')
       onLoginSuccess(data.accessToken, data.role)
     } catch (error) {
       setErrore(error.message || 'Errore durante il login.')
@@ -39,7 +41,13 @@ function LoginCard({ onLoginSuccess }) {
         Accesso piattaforma
       </Typography>
       <Typography variant="body2" sx={{ mb: 2 }}>
-        Credenziali demo: admin/Admin123! oppure doctor/Doctor123!.
+        Inserisci le credenziali fornite dal tuo studio medico.
+      </Typography>
+      <Typography variant="body2" sx={{ mb: 2, textAlign: 'right' }}>
+        <Link href="#" onClick={(e) => {
+          e.preventDefault();
+          onForgotPassword();
+        }}>Password dimenticata?</Link>
       </Typography>
 
       {!!errore && (
@@ -56,6 +64,7 @@ function LoginCard({ onLoginSuccess }) {
             onChange={(event) => setUsername(event.target.value)}
             fullWidth
             required
+            autoFocus
           />
           <TextField
             label="Password"
@@ -65,13 +74,9 @@ function LoginCard({ onLoginSuccess }) {
             fullWidth
             required
           />
-          <TextField
-            label="Tenant (slug)"
-            value={tenantSlug}
-            onChange={(event) => setTenantSlug(event.target.value)}
-            fullWidth
-            required
-            helperText="Es. default"
+          <FormControlLabel
+            control={<Checkbox checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />}
+            label="Ricordami (30 giorni)"
           />
           <Button type="submit" variant="contained" disabled={caricamento}>
             {caricamento ? 'Accesso in corso...' : 'Accedi'}

@@ -16,6 +16,23 @@ public class JwtTokenService : IJwtTokenService
         _jwtSettings = jwtSettings.Value;
     }
 
+    private string GetSecretKey()
+    {
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET");
+        if (!string.IsNullOrEmpty(secret))
+        {
+            return secret;
+        }
+
+        secret = _jwtSettings.SecretKey;
+        if (!string.IsNullOrEmpty(secret))
+        {
+            return secret;
+        }
+
+        throw new InvalidOperationException("JWT Secret not configured. Please set JWT_SECRET environment variable or configure Jwt:SecretKey in configuration.");
+    }
+
     // Legacy method for backward compatibility
     public string GenerateToken(string username, string role, int tenantId = 1)
     {
@@ -30,7 +47,7 @@ public class JwtTokenService : IJwtTokenService
             new("TenantId", tenantId.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -67,7 +84,7 @@ public class JwtTokenService : IJwtTokenService
             claims.Add(new Claim("permission", permission));
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -85,7 +102,7 @@ public class JwtTokenService : IJwtTokenService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
 
             var validationParameters = new TokenValidationParameters
             {

@@ -3,8 +3,9 @@ using MedWork.Api.Models;
 using MedWork.Api.Security;
 using MedWork.Api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MedWork.Api.Controllers;
 
@@ -12,24 +13,24 @@ namespace MedWork.Api.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthSettings _authSettings;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly ITenantService _tenantService;
     private readonly IUserService _userService;
     private readonly IExternalAuthService _externalAuthService;
+    private readonly INotificationService _notificationService;
 
     public AuthController(
-        IOptions<AuthSettings> authSettings,
         IJwtTokenService jwtTokenService,
         ITenantService tenantService,
         IUserService userService,
-        IExternalAuthService externalAuthService)
+        IExternalAuthService externalAuthService,
+        INotificationService notificationService)
     {
-        _authSettings = authSettings.Value;
         _jwtTokenService = jwtTokenService;
         _tenantService = tenantService;
         _userService = userService;
         _externalAuthService = externalAuthService;
+        _notificationService = notificationService;
     }
 
     [HttpPost("login")]
@@ -37,53 +38,36 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        // Support both legacy config-based auth and database-backed auth
-        if (!string.IsNullOrEmpty(request.TenantSlug))
+        if (string.IsNullOrEmpty(request.TenantSlug))
         {
-            var tenant = await _tenantService.GetBySlugAsync(request.TenantSlug);
-            if (tenant != null)
-            {
-                var user = await _userService.GetByEmailAsync(tenant.Id, request.Username);
-                if (user != null && user.IsActive && await _userService.ValidatePasswordAsync(tenant.Id, request.Username, request.Password))
-                {
-                    var permissions = await _userService.GetUserPermissionsAsync(user.Id);
-                    var roles = (await _userService.GetByIdAsync(user.Id))?.UserRoles.Select(ur => ur.Role?.Name).Where(r => r != null).ToList() ?? new List<string>();
-
-                    var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roles, permissions, tenant.Id);
-                    return Ok(new LoginResponse
-                    {
-                        AccessToken = token,
-                        Role = roles.FirstOrDefault() ?? "User",
-                        TenantId = tenant.Id,
-                        TenantSlug = tenant.Slug,
-                        UserId = user.Id,
-                        ExpiresIn = 3600
-                    });
-                }
-            }
+            return Unauthorized(new { error = "Tenant slug is required." });
         }
 
-        // Fallback to legacy config-based auth (for demo and empty tenant)
-        var configUser = _authSettings.Users.FirstOrDefault(u => u.Username == request.Username && u.Password == request.Password);
-        if (configUser != null)
+        var tenant = await _tenantService.GetBySlugAsync(request.TenantSlug);
+        if (tenant == null)
         {
-            var roles = new List<string> { configUser.Role };
-            // Give them some default permissions for demo to avoid empty dashboard
-            var permissions = new List<string> { "companies.read", "employees.read", "admin.users" };
-            
-            var token = _jwtTokenService.GenerateToken(1, configUser.Username, roles, permissions, configUser.TenantId);
-            return Ok(new LoginResponse
-            {
-                AccessToken = token,
-                Role = configUser.Role,
-                TenantId = configUser.TenantId,
-                TenantSlug = "default",
-                UserId = 1,
-                ExpiresIn = 3600
-            });
+            return Unauthorized(new { error = "Invalid tenant." });
         }
 
-        return Unauthorized();
+        var user = await _userService.GetByEmailAsync(tenant.Id, request.Username);
+        if (user == null || !user.IsActive || !await _userService.ValidatePasswordAsync(tenant.Id, request.Username, request.Password))
+        {
+            return Unauthorized(new { error = "Invalid credentials." });
+        }
+
+        var permissions = await _userService.GetUserPermissionsAsync(user.Id);
+        var roles = (await _userService.GetByIdAsync(user.Id))?.UserRoles.Select(ur => ur.Role?.Name).Where(r => r != null).ToList() ?? new List<string>();
+
+        var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roles, permissions, tenant.Id);
+        return Ok(new LoginResponse
+        {
+            AccessToken = token,
+            Role = roles.FirstOrDefault() ?? "User",
+            TenantId = tenant.Id,
+            TenantSlug = tenant.Slug,
+            UserId = user.Id,
+            ExpiresIn = 3600
+        });
     }
 
     [HttpPost("external/spid")]
@@ -288,4 +272,6 @@ public class UserInfoResponse
     public int TenantId { get; set; }
     public string? TenantName { get; set; }
     public string? TenantSlug { get; set; }
+    public string? ResetToken { get; set; }
+    public DateTime? ResetTokenExpiry { get; set; }
 }

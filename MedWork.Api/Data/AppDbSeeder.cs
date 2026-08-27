@@ -6,9 +6,16 @@ namespace MedWork.Api.Data;
 
 public static class AppDbSeeder
 {
-    public static async Task SeedAsync(AppDbContext dbContext)
+    public static async Task SeedAsync(AppDbContext dbContext, bool isTesting = false)
     {
-        await dbContext.Database.MigrateAsync();
+        if (isTesting)
+        {
+            await dbContext.Database.EnsureCreatedAsync();
+        }
+        else
+        {
+            await dbContext.Database.MigrateAsync();
+        }
 
         // Ensure a default tenant exists (multi-tenant model requires TenantId on every entity)
         var defaultTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug == "default");
@@ -495,8 +502,200 @@ public static class AppDbSeeder
 
         await dbContext.SaveChangesAsync();
 
+        // Seed default permissions, roles, and users
+        await SeedDefaultPermissionsAsync(dbContext, tid);
+
+        await dbContext.SaveChangesAsync();
+
         // FASE 1 - seed phrase library for the Cartella Sanitaria 3A.
         await PhraseTemplateSeed.SeedAsync(dbContext);
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedDefaultPermissionsAsync(AppDbContext dbContext, int tenantId)
+    {
+        var defaultPermissions = new[]
+        {
+            // Companies
+            new { Name = "companies.read", Description = "View companies", Category = "Companies" },
+            new { Name = "companies.write", Description = "Create/edit companies", Category = "Companies" },
+            new { Name = "companies.delete", Description = "Delete companies", Category = "Companies" },
+
+            // Employees
+            new { Name = "employees.read", Description = "View employees", Category = "Employees" },
+            new { Name = "employees.write", Description = "Create/edit employees", Category = "Employees" },
+            new { Name = "employees.delete", Description = "Delete employees", Category = "Employees" },
+
+            // Doctors
+            new { Name = "doctors.read", Description = "View doctors", Category = "Doctors" },
+            new { Name = "doctors.write", Description = "Create/edit doctors", Category = "Doctors" },
+            new { Name = "doctors.delete", Description = "Delete doctors", Category = "Doctors" },
+
+            // Protocols
+            new { Name = "protocols.read", Description = "View protocols", Category = "Protocols" },
+            new { Name = "protocols.write", Description = "Create/edit protocols", Category = "Protocols" },
+            new { Name = "protocols.delete", Description = "Delete protocols", Category = "Protocols" },
+
+            // Medical Visits
+            new { Name = "visits.read", Description = "View medical visits", Category = "MedicalVisits" },
+            new { Name = "visits.write", Description = "Create/edit medical visits", Category = "MedicalVisits" },
+            new { Name = "visits.sign", Description = "Sign medical visits", Category = "MedicalVisits" },
+
+            // Scheduling
+            new { Name = "scheduling.read", Description = "View scheduling", Category = "Scheduling" },
+            new { Name = "scheduling.write", Description = "Manage scheduling", Category = "Scheduling" },
+
+            // Reports
+            new { Name = "reports.read", Description = "View reports", Category = "Reports" },
+            new { Name = "reports.export", Description = "Export reports", Category = "Reports" },
+
+            // Administration
+            new { Name = "admin.users", Description = "Manage users", Category = "Administration" },
+            new { Name = "admin.roles", Description = "Manage roles", Category = "Administration" },
+            new { Name = "admin.tenants", Description = "Manage tenants", Category = "Administration" },
+            new { Name = "admin.settings", Description = "Manage system settings", Category = "Administration" },
+            new { Name = "admin.audit", Description = "View audit logs", Category = "Administration" },
+
+            // Integrations
+            new { Name = "integrations.hr", Description = "HR system integration", Category = "Integrations" },
+            new { Name = "integrations.pec", Description = "PEC integration", Category = "Integrations" },
+            new { Name = "integrations.sdi", Description = "SDI/Fatturazione integration", Category = "Integrations" },
+
+            // AI Features
+            new { Name = "ai.charting", Description = "AI-assisted charting", Category = "AI" },
+            new { Name = "ai.scheduling", Description = "AI scheduling optimization", Category = "AI" },
+
+            // Mobile
+            new { Name = "mobile.offline", Description = "Mobile offline access", Category = "Mobile" },
+        };
+
+        foreach (var perm in defaultPermissions)
+        {
+            var exists = await dbContext.Permissions.AnyAsync(p => p.Name == perm.Name);
+            if (!exists)
+            {
+                dbContext.Permissions.Add(new Permission
+                {
+                    Name = perm.Name,
+                    Description = perm.Description,
+                    Category = perm.Category,
+                    IsSystem = true
+                });
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var permissions = await dbContext.Permissions.ToDictionaryAsync(p => p.Name, p => p);
+
+        // Seed roles
+        var adminRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == "Admin");
+        if (adminRole == null)
+        {
+            adminRole = new Role { Name = "Admin", Description = "Administrator", TenantId = tenantId, IsSystem = true };
+            dbContext.Roles.Add(adminRole);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var doctorRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == "Doctor");
+        if (doctorRole == null)
+        {
+            doctorRole = new Role { Name = "Doctor", Description = "Doctor", TenantId = tenantId, IsSystem = true };
+            dbContext.Roles.Add(doctorRole);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Assign all permissions to Admin role
+        foreach (var perm in permissions.Values)
+        {
+            var exists = await dbContext.RolePermissions.AnyAsync(rp => rp.RoleId == adminRole.Id && rp.PermissionId == perm.Id);
+            if (!exists)
+            {
+                dbContext.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = adminRole.Id,
+                    PermissionId = perm.Id,
+                    AssignedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        // Assign limited permissions to Doctor role
+        var doctorPermissions = new[]
+        {
+            "companies.read", "employees.read", "doctors.read",
+            "protocols.read", "protocols.write",
+            "visits.read", "visits.write", "visits.sign",
+            "scheduling.read", "reports.read"
+        };
+
+        foreach (var permName in doctorPermissions)
+        {
+            if (permissions.TryGetValue(permName, out var perm))
+            {
+                var exists = await dbContext.RolePermissions.AnyAsync(rp => rp.RoleId == doctorRole.Id && rp.PermissionId == perm.Id);
+                if (!exists)
+                {
+                    dbContext.RolePermissions.Add(new RolePermission
+                    {
+                        RoleId = doctorRole.Id,
+                        PermissionId = perm.Id,
+                        AssignedAt = DateTime.UtcNow
+                    });
+            }
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        // Seed users
+        var adminUser = await dbContext.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == "admin");
+        if (adminUser == null)
+        {
+            adminUser = new User
+            {
+                Email = "admin",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                FirstName = "Admin",
+                LastName = "User",
+                TenantId = tenantId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            dbContext.Users.Add(adminUser);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var doctorUser = await dbContext.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == "doctor");
+        if (doctorUser == null)
+        {
+            doctorUser = new User
+            {
+                Email = "doctor",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Doctor123!"),
+                FirstName = "Doctor",
+                LastName = "User",
+                TenantId = tenantId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            dbContext.Users.Add(doctorUser);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Assign roles to users
+        var adminUserRole = await dbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == adminUser.Id && ur.RoleId == adminRole.Id);
+        if (adminUserRole == null)
+        {
+            dbContext.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id, AssignedAt = DateTime.UtcNow, AssignedByUserId = adminUser.Id });
+        }
+
+        var doctorUserRole = await dbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == doctorUser.Id && ur.RoleId == doctorRole.Id);
+        if (doctorUserRole == null)
+        {
+            dbContext.UserRoles.Add(new UserRole { UserId = doctorUser.Id, RoleId = doctorRole.Id, AssignedAt = DateTime.UtcNow, AssignedByUserId = adminUser.Id });
+        }
 
         await dbContext.SaveChangesAsync();
     }

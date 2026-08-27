@@ -34,12 +34,14 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("medical-records")]
     public async Task<IActionResult> CreateMedicalRecord([FromBody] MedicalRecord request)
     {
-        var exists = await _dbContext.MedicalRecords.AnyAsync(x => x.EmployeeId == request.EmployeeId);
+        var tenantId = GetTenantId();
+        var exists = await _dbContext.MedicalRecords.AnyAsync(x => x.EmployeeId == request.EmployeeId && x.TenantId == tenantId);
         if (exists)
         {
             return Conflict("A medical record already exists for this employee.");
         }
 
+        request.TenantId = tenantId;
         _dbContext.MedicalRecords.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -48,7 +50,8 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("medical-records/{id:int}")]
     public async Task<IActionResult> UpdateMedicalRecord(int id, [FromBody] MedicalRecord request)
     {
-        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -62,7 +65,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("medical-records/{id:int}")]
     public async Task<IActionResult> DeleteMedicalRecord(int id)
     {
-        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.MedicalRecords.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.MedicalRecords.Remove(entity);
@@ -132,7 +136,8 @@ public class DoctorCrudController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         var doctorId = request.DoctorId;
@@ -166,7 +171,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("medical-visits/{id:int}")]
     public async Task<IActionResult> DeleteMedicalVisit(int id)
     {
-        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.MedicalVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.MedicalVisits.Remove(entity);
@@ -177,6 +183,16 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("visit-exams")]
     public async Task<IActionResult> CreateVisitExam([FromBody] VisitExam request)
     {
+        var tenantId = GetTenantId();
+        
+        // Verify the medical visit belongs to the current tenant
+        var visitExists = await _dbContext.MedicalVisits.AnyAsync(v => v.Id == request.MedicalVisitId && v.TenantId == tenantId);
+        if (!visitExists)
+        {
+            return NotFound("Medical visit not found.");
+        }
+
+        request.TenantId = tenantId;
         _dbContext.VisitExams.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -185,7 +201,8 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("visit-exams/{id:int}")]
     public async Task<IActionResult> UpdateVisitExam(int id, [FromBody] VisitExam request)
     {
-        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.MedicalVisitId = request.MedicalVisitId;
@@ -200,7 +217,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("visit-exams/{id:int}")]
     public async Task<IActionResult> DeleteVisitExam(int id)
     {
-        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.VisitExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.VisitExams.Remove(entity);
@@ -211,12 +229,14 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("anamneses")]
     public async Task<IActionResult> CreateAnamnesis([FromBody] Anamnesis request)
     {
-        var exists = await _dbContext.Anamneses.AnyAsync(x => x.MedicalVisitId == request.MedicalVisitId);
+        var tenantId = GetTenantId();
+        var exists = await _dbContext.Anamneses.AnyAsync(x => x.MedicalVisitId == request.MedicalVisitId && x.TenantId == tenantId);
         if (exists)
         {
             return Conflict("An anamnesis already exists for this medical visit.");
         }
 
+        request.TenantId = tenantId;
         _dbContext.Anamneses.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -225,7 +245,8 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("anamneses/{id:int}")]
     public async Task<IActionResult> UpdateAnamnesis(int id, [FromBody] Anamnesis request)
     {
-        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.MedicalVisitId = request.MedicalVisitId;
@@ -241,7 +262,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("anamneses/{id:int}")]
     public async Task<IActionResult> DeleteAnamnesis(int id)
     {
-        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Anamneses.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Anamneses.Remove(entity);
@@ -252,6 +274,16 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("scheduled-exams")]
     public async Task<IActionResult> CreateScheduledExam([FromBody] ScheduledExam request)
     {
+        var tenantId = GetTenantId();
+        
+        // Verify the employee belongs to the current tenant
+        var employeeExists = await _dbContext.Employees.AnyAsync(e => e.Id == request.EmployeeId && e.TenantId == tenantId);
+        if (!employeeExists)
+        {
+            return NotFound("Employee not found.");
+        }
+
+        request.TenantId = tenantId;
         _dbContext.ScheduledExams.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -260,7 +292,8 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("scheduled-exams/{id:int}")]
     public async Task<IActionResult> UpdateScheduledExam(int id, [FromBody] ScheduledExam request)
     {
-        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -274,7 +307,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("scheduled-exams/{id:int}")]
     public async Task<IActionResult> DeleteScheduledExam(int id)
     {
-        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.ScheduledExams.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.ScheduledExams.Remove(entity);
@@ -285,6 +319,16 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("vaccinations")]
     public async Task<IActionResult> CreateVaccination([FromBody] Vaccination request)
     {
+        var tenantId = GetTenantId();
+        
+        // Verify the employee belongs to the current tenant
+        var employeeExists = await _dbContext.Employees.AnyAsync(e => e.Id == request.EmployeeId && e.TenantId == tenantId);
+        if (!employeeExists)
+        {
+            return NotFound("Employee not found.");
+        }
+
+        request.TenantId = tenantId;
         _dbContext.Vaccinations.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -293,7 +337,8 @@ public class DoctorCrudController : ControllerBase
     [HttpPut("vaccinations/{id:int}")]
     public async Task<IActionResult> UpdateVaccination(int id, [FromBody] Vaccination request)
     {
-        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         entity.EmployeeId = request.EmployeeId;
@@ -307,7 +352,8 @@ public class DoctorCrudController : ControllerBase
     [HttpDelete("vaccinations/{id:int}")]
     public async Task<IActionResult> DeleteVaccination(int id)
     {
-        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == GetTenantId());
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Vaccinations.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
         _dbContext.Vaccinations.Remove(entity);
@@ -318,8 +364,9 @@ public class DoctorCrudController : ControllerBase
     [HttpPost("convocations")]
     public async Task<IActionResult> ConvocateEmployee([FromBody] ConvocationRequest request)
     {
-        var employee = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == request.EmployeeId);
-        if (employee is null)
+        var tenantId = GetTenantId();
+        var employeeExists = await _dbContext.Employees.AnyAsync(x => x.Id == request.EmployeeId && x.TenantId == tenantId);
+        if (!employeeExists)
         {
             return NotFound("Employee not found.");
         }
@@ -363,6 +410,57 @@ public class DoctorCrudController : ControllerBase
             return Ok(new { deadline = (DateTime?)null, hasProtocol = false });
 
         return Ok(new { deadline = computed.Value, hasProtocol = true });
+    }
+
+    // ── MEDICAL VISITS ─────────────────────────────────────────────────────────
+
+    [HttpGet("medical-visits")]
+    public async Task<IActionResult> GetMedicalVisits()
+    {
+        var tenantId = GetTenantId();
+        var visits = await _dbContext.MedicalVisits
+            .AsNoTracking()
+            .Where(v => v.TenantId == tenantId)
+            .OrderByDescending(v => v.VisitDate)
+            .Select(v => new
+            {
+                v.Id,
+                v.EmployeeId,
+                v.DoctorId,
+                v.VisitDate,
+                v.NextDeadlineDate,
+                v.VisitType,
+                v.Outcome,
+                v.IsSigned
+            })
+            .ToListAsync();
+        return Ok(visits);
+    }
+
+    // ── MEDICAL RECORDS ───────────────────────────────────────────────────────
+
+    [HttpGet("medical-records")]
+    public async Task<IActionResult> GetMedicalRecords()
+    {
+        var tenantId = GetTenantId();
+        var records = await _dbContext.MedicalRecords
+            .AsNoTracking()
+            .Where(r => r.TenantId == tenantId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new
+            {
+                r.Id,
+                r.EmployeeId,
+                r.PersonalHistory,
+                r.FamilyHistory,
+                r.Allergies,
+                r.CurrentTreatments,
+                r.Vaccinations,
+                r.Notes,
+                r.CreatedAt
+            })
+            .ToListAsync();
+        return Ok(records);
     }
 
     // ── PROTOCOLS ──────────────────────────────────────────────────────────────

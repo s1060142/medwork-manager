@@ -23,6 +23,26 @@ public class AdminCrudController : ControllerBase
         _personalProtocolAssignmentService = personalProtocolAssignmentService;
     }
 
+    [HttpGet("companies")]
+    public async Task<IActionResult> GetCompanies()
+    {
+        var tenantId = GetTenantId();
+        var data = await _dbContext.Companies
+            .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
+            .OrderBy(x => x.Name)
+            .Select(x => new
+            {
+                x.Id,
+                x.Name,
+                x.VATNumber,
+                x.ContactEmail,
+                x.ContactPhone
+            })
+            .ToListAsync();
+        return Ok(data);
+    }
+
     [HttpPost("companies")]
     public async Task<IActionResult> CreateCompany([FromBody] Company request)
     {
@@ -167,6 +187,28 @@ public class AdminCrudController : ControllerBase
         _dbContext.Branches.Remove(entity);
         await _dbContext.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("employees")]
+    public async Task<IActionResult> GetEmployees()
+    {
+        var tenantId = GetTenantId();
+        var data = await _dbContext.Employees
+            .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
+            .OrderBy(x => x.LastName)
+            .Select(x => new
+            {
+                x.Id,
+                x.FirstName,
+                x.LastName,
+                x.TaxCode,
+                x.JobRole,
+                x.CompanyId,
+                x.BranchId
+            })
+            .ToListAsync();
+        return Ok(data);
     }
 
     [HttpPost("employees")]
@@ -487,7 +529,6 @@ public class AdminCrudController : ControllerBase
         var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
-        entity.LegalName = request.LegalName;
         entity.LegalName = request.LegalName;
         entity.Address = request.Address;
         entity.City = request.City;

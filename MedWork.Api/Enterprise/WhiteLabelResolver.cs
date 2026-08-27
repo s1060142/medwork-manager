@@ -19,7 +19,14 @@ public interface IWhiteLabelResolver
 }
 
 public sealed class WhiteLabelResolver : IWhiteLabelResolver
-{
+    {
+        private readonly IConfiguration _configuration;
+
+        public WhiteLabelResolver(IConfiguration configuration)
+        {
+        _configuration = configuration;
+    }
+
     private static readonly WhiteLabelConfig Default = new(
         "default", "MedWork Manager", "#1976d2", "/logo.svg", true,
         new[] { "visits", "records", "scadenziario", "questionari", "frasi" });

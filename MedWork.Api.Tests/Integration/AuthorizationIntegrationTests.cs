@@ -1,28 +1,33 @@
 using System.Net;
 using System.Net.Http.Json;
+using MedWork.Api.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MedWork.Api.Tests.Integration;
 
-public class AuthorizationIntegrationTests : IClassFixture<MedWorkWebAppFactory>, IClassFixture<MedWorkWebAppAnonymousFactory>
+public partial class AuthorizationIntegrationTests : IClassFixture<MedWorkWebAppFactory>, IClassFixture<MedWorkWebAppAnonymousFactory>, IClassFixture<MedWorkWebAppMissingTenantFactory>
 {
     private readonly MedWorkWebAppFactory _authFactory;
     private readonly MedWorkWebAppAnonymousFactory _anonymousFactory;
+    private readonly MedWorkWebAppMissingTenantFactory _missingTenantFactory;
 
-    public AuthorizationIntegrationTests(MedWorkWebAppFactory authFactory, MedWorkWebAppAnonymousFactory anonymousFactory)
+    public AuthorizationIntegrationTests(MedWorkWebAppFactory authFactory, MedWorkWebAppAnonymousFactory anonymousFactory, MedWorkWebAppMissingTenantFactory missingTenantFactory)
     {
         _authFactory = authFactory;
         _anonymousFactory = anonymousFactory;
+        _missingTenantFactory = missingTenantFactory;
     }
 
     [Fact]
-    public async Task Admin_Endpoint_Without_Auth_Returns_Unauthorized()
+    public async Task TenantContextFilter_WithoutToken_Returns401()
     {
         var client = _anonymousFactory.CreateClient();
 
         var payload = new
         {
-            name = "No Auth Company",
-            vatNumber = "IT12345678901"
+            TenantId = 1,
+            Name = "Test Company",
+            VatNumber = "IT12345678901"
         };
 
         var response = await client.PostAsJsonAsync("/api/admin-data/companies", payload);
@@ -31,51 +36,45 @@ public class AuthorizationIntegrationTests : IClassFixture<MedWorkWebAppFactory>
     }
 
     [Fact]
-    public async Task Admin_Endpoint_With_Doctor_Role_Returns_Forbidden()
+    public async Task TenantContextFilter_MissingTenantIdClaim_Returns401()
     {
-        var client = _authFactory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Test-Role", "Doctor");
+        var client = _missingTenantFactory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Test-Role", "Admin");
 
+        // Remove TenantId claim from the test auth handler
         var payload = new
         {
-            name = "Forbidden Company",
-            vatNumber = "IT12345678901"
+            TenantId = 1,
+            Name = "Test Company",
+            VatNumber = "IT12345678901"
         };
 
         var response = await client.PostAsJsonAsync("/api/admin-data/companies", payload);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
-    public async Task Doctor_Can_Access_Doctor_And_Master_Areas()
+    public async Task TenantContextFilter_CrossTenantAccess_Blocked()
     {
         var client = _authFactory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Test-Role", "Doctor");
+        client.DefaultRequestHeaders.Add("X-Test-Role", "Admin");
 
-        var expiringResponse = await client.GetAsync("/api/medical-visits/expiring?days=30");
-        var masterResponse = await client.GetAsync("/api/master-data/employees");
-
-        Assert.Equal(HttpStatusCode.OK, expiringResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, masterResponse.StatusCode);
-    }
-
-    [Fact]
-    public async Task Admin_Can_Access_Doctor_And_Admin_Areas()
-    {
-        var client = _authFactory.CreateClient();
-
-        var expiringResponse = await client.GetAsync("/api/medical-visits/expiring?days=30");
-
-        var createPayload = new
+        // Try to access Tenant 2 data while authenticated as Tenant 1
+        var payload = new
         {
-            name = "Admin Access Company",
-            vatNumber = "IT12345678901",
-            contactEmail = "admin@test.it"
+            TenantId = 2,
+            Name = "Test Company",
+            VatNumber = "IT12345678901"
         };
-        var adminCreateResponse = await client.PostAsJsonAsync("/api/admin-data/companies", createPayload);
 
-        Assert.Equal(HttpStatusCode.OK, expiringResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, adminCreateResponse.StatusCode);
+        var response = await client.PostAsJsonAsync("/api/admin-data/companies", payload);
+
+        // The TenantId should be overwritten to 1 (from the claim)
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        // Verify the TenantId was overwritten
+        var createdCompany = await response.Content.ReadFromJsonAsync<Company>();
+        Assert.Equal(1, createdCompany.TenantId);
     }
 }

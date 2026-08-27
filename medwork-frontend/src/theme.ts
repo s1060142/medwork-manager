@@ -1,14 +1,15 @@
 import { createTheme, type CSSTokens, type AlphaFunction } from '@mui/material/styles'
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#113a7b',
-      light: '#2563eb',
-      dark: '#0e2f63',
-      contrastText: '#ffffff',
-    },
+export const createDynamicTheme = (dynamicTheme: Record<string, any> = {}, mode: 'light' | 'dark' = 'light') =>
+  createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: dynamicTheme.primaryColor || '#113a7b',
+        light: dynamicTheme.primaryLight || '#2563eb',
+        dark: dynamicTheme.primaryDark || '#0e2f63',
+        contrastText: '#ffffff',
+      },
     secondary: {
       main: '#1e293b',
       light: '#334155',
@@ -458,6 +459,8 @@ const darkTheme = createTheme({
     },
   },
 })
+
+export const theme = createDynamicTheme()
 
 export default theme
 

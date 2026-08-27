@@ -11,7 +11,10 @@ public class NotificationLog
     public int TenantId { get; set; }
 
     [Range(1, int.MaxValue)]
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
+
+    [StringLength(150)]
+    public string? Email { get; set; }
 
     public NotificationChannel Channel { get; set; }
 

@@ -6,7 +6,9 @@ using MedWork.Api.Integrations;
 using MedWork.Api.Analytics;
 using MedWork.Api.Enterprise;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -15,12 +17,14 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<SPIDAuthOptions>(builder.Configuration.GetSection("Auth:SPID"));
 builder.Services.Configure<CIEAuthOptions>(builder.Configuration.GetSection("Auth:CIE"));
 builder.Services.Configure<KeycloakAuthOptions>(builder.Configuration.GetSection("Auth:Keycloak"));
 
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers(options =>
     {
@@ -102,7 +106,8 @@ builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationServi
 if (builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseInMemoryDatabase("MedWorkTestDb"));
+        options.UseInMemoryDatabase("MedWorkTestDb")
+               .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 }
 else
 {
@@ -129,13 +134,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("forgot-password", opt =>
+    {
+        opt.PermitLimit = 3;
+        opt.Window = TimeSpan.FromHours(1);
+    });
+});
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) 
+                         ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173" };
+    
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -143,11 +161,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await AppDbSeeder.SeedAsync(dbContext);
+    await AppDbSeeder.SeedAsync(dbContext, app.Environment.IsEnvironment("Testing"));
 }
 
 if (app.Environment.IsDevelopment())

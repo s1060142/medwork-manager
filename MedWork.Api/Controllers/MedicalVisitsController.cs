@@ -28,6 +28,7 @@ public class MedicalVisitsController : ControllerBase
             return BadRequest("Days must be greater than zero.");
         }
 
+        var tenantId = GetTenantId();
         var today = DateTime.UtcNow.Date;
         var maxDate = today.AddDays(days);
 
@@ -37,7 +38,7 @@ public class MedicalVisitsController : ControllerBase
                 .ThenInclude(x => x.Company)
             .Include(x => x.VisitExams)
                 .ThenInclude(x => x.ExamType)
-            .Where(x => x.NextDeadlineDate.Date >= today && x.NextDeadlineDate.Date <= maxDate)
+            .Where(x => x.TenantId == tenantId && x.NextDeadlineDate.Date >= today && x.NextDeadlineDate.Date <= maxDate)
             .OrderBy(x => x.NextDeadlineDate)
             .Select(x => new ExpiringMedicalVisitDto
             {
@@ -58,5 +59,11 @@ public class MedicalVisitsController : ControllerBase
             .ToListAsync();
 
         return Ok(visits);
+    }
+
+    private int GetTenantId()
+    {
+        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 }

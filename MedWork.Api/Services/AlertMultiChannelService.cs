@@ -1,5 +1,6 @@
 using MedWork.Api.Data;
 using MedWork.Api.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace MedWork.Api.Services;
 
@@ -24,18 +25,36 @@ public sealed class AlertMultiChannelService : IAlertService
 {
     private readonly AppDbContext _db;
     private readonly INotificationTransport _transport;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public AlertMultiChannelService(AppDbContext db, INotificationTransport transport)
+    public AlertMultiChannelService(AppDbContext db, INotificationTransport transport, IHttpContextAccessor httpContextAccessor)
     {
         _db = db;
         _transport = transport;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private int GetCurrentTenantId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user?.Identity == null || !user.Identity.IsAuthenticated)
+            return 0;
+
+        var tenantClaim = user.FindFirst("TenantId")?.Value ?? user.FindFirst("tenant_id")?.Value;
+        return int.TryParse(tenantClaim, out var tenantId) && tenantId > 0 ? tenantId : 0;
     }
 
     public async Task<NotificationLog> SendAsync(int employeeId, NotificationChannel channel, string messageText, CancellationToken ct = default)
     {
+        var tenantId = GetCurrentTenantId();
+        if (tenantId <= 0)
+        {
+            throw new InvalidOperationException("Unable to determine tenant for notification logging.");
+        }
+
         var log = new NotificationLog
         {
-            TenantId = 1,
+            TenantId = tenantId,
             EmployeeId = employeeId,
             Channel = channel,
             MessageText = messageText,

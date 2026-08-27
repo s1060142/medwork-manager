@@ -48,7 +48,7 @@ function ProtocolsCenter() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet('/api/doctor-data/protocols')
+      const data = await apiGet('/api/protocols')
       setProtocols(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.message || 'Errore nel caricamento dei protocolli.')
@@ -59,11 +59,14 @@ function ProtocolsCenter() {
 
   useEffect(() => { load() }, [load])
 
-  const visibleProtocols = useMemo(() => {
+const visibleProtocols = useMemo(() => {
     const needle = searchText.toLowerCase()
     if (!needle) return protocols
     return protocols.filter(p =>
-      `${p.name} ${p.objective ?? ''}`.toLowerCase().includes(needle)
+      p.name.toLowerCase().includes(needle) ||
+      p.description?.toLowerCase().includes(needle) ||
+      p.objective?.toLowerCase().includes(needle) ||
+      JSON.stringify(p.steps).toLowerCase().includes(needle)
     )
   }, [protocols, searchText])
 

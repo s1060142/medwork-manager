@@ -26,10 +26,10 @@ function saveSettings(settings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
 }
 
-function SettingsCenter({ activeCompanyId = '', onSettingsChange }) {
+function SettingsCenter({ activeCompanyId = '', onSettingsChange, themeMode = 'light', onThemeChange }) {
   const [companies, setCompanies] = useState([])
   const [branches, setBranches] = useState([])
-  const [settings, setSettings] = useState(() => readSettings())
+  const [settings, setSettings] = useState(() => ({ ...readSettings(), themeMode }))
 
   useEffect(() => {
     Promise.all([apiGet('/api/master-data/companies'), apiGet('/api/master-data/branches')])
@@ -60,6 +60,9 @@ function SettingsCenter({ activeCompanyId = '', onSettingsChange }) {
   }, [branches, settings.activeCompanyId])
 
   const applySettings = (next) => {
+    if (next.themeMode !== settings.themeMode && typeof onThemeChange === 'function') {
+      onThemeChange(next.themeMode);
+    }
     setSettings(next)
     saveSettings(next)
     if (typeof onSettingsChange === 'function') {
@@ -109,14 +112,28 @@ function SettingsCenter({ activeCompanyId = '', onSettingsChange }) {
             ))}
           </TextField>
 
-          <TextField
-            size="small"
-            label="Hostname dominio"
-            value={settings.activeDomain}
-            onChange={(event) => applySettings({ ...settings, activeDomain: event.target.value })}
+           <TextField
+             size="small"
+             label="Hostname dominio"
+             value={settings.activeDomain}
+             onChange={(event) => applySettings({ ...settings, activeDomain: event.target.value })}
+           />
+         </Box>
+
+        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2">Modalità tema:</Typography>
+          <Chip
+            label="Chiaro"
+            color={settings.themeMode === 'light' ? 'primary' : 'default'}
+            onClick={() => applySettings({ ...settings, themeMode: 'light' })}
+          />
+          <Chip
+            label="Scuro"
+            color={settings.themeMode === 'dark' ? 'primary' : 'default'}
+            onClick={() => applySettings({ ...settings, themeMode: 'dark' })}
           />
         </Box>
-      </Paper>
+       </Paper>
 
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
         <Typography variant="subtitle2" sx={{ mb: 1 }}>Contesto attivo</Typography>

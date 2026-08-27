@@ -55,9 +55,10 @@ public sealed class IntegrationController : ControllerBase
     [Authorize(Roles = "Admin")]
     public IActionResult ExportEmployeeCsv()
     {
-        // Export all active employees to CSV
+        var tenantId = GetTenantId();
+        // Export active employees for current tenant only
         var employees = _dbContext.Employees
-            .Where(e => e.IsActive && e.TenantId == GetTenantId())
+            .Where(e => e.IsActive && e.TenantId == tenantId)
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
             .ToList();
@@ -82,8 +83,10 @@ public sealed class IntegrationController : ControllerBase
     [Authorize(Roles = "Admin")]
     public IActionResult ExportEmployeeExcel()
     {
+        var tenantId = GetTenantId();
+        // Export active employees for current tenant only
         var employees = _dbContext.Employees
-            .Where(e => e.IsActive && e.TenantId == GetTenantId())
+            .Where(e => e.IsActive && e.TenantId == tenantId)
             .OrderBy(e => e.LastName)
             .ThenBy(e => e.FirstName)
             .ToList();
@@ -92,6 +95,12 @@ public sealed class IntegrationController : ControllerBase
         var xlsxBytes = GenerateXlsx(employees);
 
         return File(xlsxBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "employees.xlsx");
+    }
+
+    private int GetTenantId()
+    {
+        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
+        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
     }
 
         private byte[] GenerateXlsx(List<Employee> employees)

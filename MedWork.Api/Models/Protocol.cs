@@ -49,5 +49,5 @@ public class Protocol
     public Protocol? ParentProtocol { get; set; }
     public ICollection<Protocol> ChildProtocols { get; set; } = new List<Protocol>();
     public ICollection<PersonalProtocol> PersonalProtocols { get; set; } = new List<PersonalProtocol>();
-    public ICollection<ProtocolStep> Steps { get; set; } = new List<ProtocolStep>();
+    public string Steps { get; set; } = "[]";
 }

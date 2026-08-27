@@ -27,4 +27,20 @@ public class MockNotificationService : INotificationService
         await _dbContext.SaveChangesAsync(cancellationToken);
         return entry;
     }
+
+    public async Task<NotificationLog> SendPasswordResetAsync(string email, string resetLink, CancellationToken cancellationToken = default)
+    {
+        var message = $"Password reset link: {resetLink}";
+        var entry = new NotificationLog
+        {
+            Email = email,
+            Channel = NotificationChannel.Email,
+            SentDate = DateTime.UtcNow,
+            MessageText = message
+        };
+
+        _dbContext.NotificationLogs.Add(entry);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return entry;
+    }
 }

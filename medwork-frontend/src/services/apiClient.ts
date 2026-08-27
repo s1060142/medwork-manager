@@ -88,12 +88,11 @@ export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin
   return readJsonResponse(response)
 }
 
-export async function authLogin(username, password, tenantSlug) {
-  const slug = tenantSlug || getTenantSlug()
+export async function authLogin(username, password, tenantSlug = 'default') {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, tenantSlug: slug }),
+    body: JSON.stringify({ username, password, tenantSlug }),
   })
 
   if (!response.ok) {
