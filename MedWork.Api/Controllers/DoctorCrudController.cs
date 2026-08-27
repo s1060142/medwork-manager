@@ -371,12 +371,6 @@ public class DoctorCrudController : ControllerBase
             return NotFound("Employee not found.");
         }
 
-        var tenantId = GetTenantId();
-        if (employee.TenantId != tenantId)
-        {
-            return Forbid();
-        }
-
         var log = await _notificationService.SendConvocationAsync(tenantId, request.EmployeeId, request.Channel, request.MessageText);
         return Ok(log);
     }
@@ -451,12 +445,12 @@ public class DoctorCrudController : ControllerBase
             {
                 r.Id,
                 r.EmployeeId,
-                r.PersonalHistory,
+                r.MedicalHistory,
                 r.FamilyHistory,
                 r.Allergies,
-                r.CurrentTreatments,
-                r.Vaccinations,
+                r.CurrentTherapies,
                 r.Notes,
+                r.Status,
                 r.CreatedAt
             })
             .ToListAsync();
