@@ -50,7 +50,7 @@ export class TestFixtures {
     this.protocols = new ProtocolsPage(page)
     this.patientPortal = new PatientPortalPage(page)
     this.administration = new AdministrationPage(page)
-    this.pdfViewer = new PdfViewerPage(page)
+    this.pdfViewer = new PdfViewerPage(page, expect)
   }
 
   async loginAsAdmin() {
@@ -82,6 +82,11 @@ export class TestFixtures {
     const response = await this.request.get(`${API_URL}${endpoint}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
+    console.log(`[DEBUG] GET ${API_URL}${endpoint} => ${response.status()}`)
+    if (!response.ok()) {
+      const text = await response.text().catch(() => 'no body')
+      console.log(`[DEBUG] Response body: ${text}`)
+    }
     this.expect(response.ok()).toBe(true)
     return response.json()
   }
@@ -94,6 +99,11 @@ export class TestFixtures {
       },
       data,
     })
+    console.log(`[DEBUG] POST ${API_URL}${endpoint} => ${response.status()}`)
+    if (!response.ok()) {
+      const text = await response.text().catch(() => 'no body')
+      console.log(`[DEBUG] Response body: ${text}`)
+    }
     this.expect(response.ok()).toBe(true)
     return response.json()
   }

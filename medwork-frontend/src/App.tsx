@@ -488,12 +488,26 @@ const App = () => {
 
     if (moduleKey === 'employees') {
       return (
-        <WorkersCenter
-          activeCompanyId={activeCompanyId}
-          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-          onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
-          onOpenEmployeeProfile={handleOpenEmployeeProfile}
-        />
+        <>
+          <WorkersCenter
+            activeCompanyId={activeCompanyId}
+            onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
+            onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
+            onOpenEmployeeProfile={handleOpenEmployeeProfile}
+          />
+          <CrudEntityView
+            config={ENTITY_BY_KEY.employees}
+            currentRole={role}
+            hiddenUI
+            activeCompanyId={activeCompanyId}
+            externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
+            onExternalCreateConsumed={handleQuickCreateConsumed}
+            onCreated={() => {
+              // Notifica i listener (es. WorkersCenter) per ricaricare la lista
+              window.dispatchEvent(new CustomEvent('medwork:employee-created'))
+            }}
+          />
+        </>
       )
     }
 

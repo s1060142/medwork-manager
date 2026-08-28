@@ -115,6 +115,14 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     loadData()
   }, [])
 
+  useEffect(() => {
+    const handleEmployeeCreated = () => {
+      loadData()
+    }
+    window.addEventListener('medwork:employee-created', handleEmployeeCreated)
+    return () => window.removeEventListener('medwork:employee-created', handleEmployeeCreated)
+  }, [])
+
   const handleResetFilters = () => {
     setCompanySearch('')
     setCompanyArchiviation('active')

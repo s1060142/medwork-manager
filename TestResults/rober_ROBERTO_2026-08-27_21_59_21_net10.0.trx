@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="42ad68e1-724b-4585-b6e6-36c466aed66f" name="rober@ROBERTO 2026-08-27 21:59:21" runUser="ROBERTO\rober" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-08-27T21:59:21.9080966+02:00" queuing="2026-08-27T21:59:21.9080971+02:00" start="2026-08-27T21:59:19.2403412+02:00" finish="2026-08-27T21:59:21.9139320+02:00" />
+  <TestSettings name="default" id="b92e21b7-bc03-4119-93a5-771f751cad6c">
+    <Deployment runDeploymentRoot="rober_ROBERTO_2026-08-27_21_59_21" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="9cabb030-8004-48d9-b987-c2a1ad124e3c" testId="5aa74380-85a6-ab2e-933c-5f5e9f1131da" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.CartellaSanitaria_Upsert_Then_Get_ReturnsOk" computerName="ROBERTO" duration="00:00:00.1353918" startTime="2026-08-27T21:59:21.7722902+02:00" endTime="2026-08-27T21:59:21.7722904+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cabb030-8004-48d9-b987-c2a1ad124e3c" />
+    <UnitTestResult executionId="c37ae47c-5ad7-4e37-98b8-db5742bb678e" testId="5f9e427f-bffb-cae1-08d6-be8e11051591" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.Allegato3B_Validate_ReturnsValid" computerName="ROBERTO" duration="00:00:00.0094657" startTime="2026-08-27T21:59:21.8316789+02:00" endTime="2026-08-27T21:59:21.8316790+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c37ae47c-5ad7-4e37-98b8-db5742bb678e" />
+    <UnitTestResult executionId="408b5b7e-34ea-4ce5-bd87-cea0d400db8f" testId="34ea61f6-d1bb-ef06-9b34-fe8dca5b1f3f" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.Allegato3B_Submit_ReturnsReceipt" computerName="ROBERTO" duration="00:00:00.0200105" startTime="2026-08-27T21:59:21.7926292+02:00" endTime="2026-08-27T21:59:21.7926293+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="408b5b7e-34ea-4ce5-bd87-cea0d400db8f" />
+    <UnitTestResult executionId="6c4b852e-b143-4f5e-b770-b9abdb557dfb" testId="dd080d72-1b55-c980-6de2-56d1b5e866f2" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.AlertMultiCanale_SendBulk_ReturnsResults" computerName="ROBERTO" duration="00:00:01.9424455" startTime="2026-08-27T21:59:21.6359594+02:00" endTime="2026-08-27T21:59:21.6359847+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c4b852e-b143-4f5e-b770-b9abdb557dfb" />
+    <UnitTestResult executionId="64800eee-1248-4d9a-800a-b839442e96a5" testId="2b4479ce-2c92-87c8-5bf8-5fd2bc985362" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.FirmaGrafometrica_HashSample_ReturnsHex" computerName="ROBERTO" duration="00:00:00.0042724" startTime="2026-08-27T21:59:21.8218839+02:00" endTime="2026-08-27T21:59:21.8218840+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="64800eee-1248-4d9a-800a-b839442e96a5" />
+    <UnitTestResult executionId="8171dd97-8b39-4cec-89bd-a3b87ab4e4d6" testId="ef74c0f4-8228-0d3f-45cd-ba2efd934018" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.GiudizioIdoneita_Set_Then_Get_ReturnsOk" computerName="ROBERTO" duration="00:00:00.0242833" startTime="2026-08-27T21:59:21.8172768+02:00" endTime="2026-08-27T21:59:21.8172771+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8171dd97-8b39-4cec-89bd-a3b87ab4e4d6" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.Allegato3B_Submit_ReturnsReceipt" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="34ea61f6-d1bb-ef06-9b34-fe8dca5b1f3f">
+      <Execution id="408b5b7e-34ea-4ce5-bd87-cea0d400db8f" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="Allegato3B_Submit_ReturnsReceipt" />
+    </UnitTest>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.AlertMultiCanale_SendBulk_ReturnsResults" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="dd080d72-1b55-c980-6de2-56d1b5e866f2">
+      <Execution id="6c4b852e-b143-4f5e-b770-b9abdb557dfb" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="AlertMultiCanale_SendBulk_ReturnsResults" />
+    </UnitTest>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.Allegato3B_Validate_ReturnsValid" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="5f9e427f-bffb-cae1-08d6-be8e11051591">
+      <Execution id="c37ae47c-5ad7-4e37-98b8-db5742bb678e" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="Allegato3B_Validate_ReturnsValid" />
+    </UnitTest>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.FirmaGrafometrica_HashSample_ReturnsHex" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="2b4479ce-2c92-87c8-5bf8-5fd2bc985362">
+      <Execution id="64800eee-1248-4d9a-800a-b839442e96a5" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="FirmaGrafometrica_HashSample_ReturnsHex" />
+    </UnitTest>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.GiudizioIdoneita_Set_Then_Get_ReturnsOk" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="ef74c0f4-8228-0d3f-45cd-ba2efd934018">
+      <Execution id="8171dd97-8b39-4cec-89bd-a3b87ab4e4d6" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="GiudizioIdoneita_Set_Then_Get_ReturnsOk" />
+    </UnitTest>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.CartellaSanitaria_Upsert_Then_Get_ReturnsOk" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="5aa74380-85a6-ab2e-933c-5f5e9f1131da">
+      <Execution id="9cabb030-8004-48d9-b987-c2a1ad124e3c" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="CartellaSanitaria_Upsert_Then_Get_ReturnsOk" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5aa74380-85a6-ab2e-933c-5f5e9f1131da" executionId="9cabb030-8004-48d9-b987-c2a1ad124e3c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f9e427f-bffb-cae1-08d6-be8e11051591" executionId="c37ae47c-5ad7-4e37-98b8-db5742bb678e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34ea61f6-d1bb-ef06-9b34-fe8dca5b1f3f" executionId="408b5b7e-34ea-4ce5-bd87-cea0d400db8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dd080d72-1b55-c980-6de2-56d1b5e866f2" executionId="6c4b852e-b143-4f5e-b770-b9abdb557dfb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2b4479ce-2c92-87c8-5bf8-5fd2bc985362" executionId="64800eee-1248-4d9a-800a-b839442e96a5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ef74c0f4-8228-0d3f-45cd-ba2efd934018" executionId="8171dd97-8b39-4cec-89bd-a3b87ab4e4d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Risultati non in elenco" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Tutti i risultati caricati" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.11)&#xD;
+[xUnit.net 00:00:00.05]   Discovering: MedWork.Api.Tests&#xD;
+[xUnit.net 00:00:00.10]   Discovered:  MedWork.Api.Tests&#xD;
+[xUnit.net 00:00:00.10]   Starting:    MedWork.Api.Tests&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'Company.TenantId1' was created in shadow state because a conflicting property with the simple name 'TenantId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'CompanyDoctor.CompanyId1' was created in shadow state because a conflicting property with the simple name 'CompanyId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'CompanyDoctor.DoctorId1' was created in shadow state because a conflicting property with the simple name 'DoctorId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'Doctor.TenantId1' was created in shadow state because a conflicting property with the simple name 'TenantId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'ScheduledExam.ExamTypeId1' was created in shadow state because a conflicting property with the simple name 'ExamTypeId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 0 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 3 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 3 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 6 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 6 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 15 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 15 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 30 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 40 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 2 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 106 entities to in-memory store.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\github\medwork-manager\MedWork.Api&#xD;
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]&#xD;
+      Failed to determine the https port for redirect.&#xD;
+[notify:Pec] -&gt; employee 1: Promemoria visita medica&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[xUnit.net 00:00:02.28]   Finished:    MedWork.Api.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

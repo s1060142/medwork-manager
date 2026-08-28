@@ -16,7 +16,7 @@ async function openCompanyCreateDialog(page) {
   await page.locator('button:has-text("Anagrafica")').click()
   await page.waitForSelector('text=Anagrafica', { timeout: 5000 })
   await page.locator('button:has-text("Nuova azienda")').click()
-  await expect(page.getByText('Nuovo elemento')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText('Nuova azienda')).toBeVisible({ timeout: 10000 })
 }
 
 test('company create dialog: Nuovo opens, Salva empty shows validation, Annulla closes', async ({ page }) => {
@@ -26,11 +26,11 @@ test('company create dialog: Nuovo opens, Salva empty shows validation, Annulla 
   // Salva with empty required fields -> validation errors, dialog stays open
   await page.click('button:has-text("Salva")')
   await expect(page.getByText('Campo obbligatorio').first()).toBeVisible({ timeout: 5000 })
-  await expect(page.getByText('Nuovo elemento')).toBeVisible()
+  await expect(page.getByText('Nuova azienda')).toBeVisible()
 
   // Annulla closes the dialog
   await page.click('button:has-text("Annulla")')
-  await expect(page.getByText('Nuovo elemento')).toHaveCount(0, { timeout: 5000 })
+  await expect(page.getByText('Nuova azienda')).toHaveCount(0, { timeout: 5000 })
 })
 
 test('company edit dialog: Modifica opens and closes', async ({ page }) => {
@@ -42,7 +42,7 @@ test('company edit dialog: Modifica opens and closes', async ({ page }) => {
   const editBtn = page.locator('button:has-text("Modifica")').first()
   if (await editBtn.count() > 0) {
     await editBtn.click()
-    await expect(page.getByText('Modifica elemento').or(page.getByText('Nuovo elemento'))).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Modifica azienda').or(page.getByText('Nuova azienda'))).toBeVisible({ timeout: 10000 })
     await page.click('button:has-text("Annulla")')
   }
 })

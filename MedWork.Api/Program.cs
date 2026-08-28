@@ -112,7 +112,8 @@ if (builder.Environment.IsEnvironment("Testing"))
 else
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+               .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 }
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -164,6 +165,10 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        dbContext.Database.Migrate();
+    }
     await AppDbSeeder.SeedAsync(dbContext, app.Environment.IsEnvironment("Testing"));
 }
 

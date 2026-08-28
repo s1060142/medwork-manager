@@ -115,7 +115,9 @@ test.describe('P0 - Medical Visits', () => {
       new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     )
     await fixtures.visits.selectVisitType('Periodic')
+    await fixtures.visits.fillTargetOrgans()
     await fixtures.visits.fillOutcome('Idoneo senza limitazioni')
+    await fixtures.visits.fillDeadline(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
     await fixtures.visits.saveVisit()
     await fixtures.visits.assertVisitSaved()
   })
@@ -127,8 +129,8 @@ test.describe('P0 - Medical Visits', () => {
       test.skip('No employees for deadline test')
       return
     }
-    const employeeId = employees[0].id
-    const doctors = await fixtures.apiGet('/api/admin-data/doctors', token)
+    const employeeId = employees[employees.length - 1].id
+    const doctors = await fixtures.apiGet('/api/master-data/doctors', token)
     const doctorId = Array.isArray(doctors) && doctors.length > 0 ? doctors[0].id : 1
     const visit = await fixtures.createTestVisit(token, employeeId, doctorId)
     expect(visit.nextDeadlineDate).toBeTruthy()
@@ -144,15 +146,23 @@ test.describe('P0 - Medical Visits', () => {
 test.describe('P0 - Medical Records', () => {
   test('MR-01 - Create medical record', async () => {
     const token = await fixtures.getAuthToken(USERS.admin)
-    const employees = await fixtures.apiGet('/api/admin-data/employees', token)
-    if (!Array.isArray(employees) || employees.length === 0) {
-      test.skip('No employees for medical record test')
-      return
-    }
-    const employeeId = employees[0].id
+    const uniqueTaxCode = `MR${Date.now()}A`
+    const created = await fixtures.apiPost('/api/admin-data/employees', token, {
+      firstName: 'MRTest',
+      lastName: 'Record',
+      taxCode: uniqueTaxCode,
+      companyId: 1,
+      jobRole: 'Test',
+      branchId: 1,
+      birthCity: 'Roma',
+      birthCityCode: 'H501',
+      birthDate: '1990-01-01',
+      isActive: true,
+    })
+    const employeeId = created.id
     const record = await fixtures.apiPost('/api/doctor-data/medical-records', token, {
       employeeId,
-      medicalHistory: 'Test history',
+      medicalHistory: 'Test medical history with enough length',
       notes: 'Test notes',
       currentTherapies: 'None',
     })
@@ -168,12 +178,14 @@ test.describe('P0 - Medical Records', () => {
 
 test.describe('P0 - Protocols', () => {
   test('PROTO-01 - List protocols', async () => {
+    await fixtures.page.click('button:has-text("Sorveglianza sanitaria")')
     await fixtures.page.click('button:has-text("Protocolli")')
     await fixtures.protocols.waitForPage()
     await expect(fixtures.page.getByText('Protocolli sanitari').first()).toBeVisible()
   })
 
   test('PROTO-02 - Create protocol', async () => {
+    await fixtures.page.click('button:has-text("Sorveglianza sanitaria")')
     await fixtures.page.click('button:has-text("Protocolli")')
     await fixtures.protocols.waitForPage()
     await fixtures.protocols.openCreateDialog()
@@ -203,7 +215,7 @@ test.describe('P0 - Patient Portal', () => {
       test.skip('No employees for patient portal test')
       return
     }
-    const employeeId = employees[0].id
+    const employeeId = employees[employees.length - 1].id
     const visits = await fixtures.apiGet(`/api/doctor-data/medical-visits?employeeId=${employeeId}`, token)
     if (!Array.isArray(visits) || visits.length === 0) {
       test.skip('No visits for patient portal test')
@@ -232,8 +244,8 @@ test.describe('P0 - PDF Generation', () => {
       test.skip('No employees for PDF test')
       return
     }
-    const employeeId = employees[0].id
-    const doctors = await fixtures.apiGet('/api/admin-data/doctors', token)
+    const employeeId = employees[employees.length - 1].id
+    const doctors = await fixtures.apiGet('/api/master-data/doctors', token)
     const doctorId = Array.isArray(doctors) && doctors.length > 0 ? doctors[0].id : 1
     const visit = await fixtures.createTestVisit(token, employeeId, doctorId)
     const pdfBuffer = await fixtures.pdfViewer.downloadPdf(

@@ -379,7 +379,7 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
                 </Stack>
                 <Stack spacing={1}>
                   <Button variant="contained" fullWidth onClick={onOpenMedicalVisitCreate}>Nuova Visita Medica</Button>
-                  <Button variant="outlined" fullWidth onClick={onOpenEmployeeCreate}>Aggiungi Dipendente</Button>
+                  <Button variant="outlined" fullWidth onClick={onOpenEmployeeCreate}>Nuovo Lavoratore</Button>
                   <Button variant="outlined" fullWidth onClick={caricaScadenze}>Backup Dati Now</Button>
                 </Stack>
               </Paper>

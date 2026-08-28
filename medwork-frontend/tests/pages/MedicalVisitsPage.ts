@@ -43,6 +43,14 @@ export class MedicalVisitsPage {
 
   async fillBasicInfo(visitDate: string, deadline: string) {
     await this.visitDateInput.fill(visitDate)
+  }
+
+  async fillTargetOrgans() {
+    await this.forwardButton.click()
+    await this.targetOrgansInput.fill('Test')
+  }
+
+  async fillDeadline(deadline: string) {
     await this.nextDeadlineInput.fill(deadline)
   }
 
@@ -52,8 +60,8 @@ export class MedicalVisitsPage {
   }
 
   async fillOutcome(outcome: string) {
-    await this.outcomeSelect.click()
-    await this.page.getByRole('option', { name: outcome }).click()
+    await this.forwardButton.click()
+    await this.outcomeSelect.fill(outcome)
   }
 
   async saveVisit() {

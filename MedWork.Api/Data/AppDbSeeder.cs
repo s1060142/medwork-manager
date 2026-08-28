@@ -10,7 +10,8 @@ public static class AppDbSeeder
     {
         if (isTesting)
         {
-            await dbContext.Database.EnsureCreatedAsync();
+            // InMemory provider auto-creates schema; EnsureCreatedAsync is relational-specific.
+            await Task.CompletedTask;
         }
         else
         {
@@ -33,11 +34,14 @@ public static class AppDbSeeder
         }
         var tid = defaultTenant.Id;
 
-        await EnsureEncryptedDataReadableAsync(dbContext);
+                if (!isTesting)
+                {
+                    await EnsureEncryptedDataReadableAsync(dbContext);
+                }
 
-        var companySeeds = new[]
-        {
-            new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890", ContactEmail = "hr@acme-industria.it", ContactPhone = "+39 02 1234567", TenantId = tid },
+                var companySeeds = new[]
+                {
+                    new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890", ContactEmail = "hr@acme-industria.it", ContactPhone = "+39 02 1234567", TenantId = tid },
             new Company { Name = "Nord Logistics S.r.l.", VATNumber = "IT09876543210", ContactEmail = "people@nordlogistics.it", ContactPhone = "+39 035 7654321", TenantId = tid },
             new Company { Name = "TechFab Engineering S.p.A.", VATNumber = "IT04561230987", ContactEmail = "hr@techfab.it", ContactPhone = "+39 011 5557788", TenantId = tid },
         };
@@ -606,6 +610,14 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
+        var patientRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == "Patient");
+        if (patientRole == null)
+        {
+            patientRole = new Role { Name = "Patient", Description = "Patient", TenantId = tenantId, IsSystem = true };
+            dbContext.Roles.Add(patientRole);
+            await dbContext.SaveChangesAsync();
+        }
+
         // Assign all permissions to Admin role
         foreach (var perm in permissions.Values)
         {
@@ -695,6 +707,30 @@ public static class AppDbSeeder
         if (doctorUserRole == null)
         {
             dbContext.UserRoles.Add(new UserRole { UserId = doctorUser.Id, RoleId = doctorRole.Id, AssignedAt = DateTime.UtcNow, AssignedByUserId = adminUser.Id });
+        }
+
+        // Seed patient user
+        var patientUser = await dbContext.Users.FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Email == "patient");
+        if (patientUser == null)
+        {
+            patientUser = new User
+            {
+                Email = "patient",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Patient123!"),
+                FirstName = "Patient",
+                LastName = "User",
+                TenantId = tenantId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            dbContext.Users.Add(patientUser);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var patientUserRole = await dbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == patientUser.Id && ur.RoleId == patientRole.Id);
+        if (patientUserRole == null)
+        {
+            dbContext.UserRoles.Add(new UserRole { UserId = patientUser.Id, RoleId = patientRole.Id, AssignedAt = DateTime.UtcNow, AssignedByUserId = adminUser.Id });
         }
 
         await dbContext.SaveChangesAsync();

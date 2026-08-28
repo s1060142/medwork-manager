@@ -5,6 +5,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'companies',
     label: 'Aziende',
+    singularLabel: 'Azienda',
     role: 'Admin',
     readEndpoint: '/api/master-data/companies',
     createEndpoint: '/api/admin-data/companies',
@@ -78,6 +79,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'branches',
     label: 'Sedi',
+    singularLabel: 'Sede',
     role: 'Admin',
     readEndpoint: '/api/master-data/branches',
     createEndpoint: '/api/admin-data/branches',
@@ -95,6 +97,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'employees',
     label: 'Dipendenti',
+    singularLabel: 'Dipendente',
     role: 'Admin',
     readEndpoint: '/api/master-data/employees',
     createEndpoint: '/api/admin-data/employees',
@@ -180,6 +183,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'risk-factors',
     label: 'Fattori di Rischio',
+    singularLabel: 'Fattore di Rischio',
     role: 'Admin',
     readEndpoint: '/api/master-data/risk-factors',
     createEndpoint: '/api/admin-data/risk-factors',
@@ -196,6 +200,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'job-roles',
     label: 'Mansioni',
+    singularLabel: 'Mansione',
     role: 'Admin',
     readEndpoint: '/api/master-data/job-roles',
     createEndpoint: '/api/admin-data/job-roles',
@@ -217,6 +222,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'protocols-registry',
     label: 'Protocolli Normativi',
+    singularLabel: 'Protocollo Normativo',
     role: 'Admin',
     readEndpoint: '/api/master-data/protocols',
     createEndpoint: '/api/admin-data/protocols',
@@ -234,6 +240,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'personal-protocols',
     label: 'Protocolli Personali',
+    singularLabel: 'Protocollo Personale',
     role: 'Admin',
     readEndpoint: '/api/master-data/personal-protocols',
     createEndpoint: '/api/admin-data/personal-protocols',
@@ -260,6 +267,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'employee-risks',
     label: 'Rischi Dipendente',
+    singularLabel: 'Rischio Dipendente',
     role: 'Admin',
     readEndpoint: '/api/master-data/employee-risks',
     createEndpoint: '/api/admin-data/employee-risks',
@@ -274,6 +282,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'medical-records',
     label: 'Cartelle Sanitarie',
+    singularLabel: 'Cartella Sanitaria',
     role: 'Doctor',
     readEndpoint: '/api/master-data/medical-records',
     createEndpoint: '/api/doctor-data/medical-records',
@@ -301,6 +310,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'medical-visits',
     label: 'Visite Mediche',
+    singularLabel: 'Visita Medica',
     role: 'Doctor',
     readEndpoint: '/api/master-data/medical-visits',
     createEndpoint: '/api/doctor-data/medical-visits',
@@ -345,6 +355,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'anamneses',
     label: 'Anamnesi guidata',
+    singularLabel: 'Anamnesi',
     role: 'Doctor',
     readEndpoint: '/api/master-data/anamneses',
     createEndpoint: '/api/doctor-data/anamneses',
@@ -363,6 +374,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'exam-types',
     label: 'Tipi Esame',
+    singularLabel: 'Tipo Esame',
     role: 'Admin',
     readEndpoint: '/api/master-data/exam-types',
     createEndpoint: '/api/admin-data/exam-types',
@@ -377,6 +389,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'visit-exams',
     label: 'Esami Visita',
+    singularLabel: 'Esame Visita',
     role: 'Doctor',
     readEndpoint: '/api/master-data/visit-exams',
     createEndpoint: '/api/doctor-data/visit-exams',
@@ -394,6 +407,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'scheduled-exams',
     label: 'Accertamenti programmati',
+    singularLabel: 'Accertamento programmato',
     role: 'Doctor',
     readEndpoint: '/api/master-data/scheduled-exams',
     createEndpoint: '/api/doctor-data/scheduled-exams',
@@ -420,6 +434,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'vaccinations',
     label: 'Vaccinazioni',
+    singularLabel: 'Vaccinazione',
     role: 'Doctor',
     readEndpoint: '/api/master-data/vaccinations',
     createEndpoint: '/api/doctor-data/vaccinations',
@@ -436,6 +451,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'company-groups',
     label: 'Gruppi Aziendali',
+    singularLabel: 'Gruppo Aziendale',
     role: 'Admin',
     readEndpoint: '/api/master-data/company-groups',
     createEndpoint: '/api/admin-data/company-groups',
@@ -457,6 +473,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'company-contacts',
     label: 'Figure Aziendali',
+    singularLabel: 'Figura Aziendale',
     role: 'Admin',
     readEndpoint: '/api/master-data/company-contacts',
     createEndpoint: '/api/admin-data/company-contacts',
@@ -474,6 +491,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'departments',
     label: 'Reparti',
+    singularLabel: 'Reparto',
     role: 'Admin',
     readEndpoint: '/api/master-data/departments',
     createEndpoint: '/api/admin-data/departments',
@@ -491,6 +509,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'work-locations',
     label: 'Luoghi di Lavoro',
+    singularLabel: 'Luogo di Lavoro',
     role: 'Admin',
     readEndpoint: '/api/master-data/work-locations',
     createEndpoint: '/api/admin-data/work-locations',
@@ -509,6 +528,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'site-visits',
     label: 'Sopralluoghi',
+    singularLabel: 'Sopralluogo',
     role: 'Doctor',
     readEndpoint: '/api/master-data/site-visits',
     createEndpoint: '/api/doctor-data/site-visits',
@@ -528,6 +548,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'doctor-availabilities',
     label: 'Disponibilita medici',
+    singularLabel: 'Disponibilità medico',
     role: 'Doctor',
     readOnly: true,
     readEndpoint: '/api/master-data/doctor-availabilities',
@@ -542,6 +563,7 @@ export const ENTITY_CONFIGS = [
   {
     key: 'notification-logs',
     label: 'Log notifiche',
+    singularLabel: 'Log notifica',
     role: 'Doctor',
     readOnly: true,
     readEndpoint: '/api/master-data/notification-logs',

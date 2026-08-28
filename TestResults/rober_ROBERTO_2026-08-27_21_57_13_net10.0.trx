@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="5a89d11e-2665-4a54-9518-b3b2d511765d" name="rober@ROBERTO 2026-08-27 21:57:13" runUser="ROBERTO\rober" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-08-27T21:57:13.8685582+02:00" queuing="2026-08-27T21:57:13.8685585+02:00" start="2026-08-27T21:57:11.2544524+02:00" finish="2026-08-27T21:57:13.8755186+02:00" />
+  <TestSettings name="default" id="a805d2ce-5e69-4aa1-a714-0c15a5634697">
+    <Deployment runDeploymentRoot="rober_ROBERTO_2026-08-27_21_57_13" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="157985b8-6776-4fb5-9683-bdbf89179e23" testId="dd080d72-1b55-c980-6de2-56d1b5e866f2" testName="MedWork.Api.Tests.Integration.Fase1EndpointsTests.AlertMultiCanale_SendBulk_ReturnsResults" computerName="ROBERTO" duration="00:00:02.0627070" startTime="2026-08-27T21:57:13.7911027+02:00" endTime="2026-08-27T21:57:13.7911361+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="157985b8-6776-4fb5-9683-bdbf89179e23" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="MedWork.Api.Tests.Integration.Fase1EndpointsTests.AlertMultiCanale_SendBulk_ReturnsResults" storage="c:\github\medwork-manager\medwork.api.tests\bin\debug\net10.0\medwork.api.tests.dll" id="dd080d72-1b55-c980-6de2-56d1b5e866f2">
+      <Execution id="157985b8-6776-4fb5-9683-bdbf89179e23" />
+      <TestMethod codeBase="C:\github\medwork-manager\MedWork.Api.Tests\bin\Debug\net10.0\MedWork.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="MedWork.Api.Tests.Integration.Fase1EndpointsTests" name="AlertMultiCanale_SendBulk_ReturnsResults" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="dd080d72-1b55-c980-6de2-56d1b5e866f2" executionId="157985b8-6776-4fb5-9683-bdbf89179e23" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Risultati non in elenco" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Tutti i risultati caricati" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 10.0.11)&#xD;
+[xUnit.net 00:00:00.06]   Discovering: MedWork.Api.Tests&#xD;
+[xUnit.net 00:00:00.10]   Discovered:  MedWork.Api.Tests&#xD;
+[xUnit.net 00:00:00.10]   Starting:    MedWork.Api.Tests&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'Company.TenantId1' was created in shadow state because a conflicting property with the simple name 'TenantId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'CompanyDoctor.CompanyId1' was created in shadow state because a conflicting property with the simple name 'CompanyId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'CompanyDoctor.DoctorId1' was created in shadow state because a conflicting property with the simple name 'DoctorId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'Doctor.TenantId1' was created in shadow state because a conflicting property with the simple name 'TenantId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]&#xD;
+      The foreign key property 'ScheduledExam.ExamTypeId1' was created in shadow state because a conflicting property with the simple name 'ExamTypeId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 0 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 3 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 3 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 4 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 6 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 6 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 5 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 15 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 15 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 30 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 40 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 2 entities to in-memory store.&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 106 entities to in-memory store.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\github\medwork-manager\MedWork.Api&#xD;
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]&#xD;
+      Failed to determine the https port for redirect.&#xD;
+[notify:Pec] -&gt; employee 1: Promemoria visita medica&#xD;
+info: Microsoft.EntityFrameworkCore.Update[30100]&#xD;
+      Saved 1 entities to in-memory store.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[xUnit.net 00:00:02.21]   Finished:    MedWork.Api.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

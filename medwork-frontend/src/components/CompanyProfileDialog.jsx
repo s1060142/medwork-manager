@@ -365,8 +365,8 @@ function CompanyProfileDialog({ open, onClose, company }) {
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Altri dati</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Numero lettera intenti" value={formData.numeroLetteraIntenti} onChange={handleFieldChange('numeroLetteraIntenti')} />
-                  <TextField size="small" label="Data lettera intenti" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')} InputLabelProps={{ shrink: true }} />
-                  <TextField size="small" label="Scadenza lettera intenti" type="date" value={formData.scadenzaLetteraIntenti} onChange={handleFieldChange('scadenzaLetteraIntenti')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Data lettera intenti" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')}   />
+                  <TextField size="small" label="Scadenza lettera intenti" type="date" value={formData.scadenzaLetteraIntenti} onChange={handleFieldChange('scadenzaLetteraIntenti')} />
                   <TextField size="small" label="Addebito spese bancarie" select value={formData.addebitoSpeseBancarie} onChange={handleFieldChange('addebitoSpeseBancarie')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Sì">Sì</MenuItem>

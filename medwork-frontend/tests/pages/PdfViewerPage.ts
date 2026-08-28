@@ -3,7 +3,7 @@ import { type Page, type Locator } from '@playwright/test'
 export class PdfViewerPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor(page: Page, private readonly expect: any) {
     this.page = page
   }
 
@@ -18,7 +18,7 @@ export class PdfViewerPage {
 
   async downloadPdf(url: string): Promise<Buffer> {
     const response = await this.page.request.get(url)
-    expect(response.ok()).toBe(true)
+    this.expect(response.ok()).toBe(true)
     return Buffer.from(await response.body())
   }
 }

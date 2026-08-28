@@ -200,6 +200,8 @@ function CrudEntityView({
   externalCreateToken = 0,
   onExternalCreateConsumed,
   onOpenCompanyProfile,
+  hiddenUI = false,
+  onCreated,
 }) {
   const [rows, setRows] = useState([])
   const [contextEmployees, setContextEmployees] = useState([])
@@ -428,8 +430,9 @@ function CrudEntityView({
   }
 
   useEffect(() => {
+    if (hiddenUI) return
     loadRows()
-  }, [config])
+  }, [config, hiddenUI])
 
   useEffect(() => {
     Promise.all([
@@ -570,10 +573,16 @@ function CrudEntityView({
           current.map((row) => (row === editingRow ? { ...row, ...updated } : row)),
         )
         setSuccessMessage('Elemento aggiornato correttamente.')
+        if (typeof onCreated === 'function') {
+          onCreated(updated, 'updated')
+        }
       } else {
         const created = await apiSend('POST', config.createEndpoint, payload)
         setRows((current) => [created, ...current])
         setSuccessMessage('Elemento creato correttamente.')
+        if (typeof onCreated === 'function') {
+          onCreated(created, 'created')
+        }
       }
 
       setDialogOpen(false)
@@ -667,6 +676,7 @@ function CrudEntityView({
 
   return (
     <Stack spacing={2}>
+      <Box sx={{ display: hiddenUI ? 'none' : 'block' }}>
       {config.key !== 'companies' && (
         <Box className="legacy-table-toolbar">
           <Box className="legacy-table-toolbar-filters">
@@ -795,6 +805,7 @@ function CrudEntityView({
           />
         </Stack>
       </Box>
+      </Box>
 
       <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Conferma eliminazione</DialogTitle>
@@ -811,7 +822,7 @@ function CrudEntityView({
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {editingRow ? 'Modifica elemento' : 'Nuovo elemento'}
+          {editingRow ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}` : `Nuovo ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
           <IconButton size="small" onClick={() => setDialogOpen(false)} aria-label="Chiudi">
             <CloseIcon fontSize="small" />
           </IconButton>
