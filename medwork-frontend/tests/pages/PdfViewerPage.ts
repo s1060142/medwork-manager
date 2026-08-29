@@ -16,8 +16,12 @@ export class PdfViewerPage {
     await this.page.waitForSelector(`text=${expectedText}`, { timeout: 10000 })
   }
 
-  async downloadPdf(url: string): Promise<Buffer> {
-    const response = await this.page.request.get(url)
+  async downloadPdf(url: string, token?: string): Promise<Buffer> {
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await this.page.request.get(url, { headers })
     this.expect(response.ok()).toBe(true)
     return Buffer.from(await response.body())
   }

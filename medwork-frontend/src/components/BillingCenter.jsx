@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { apiGet } from '../services/apiClient'
+import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 
 const STORAGE_KEY = 'medwork.billing.docs'
@@ -73,21 +73,27 @@ function BillingCenter() {
     )
   }, [docs])
 
-  const createDoc = () => {
+  const createDoc = async () => {
     if (!formData.companyId || !formData.amount) return
 
-    const next = [
-      {
-        id: `${Date.now()}`,
-        number: `${formData.type === 'fattura' ? 'FT' : 'PR'}-${Date.now().toString().slice(-6)}`,
-        ...formData,
-      },
-      ...docs,
-    ]
-
-    setDocs(next)
-    saveDocs(next)
-    appendAuditEvent({ module: 'Fatturazione', action: 'Create', detail: `${formData.type} ${formData.amount}€` })
+    const payload = { ...formData }
+    try {
+      const created = await apiSend('POST', '/api/billing/documents', payload)
+      const saved = created && typeof created === 'object'
+        ? { id: created.id ?? `${Date.now()}`, number: created.number ?? `${formData.type === 'fattura' ? 'FT' : 'PR'}-${Date.now().toString().slice(-6)}`, ...created }
+        : {
+            id: `${Date.now()}`,
+            number: `${formData.type === 'fattura' ? 'FT' : 'PR'}-${Date.now().toString().slice(-6)}`,
+            ...payload,
+          }
+      const next = [saved, ...docs]
+      setDocs(next)
+      saveDocs(next)
+      appendAuditEvent({ module: 'Fatturazione', action: 'Create', detail: `${formData.type} ${formData.amount}€` })
+    } catch (requestError) {
+      window.alert(requestError?.message || 'Errore durante la registrazione del documento.')
+      return
+    }
 
     setFormData((current) => ({
       ...current,

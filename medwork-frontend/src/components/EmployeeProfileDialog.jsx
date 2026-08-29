@@ -59,6 +59,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
   const [visitExams, setVisitExams] = useState([])
   const [employeeRisks, setEmployeeRisks] = useState([])
   const [riskFactors, setRiskFactors] = useState([])
+  const [dirty, setDirty] = useState(false)
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -152,6 +153,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
         setError(requestError.message || 'Errore nel caricamento del profilo dipendente.')
       } finally {
         setLoading(false)
+        setDirty(false)
       }
     }
 
@@ -201,6 +203,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
   const handleFieldChange = (field) => (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
     setFormData((current) => ({ ...current, [field]: value }))
+    setDirty(true)
   }
 
   const handleSave = async () => {
@@ -216,6 +219,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       if (typeof onSaveEmployee === 'function') {
         onSaveEmployee(updated)
       }
+      setDirty(false)
     } catch (requestError) {
       setError(requestError.message || 'Errore durante il salvataggio.')
     } finally {
@@ -223,8 +227,14 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
     }
   }
 
+  const confirmClose = () => {
+    if (!dirty) return onClose()
+    const ok = window.confirm('Hai modifiche non salvate. Chiudere comunque?')
+    if (ok) onClose()
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+    <Dialog open={open} onClose={confirmClose} maxWidth="xl" fullWidth>
       <DialogContent sx={{ p: 0 }}>
         <Box sx={{ p: 2.5, background: '#0f1f3d', color: '#ffffff' }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ md: 'center' }}>
@@ -443,7 +453,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
             </Button>
           </Stack>
           <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
-            <Button variant="outlined" onClick={onClose}>Chiudi</Button>
+            <Button variant="outlined" onClick={confirmClose}>Chiudi</Button>
             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
               {saving ? 'Salvataggio...' : 'Salva'}
             </Button>

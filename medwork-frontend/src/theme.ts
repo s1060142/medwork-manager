@@ -83,6 +83,9 @@ export const createDynamicTheme = (dynamicTheme: Record<string, any> = {}, mode:
           },
           '& .MuiInputLabel-root': {
             fontSize: '13px',
+            '&:not(.MuiInputLabel-shrink)': {
+              transform: 'translate(14px, 18px) scale(1)',
+            },
           },
         },
       },

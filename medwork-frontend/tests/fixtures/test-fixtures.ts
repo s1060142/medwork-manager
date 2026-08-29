@@ -22,6 +22,7 @@ export type TestUser = {
 export const USERS = {
   admin: { username: 'admin', password: 'Admin123!', role: 'Admin' as const, tenantSlug: 'default' },
   doctor: { username: 'doctor', password: 'Doctor123!', role: 'Doctor' as const, tenantSlug: 'default' },
+  patient: { username: 'patient', password: 'Patient123!', role: 'Patient' as const, tenantSlug: 'default' },
 }
 
 export class TestFixtures {

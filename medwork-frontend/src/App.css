@@ -2,6 +2,20 @@
    MEDWORK THEME - Legacy gestionale layout
    ==================================== */
 
+/* Hide native date placeholder to avoid label overlap */
+input[type='date']::-webkit-datetime-edit {
+  color: transparent;
+}
+input[type='date']:focus::-webkit-datetime-edit {
+  color: inherit;
+}
+input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+}
+input[type='date']:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
 :root {
   --legacy-topbar-bg: #0f1f3d;
   --legacy-sidebar-bg: #0b1b36;

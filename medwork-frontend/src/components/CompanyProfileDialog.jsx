@@ -117,6 +117,7 @@ function CompanyProfileDialog({ open, onClose, company }) {
   const [healthPlanOpen, setHealthPlanOpen] = useState(false)
   const [analyticsOpen, setAnalyticsOpen] = useState(false)
   const [allegato3bOpen, setAllegato3bOpen] = useState(false)
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     if (!open || !company?.id) return
@@ -172,6 +173,7 @@ function CompanyProfileDialog({ open, onClose, company }) {
   const handleFieldChange = (field) => (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
     setFormData((current) => ({ ...current, [field]: value }))
+    setDirty(true)
   }
 
   const handleSave = async () => {
@@ -194,11 +196,18 @@ function CompanyProfileDialog({ open, onClose, company }) {
       setError(requestError.message || 'Errore durante il salvataggio.')
     } finally {
       setSaving(false)
+      setDirty(false)
     }
   }
 
+  const confirmClose = () => {
+    if (!dirty) return onClose()
+    const ok = window.confirm('Hai modifiche non salvate. Chiudere comunque?')
+    if (ok) onClose()
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+    <Dialog open={open} onClose={confirmClose} maxWidth="xl" fullWidth>
       <DialogContent sx={{ p: 0 }}>
         <Box sx={{ p: 2.5, background: '#0f1f3d', color: '#ffffff' }}>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ md: 'center' }}>
@@ -226,10 +235,10 @@ function CompanyProfileDialog({ open, onClose, company }) {
               <Button variant="outlined" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving} sx={{ color: 'white', borderColor: 'white' }}>
                 {saving ? 'Salvataggio...' : 'Salva'}
               </Button>
-              <Button variant="contained" onClick={onClose}>
+              <Button variant="contained" onClick={confirmClose}>
                 Chiudi
               </Button>
-              <IconButton size="small" onClick={onClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
+              <IconButton size="small" onClick={confirmClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -365,8 +374,8 @@ function CompanyProfileDialog({ open, onClose, company }) {
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Altri dati</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Numero lettera intenti" value={formData.numeroLetteraIntenti} onChange={handleFieldChange('numeroLetteraIntenti')} />
-                  <TextField size="small" label="Data lettera intenti" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')}   />
-                  <TextField size="small" label="Scadenza lettera intenti" type="date" value={formData.scadenzaLetteraIntenti} onChange={handleFieldChange('scadenzaLetteraIntenti')} />
+                  <TextField size="small" label="Data lettera intenti" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')} InputLabelProps={{ shrink: true }} />
+                  <TextField size="small" label="Scadenza lettera intenti" type="date" value={formData.scadenzaLetteraIntenti} onChange={handleFieldChange('scadenzaLetteraIntenti')} InputLabelProps={{ shrink: true }} />
                   <TextField size="small" label="Addebito spese bancarie" select value={formData.addebitoSpeseBancarie} onChange={handleFieldChange('addebitoSpeseBancarie')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Sì">Sì</MenuItem>

@@ -224,6 +224,11 @@ function CrudEntityView({
   const [profileEmployee, setProfileEmployee] = useState(null)
   const [profileCompany, setProfileCompany] = useState(null)
   const [queryRules, setQueryRules] = useState([])
+  const [dirty, setDirty] = useState(false)
+  const markDirty = (updater) => {
+    setDirty(true)
+    setFormData(updater)
+  }
 
   const canEdit = !config.readOnly && (currentRole === 'Admin' || currentRole === config.role)
 
@@ -482,6 +487,7 @@ function CrudEntityView({
     setEditingRow(null)
     setFormData(defaultFormData(config.fields))
     setFormErrors({})
+    setDirty(false)
     setDialogOpen(true)
   }
 
@@ -494,11 +500,26 @@ function CrudEntityView({
       }, {}),
     )
     setFormErrors({})
+    setDirty(false)
     setDialogOpen(true)
   }
 
   const handleDelete = async (row) => {
     setConfirmDelete(row)
+  }
+
+  const confirmClose = () => {
+    if (!dirty) return closeForm()
+    const ok = window.confirm('Hai modifiche non salvate. Chiudere comunque?')
+    if (ok) closeForm()
+  }
+
+  const closeForm = () => {
+    setDialogOpen(false)
+    setEditingRow(null)
+    setFormData(defaultFormData(config.fields))
+    setFormErrors({})
+    setDirty(false)
   }
 
   const confirmDeleteRow = async () => {
@@ -588,6 +609,7 @@ function CrudEntityView({
       setDialogOpen(false)
       setEditingRow(null)
       setFormData(defaultFormData(config.fields))
+      setDirty(false)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -608,7 +630,7 @@ function CrudEntityView({
         error={Boolean(formErrors[field.name])}
         helperText={formErrors[field.name]}
         value={resolvedValue ?? ''}
-        onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+        onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
       >
         <MenuItem value="">Seleziona</MenuItem>
         {options.map((option) => (
@@ -638,7 +660,7 @@ function CrudEntityView({
           error={Boolean(formErrors[field.name])}
           helperText={formErrors[field.name]}
           value={formData[field.name]}
-          onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+          onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
         />
       )
     }
@@ -650,6 +672,7 @@ function CrudEntityView({
     }
     if (field.type === 'date') {
       inputProps.type = 'date'
+      inputProps.shrink = true
     }
     if (field.type === 'email') {
       inputProps.type = 'email'
@@ -667,7 +690,7 @@ function CrudEntityView({
         helperText={formErrors[field.name]}
         value={formData[field.name]}
         inputProps={Object.keys(inputProps).length ? inputProps : undefined}
-        onChange={(event) => setFormData((current) => ({ ...current, [field.name]: event.target.value }))}
+        onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
       />
     )
   }
@@ -743,7 +766,18 @@ function CrudEntityView({
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
                         <Button size="small" onClick={() => openEdit(row)}>Modifica</Button>
                         <Button size="small" color="error" onClick={() => handleDelete(row)}>Elimina</Button>
-                        <Button size="small" onClick={() => setProfileEmployee(row)}>Profilo</Button>
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            if (config.key === 'companies' && onOpenCompanyProfile) {
+                              onOpenCompanyProfile(row)
+                            } else {
+                              setProfileEmployee(row)
+                            }
+                          }}
+                        >
+                          Profilo
+                        </Button>
                       </Stack>
                     </TableCell>
                   )}
@@ -820,20 +854,20 @@ function CrudEntityView({
         </DialogActions>
       </Dialog>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={dialogOpen} onClose={confirmClose} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {editingRow ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}` : `Nuovo ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
-          <IconButton size="small" onClick={() => setDialogOpen(false)} aria-label="Chiudi">
+          <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">
             <CloseIcon fontSize="small" />
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={1.5} sx={{ mt: 0.5 }}>
+          <Stack spacing={1.5} sx={{ mt: 0.5, ...(config.key === 'employees' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 } : {}) } }>
             {visibleFields.map((field) => renderFormField(field))}
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
+          <Button onClick={confirmClose}>Annulla</Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
             Salva
           </Button>

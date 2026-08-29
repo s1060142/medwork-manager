@@ -209,20 +209,8 @@ test.describe('P0 - Protocols', () => {
 
 test.describe('P0 - Patient Portal', () => {
   test('PAT-01 - Patient anamnesis read', async () => {
-    const token = await fixtures.getAuthToken(USERS.admin)
-    const employees = await fixtures.apiGet('/api/admin-data/employees', token)
-    if (!Array.isArray(employees) || employees.length === 0) {
-      test.skip('No employees for patient portal test')
-      return
-    }
-    const employeeId = employees[employees.length - 1].id
-    const visits = await fixtures.apiGet(`/api/doctor-data/medical-visits?employeeId=${employeeId}`, token)
-    if (!Array.isArray(visits) || visits.length === 0) {
-      test.skip('No visits for patient portal test')
-      return
-    }
-    const visitId = visits[0].id
-    const anamnesis = await fixtures.apiGet(`/api/patient-portal/anamnesis?visitId=${visitId}`, token)
+    const token = await fixtures.getAuthToken(USERS.patient)
+    const anamnesis = await fixtures.apiGet('/api/patient-portal/anamnesis', token)
     expect(anamnesis).toBeTruthy()
   })
 
@@ -249,7 +237,8 @@ test.describe('P0 - PDF Generation', () => {
     const doctorId = Array.isArray(doctors) && doctors.length > 0 ? doctors[0].id : 1
     const visit = await fixtures.createTestVisit(token, employeeId, doctorId)
     const pdfBuffer = await fixtures.pdfViewer.downloadPdf(
-      `${API_URL}/api/documents/visits/${visit.id}/fitness-judgment-pdf`
+      `${API_URL}/api/documents/visits/${visit.id}/fitness-judgment-pdf`,
+      token
     )
     expect(pdfBuffer.length).toBeGreaterThan(0)
   })

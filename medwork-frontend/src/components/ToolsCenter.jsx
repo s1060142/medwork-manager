@@ -15,7 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { apiGet } from '../services/apiClient'
+import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 
 const SIGNATURE_STORAGE_KEY = 'medwork.digital.signatures'
@@ -93,21 +93,23 @@ function ToolsCenter() {
     [employees],
   )
 
-  const registerSignature = () => {
+  const registerSignature = async () => {
     if (!formData.employeeId || !formData.signer.trim()) return
 
-    const next = [
-      {
-        id: `${Date.now()}`,
-        ...formData,
-        signedAt: new Date().toISOString(),
-      },
-      ...signatures,
-    ]
-
-    setSignatures(next)
-    saveSignatures(next)
-    appendAuditEvent({ module: 'Strumenti', action: 'Firma', detail: `${formData.method} - dipendente ${formData.employeeId}` })
+    const payload = { ...formData, signedAt: new Date().toISOString() }
+    try {
+      const created = await apiSend('POST', '/api/tools/signatures', payload)
+      const saved = created && typeof created === 'object'
+        ? { id: created.id ?? `${Date.now()}`, ...created, signedAt: created.signedAt || payload.signedAt }
+        : { id: `${Date.now()}`, ...payload }
+      const next = [saved, ...signatures]
+      setSignatures(next)
+      saveSignatures(next)
+      appendAuditEvent({ module: 'Strumenti', action: 'Firma', detail: `${formData.method} - dipendente ${formData.employeeId}` })
+    } catch (requestError) {
+      window.alert(requestError?.message || 'Errore durante la registrazione della firma.')
+      return
+    }
     setFormData((current) => ({ ...current, employeeId: '', signer: '', note: '' }))
   }
 

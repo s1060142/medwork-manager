@@ -132,6 +132,22 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     setSelectedCompanyId('')
   }
 
+  const handleFilterEmployees = async () => {
+    try {
+      setError('')
+      const params = new URLSearchParams()
+      if (workerSearch) params.set('search', workerSearch)
+      if (workerStatus) params.set('status', workerStatus)
+      if (companyContext && companyContext !== 'all') params.set('companyId', String(companyContext))
+      const query = params.toString()
+      const endpoint = `/api/master-data/employees${query ? `?${query}` : ''}`
+      const data = await apiGet(endpoint)
+      setEmployees(Array.isArray(data) ? data : [])
+    } catch (requestError) {
+      setError(requestError?.message || 'Errore durante il filtro lavoratori.')
+    }
+  }
+
   const handleToggleArchive = (row) => {
     const employeeId = Number(row.id)
     setArchivedIds((previous) => {
@@ -282,14 +298,44 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
   const visibleCompanyRows = useMemo(() => filteredCompanyRows, [filteredCompanyRows])
 
-  const toggleArchived = (employeeId) => {
+  const toggleArchived = async (employeeId) => {
     const id = Number(employeeId)
+    const employee = employees.find((item) => Number(item.id) === id)
+    const currentStatus = employee?.statoRisorsa || 'Attivo'
+    const newStatus = currentStatus === 'Cessato' ? 'Attivo' : 'Cessato'
+
     const next = archivedIds.includes(id)
       ? archivedIds.filter((item) => item !== id)
       : [...archivedIds, id]
 
     setArchivedIds(next)
     saveArchived(next)
+    setEmployees((previous) =>
+      previous.map((item) =>
+        Number(item.id) === id ? { ...item, statoRisorsa: newStatus } : item,
+      ),
+    )
+
+    try {
+      await apiSend('PUT', `/api/admin-data/employees/${id}`, { statoRisorsa: newStatus })
+    } catch (requestError) {
+      setArchivedIds((previous) =>
+        previous.includes(id)
+          ? previous.filter((item) => item !== id)
+          : [...previous, id],
+      )
+      saveArchived(
+        archivedIds.includes(id)
+          ? archivedIds.filter((item) => item !== id)
+          : [...archivedIds, id],
+      )
+      setEmployees((previous) =>
+        previous.map((item) =>
+          Number(item.id) === id ? { ...item, statoRisorsa: currentStatus } : item,
+        ),
+      )
+      window.alert(requestError?.message || "Errore durante l'aggiornamento dello stato del lavoratore.")
+    }
   }
 
   return (
@@ -406,15 +452,24 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                         className="legacy-icon-btn-sm"
                         aria-label="Archivio"
                         title={row.status === 'Archiviata' ? 'Ripristina azienda' : 'Archivia azienda'}
-                        onClick={(event) => {
+                        onClick={async (event) => {
                           event.stopPropagation()
+                          const newStatus = row.status === 'Archiviata' ? 'Attiva' : 'Archiviata'
                           setCompanies((previous) =>
                             previous.map((item) =>
-                              Number(item.id) === Number(row.id)
-                                ? { ...item, status: item.status === 'Archiviata' ? 'Attiva' : 'Archiviata' }
-                                : item,
+                              Number(item.id) === Number(row.id) ? { ...item, status: newStatus } : item,
                             ),
                           )
+                          try {
+                            await apiSend('PATCH', `/api/admin-data/companies/${row.id}`, { status: newStatus })
+                          } catch (requestError) {
+                            setCompanies((previous) =>
+                              previous.map((item) =>
+                                Number(item.id) === Number(row.id) ? { ...item, status: row.status } : item,
+                              ),
+                            )
+                            window.alert(requestError?.message || 'Errore durante l\'aggiornamento stato azienda.')
+                          }
                         }}
                       >📁</button>
                     </Box>
@@ -484,8 +539,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </TextField>
           </Box>
           <Box className="legacy-table-toolbar-filters">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />}>Filtra</Button>
+            <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+            <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={handleFilterEmployees}>Filtra</Button>
           </Box>
         </Box>
 

@@ -127,6 +127,7 @@ const visibleProtocols = useMemo(() => {
 
   return (
     <Stack spacing={2}>
+      <Typography variant="h6">Protocolli sanitari</Typography>
       {/* Toolbar */}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} justifyContent="space-between">
         <TextField

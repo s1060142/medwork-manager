@@ -727,6 +727,67 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
+        // Ensure patient user has a corresponding employee record so the patient portal can resolve the employee ID
+        if (!dbContext.Employees.Any(e => e.Id == patientUser.Id))
+        {
+            var firstCompany = await dbContext.Companies.FirstOrDefaultAsync();
+            var firstBranch = await dbContext.Branches.FirstOrDefaultAsync(b => b.CompanyId == firstCompany.Id);
+            var firstJobRole = await dbContext.JobRoles.FirstOrDefaultAsync();
+            var firstDoctor = await dbContext.Doctors.FirstOrDefaultAsync();
+
+            dbContext.Employees.Add(new Employee
+            {
+                Id = patientUser.Id,
+                CompanyId = firstCompany.Id,
+                TenantId = tenantId,
+                BranchId = firstBranch.Id,
+                JobRole = firstJobRole.Name,
+                JobRoleId = firstJobRole.Id,
+                FirstName = patientUser.FirstName,
+                LastName = patientUser.LastName,
+                TaxCode = $"PATIENT{patientUser.Id:D8}",
+                BirthDate = new DateTime(1990, 1, 1),
+                Gender = "M",
+                BirthCity = "Roma",
+                BirthCityCode = "H501",
+                PersonalEmail = patientUser.Email,
+                PhoneNumber = "+39 000 0000000"
+            });
+
+            dbContext.MedicalVisits.Add(new MedicalVisit
+            {
+                EmployeeId = patientUser.Id,
+                DoctorId = firstDoctor.Id,
+                TenantId = tenantId,
+                VisitDate = DateTime.UtcNow.Date.AddDays(-10),
+                NextDeadlineDate = DateTime.UtcNow.Date.AddDays(20),
+                Outcome = "Idoneo senza limitazioni",
+                ClinicalNotes = "Visita demo per paziente test.",
+                VisitType = MedicalVisitType.Periodic,
+                TargetOrgans = "Apparato respiratorio",
+                ObjectiveExam = "Esame obiettivo nella norma."
+            });
+
+            await dbContext.SaveChangesAsync();
+
+            var patientVisit = await dbContext.MedicalVisits.FirstOrDefaultAsync(v => v.EmployeeId == patientUser.Id);
+            if (patientVisit != null && !dbContext.Anamneses.Any(a => a.MedicalVisitId == patientVisit.Id))
+            {
+                dbContext.Anamneses.Add(new Anamnesis
+                {
+                    MedicalVisitId = patientVisit.Id,
+                    TenantId = tenantId,
+                    WorkHistory = "Anamnesi lavorativa per paziente test.",
+                    PersonalHistory = "Anamnesi personale negativa.",
+                    FamilyHistory = "Nessuna familiarità rilevante.",
+                    RemotePathology = "Nessuna patologia remota.",
+                    RecentPathology = "Nessuna patologia recente."
+                });
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
         var patientUserRole = await dbContext.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == patientUser.Id && ur.RoleId == patientRole.Id);
         if (patientUserRole == null)
         {

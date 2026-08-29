@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { TestFixtures, USERS, API_URL } from '../medwork-frontend/tests/fixtures/test-fixtures'
+import { TestFixtures, USERS, API_URL } from '../fixtures/test-fixtures'
 
 test('check visit page labels after login', async ({ page, request, context }) => {
   const fixtures = new TestFixtures(page, request, context, expect)

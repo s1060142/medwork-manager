@@ -14,7 +14,7 @@ export class ProtocolsPage {
   constructor(page: Page) {
     this.page = page
     this.dialog = page.getByRole('dialog')
-    this.newProtocolButton = page.getByRole('button', { name: '+ Nuovo protocollo' })
+    this.newProtocolButton = page.getByRole('button', { name: 'Nuovo protocollo' })
     this.protocolNameInput = page.getByLabel('Nome protocollo')
     this.cadenceInput = page.getByLabel('Cadenza visita (giorni)')
     this.objectiveInput = page.getByLabel('Obiettivo / Rischio target')
