@@ -198,6 +198,20 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     )
   }
 
+  const handlePrint = () => {
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.ragioneSociale || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.cittaUnitaLocal || '')}</td><td>${esc(row.provincia || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
+    const win = window.open('', '_blank')
+    if (!win) { window.alert('Stampa non disponibile: consenti i popup del browser.'); return }
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Elenco Aziende</title>
+      <style>body{font-family:sans-serif;padding:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px;text-align:left}</style>
+      </head><body><h2>Elenco Aziende</h2>
+      <table><thead><tr><th>Ragione Sociale</th><th>P.IVA</th><th>Città</th><th>Provincia</th><th>Stato</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <script>window.onload=function(){window.print()}</script></body></html>`)
+    win.document.close()
+  }
+
   const latestVisitByEmployee = useMemo(() => {
     return visits.reduce((accumulator, visit) => {
       const employeeId = Number(visit.employeeId)
@@ -309,8 +323,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </Typography>
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button variant="outlined" onClick={onOpenEmployeeCrud} className="legacy-btn-secondary">Gestione completa</Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate} className="legacy-btn">Aggiungi</Button>
+            <Button type="button" variant="outlined" onClick={onOpenEmployeeCrud} className="legacy-btn-secondary">Gestione completa</Button>
+            <Button type="button" variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate} className="legacy-btn">Aggiungi</Button>
           </Stack>
         </Box>
 
@@ -350,9 +364,9 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </TextField>
           </Box>
           <Box className="legacy-table-toolbar-filters">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={loadData}>Ricerca</Button>
-            <Button className="legacy-btn" onClick={onOpenEmployeeCreate}>Ricerca lavoratori</Button>
+            <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+            <Button type="button" className="legacy-btn" startIcon={<SearchIcon />} onClick={loadData}>Ricerca</Button>
+            <Button type="button" className="legacy-btn" onClick={onOpenEmployeeCreate}>Ricerca lavoratori</Button>
           </Box>
         </Box>
 
@@ -449,12 +463,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
         <Box className="legacy-table-footer">
           <Stack direction="row" spacing={1}>
-            <Button variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
-            <Button variant="outlined" onClick={() => window.print()}>Stampa</Button>
-            <Button variant="outlined" onClick={() => window.alert('Stampe massive non ancora disponibile')}>Stampe massive</Button>
-            <Button variant="outlined" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
-            <Button variant="outlined" onClick={handleExportCompanies}>Esporta dati in excel</Button>
-            <Button variant="outlined" onClick={() => window.alert('Importazione lavoratori non ancora disponibile')}>Importa lavoratori</Button>
+            <Button type="button" variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
+            <Button type="button" variant="outlined" onClick={handlePrint}>Stampa</Button>
+            <Button type="button" variant="outlined" onClick={() => window.alert('Stampe massive non ancora disponibile')}>Stampe massive</Button>
+            <Button type="button" variant="outlined" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
+            <Button type="button" variant="outlined" onClick={handleExportCompanies}>Esporta dati in excel</Button>
+            <Button type="button" variant="outlined" onClick={() => window.alert('Importazione lavoratori non ancora disponibile')}>Importa lavoratori</Button>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
@@ -499,8 +513,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </TextField>
           </Box>
           <Box className="legacy-table-toolbar-filters">
-            <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-            <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={handleFilterEmployees}>Filtra</Button>
+            <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+            <Button type="button" className="legacy-btn" startIcon={<SearchIcon />} onClick={handleFilterEmployees}>Filtra</Button>
           </Box>
         </Box>
 

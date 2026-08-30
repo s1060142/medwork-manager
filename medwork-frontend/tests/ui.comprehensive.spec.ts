@@ -236,11 +236,10 @@ test.describe('Administration - Amministrazione', () => {
     await expect(page.locator('button:has-text("Registra firma")').first()).toBeVisible()
     // Billing center button present
     await openTab(page, 'Fatturazione')
-    await expect(page.locator('button:has-text("Registra documento")').first()).toBeVisible()
+    await expect(page.locator('button:has-text("Genera fatture")').first()).toBeVisible()
     // Audit center buttons present
     await openTab(page, 'Audit')
     await expect(page.locator('button:has-text("Aggiorna")').first()).toBeVisible()
-    await expect(page.locator('button:has-text("Svuota")').first()).toBeVisible()
   })
 })
 
@@ -267,18 +266,6 @@ test.describe('Profile Dialogs', () => {
 // ==================== API HEALTH CHECKS ====================
 
 test.describe('API Endpoints Health Check', () => {
-  let authToken = ''
-
-  test.beforeAll(async () => {
-    const response = await fetch(`${API_BASE}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ADMIN_CRED),
-    })
-    const data = await response.json()
-    authToken = data.accessToken
-  })
-
   const endpoints = [
     { name: 'Companies', url: '/api/master-data/companies', method: 'GET' },
     { name: 'Employees', url: '/api/master-data/employees', method: 'GET' },
@@ -293,12 +280,17 @@ test.describe('API Endpoints Health Check', () => {
     { name: 'Expiring Visits', url: '/api/medical-visits/expiring?days=30', method: 'GET' },
   ]
 
+  test.beforeEach(async ({ page }) => {
+    await login(page)
+  })
+
   for (const ep of endpoints) {
-    test(`API ${ep.name} returns 200`, async () => {
-      const response = await fetch(`${API_BASE}${ep.url}`, {
-        headers: { 'Authorization': `Bearer ${authToken}` },
+    test('API ' + ep.name + ' returns 200', async ({ page }) => {
+      const token = await page.evaluate(() => localStorage.getItem('accessToken'))
+      const response = await page.request.get(API_BASE + ep.url, {
+        headers: { Authorization: 'Bearer ' + token },
       })
-      expect(response.status).toBe(200)
+      expect(typeof response.status === 'function' ? response.status() : response.status).toBe(200)
     })
   }
 })

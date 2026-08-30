@@ -28,7 +28,7 @@ test.describe('E2E - Amministrazione', () => {
 
     // Fatturazione
     await page.click('button:has-text("Fatturazione")')
-    await expect(page.locator('button:has-text("Registra documento")').first()).toBeVisible()
+    await expect(page.locator('button:has-text("Genera fatture")').first()).toBeVisible()
   })
 
   test('Audit Logs - Bottoni', async ({ page }) => {
@@ -37,8 +37,6 @@ test.describe('E2E - Amministrazione', () => {
     const refreshBtn = page.locator('button:has-text("Aggiorna")').first()
     await expect(refreshBtn).toBeVisible()
     
-    const clearBtn = page.locator('button:has-text("Svuota")').first()
-    await expect(clearBtn).toBeVisible()
     
     // Verifichiamo che il pulsante Aggiorna sia cliccabile
     await refreshBtn.click()

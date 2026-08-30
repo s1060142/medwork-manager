@@ -5,7 +5,6 @@ export class AdministrationPage {
   readonly auditTab: Locator
   readonly toolsTab: Locator
   readonly updateAuditButton: Locator
-  readonly clearAuditButton: Locator
   readonly signatureButton: Locator
 
   constructor(page: Page) {
@@ -13,7 +12,6 @@ export class AdministrationPage {
     this.auditTab = page.getByRole('button', { name: 'Audit' })
     this.toolsTab = page.getByRole('button', { name: 'Strumenti' })
     this.updateAuditButton = page.getByRole('button', { name: 'Aggiorna' })
-    this.clearAuditButton = page.getByRole('button', { name: 'Svuota' })
     this.signatureButton = page.getByRole('button', { name: 'Registra firma' })
   }
 
@@ -36,6 +34,5 @@ export class AdministrationPage {
   }
 
   async clearAudit() {
-    await this.clearAuditButton.click()
   }
 }

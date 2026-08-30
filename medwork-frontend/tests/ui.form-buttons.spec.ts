@@ -21,6 +21,15 @@ async function expectButtonsClickable(page, labels) {
     if ((await btn.count()) === 0) continue
     await expect(btn, `button "${label}" should be visible`).toBeVisible({ timeout: 8000 })
     await btn.click({ timeout: 5000 }).catch(() => {})
+    // Dismiss any modal dialog opened by the click so subsequent buttons remain reachable
+    const dialog = page.locator('[role="dialog"]').first()
+    if (await dialog.count() > 0 && await dialog.isVisible().catch(() => false)) {
+      const annulla = dialog.locator('button:has-text("Annulla"), button:has-text("Chiudi")').first()
+      if (await annulla.count() > 0) {
+        await annulla.click().catch(() => {})
+        await page.waitForTimeout(200)
+      }
+    }
     checked++
   }
   expect(checked, 'at least one expected button should be present').toBeGreaterThan(0)

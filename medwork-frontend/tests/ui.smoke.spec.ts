@@ -62,6 +62,7 @@ test('dashboard quick actions and kpi cards render after company selection', asy
 
 test('company CRUD flow via UI', async ({ page }) => {
   await loginAsAdmin(page)
+  page.on('console', msg => console.log('BROWSER:', msg.type(), msg.text()))
 
   await page.click('button:has-text("Gestione aziende")')
   await page.locator('button:has-text("Anagrafica")').click()
@@ -72,14 +73,23 @@ test('company CRUD flow via UI', async ({ page }) => {
   if (await createButton.count() > 0) {
     await createButton.click()
     // Wait for the create dialog to open (fields use label, not placeholder)
-    await expect(page.getByText('Nuovo elemento')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('[role="dialog"]').getByText('Nuova azienda')).toBeVisible({ timeout: 10000 })
     await page.getByLabel('Nome Azienda').fill('PLAYWRIGHT TEST CO')
     await page.getByLabel('Ragione Sociale').fill('PLAYWRIGHT TEST CO SRL')
     await page.getByLabel('Partita IVA').fill('IT00000000000')
     await page.getByLabel('Email Contatto (legacy)').fill('playwright@test.it')
     await page.getByLabel('Telefono').fill('0000000000')
     await page.click('button:has-text("Salva")')
-    await expect(page.getByText('PLAYWRIGHT TEST CO', { exact: false })).toBeVisible({ timeout: 5000 })
+    await page.waitForTimeout(2000)
+    // Check for error/success anywhere on the page
+    const alerts = page.locator('.MuiAlert-message')
+    if (await alerts.count() > 0) {
+      const texts = await alerts.allTextContents()
+      console.log('Alerts on page:', texts)
+    } else {
+      console.log('No alerts on page')
+    }
+    await expect(page.getByText('PLAYWRIGHT TEST CO', { exact: false }).first()).toBeVisible({ timeout: 5000 })
   }
 })
 
@@ -107,7 +117,7 @@ test.skip('company group create flow sends boolean archivioUnico (no 400)', asyn
   await createButton.first().click()
 
   // Dialog opens; fill required text fields
-  await expect(page.getByText('Nuovo elemento')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByText('Nuova azienda')).toBeVisible({ timeout: 10000 })
   const groupName = `GRUPPO TEST ${Date.now()}`
   await page.getByLabel('Descrizione').fill(groupName)
   await page.getByLabel('Ragione Sociale').fill('Gruppo Test SRL')
@@ -177,5 +187,8 @@ test('employee profile "Nuova visita" opens the visit stepper', async ({ page })
   await expect(page.locator('[role="dialog"]')).toHaveCount(0, { timeout: 10000 })
   await expect(page.getByText('Inserimento Visita Medica', { exact: false })).toBeVisible({ timeout: 15000 })
 })
+
+
+
 
 

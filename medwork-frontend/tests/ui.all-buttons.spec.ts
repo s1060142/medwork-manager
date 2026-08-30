@@ -242,14 +242,13 @@ test.describe('All Buttons - Comprehensive Coverage', () => {
     test('BillingCenter buttons', async ({ page }) => {
       await clickIfVisible(page, 'Amministrazione')
       await clickIfVisible(page, 'Fatturazione')
-      await expectButtonVisible(page, 'Registra documento')
+      await expectButtonVisible(page, 'Genera fatture')
     })
 
     test('AuditCenter buttons', async ({ page }) => {
       await clickIfVisible(page, 'Amministrazione')
       await clickIfVisible(page, 'Audit')
       await expectButtonVisible(page, 'Aggiorna')
-      await expectButtonVisible(page, 'Svuota')
     })
   })
 

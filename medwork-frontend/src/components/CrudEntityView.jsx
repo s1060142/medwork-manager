@@ -192,6 +192,27 @@ function getDefaultVisibleColumns(config, configuredColumns, fields) {
   return fallback.slice(0, 6)
 }
 
+function getItalianArticle(word, isDefinite = true) {
+  if (!word) return isDefinite ? "l'" : 'un'
+  const lower = word.toLowerCase()
+  if (isDefinite) {
+    if (/^[aeiou]/.test(lower)) return "l'"
+    if (lower.endsWith('a')) return 'la'
+    if (lower.endsWith('e')) return 'la'
+    if (lower.endsWith('i')) return 'i'
+    if (lower.endsWith('o')) return 'il'
+    if (lower.endsWith('u')) return 'lo'
+    return 'il'
+  }
+  if (/^[aeiou]/.test(lower)) return "un'"
+  if (lower.endsWith('a')) return 'una'
+  if (lower.endsWith('e')) return 'una'
+  if (lower.endsWith('i')) return 'dei'
+  if (lower.endsWith('o')) return 'un'
+  if (lower.endsWith('u')) return 'uno'
+  return 'un'
+}
+
 function CrudEntityView({
   config,
   currentRole,
@@ -409,8 +430,7 @@ function CrudEntityView({
         const arrayData = Array.isArray(data) ? data : []
 
         if (endpoint.includes('/companies')) {
-          if (!effectiveCompanyId) return [endpoint, arrayData]
-          return [endpoint, arrayData.filter((item) => Number(item.id) === Number(effectiveCompanyId))]
+          return [endpoint, arrayData]
         }
 
         if (endpoint.includes('/branches')) {
@@ -421,6 +441,8 @@ function CrudEntityView({
           if (effectiveCompanyId) {
             return [endpoint, arrayData.filter((item) => Number(item.companyId) === Number(effectiveCompanyId))]
           }
+
+          return [endpoint, []]
         }
 
         if (endpoint.includes('/employees')) {
@@ -598,6 +620,12 @@ function CrudEntityView({
           onCreated(updated, 'updated')
         }
       } else {
+        const payload = { ...formData }
+        config.fields.forEach((field) => {
+          if (!field.required && payload[field.name] === '') {
+            delete payload[field.name]
+          }
+        })
         const created = await apiSend('POST', config.createEndpoint, payload)
         setRows((current) => [created, ...current])
         setSuccessMessage('Elemento creato correttamente.')
@@ -856,7 +884,9 @@ function CrudEntityView({
 
       <Dialog open={dialogOpen} onClose={confirmClose} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {editingRow ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}` : `Nuovo ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
+          {editingRow
+            ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`
+            : `Nuova ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
           <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">
             <CloseIcon fontSize="small" />
           </IconButton>
