@@ -17,20 +17,17 @@ public class AuthController : ControllerBase
     private readonly ITenantService _tenantService;
     private readonly IUserService _userService;
     private readonly IExternalAuthService _externalAuthService;
-    private readonly INotificationService _notificationService;
 
     public AuthController(
         IJwtTokenService jwtTokenService,
         ITenantService tenantService,
         IUserService userService,
-        IExternalAuthService externalAuthService,
-        INotificationService notificationService)
+        IExternalAuthService externalAuthService)
     {
         _jwtTokenService = jwtTokenService;
         _tenantService = tenantService;
         _userService = userService;
         _externalAuthService = externalAuthService;
-        _notificationService = notificationService;
     }
 
     [HttpPost("login")]

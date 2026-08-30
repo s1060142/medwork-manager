@@ -19,6 +19,7 @@ function LoginCard({ onLoginSuccess, onForgotPassword }) {
   const [rememberMe, setRememberMe] = useState(false)
   const [caricamento, setCaricamento] = useState(false)
   const [errore, setErrore] = useState('')
+  const [forgotMessage, setForgotMessage] = useState('')
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -46,9 +47,19 @@ function LoginCard({ onLoginSuccess, onForgotPassword }) {
       <Typography variant="body2" sx={{ mb: 2, textAlign: 'right' }}>
         <Link href="#" onClick={(e) => {
           e.preventDefault();
-          onForgotPassword();
+          if (typeof onForgotPassword === 'function') {
+            onForgotPassword();
+          } else {
+            setForgotMessage("Contatta l'amministratore per reimpostare la password");
+          }
         }}>Password dimenticata?</Link>
       </Typography>
+
+      {!!forgotMessage && (
+        <Alert severity="info" sx={{ mb: 2 }} onClose={() => setForgotMessage('')}>
+          {forgotMessage}
+        </Alert>
+      )}
 
       {!!errore && (
         <Alert severity="error" sx={{ mb: 2 }}>

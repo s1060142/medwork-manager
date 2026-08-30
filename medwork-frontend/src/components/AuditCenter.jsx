@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Button,
   MenuItem,
@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { clearAuditEvents, readAuditEvents } from '../utils/auditTrail'
+import { apiGet } from '../services/apiClient'
 
 function formatDateTime(value) {
   if (!value) return '-'
@@ -22,8 +22,28 @@ function formatDateTime(value) {
 }
 
 function AuditCenter() {
-  const [events, setEvents] = useState(() => readAuditEvents())
+  const [events, setEvents] = useState([])
   const [moduleFilter, setModuleFilter] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    apiGet('/api/audit/events')
+      .then((data) => {
+        if (!cancelled) {
+          setEvents(Array.isArray(data) ? data : [])
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load audit events:', err)
+        if (!cancelled) setEvents([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [])
 
   const modules = useMemo(() => {
     const unique = new Set(events.map((item) => item.module).filter(Boolean))
@@ -35,11 +55,15 @@ function AuditCenter() {
     return events.filter((item) => item.module === moduleFilter)
   }, [events, moduleFilter])
 
-  const reload = () => setEvents(readAuditEvents())
-
-  const clear = () => {
-    clearAuditEvents()
-    setEvents([])
+  const reload = () => {
+    setLoading(true)
+    apiGet('/api/audit/events')
+      .then((data) => setEvents(Array.isArray(data) ? data : []))
+      .catch((err) => {
+        console.warn('Failed to reload audit events:', err)
+        setEvents([])
+      })
+      .finally(() => setLoading(false))
   }
 
   return (
@@ -61,8 +85,7 @@ function AuditCenter() {
                 <MenuItem key={module} value={module}>{module}</MenuItem>
               ))}
             </TextField>
-            <Button variant="outlined" onClick={reload}>Aggiorna</Button>
-            <Button variant="outlined" color="error" onClick={clear}>Svuota</Button>
+            <Button variant="outlined" onClick={reload} disabled={loading}>Aggiorna</Button>
           </Stack>
         </Stack>
       </Paper>
@@ -80,7 +103,7 @@ function AuditCenter() {
           <TableBody>
             {filtered.map((event) => (
               <TableRow key={event.id} hover>
-                <TableCell>{formatDateTime(event.at)}</TableCell>
+                <TableCell>{formatDateTime(event.timestamp)}</TableCell>
                 <TableCell>{event.module || '-'}</TableCell>
                 <TableCell>{event.action || '-'}</TableCell>
                 <TableCell>{event.detail || '-'}</TableCell>
@@ -89,7 +112,9 @@ function AuditCenter() {
             {filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4}>
-                  <Typography variant="body2" color="text.secondary">Nessun evento audit disponibile.</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {loading ? 'Caricamento...' : 'Nessun evento audit disponibile.'}
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}

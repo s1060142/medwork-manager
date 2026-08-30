@@ -83,10 +83,12 @@ public class DoctorCrudController : ControllerBase
             return BadRequest(validationResults);
         }
 
-        if (request.DoctorId <= 0)
+        if (request.DoctorId is null or <= 0)
         {
+            var tenantId = GetTenantId();
             request.DoctorId = await _dbContext.Doctors
                 .AsNoTracking()
+                .Where(x => x.TenantId == tenantId)
                 .OrderBy(x => x.Id)
                 .Select(x => x.Id)
                 .FirstOrDefaultAsync();
@@ -123,6 +125,7 @@ public class DoctorCrudController : ControllerBase
         }
         // ── END NEW ─────────────────────────────────────────────────────────────
 
+        request.TenantId = GetTenantId();
         _dbContext.MedicalVisits.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -141,10 +144,12 @@ public class DoctorCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         var doctorId = request.DoctorId;
-        if (doctorId <= 0)
+        if (doctorId is null or <= 0)
         {
+            var doctorTenantId = GetTenantId();
             doctorId = await _dbContext.Doctors
                 .AsNoTracking()
+                .Where(x => x.TenantId == doctorTenantId)
                 .OrderBy(x => x.Id)
                 .Select(x => x.Id)
                 .FirstOrDefaultAsync();
@@ -961,7 +966,9 @@ public class DoctorCrudController : ControllerBase
     private int GetTenantId()
     {
         var claim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(claim, out var id) && id > 0 ? id : 1;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }
 

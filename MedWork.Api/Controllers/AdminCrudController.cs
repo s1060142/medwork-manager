@@ -264,6 +264,23 @@ public class AdminCrudController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("employees/{id:int}/archive")]
+    public async Task<IActionResult> ToggleEmployeeArchive(int id, [FromBody] ToggleArchiveRequest request)
+    {
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Employees.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        if (entity is null) return NotFound();
+
+        entity.IsArchived = request.IsArchived;
+        await _dbContext.SaveChangesAsync();
+        return Ok(new { entity.Id, entity.IsArchived });
+    }
+
+    public class ToggleArchiveRequest
+    {
+        public bool IsArchived { get; set; }
+    }
+
     [HttpPost("risk-factors")]
     public async Task<IActionResult> CreateRiskFactor([FromBody] RiskFactor request)
     {
@@ -335,14 +352,16 @@ public class AdminCrudController : ControllerBase
     [HttpPost("employee-risks")]
     public async Task<IActionResult> CreateEmployeeRisk([FromBody] EmployeeRisk request)
     {
+        var tenantId = GetTenantId();
         var exists = await _dbContext.EmployeeRisks
-            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.RiskFactorId == request.RiskFactorId);
+            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.RiskFactorId == request.RiskFactorId && x.TenantId == tenantId);
 
         if (exists)
         {
             return Conflict("EmployeeRisk already exists.");
         }
 
+        request.TenantId = tenantId;
         _dbContext.EmployeeRisks.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -708,6 +727,8 @@ public class AdminCrudController : ControllerBase
     private int GetTenantId()
     {
         var tenantClaim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(tenantClaim, out var tenantId) ? tenantId : 0;
+        if (int.TryParse(tenantClaim, out var tenantId) && tenantId > 0)
+            return tenantId;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }

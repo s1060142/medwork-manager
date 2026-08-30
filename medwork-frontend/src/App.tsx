@@ -272,11 +272,17 @@ const App = () => {
   const [selectedArea, setSelectedArea] = useState<string>('company-management')
   const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
 
+  // When opening a new visit from an employee profile, preselect that employee in the stepper
+  const [visitInitialEmployeeId, setVisitInitialEmployeeId] = useState<number | null>(null)
+
   // Quick create state
   const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
 
   const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
   const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
+
+  // Global search (topbar Autocomplete)
+  const [searchOptions, setSearchOptions] = useState<any[]>([])
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
 
@@ -450,6 +456,51 @@ const App = () => {
     setProfileCompany(company)
   }
 
+  // Global search handlers (F7)
+  const handleSearchInputChange = async (_event: unknown, value: string) => {
+    if (!value || value.length < 2) {
+      setSearchOptions([])
+      return
+    }
+    try {
+      const data = await apiGet(`/api/master-data/employees/search?q=${encodeURIComponent(value)}`)
+      setSearchOptions(Array.isArray(data) ? data : [])
+    } catch {
+      setSearchOptions([])
+    }
+  }
+
+  const handleSearchSelect = (_event: unknown, selected: any) => {
+    if (selected && typeof selected === 'object' && selected.id !== undefined) {
+      handleOpenEmployeeProfile({
+        id: selected.id,
+        firstName: selected.firstName,
+        lastName: selected.lastName,
+        taxCode: selected.taxCode,
+        companyName: selected.companyName,
+      })
+    }
+  }
+
+  // Topbar button handlers (F8)
+  const handleNotificheClick = () => {
+    setSelectedArea('health-surveillance')
+    setSelectedModuleKey('alert-multicanale')
+    appendAuditEvent({ module: 'Navigation', action: 'Open', detail: 'alert-multicanale' })
+  }
+
+  const handleChangeLogClick = () => {
+    window.alert('ChangeLog: aggiornamenti e modifiche recenti alla piattaforma MedWork.')
+  }
+
+  const handleManualeClick = () => {
+    window.alert('Manuale: consulta la documentazione online di MedWork per guide e procedure.')
+  }
+
+  const handleProfiloClick = () => {
+    window.alert(`Profilo utente\nRuolo: ${getRole() || '-'}\nTenant: ${getTenantId() || '-'}`)
+  }
+
   const handleAreaNavigation = (nextArea: string) => {
     setSelectedArea(nextArea)
     setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
@@ -541,7 +592,15 @@ const App = () => {
     }
 
     if (moduleKey === 'medical-visit-stepper') {
-      return <MedicalVisitStepper onCreated={() => setSelectedModuleKey('medical-visits')} />
+      return (
+        <MedicalVisitStepper
+          initialEmployeeId={visitInitialEmployeeId}
+          onCreated={() => {
+            setVisitInitialEmployeeId(null)
+            setSelectedModuleKey('medical-visits')
+          }}
+        />
+      )
     }
 
     if (moduleKey === 'appointments-calendar') {
@@ -588,6 +647,38 @@ const App = () => {
           onAnalysisTabChange={setSelectedAnalysisTab}
         />
       )
+    }
+
+    if (moduleKey === 'doctor-dashboard') {
+      return <DashboardMedico />
+    }
+
+    if (moduleKey === 'cartella-sanitaria') {
+      return <CartellaSanitariaCenter />
+    }
+
+    if (moduleKey === 'giudizio-idoneita') {
+      return <GiudizioIdoneitaCenter />
+    }
+
+    if (moduleKey === 'firma-grafometrica') {
+      return <FirmaGrafometricaCenter />
+    }
+
+    if (moduleKey === 'allegato-3b') {
+      return <Allegato3BCenter />
+    }
+
+    if (moduleKey === 'alert-multicanale') {
+      return <AlertMulticanaleCenter />
+    }
+
+    if (moduleKey === 'phrase-templates') {
+      return <PhraseTemplatesCenter />
+    }
+
+    if (moduleKey === 'questionnaires') {
+      return <QuestionnairesCenter />
     }
 
     const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
@@ -961,43 +1052,46 @@ const App = () => {
           <Box className="legacy-layout">
             <header className="legacy-topbar">
               <Box className="legacy-topbar-left" sx={{ display: 'flex', alignItems: 'center' }}>
-                <button type="button" className="legacy-icon-btn" aria-label="Menu">
-                  <MenuIcon fontSize="small" />
-                </button>
+                <button type="button" className="legacy-icon-btn" aria-label="Menu" onClick={() => {}}>
+                   <MenuIcon fontSize="small" />
+                 </button>
 
                 <Autocomplete
-                  sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
-                  size="small"
-                  options={[]} // We can keep options empty for now, or implement the live search if needed. For simplicity in Phase 3, we implement basic live search
-                  freeSolo
-                  disableClearable
-                  noOptionsText="Nessun lavoratore"
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Cerca lavoratore..."
-                      InputProps={{
-                        ...params.InputProps,
-                        type: 'search',
-                        startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                      }}
-                    />
-                  )}
-                />
-              </Box>
-              <Box className="legacy-topbar-right">
-                <button type="button" className="legacy-toolbar-link" aria-label="Notifiche">
-                  <NotificationsNoneIcon fontSize="small" />
-                </button>
-                <span className="legacy-divider" />
-                <span className="legacy-language">(it)</span>
-                <span className="legacy-divider" />
-                <button type="button" className="legacy-toolbar-link">ChangeLog</button>
-                <button type="button" className="legacy-toolbar-link">Manuale</button>
-                <button type="button" className="legacy-toolbar-link">
-                  <ManageAccountsIcon fontSize="small" />
-                  Profilo
-                </button>
+                   sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
+                   size="small"
+                   options={searchOptions}
+                   onInputChange={handleSearchInputChange}
+                   onChange={handleSearchSelect}
+                   getOptionLabel={(option) => typeof option === 'string' ? option : `${option.firstName || ''} ${option.lastName || ''}`.trim()}
+                   freeSolo
+                   disableClearable
+                   noOptionsText="Nessun lavoratore"
+                   renderInput={(params) => (
+                     <TextField
+                       {...params}
+                       placeholder="Cerca lavoratore..."
+                       InputProps={{
+                         ...params.InputProps,
+                         type: 'search',
+                         startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                       }}
+                     />
+                   )}
+                 />
+               </Box>
+               <Box className="legacy-topbar-right">
+                 <button type="button" className="legacy-toolbar-link" aria-label="Notifiche" onClick={handleNotificheClick}>
+                   <NotificationsNoneIcon fontSize="small" />
+                 </button>
+                 <span className="legacy-divider" />
+                 <span className="legacy-language">(it)</span>
+                 <span className="legacy-divider" />
+                 <button type="button" className="legacy-toolbar-link" onClick={handleChangeLogClick}>ChangeLog</button>
+                 <button type="button" className="legacy-toolbar-link" onClick={handleManualeClick}>Manuale</button>
+                 <button type="button" className="legacy-toolbar-link" onClick={handleProfiloClick}>
+                   <ManageAccountsIcon fontSize="small" />
+                   Profilo
+                 </button>
                 <button type="button" className="legacy-toolbar-link" onClick={handleLogout}>
                   <LogoutIcon fontSize="small" />
                   Logout
@@ -1057,6 +1151,7 @@ const App = () => {
           }}
           onOpenMedicalVisitCreate={(employeeId: any) => {
             setProfileEmployee(null)
+            setVisitInitialEmployeeId(employeeId != null ? Number(employeeId) : null)
             setSelectedModuleKey('medical-visit-stepper')
           }} onEditEmployee={undefined} />
         <CompanyProfileDialog

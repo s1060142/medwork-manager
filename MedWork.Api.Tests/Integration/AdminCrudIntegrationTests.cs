@@ -139,7 +139,8 @@ public class AdminCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         {
             Name = "Company Seed",
             VATNumber = $"IT{vatSuffix}",
-            ContactEmail = "seed@company.it"
+            ContactEmail = "seed@company.it",
+            TenantId = 1
         };
 
         db.Companies.Add(company);
@@ -162,7 +163,8 @@ public class AdminCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             Address = "Via Seed 1",
             City = "Milano",
             Province = "MI",
-            PostalCode = "20100"
+            PostalCode = "20100",
+            TenantId = 1
         };
 
         db.Branches.Add(branch);
@@ -176,17 +178,11 @@ public class AdminCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
 
-        var existing = db.Employees.Select(x => x.Id).FirstOrDefault();
-        if (existing > 0) return existing;
-
-        var companyId = EnsureCompany();
-        var branchId = EnsureBranch(companyId);
-
         var taxRandom = Guid.NewGuid().ToString("N")[..11].ToUpperInvariant();
         var employee = new Employee
         {
-            CompanyId = companyId,
-            BranchId = branchId,
+            CompanyId = EnsureCompany(),
+            BranchId = EnsureBranch(EnsureCompany()),
             FirstName = "Marco",
             LastName = "Blu",
             TaxCode = $"BLUMRC80A01{taxRandom}"[..16],
@@ -195,7 +191,8 @@ public class AdminCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             Gender = "M",
             BirthCity = "Milano",
             BirthCityCode = "F205",
-            PersonalEmail = "employee.seed@test.it"
+            PersonalEmail = $"employee.seed{taxRandom}@test.it",
+            TenantId = 1
         };
 
         db.Employees.Add(employee);
@@ -209,14 +206,13 @@ public class AdminCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
 
-        var existing = db.RiskFactors.Select(x => x.Id).FirstOrDefault();
-        if (existing > 0) return existing;
-
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
         var risk = new RiskFactor
         {
-            Name = "Rischio Seed",
+            Name = $"Rischio-{suffix}",
             Description = "Descrizione rischio seed sufficientemente lunga.",
-            SeverityLevel = 2
+            SeverityLevel = 2,
+            TenantId = 1
         };
 
         db.RiskFactors.Add(risk);

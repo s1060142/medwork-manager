@@ -23,7 +23,7 @@ public class MedicalRecordsController : ControllerBase
     {
         var record = await _dbContext.MedicalRecords
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.TenantId == GetTenantId());
 
         if (record is null)
         {
@@ -31,5 +31,13 @@ public class MedicalRecordsController : ControllerBase
         }
 
         return Ok(record);
+    }
+
+    private int GetTenantId()
+    {
+        var claim = User.FindFirst("TenantId")?.Value;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }

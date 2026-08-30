@@ -48,7 +48,7 @@ function ProtocolsCenter() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet('/api/protocols')
+      const data = await apiGet('/api/doctor-data/protocols')
       setProtocols(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.message || 'Errore nel caricamento dei protocolli.')

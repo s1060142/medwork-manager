@@ -26,11 +26,11 @@ import { apiGet, apiSend } from '../services/apiClient'
 const STEP_LABELS = ['Anamnesi', 'Esame Obiettivo', 'Giudizio di Idoneità']
 
 const VISIT_TYPES = [
-  'Preventive',
-  'Periodic',
-  'RoleChange',
-  'EmployeeRequest',
-  'EndOfRelationship',
+  { code: 2, label: 'Periodica' },
+  { code: 1, label: 'Preventiva' },
+  { code: 3, label: 'Cambio Mansione' },
+  { code: 4, label: 'Richiesta lavoratore' },
+  { code: 5, label: 'Cessazione' },
 ]
 
 const initialData = {
@@ -38,7 +38,7 @@ const initialData = {
   doctorId: '',
   visitDate: new Date().toISOString().split('T')[0],
   nextDeadlineDate: '',
-  visitType: 'Periodic',
+  visitType: 2,
   workHistory: '',
   personalHistory: '',
   familyHistory: '',
@@ -57,11 +57,16 @@ const initialData = {
   objectiveExam: '', // Used for extra notes or legacy copied text
 }
 
-function MedicalVisitStepper({ onCreated }) {
+function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) {
   const [activeStep, setActiveStep] = useState(0)
   const [employees, setEmployees] = useState([])
   const [doctors, setDoctors] = useState([])
-  const [formData, setFormData] = useState(initialData)
+  const [formData, setFormData] = useState(() => ({
+    ...initialData,
+    employeeId: initialEmployeeId != null
+      ? String(initialEmployeeId)
+      : (initialEmployee?.id != null ? String(initialEmployee.id) : initialData.employeeId),
+  }))
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
@@ -83,7 +88,11 @@ function MedicalVisitStepper({ onCreated }) {
   useEffect(() => {
     apiGet('/api/master-data/employees')
       .then((employeeData) => {
-        setEmployees(Array.isArray(employeeData) ? employeeData : [])
+        const list = Array.isArray(employeeData) ? employeeData : []
+        if (initialEmployee && !list.some((item) => Number(item.id) === Number(initialEmployee.id))) {
+          list.push(initialEmployee)
+        }
+        setEmployees(list)
       })
       .catch((requestError) => {
         setError(requestError.message || 'Errore nel caricamento dei dati lavoratori.')
@@ -226,7 +235,7 @@ function MedicalVisitStepper({ onCreated }) {
 
       const createdVisit = await apiSend('POST', '/api/doctor-data/medical-visits', {
         employeeId: Number(formData.employeeId),
-        doctorId: Number(formData.doctorId),
+        doctorId: formData.doctorId ? Number(formData.doctorId) : null,
         visitDate: new Date(formData.visitDate).toISOString(),
         nextDeadlineDate: formData.nextDeadlineDate
           ? new Date(formData.nextDeadlineDate).toISOString()
@@ -343,8 +352,8 @@ function MedicalVisitStepper({ onCreated }) {
                     onChange={(event) => setField('visitType', event.target.value)}
                     sx={{ gridColumn: '1 / -1' }}
                   >
-                    {VISIT_TYPES.map((value) => (
-                      <MenuItem key={value} value={value}>{value}</MenuItem>
+                    {VISIT_TYPES.map((item) => (
+                      <MenuItem key={item.code} value={item.code}>{item.label}</MenuItem>
                     ))}
                   </TextField>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 1, gap: 1 }}>

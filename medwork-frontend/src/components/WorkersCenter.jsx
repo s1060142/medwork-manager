@@ -24,8 +24,6 @@ import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import AddIcon from '@mui/icons-material/Add'
 
-const STORAGE_KEY = 'medwork.archivedEmployees'
-
 function toDate(value) {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? null : date
@@ -51,19 +49,6 @@ function classifyFitness(outcome) {
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
 }
 
-function loadArchived() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function saveArchived(ids) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
-}
-
 function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud, onOpenEmployeeProfile }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
@@ -77,7 +62,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const [workerStatus, setWorkerStatus] = useState('active')
   const [companySearch, setCompanySearch] = useState('')
   const [companyArchiviation, setCompanyArchiviation] = useState('active')
-  const [archivedIds, setArchivedIds] = useState(() => loadArchived())
   const [companyContext, setCompanyContext] = useState(activeCompanyId || 'all')
   const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId || '')
 
@@ -92,7 +76,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       setError('')
 
       const [employeesData, visitsData, companiesData, branchesData, rolesData] = await Promise.all([
-        apiGet('/api/master-data/employees'),
+        apiGet('/api/master-data/employees?includeArchived=true'),
         apiGet('/api/master-data/medical-visits'),
         apiGet('/api/master-data/companies'),
         apiGet('/api/master-data/branches'),
@@ -136,8 +120,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     try {
       setError('')
       const params = new URLSearchParams()
+      params.set('includeArchived', 'true')
       if (workerSearch) params.set('search', workerSearch)
-      if (workerStatus) params.set('status', workerStatus)
       if (companyContext && companyContext !== 'all') params.set('companyId', String(companyContext))
       const query = params.toString()
       const endpoint = `/api/master-data/employees${query ? `?${query}` : ''}`
@@ -148,15 +132,31 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     }
   }
 
-  const handleToggleArchive = (row) => {
+  const handleToggleArchive = async (row) => {
     const employeeId = Number(row.id)
-    setArchivedIds((previous) => {
-      const next = previous.includes(employeeId)
-        ? previous.filter((id) => id !== employeeId)
-        : [...previous, employeeId]
-      saveArchived(next)
-      return next
-    })
+    const currentArchived = row.isArchived === true
+    const newArchived = !currentArchived
+
+    // Optimistically update
+    setEmployees((previous) =>
+      previous.map((item) =>
+        Number(item.id) === employeeId ? { ...item, isArchived: newArchived } : item
+      )
+    )
+
+    try {
+      await apiSend('PATCH', `/api/admin-data/employees/${employeeId}/archive`, {
+        isArchived: newArchived
+      })
+    } catch (requestError) {
+      // Revert on error
+      setEmployees((previous) =>
+        previous.map((item) =>
+          Number(item.id) === employeeId ? { ...item, isArchived: currentArchived } : item
+        )
+      )
+      window.alert(requestError?.message || "Errore durante l'aggiornamento dello stato del lavoratore.")
+    }
   }
 
   const handleDeleteEmployee = async (row) => {
@@ -220,13 +220,13 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           latestVisitDate: latestVisit?.visitDate || null,
           latestOutcome: latestVisit?.outcome || '',
           fitness,
-          isArchived: archivedIds.includes(Number(employee.id)),
-          jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
-          workingStatus: 'Attivo',
-        }
-      })
-      .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
-  }, [employees, latestVisitByEmployee, archivedIds])
+           isArchived: employee.isArchived === true,
+           jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
+           workingStatus: 'Attivo',
+         }
+       })
+       .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
+   }, [employees, latestVisitByEmployee])
 
   useEffect(() => {
     if (companyContext === 'all') {
@@ -260,7 +260,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       return Number(row.companyId) === Number(companyContext)
     })
 
-    const statusFiltered = employeeStatusFilter(source, workerStatus, archivedIds)
+    const statusFiltered = employeeStatusFilter(source, workerStatus)
 
     return statusFiltered
       .map((employee) => {
@@ -271,7 +271,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           latestVisitDate: latestVisit?.visitDate || null,
           latestOutcome: latestVisit?.outcome || '',
           fitness,
-          isArchived: archivedIds.includes(Number(employee.id)),
+          isArchived: employee.isArchived === true,
           jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
           workingStatus: 'Attivo',
         }
@@ -282,12 +282,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         const searchable = `${row.lastName || ''} ${row.firstName || ''} ${row.taxCode || ''} ${row.jobRoleDisplay || ''}`.toLowerCase()
         return searchable.includes(needle)
       })
-  }, [employees, workerSearch, workerStatus, archivedIds, latestVisitByEmployee, companyContext])
+  }, [employees, workerSearch, workerStatus, latestVisitByEmployee, companyContext])
 
-  function employeeStatusFilter(list, status, archived) {
+  function employeeStatusFilter(list, status) {
     if (status === 'all') return list
-    if (status === 'active') return list.filter((item) => !archived.includes(Number(item.id)))
-    if (status === 'archived') return list.filter((item) => archived.includes(Number(item.id)))
+    if (status === 'active') return list.filter((item) => !item.isArchived)
+    if (status === 'archived') return list.filter((item) => item.isArchived)
     return list
   }
 
@@ -297,46 +297,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   }, [branches, companyContext])
 
   const visibleCompanyRows = useMemo(() => filteredCompanyRows, [filteredCompanyRows])
-
-  const toggleArchived = async (employeeId) => {
-    const id = Number(employeeId)
-    const employee = employees.find((item) => Number(item.id) === id)
-    const currentStatus = employee?.statoRisorsa || 'Attivo'
-    const newStatus = currentStatus === 'Cessato' ? 'Attivo' : 'Cessato'
-
-    const next = archivedIds.includes(id)
-      ? archivedIds.filter((item) => item !== id)
-      : [...archivedIds, id]
-
-    setArchivedIds(next)
-    saveArchived(next)
-    setEmployees((previous) =>
-      previous.map((item) =>
-        Number(item.id) === id ? { ...item, statoRisorsa: newStatus } : item,
-      ),
-    )
-
-    try {
-      await apiSend('PUT', `/api/admin-data/employees/${id}`, { statoRisorsa: newStatus })
-    } catch (requestError) {
-      setArchivedIds((previous) =>
-        previous.includes(id)
-          ? previous.filter((item) => item !== id)
-          : [...previous, id],
-      )
-      saveArchived(
-        archivedIds.includes(id)
-          ? archivedIds.filter((item) => item !== id)
-          : [...archivedIds, id],
-      )
-      setEmployees((previous) =>
-        previous.map((item) =>
-          Number(item.id) === id ? { ...item, statoRisorsa: currentStatus } : item,
-        ),
-      )
-      window.alert(requestError?.message || "Errore durante l'aggiornamento dello stato del lavoratore.")
-    }
-  }
 
   return (
     <Stack spacing={2}>
@@ -637,16 +597,11 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
         <Box className="legacy-table-footer">
           <Box />
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
-            <TextField size="small" select sx={{ minWidth: 90 }} value={50} onChange={() => {}}>
-              <MenuItem value={20}>20</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-            </TextField>
-            <Typography variant="caption" color="text.secondary">
-              {filteredWorkerRows.length ? `1 - ${filteredWorkerRows.length} of ${filteredWorkerRows.length}` : '0 of 0'}
-            </Typography>
-          </Stack>
+          <Typography variant="caption" color="text.secondary">
+            {filteredWorkerRows.length
+              ? `${filteredWorkerRows.length} lavoratori mostrati`
+              : 'Nessun lavoratore'}
+          </Typography>
         </Box>
       </Paper>
 

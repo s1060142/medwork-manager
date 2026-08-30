@@ -25,8 +25,10 @@ public class MedicalRecordController : ControllerBase
     [HttpGet("employee/{employeeId:int}")]
     public async Task<IActionResult> GetByEmployee(int employeeId)
     {
+        var tenantId = GetTenantId();
         var record = await _db.MedicalRecords.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+            .Where(x => x.EmployeeId == employeeId && x.TenantId == tenantId)
+            .FirstOrDefaultAsync();
         return record is null ? NotFound() : Ok(record);
     }
 
@@ -38,10 +40,12 @@ public class MedicalRecordController : ControllerBase
         if (!Validator.TryValidateObject(request, new ValidationContext(request), validation, true))
             return BadRequest(validation);
 
-        var existing = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.EmployeeId == employeeId);
+        var tenantId = GetTenantId();
+        var existing = await _db.MedicalRecords.FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.TenantId == tenantId);
         if (existing is null)
         {
             request.EmployeeId = employeeId;
+            request.TenantId = tenantId;
             request.Status = MedicalRecordStatus.Active;
             request.CreatedAt = DateTime.UtcNow;
             _db.MedicalRecords.Add(request);

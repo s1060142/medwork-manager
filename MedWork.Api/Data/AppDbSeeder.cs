@@ -54,9 +54,12 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var companiesByVat = await dbContext.Companies
+        var companiesList = await dbContext.Companies
             .Where(x => x.VATNumber != null)
-            .ToDictionaryAsync(x => x.VATNumber!, x => x);
+            .ToListAsync();
+        var companiesByVat = companiesList
+            .GroupBy(x => x.VATNumber!)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var branchSeeds = new[]
         {
@@ -104,7 +107,10 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var rolesByName = await dbContext.JobRoles.ToDictionaryAsync(x => x.Name, x => x);
+        var rolesList = await dbContext.JobRoles.ToListAsync();
+        var rolesByName = rolesList
+            .GroupBy(x => x.Name)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var doctorSeeds = new[]
         {
@@ -121,7 +127,10 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var doctorsByLicense = await dbContext.Doctors.ToDictionaryAsync(x => x.MedicalLicenseNumber, x => x);
+        var doctorsList = await dbContext.Doctors.ToListAsync();
+        var doctorsByLicense = doctorsList
+            .GroupBy(x => x.MedicalLicenseNumber)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var availabilitySeeds = new[]
         {
@@ -176,7 +185,10 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var risksByName = await dbContext.RiskFactors.ToDictionaryAsync(x => x.Name, x => x);
+        var risksList = await dbContext.RiskFactors.ToListAsync();
+        var risksByName = risksList
+            .GroupBy(x => x.Name)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var examTypeSeeds = new[]
         {
@@ -195,7 +207,10 @@ public static class AppDbSeeder
             await dbContext.SaveChangesAsync();
         }
 
-        var examTypesByName = await dbContext.ExamTypes.ToDictionaryAsync(x => x.Name, x => x);
+        var examTypesList = await dbContext.ExamTypes.ToListAsync();
+        var examTypesByName = examTypesList
+            .GroupBy(x => x.Name)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var roleRiskSeeds = new[]
         {
@@ -300,7 +315,10 @@ public static class AppDbSeeder
 
         await dbContext.SaveChangesAsync();
 
-        var employeesByTax = await dbContext.Employees.ToDictionaryAsync(x => x.TaxCode, x => x);
+        var employeesList = await dbContext.Employees.ToListAsync();
+        var employeesByTax = employeesList
+            .GroupBy(x => x.TaxCode)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var employeeRiskSeeds = new[]
         {
@@ -332,7 +350,10 @@ public static class AppDbSeeder
 
         await dbContext.SaveChangesAsync();
 
-        var protocolsByName = await dbContext.Protocols.ToDictionaryAsync(x => x.Name, x => x);
+        var protocolsList = await dbContext.Protocols.ToListAsync();
+        var protocolsByName = protocolsList
+            .GroupBy(x => x.Name)
+            .ToDictionary(g => g.Key, g => g.First());
 
         var personalProtocolSeeds = new[]
         {
@@ -591,7 +612,10 @@ public static class AppDbSeeder
 
         await dbContext.SaveChangesAsync();
 
-        var permissions = await dbContext.Permissions.ToDictionaryAsync(p => p.Name, p => p);
+        var permissionsList = await dbContext.Permissions.ToListAsync();
+        var permissions = permissionsList
+            .GroupBy(p => p.Name)
+            .ToDictionary(g => g.Key, g => g.First());
 
         // Seed roles
         var adminRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == "Admin");

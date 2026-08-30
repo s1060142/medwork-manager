@@ -56,6 +56,9 @@ public class AppDbContext : DbContext
     public DbSet<PhraseTemplate> PhraseTemplates => Set<PhraseTemplate>();
     public DbSet<Questionnaire> Questionnaires => Set<Questionnaire>();
     public DbSet<QuestionnaireResponse> QuestionnaireResponses => Set<QuestionnaireResponse>();
+    public DbSet<Signature> Signatures => Set<Signature>();
+    public DbSet<BillingDocument> BillingDocuments => Set<BillingDocument>();
+    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -471,6 +474,38 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.NoAction);
         });
 
+        // BillingDocument configuration
+        modelBuilder.Entity<BillingDocument>(entity =>
+        {
+            entity.Property(x => x.Period).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.InvoiceNumber).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.VisitCount).IsRequired();
+            entity.Property(x => x.Amount).HasColumnType("decimal(10,2)").IsRequired();
+            entity.Property(x => x.Status).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.IssuedAt).IsRequired();
+            entity.Property(x => x.GeneratedById).HasMaxLength(120);
+
+            entity.HasOne(x => x.Company)
+                .WithMany()
+                .HasForeignKey(x => x.CompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.TenantId, x.InvoiceNumber }).IsUnique();
+            entity.HasIndex(x => new { x.TenantId, x.CompanyId, x.Period });
+        });
+
+        // AuditEvent configuration
+        modelBuilder.Entity<AuditEvent>(entity =>
+        {
+            entity.Property(x => x.UserName).HasMaxLength(120);
+            entity.Property(x => x.Module).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Action).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Detail).HasMaxLength(1000);
+            entity.Property(x => x.IpAddress).HasMaxLength(45);
+
+            entity.HasIndex(x => new { x.TenantId, x.Timestamp });
+        });
+
         // Add TenantId foreign key to all existing entities
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
@@ -483,7 +518,8 @@ public class AppDbContext : DbContext
                 entityType.ClrType != typeof(RolePermission) &&
                 entityType.ClrType != typeof(UserPermission) &&
                 entityType.ClrType != typeof(ProtocolStep) &&
-                entityType.ClrType != typeof(RiskLevel))
+                entityType.ClrType != typeof(RiskLevel) &&
+                entityType.ClrType != typeof(BillingDocument))
             {
                 var tenantIdProperty = entityType.FindProperty("TenantId");
                 if (tenantIdProperty != null)

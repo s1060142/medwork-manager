@@ -24,9 +24,17 @@ public class VisitExamsController : ControllerBase
         var exams = await _dbContext.VisitExams
             .AsNoTracking()
             .Include(x => x.ExamType)
-            .Where(x => x.MedicalVisitId == medicalVisitId)
+            .Where(x => x.MedicalVisitId == medicalVisitId && x.TenantId == GetTenantId())
             .ToListAsync();
 
         return Ok(exams);
+    }
+
+    private int GetTenantId()
+    {
+        var claim = User.FindFirst("TenantId")?.Value;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }

@@ -1,3 +1,6 @@
+using MedWork.Api.Data;
+using MedWork.Api.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 
 namespace MedWork.Api.Services;
@@ -6,7 +9,6 @@ namespace MedWork.Api.Services;
 /// FASE 1 - Firma grafometrica. Verifies the integrity of a signed medical document
 /// (PDF) by comparing the stored content hash against a freshly computed one and
 /// validating the detached signature with the doctor's public key.
-/// Pure crypto: no DB dependency.
 /// </summary>
 public interface ISignatureService
 {
@@ -18,12 +20,25 @@ public interface ISignatureService
 
     /// <summary>Computes the SHA-256 content hash (used for tamper-evidence).</summary>
     string ContentHash(byte[] documentBytes);
+
+    /// <summary>Returns all signatures for the given tenant.</summary>
+    Task<List<Signature>> ListAsync(int tenantId, CancellationToken cancellationToken = default);
+
+    /// <summary>Persists a new signature record for the given tenant.</summary>
+    Task<Signature> CreateAsync(int tenantId, string signer, string hash, string? documentId, CancellationToken cancellationToken = default);
 }
 
 public sealed record SignatureResult(string ContentHash, string SignatureBase64);
 
 public sealed class SignatureService : ISignatureService
 {
+    private readonly AppDbContext _dbContext;
+
+    public SignatureService(AppDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     public SignatureResult Sign(byte[] documentBytes, byte[] privateKey)
     {
         var hash = ComputeHash(documentBytes);
@@ -40,6 +55,30 @@ public sealed class SignatureService : ISignatureService
     public string ContentHash(byte[] documentBytes)
     {
         return Convert.ToHexString(ComputeHash(documentBytes));
+    }
+
+    public async Task<List<Signature>> ListAsync(int tenantId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Signatures
+            .AsNoTracking()
+            .Where(s => s.TenantId == tenantId)
+            .OrderByDescending(s => s.Timestamp)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Signature> CreateAsync(int tenantId, string signer, string hash, string? documentId, CancellationToken cancellationToken = default)
+    {
+        var entity = new Signature
+        {
+            TenantId = tenantId,
+            Signer = signer,
+            Hash = hash,
+            DocumentId = documentId
+        };
+
+        _dbContext.Signatures.Add(entity);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return entity;
     }
 
     private static byte[] ComputeHash(byte[] documentBytes)

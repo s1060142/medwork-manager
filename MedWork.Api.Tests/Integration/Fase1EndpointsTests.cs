@@ -80,13 +80,14 @@ public class Fase1EndpointsTests : IClassFixture<MedWorkWebAppFactory>
     }
 
     [Fact]
-    public async Task Allegato3B_Submit_ReturnsReceipt()
+    public async Task Allegato3B_Submit_ReturnsNotImplemented()
     {
         var response = await _client.PostAsync("/api/documents/allegato-3b/1/submit", null);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(body.GetProperty("success").GetBoolean());
-        Assert.False(string.IsNullOrEmpty(body.GetProperty("receiptId").GetString()));
+        // Transmission to INAIL is NOT implemented; submit returns success=false with honest message
+        Assert.False(body.GetProperty("success").GetBoolean());
+        Assert.False(string.IsNullOrEmpty(body.GetProperty("message").GetString()));
     }
 
     [Fact]

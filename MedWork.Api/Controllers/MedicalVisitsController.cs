@@ -64,6 +64,8 @@ public class MedicalVisitsController : ControllerBase
     private int GetTenantId()
     {
         var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }

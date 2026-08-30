@@ -22,8 +22,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanies()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Companies
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -44,8 +46,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetBranches()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Branches
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.City)
             .Select(x => new
             {
@@ -65,10 +69,17 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("employees")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetEmployees()
+    public async Task<IActionResult> GetEmployees([FromQuery] bool includeArchived = false)
     {
-        var data = await _dbContext.Employees
+        var tenantId = GetTenantId();
+        var query = _dbContext.Employees
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId);
+
+        if (!includeArchived)
+            query = query.Where(x => !x.IsArchived);
+
+        var data = await query
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
             .Select(x => new
@@ -101,8 +112,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetDoctors()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Doctors
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
             .Select(x => new
@@ -125,9 +138,10 @@ public class MasterDataController : ControllerBase
     {
         if (companyId <= 0) return BadRequest("companyId non valido.");
 
+        var tenantId = GetTenantId();
         var data = await _dbContext.CompanyDoctors
             .AsNoTracking()
-            .Where(x => x.CompanyId == companyId)
+            .Where(x => x.CompanyId == companyId && x.TenantId == tenantId)
             .Select(x => new
             {
                 x.DoctorId,
@@ -142,8 +156,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetRiskFactors()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.RiskFactors
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -163,8 +179,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetExamTypes()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.ExamTypes
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -182,8 +200,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetEmployeeRisks()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.EmployeeRisks
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.EmployeeId)
             .ThenBy(x => x.RiskFactorId)
             .Select(x => new
@@ -202,8 +222,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetMedicalRecords()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.MedicalRecords
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Employee.LastName)
             .ThenBy(x => x.Employee.FirstName)
             .Select(x => new
@@ -225,8 +247,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetMedicalVisits()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.MedicalVisits
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.VisitDate)
             .Select(x => new
             {
@@ -253,8 +277,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetVisitExams()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.VisitExams
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.MedicalVisitId)
             .ThenBy(x => x.Id)
             .Select(x => new
@@ -276,8 +302,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetJobRoles()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.JobRoles
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -296,8 +324,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetProtocols()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Protocols
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name)
             .Select(x => new
             {
@@ -319,8 +349,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetPersonalProtocols()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.PersonalProtocols
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.AssignedAt)
             .Select(x => new
             {
@@ -342,8 +374,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetAnamneses()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Anamneses
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.Id)
             .Select(x => new
             {
@@ -365,8 +399,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetScheduledExams()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.ScheduledExams
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.DueDate)
             .Select(x => new
             {
@@ -387,8 +423,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     public async Task<IActionResult> GetVaccinations()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Vaccinations
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.DateAdministered)
             .Select(x => new
             {
@@ -408,8 +446,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetNotificationLogs()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.NotificationLogs
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.SentDate)
             .Select(x => new
             {
@@ -429,8 +469,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetDoctorAvailabilities()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.DoctorAvailabilities
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Doctor!.LastName)
             .ThenBy(x => x.Doctor!.FirstName)
             .ThenBy(x => x.DayOfWeek)
@@ -453,8 +495,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanyGroups()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.CompanyGroups
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.LegalName)
             .Select(x => new
             {
@@ -478,8 +522,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanyContacts()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.CompanyContacts
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Role)
             .Select(x => new
@@ -501,8 +547,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetDepartments()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.Departments
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Name)
             .Select(x => new
@@ -524,8 +572,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetWorkLocations()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.WorkLocations
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Notes)
             .Select(x => new
@@ -548,8 +598,10 @@ public class MasterDataController : ControllerBase
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetSiteVisits()
     {
+        var tenantId = GetTenantId();
         var data = await _dbContext.SiteVisits
             .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.VisitDate)
             .Select(x => new
             {
@@ -622,7 +674,9 @@ public class MasterDataController : ControllerBase
     private int GetTenantId()
     {
         var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(claim, out var id) && id > 0 ? id : 1;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -17,33 +18,23 @@ import {
 import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 
-const STORAGE_KEY = 'medwork.billing.docs'
-
-function readDocs() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function saveDocs(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-}
-
 function BillingCenter() {
   const [companies, setCompanies] = useState([])
-  const [docs, setDocs] = useState(() => readDocs())
-  const [formData, setFormData] = useState({
-    type: 'preventivo',
-    companyId: '',
-    amount: '',
-    status: 'bozza',
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    notes: '',
-  })
+  const [docs, setDocs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [genBusy, setGenBusy] = useState(false)
+
+  const [periodFrom, setPeriodFrom] = useState('')
+  const [periodTo, setPeriodTo] = useState('')
+
+  useEffect(() => {
+    apiGet('/api/billing/documents')
+      .then((data) => setDocs(Array.isArray(data) ? data : []))
+      .catch(() => setDocs([]))
+      .finally(() => setLoading(false))
+  }, [])
 
   useEffect(() => {
     apiGet('/api/master-data/companies')
@@ -73,42 +64,38 @@ function BillingCenter() {
     )
   }, [docs])
 
-  const createDoc = async () => {
-    if (!formData.companyId || !formData.amount) return
-
-    const payload = { ...formData }
+  const handleGenerate = async () => {
+    if (!periodFrom || !periodTo) return
+    setGenBusy(true)
+    setError('')
+    setSuccess('')
     try {
+      const payload = { from: periodFrom, to: periodTo }
       const created = await apiSend('POST', '/api/billing/documents', payload)
-      const saved = created && typeof created === 'object'
-        ? { id: created.id ?? `${Date.now()}`, number: created.number ?? `${formData.type === 'fattura' ? 'FT' : 'PR'}-${Date.now().toString().slice(-6)}`, ...created }
-        : {
-            id: `${Date.now()}`,
-            number: `${formData.type === 'fattura' ? 'FT' : 'PR'}-${Date.now().toString().slice(-6)}`,
-            ...payload,
-          }
-      const next = [saved, ...docs]
-      setDocs(next)
-      saveDocs(next)
-      appendAuditEvent({ module: 'Fatturazione', action: 'Create', detail: `${formData.type} ${formData.amount}€` })
+      const list = Array.isArray(created) ? created : []
+      setDocs(list)
+      setSuccess(`Generati ${list.length} documenti di fatturazione.`)
+      appendAuditEvent({ module: 'Fatturazione', action: 'Generate', detail: `${periodFrom} → ${periodTo}: ${list.length} docs` })
     } catch (requestError) {
-      window.alert(requestError?.message || 'Errore durante la registrazione del documento.')
-      return
+      setError(requestError?.message || 'Errore durante la generazione dei documenti.')
+    } finally {
+      setGenBusy(false)
     }
-
-    setFormData((current) => ({
-      ...current,
-      companyId: '',
-      amount: '',
-      notes: '',
-      dueDate: '',
-    }))
   }
 
-  const updateStatus = (id, status) => {
+  const updateStatus = async (id, status) => {
+    // Optimistic local update; in a real system this would be a PATCH endpoint
     const next = docs.map((doc) => (doc.id === id ? { ...doc, status } : doc))
     setDocs(next)
-    saveDocs(next)
     appendAuditEvent({ module: 'Fatturazione', action: 'Status', detail: `${id} -> ${status}` })
+  }
+
+  if (loading) {
+    return (
+      <Paper sx={{ p: 3 }}>
+        <Typography>Caricamento documenti...</Typography>
+      </Paper>
+    )
   }
 
   return (
@@ -116,39 +103,39 @@ function BillingCenter() {
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
         <Typography variant="h6">Fatturazione, parcelle e preventivi</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Gestione operativa documenti economici con stato e scadenza.
+          Genera documenti di fatturazione dal conteggio visite mediche per periodo.
         </Typography>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(6, 1fr)' }, gap: 1.2, mt: 2 }}>
-          <TextField select size="small" label="Tipo" value={formData.type} onChange={(event) => setFormData((current) => ({ ...current, type: event.target.value }))}>
-            <MenuItem value="preventivo">Preventivo</MenuItem>
-            <MenuItem value="fattura">Fattura</MenuItem>
-          </TextField>
-
-          <TextField select size="small" label="Azienda" value={formData.companyId} onChange={(event) => setFormData((current) => ({ ...current, companyId: event.target.value }))}>
-            <MenuItem value="">Seleziona</MenuItem>
-            {companies.map((company) => (
-              <MenuItem key={company.id} value={company.id}>{company.name}</MenuItem>
-            ))}
-          </TextField>
-
-          <TextField size="small" type="number" label="Importo" value={formData.amount} onChange={(event) => setFormData((current) => ({ ...current, amount: event.target.value }))} />
-
-          <TextField select size="small" label="Stato" value={formData.status} onChange={(event) => setFormData((current) => ({ ...current, status: event.target.value }))}>
-            <MenuItem value="bozza">Bozza</MenuItem>
-            <MenuItem value="emesso">Emesso</MenuItem>
-            <MenuItem value="pagato">Pagato</MenuItem>
-            <MenuItem value="scaduto">Scaduto</MenuItem>
-          </TextField>
-
-          <TextField size="small" type="date" label="Emissione" InputLabelProps={{ shrink: true }} value={formData.issueDate} onChange={(event) => setFormData((current) => ({ ...current, issueDate: event.target.value }))} />
-          <TextField size="small" type="date" label="Scadenza" InputLabelProps={{ shrink: true }} value={formData.dueDate} onChange={(event) => setFormData((current) => ({ ...current, dueDate: event.target.value }))} />
+        <Box sx={{ display: 'flex', gap: 1.2, mt: 2, flexWrap: 'wrap' }}>
+          <TextField
+            size="small"
+            type="date"
+            label="Da"
+            InputLabelProps={{ shrink: true }}
+            value={periodFrom}
+            onChange={(e) => setPeriodFrom(e.target.value)}
+          />
+          <TextField
+            size="small"
+            type="date"
+            label="A"
+            InputLabelProps={{ shrink: true }}
+            value={periodTo}
+            onChange={(e) => setPeriodTo(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            onClick={handleGenerate}
+            disabled={genBusy || !periodFrom || !periodTo}
+            sx={{ alignSelf: 'center' }}
+          >
+            {genBusy ? 'Generazione...' : 'Genera fatture'}
+          </Button>
         </Box>
-
-        <TextField size="small" fullWidth sx={{ mt: 1.2 }} label="Note" value={formData.notes} onChange={(event) => setFormData((current) => ({ ...current, notes: event.target.value }))} />
-
-        <Button sx={{ mt: 1.5 }} variant="contained" onClick={createDoc}>Registra documento</Button>
       </Paper>
+
+      {!!error && <Alert severity="error">{error}</Alert>}
+      {!!success && <Alert severity="success">{success}</Alert>}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
         <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
@@ -170,23 +157,23 @@ function BillingCenter() {
           <TableHead>
             <TableRow>
               <TableCell>Numero</TableCell>
-              <TableCell>Tipo</TableCell>
+              <TableCell>Periodo</TableCell>
               <TableCell>Azienda</TableCell>
+              <TableCell>Visite</TableCell>
               <TableCell>Importo</TableCell>
               <TableCell>Emissione</TableCell>
-              <TableCell>Scadenza</TableCell>
               <TableCell>Stato</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {docs.map((doc) => (
               <TableRow key={doc.id} hover>
-                <TableCell>{doc.number}</TableCell>
-                <TableCell sx={{ textTransform: 'capitalize' }}>{doc.type}</TableCell>
+                <TableCell>{doc.invoiceNumber}</TableCell>
+                <TableCell>{doc.period || '-'}</TableCell>
                 <TableCell>{companyMap[doc.companyId] || `Azienda #${doc.companyId}`}</TableCell>
+                <TableCell>{doc.visitCount ?? 0}</TableCell>
                 <TableCell>€ {(Number(doc.amount) || 0).toFixed(2)}</TableCell>
-                <TableCell>{doc.issueDate || '-'}</TableCell>
-                <TableCell>{doc.dueDate || '-'}</TableCell>
+                <TableCell>{doc.issuedAt ? new Date(doc.issuedAt).toLocaleDateString('it-IT') : '-'}</TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={0.7}>
                     {['bozza', 'emesso', 'pagato', 'scaduto'].map((status) => (

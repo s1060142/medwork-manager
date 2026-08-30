@@ -124,7 +124,8 @@ public class AdminLifecycleAndNegativeIntegrationTests : IClassFixture<MedWorkWe
         {
             Name = "Seed Admin Company",
             VATNumber = vat,
-            ContactEmail = "seed-admin@company.it"
+            ContactEmail = "seed-admin@company.it",
+            TenantId = 1
         };
 
         db.Companies.Add(company);
@@ -147,7 +148,8 @@ public class AdminLifecycleAndNegativeIntegrationTests : IClassFixture<MedWorkWe
             Address = "Via Admin Seed 10",
             City = "Milano",
             Province = "MI",
-            PostalCode = "20100"
+            PostalCode = "20100",
+            TenantId = 1
         };
 
         db.Branches.Add(branch);
@@ -179,7 +181,8 @@ public class AdminLifecycleAndNegativeIntegrationTests : IClassFixture<MedWorkWe
             Gender = "M",
             BirthCity = "Milano",
             BirthCityCode = "F205",
-            PersonalEmail = "paolo.gialli@test.it"
+            PersonalEmail = "paolo.gialli@test.it",
+            TenantId = 1
         };
 
         db.Employees.Add(employee);
@@ -200,7 +203,8 @@ public class AdminLifecycleAndNegativeIntegrationTests : IClassFixture<MedWorkWe
         {
             Name = name,
             Description = "Descrizione valida del fattore di rischio per test integrazione.",
-            SeverityLevel = 3
+            SeverityLevel = 3,
+            TenantId = 1
         };
 
         db.RiskFactors.Add(risk);

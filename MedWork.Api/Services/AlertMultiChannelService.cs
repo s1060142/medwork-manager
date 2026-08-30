@@ -21,7 +21,7 @@ public interface INotificationTransport
     Task<bool> DeliverAsync(int employeeId, NotificationChannel channel, string message);
 }
 
-public sealed class AlertMultiChannelService : IAlertService
+public sealed class AlertMultiChannelService : IAlertService, INotificationService
 {
     private readonly AppDbContext _db;
     private readonly INotificationTransport _transport;
@@ -90,6 +90,11 @@ public sealed class AlertMultiChannelService : IAlertService
             results.Add(await SendAsync(t.EmployeeId, channel, t.Message, ct));
         }
         return results;
+    }
+
+    public async Task<NotificationLog> SendConvocationAsync(int tenantId, int employeeId, NotificationChannel channel, string messageText, CancellationToken cancellationToken = default)
+    {
+        return await SendAsync(employeeId, channel, messageText, cancellationToken);
     }
 }
 

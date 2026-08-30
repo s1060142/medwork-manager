@@ -9,14 +9,16 @@ import {
   Typography,
 } from '@mui/material'
 import DescriptionIcon from '@mui/icons-material/Description'
-import { apiSend } from '../services/apiClient'
+import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import { apiSend, getHeaders, safeReadError, buildApiError, API_BASE_URL } from '../services/apiClient'
 
 export default function Allegato3BCenter() {
-  const [companyId, setCompanyId] = useState('')
   const [validateResult, setValidateResult] = useState(null)
   const [submitResult, setSubmitResult] = useState(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [genBusy, setGenBusy] = useState(false)
+  const [companyId, setCompanyId] = useState('')
 
   const validate = async () => {
     setBusy(true)
@@ -46,6 +48,36 @@ export default function Allegato3BCenter() {
     }
   }
 
+  const generate = async () => {
+    if (!companyId) return
+    setGenBusy(true)
+    setError('')
+    try {
+      const headers = getHeaders()
+      const response = await fetch(`${API_BASE_URL}/api/documents/allegato-3b/${companyId}`, {
+        method: 'POST',
+        headers,
+      })
+      if (!response.ok) {
+        const message = await safeReadError(response)
+        throw buildApiError(message, response.status)
+      }
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'Allegato3B.xml'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError(err.message || 'Generazione XML fallita.')
+    } finally {
+      setGenBusy(false)
+    }
+  }
+
   return (
     <Paper sx={{ p: 3 }}>
       <Typography variant="h6" gutterBottom>
@@ -62,6 +94,9 @@ export default function Allegato3BCenter() {
         <Stack direction="row" spacing={2}>
           <Button variant="outlined" startIcon={<DescriptionIcon />} onClick={validate} disabled={busy || !companyId}>
             Valida XSD
+          </Button>
+          <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={generate} disabled={genBusy || !companyId}>
+            Genera XML
           </Button>
           <Button variant="contained" onClick={submit} disabled={busy || !companyId}>
             Invia a INAIL

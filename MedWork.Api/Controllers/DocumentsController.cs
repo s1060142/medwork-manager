@@ -25,7 +25,9 @@ public class DocumentsController : ControllerBase
     private int GetTenantId()
     {
         var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(claim, out var id) && id > 0 ? id : 0;
+        if (int.TryParse(claim, out var id) && id > 0)
+            return id;
+        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 
     private async Task<IActionResult> ValidateVisitTenantAsync(int medicalVisitId)
@@ -63,8 +65,15 @@ public class DocumentsController : ControllerBase
 
         if (!belongsToTenant) return NotFound();
 
-        var result = await _documentGenerationService.GenerateSanitaryPlan(employeeId);
-        return Ok(new { message = result });
+        try
+        {
+            var pdfBytes = await _documentGenerationService.GenerateSanitaryPlan(employeeId);
+            return File(pdfBytes, "application/pdf", $"piano-sanitario-{employeeId}.pdf");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Dipendente {employeeId} non trovato.");
+        }
     }
 
     [HttpPost("allegato-3b/{companyId:int}")]
@@ -73,8 +82,15 @@ public class DocumentsController : ControllerBase
         var tenantCheck = await ValidateCompanyTenantAsync(companyId);
         if (tenantCheck != null) return tenantCheck;
 
-        var result = await _documentGenerationService.GenerateAllegato3B(companyId);
-        return Ok(new { message = result });
+        try
+        {
+            var xmlBytes = await _documentGenerationService.GenerateAllegato3B(companyId);
+            return File(xmlBytes, "application/xml", "Allegato3B.xml");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Azienda {companyId} non trovata.");
+        }
     }
 
     [HttpPost("fitness-judgment/{medicalVisitId:int}")]
@@ -83,8 +99,15 @@ public class DocumentsController : ControllerBase
         var tenantCheck = await ValidateVisitTenantAsync(medicalVisitId);
         if (tenantCheck != null) return tenantCheck;
 
-        var result = await _documentGenerationService.GenerateFitnessJudgment(medicalVisitId);
-        return Ok(new { message = result });
+        try
+        {
+            var pdfBytes = await _documentGenerationService.GenerateFitnessJudgment(medicalVisitId);
+            return File(pdfBytes, "application/pdf", "GiudizioIdoneita.pdf");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Visita medica {medicalVisitId} non trovata.");
+        }
     }
 
     [HttpPost("allegato-3b/{companyId:int}/validate")]

@@ -26,7 +26,8 @@ public class QuestionnairesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string? type, [FromQuery] string? riskFactor)
     {
-        var query = _dbContext.Questionnaires.AsNoTracking().Where(x => x.IsActive);
+        var tenantId = GetTenantId();
+        var query = _dbContext.Questionnaires.AsNoTracking().Where(x => x.TenantId == tenantId && x.IsActive);
         if (!string.IsNullOrWhiteSpace(type))
             query = query.Where(x => x.Type == type);
         if (!string.IsNullOrWhiteSpace(riskFactor))
@@ -62,9 +63,10 @@ public class QuestionnairesController : ControllerBase
     [HttpGet("responses/employee/{employeeId:int}")]
     public async Task<IActionResult> ResponsesByEmployee(int employeeId)
     {
+        var tenantId = GetTenantId();
         var list = await _dbContext.QuestionnaireResponses
             .AsNoTracking()
-            .Where(x => x.EmployeeId == employeeId)
+            .Where(x => x.EmployeeId == employeeId && x.TenantId == tenantId)
             .OrderByDescending(x => x.CompletedAt)
             .ToListAsync();
         return Ok(list);

@@ -33,6 +33,9 @@ builder.Services.AddControllers(options =>
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        // Avoid fatal 500s when serializing entities with bidirectional navigation
+        // properties (e.g. VisitExam <-> ExamType).
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -84,8 +87,8 @@ builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
 
 // Domain services
 builder.Services.AddScoped<IPersonalProtocolAssignmentService, PersonalProtocolAssignmentService>();
-builder.Services.AddScoped<INotificationService, MockNotificationService>();
 builder.Services.AddScoped<IAlertService, AlertMultiChannelService>();
+builder.Services.AddScoped<INotificationService, AlertMultiChannelService>();
 builder.Services.AddScoped<INotificationTransport, ConsoleNotificationTransport>();
 builder.Services.AddScoped<ISignatureService, SignatureService>();
 builder.Services.AddScoped<IDocumentGenerationService, DocumentGenerationService>();
@@ -103,12 +106,13 @@ builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
 builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
 builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationService>();
 
-if (builder.Environment.IsEnvironment("Testing"))
-{
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseInMemoryDatabase("MedWorkTestDb")
-               .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
-}
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        var testDbName = Environment.GetEnvironmentVariable("TEST_DB_NAME") ?? "MedWorkTestDb";
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseInMemoryDatabase(testDbName)
+                   .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+    }
 else
 {
     builder.Services.AddDbContext<AppDbContext>(options =>

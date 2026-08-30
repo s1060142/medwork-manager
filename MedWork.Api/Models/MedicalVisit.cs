@@ -14,8 +14,8 @@ public class MedicalVisit : IValidatableObject
     [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int DoctorId { get; set; }
+    // Nullable: when not supplied the server auto-assigns a doctor from the tenant.
+    public int? DoctorId { get; set; }
     // Optional link to a personal protocol applied to this visit (AI‑assisted or custom)
     public int? PersonalProtocolId { get; set; }
 

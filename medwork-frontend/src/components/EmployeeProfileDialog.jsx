@@ -432,7 +432,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               onClick={() => {
                 if (onOpenMedicalVisitCreate) {
                   onClose()
-                  onOpenMedicalVisitCreate()
+                  onOpenMedicalVisitCreate(employee?.id)
                 }
               }}
             >
@@ -445,7 +445,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               onClick={() => {
                 if (onOpenMedicalVisitCreate) {
                   onClose()
-                  onOpenMedicalVisitCreate()
+                  onOpenMedicalVisitCreate(employee?.id)
                 }
               }}
             >

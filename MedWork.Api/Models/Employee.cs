@@ -105,6 +105,8 @@ public class Employee
 
     public bool IsActive { get; set; } = true;
 
+    public bool IsArchived { get; set; } = false;
+
     public bool ConsentGDPR { get; set; } = false;
 
     public DateTime? ConsentGDPRDate { get; set; }

@@ -118,6 +118,21 @@ export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | '
   return readJsonResponse(response)
 }
 
+export async function apiDownload(endpoint, options = {}) {
+  const headers = options.tenantId ? getHeaders(options.tenantId) : getHeaders()
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message, response.status)
+  }
+
+  return response.blob()
+}
+
 export async function apiSend(method, endpoint, payload) {
   const headers = getHeaders()
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {

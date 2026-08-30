@@ -23,7 +23,7 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import SearchIcon from '@mui/icons-material/Search'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { apiGet } from '../services/apiClient'
+import { apiGet, getHeaders, safeReadError, buildApiError, API_BASE_URL } from '../services/apiClient'
 
 function formatDate(dateValue) {
   if (!dateValue) return '-'
@@ -901,7 +901,37 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
               <Typography variant="subtitle2" sx={{ mb: 1 }}>Allegato 3B</Typography>
               <Stack direction="row" spacing={1}>
                 <Button variant="outlined" onClick={() => window.alert('File excel non ancora disponibile')}>File excel</Button>
-                <Button variant="outlined" onClick={() => window.alert('File inail non ancora disponibile')}>File inail</Button>
+                <Button
+                  variant="outlined"
+                  disabled={!companyId}
+                  onClick={async () => {
+                    if (!companyId) return
+                    try {
+                      const headers = getHeaders()
+                      const response = await fetch(`${API_BASE_URL}/api/documents/allegato-3b/${companyId}`, {
+                        method: 'POST',
+                        headers,
+                      })
+                      if (!response.ok) {
+                        const message = await safeReadError(response)
+                        throw buildApiError(message, response.status)
+                      }
+                      const blob = await response.blob()
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `Allegato3B-${companyId}.xml`
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                      URL.revokeObjectURL(url)
+                    } catch (err) {
+                      window.alert(err.message || 'Generazione Allegato 3B fallita.')
+                    }
+                  }}
+                >
+                  File INAIL
+                </Button>
               </Stack>
             </Paper>
           </Stack>

@@ -28,7 +28,8 @@ public class PhraseTemplatesController : ControllerBase
         [FromQuery] bool favouritesOnly = false,
         [FromQuery] int? doctorId = null)
     {
-        var query = _dbContext.PhraseTemplates.AsNoTracking();
+        var tenantId = GetTenantId();
+        var query = _dbContext.PhraseTemplates.AsNoTracking().Where(x => x.TenantId == tenantId);
 
         if (!string.IsNullOrWhiteSpace(category))
             query = query.Where(x => x.Category == category);
@@ -50,6 +51,7 @@ public class PhraseTemplatesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PhraseTemplate request)
     {
+        request.TenantId = GetTenantId();
         _dbContext.PhraseTemplates.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);

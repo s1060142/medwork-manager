@@ -18,26 +18,11 @@ import {
 import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 
-const SIGNATURE_STORAGE_KEY = 'medwork.digital.signatures'
-
-function readSignatures() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SIGNATURE_STORAGE_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function saveSignatures(list) {
-  localStorage.setItem(SIGNATURE_STORAGE_KEY, JSON.stringify(list))
-}
-
 function ToolsCenter() {
   const [employees, setEmployees] = useState([])
   const [examTypes, setExamTypes] = useState([])
   const [visits, setVisits] = useState([])
-  const [signatures, setSignatures] = useState(() => readSignatures())
+  const [signatures, setSignatures] = useState([])
   const [online, setOnline] = useState(() => navigator.onLine)
   const [error, setError] = useState('')
 
@@ -49,11 +34,21 @@ function ToolsCenter() {
   })
 
   useEffect(() => {
-    Promise.all([apiGet('/api/master-data/employees'), apiGet('/api/master-data/exam-types'), apiGet('/api/master-data/medical-visits')])
-      .then(([employeeData, examData, visitData]) => {
+    Promise.all([apiGet('/api/master-data/employees'), apiGet('/api/master-data/exam-types'), apiGet('/api/master-data/medical-visits'), apiGet('/api/signatures')])
+      .then(([employeeData, examData, visitData, signatureData]) => {
         setEmployees(Array.isArray(employeeData) ? employeeData : [])
         setExamTypes(Array.isArray(examData) ? examData : [])
         setVisits(Array.isArray(visitData) ? visitData : [])
+        setSignatures(Array.isArray(signatureData)
+          ? signatureData.map((s) => ({
+              id: s.id,
+              signer: s.signer,
+              signedAt: s.timestamp,
+              employeeId: s.documentId ? Number(s.documentId) : '',
+              method: 'digitale',
+              note: '',
+            }))
+          : [])
       })
       .catch((requestError) => setError(requestError.message || 'Errore nel caricamento strumenti diagnostici.'))
 
@@ -96,15 +91,24 @@ function ToolsCenter() {
   const registerSignature = async () => {
     if (!formData.employeeId || !formData.signer.trim()) return
 
-    const payload = { ...formData, signedAt: new Date().toISOString() }
+    const payload = {
+      Signer: formData.signer,
+      Hash: btoa(`${formData.employeeId}:${formData.signer}:${Date.now()}`),
+      DocumentId: formData.employeeId ? String(formData.employeeId) : null,
+    }
     try {
-      const created = await apiSend('POST', '/api/tools/signatures', payload)
+      const created = await apiSend('POST', '/api/signatures', payload)
       const saved = created && typeof created === 'object'
-        ? { id: created.id ?? `${Date.now()}`, ...created, signedAt: created.signedAt || payload.signedAt }
-        : { id: `${Date.now()}`, ...payload }
-      const next = [saved, ...signatures]
-      setSignatures(next)
-      saveSignatures(next)
+        ? {
+            id: created.id ?? `${Date.now()}`,
+            signer: created.signer || formData.signer,
+            signedAt: created.timestamp || new Date().toISOString(),
+            employeeId: formData.employeeId ? Number(formData.employeeId) : '',
+            method: formData.method,
+            note: formData.note,
+          }
+        : { id: `${Date.now()}`, signer: formData.signer, signedAt: new Date().toISOString(), employeeId: '', method: formData.method, note: formData.note }
+      setSignatures((prev) => [saved, ...prev])
       appendAuditEvent({ module: 'Strumenti', action: 'Firma', detail: `${formData.method} - dipendente ${formData.employeeId}` })
     } catch (requestError) {
       window.alert(requestError?.message || 'Errore durante la registrazione della firma.')

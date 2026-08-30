@@ -61,7 +61,7 @@ function RecallCampaignsCenter() {
     setSending(true)
     setError('')
     try {
-      const response = await apiSend('/api/doctor-data/recall-campaign', 'POST', {
+      const response = await apiSend('POST', '/api/doctor-data/recall-campaign', {
         companyId: selectedCompanyId,
         daysThreshold: daysThreshold
       })

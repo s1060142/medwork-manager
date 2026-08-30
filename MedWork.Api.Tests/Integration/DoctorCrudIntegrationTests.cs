@@ -193,7 +193,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         {
             Name = "Company Doctor Seed",
             VATNumber = $"IT{vatSuffix}",
-            ContactEmail = "doctor-seed@company.it"
+            ContactEmail = "doctor-seed@company.it",
+            TenantId = 1
         };
 
         db.Companies.Add(company);
@@ -216,7 +217,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             Address = "Via Doctor Seed 12",
             City = "Milano",
             Province = "MI",
-            PostalCode = "20100"
+            PostalCode = "20100",
+            TenantId = 1
         };
 
         db.Branches.Add(branch);
@@ -248,7 +250,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             Gender = "F",
             BirthCity = "Milano",
             BirthCityCode = "F205",
-            PersonalEmail = "anna.rosa@test.it"
+            PersonalEmail = "anna.rosa@test.it",
+            TenantId = 1
         };
 
         db.Employees.Add(employee);
@@ -278,7 +281,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             Gender = "F",
             BirthCity = "Milano",
             BirthCityCode = "F205",
-            PersonalEmail = $"record.{suffix.ToLowerInvariant()}@test.it"
+            PersonalEmail = $"record.{suffix.ToLowerInvariant()}@test.it",
+            TenantId = 1
         };
 
         db.Employees.Add(employee);
@@ -301,7 +305,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
             LastName = "Verdi",
             MedicalLicenseNumber = $"DOC-{Guid.NewGuid():N}"[..18],
             Specialty = "Medicina del Lavoro",
-            Email = "luca.verdi@test.it"
+            Email = "luca.verdi@test.it",
+            TenantId = 1
         };
 
         db.Doctors.Add(doctor);
@@ -321,7 +326,8 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         var examType = new ExamType
         {
             Name = "Spirometria",
-            Category = "Funzionale"
+            Category = "Funzionale",
+            TenantId = 1
         };
 
         db.ExamTypes.Add(examType);
@@ -341,15 +347,16 @@ public class DoctorCrudIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         var employeeId = EnsureEmployee();
         var doctorId = EnsureDoctor();
 
-        var visit = new MedicalVisit
-        {
-            EmployeeId = employeeId,
-            DoctorId = doctorId,
-            VisitDate = new DateTime(2026, 5, 1),
-            NextDeadlineDate = new DateTime(2026, 11, 1),
-            Outcome = "Idoneo",
-            VisitType = MedicalVisitType.Periodic
-        };
+            var visit = new MedicalVisit
+            {
+                EmployeeId = employeeId,
+                DoctorId = doctorId,
+                VisitDate = new DateTime(2026, 5, 1),
+                NextDeadlineDate = new DateTime(2026, 11, 1),
+                Outcome = "Idoneo",
+                VisitType = MedicalVisitType.Periodic,
+                TenantId = 1
+            };
 
         db.MedicalVisits.Add(visit);
         db.SaveChanges();
