@@ -10,9 +10,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import SaveIcon from '@mui/icons-material/Save'
 import DownloadIcon from '@mui/icons-material/Download'
 import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 const OUTCOMES = [
   { code: 'IDONE0', label: 'Idoneo alla mansione' },
@@ -154,12 +156,13 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
           value={judgment.limitations}
           onChange={(e) => setJudgment({ ...judgment, limitations: e.target.value })}
         />
-        <TextField
+        <DesktopDatePicker
           label="Data prossima revisione"
-          type="date"
           InputLabelProps={{ shrink: true }}
-          value={judgment.nextReviewDate}
-          onChange={(e) => setJudgment({ ...judgment, nextReviewDate: e.target.value })}
+          value={currentDateValue(judgment.nextReviewDate)}
+          onChange={(date) => setJudgment({ ...judgment, nextReviewDate: formDateValue(date) })}
+          inputFormat="dd/MM/yyyy"
+          locale={DATE_PICKER_LOCALE}
         />
         <Stack direction="row" spacing={1}>
           <Button variant="contained" startIcon={<SaveIcon />} onClick={save} disabled={saving}>

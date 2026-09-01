@@ -37,6 +37,7 @@ import { apiGet, apiSend } from '../services/apiClient'
 import { getItalianMunicipalities } from '../services/municipalityService'
 import { calculateItalianTaxCode } from '../utils/taxCode'
 import { downloadCsv } from '../utils/csv'
+import { formDateValue } from '../utils/datePicker'
 import EmployeeProfileDialog from './EmployeeProfileDialog'
 
 function defaultFormData(fields) {
@@ -87,7 +88,7 @@ function getOptionLabel(option, field) {
     return `${option.outcome}${dateText}`
   }
 
-  return option[field.optionLabel] ?? String(option[field.optionValue])
+  return option[field.optionLabel] ?? option.label ?? String(option[field.optionValue] ?? option.value ?? option)
 }
 
 const QUERY_OPERATORS = [
@@ -434,15 +435,10 @@ function CrudEntityView({
         }
 
         if (endpoint.includes('/branches')) {
-          if (activeBranchId && activeBranchId !== 'all') {
-            return [endpoint, arrayData.filter((item) => Number(item.id) === Number(activeBranchId))]
-          }
-
-          if (effectiveCompanyId) {
-            return [endpoint, arrayData.filter((item) => Number(item.companyId) === Number(effectiveCompanyId))]
-          }
-
-          return [endpoint, []]
+          // All branches are loaded here. The branch dropdown is scoped at render
+          // time to the company actually chosen inside the form (formData.companyId),
+          // so it stays empty until a company is selected.
+          return [endpoint, arrayData]
         }
 
         if (endpoint.includes('/employees')) {
@@ -517,7 +513,12 @@ function CrudEntityView({
     setEditingRow(row)
     setFormData(
       config.fields.reduce((accumulator, field) => {
-        accumulator[field.name] = row[field.name]
+        const rawValue = row[field.name]
+        if (field.type === 'date') {
+          accumulator[field.name] = formDateValue(rawValue ? new Date(rawValue) : null)
+        } else {
+          accumulator[field.name] = rawValue
+        }
         return accumulator
       }, {}),
     )
@@ -646,8 +647,23 @@ function CrudEntityView({
   }
 
   const renderSelectField = (field) => {
-    const options = field.options || selectOptions[field.optionsEndpoint] || []
+    const baseOptions = field.options || selectOptions[field.optionsEndpoint] || []
+    const options =
+      field.optionsEndpoint && field.optionsEndpoint.includes('/branches')
+        ? formData.companyId
+          ? baseOptions.filter((option) => Number(option.companyId) === Number(formData.companyId))
+          : []
+        : baseOptions
     const resolvedValue = formData[field.name]
+
+    const handleChange = (event) => {
+      if (field.name === 'companyId') {
+        // Changing the company invalidates any previously selected branch.
+        markDirty((current) => ({ ...current, companyId: event.target.value, branchId: '' }))
+      } else {
+        markDirty((current) => ({ ...current, [field.name]: event.target.value }))
+      }
+    }
 
     return (
       <TextField
@@ -658,14 +674,17 @@ function CrudEntityView({
         error={Boolean(formErrors[field.name])}
         helperText={formErrors[field.name]}
         value={resolvedValue ?? ''}
-        onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
+        onChange={handleChange}
       >
         <MenuItem value="">Seleziona</MenuItem>
-        {options.map((option) => (
-          <MenuItem key={option[field.optionValue]} value={option[field.optionValue]}>
-            {getOptionLabel(option, field)}
-          </MenuItem>
-        ))}
+        {options.map((option) => {
+          const optionValue = option[field.optionValue] ?? option.value ?? option
+          return (
+            <MenuItem key={optionValue} value={optionValue}>
+              {getOptionLabel(option, field)}
+            </MenuItem>
+          )
+        })}
       </TextField>
     )
   }
@@ -681,7 +700,7 @@ function CrudEntityView({
       return (
         <TextField
           key={field.name}
-          size="small"
+          size='small'
           label={field.label}
           multiline
           minRows={3}
@@ -689,6 +708,7 @@ function CrudEntityView({
           helperText={formErrors[field.name]}
           value={formData[field.name]}
           onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
+          sx={{ gridColumn: { xs: '1 / -1', md: '1 / -1' } }}
         />
       )
     }
@@ -698,21 +718,20 @@ function CrudEntityView({
       inputProps.inputMode = 'numeric'
       inputProps.pattern = '[0-9]*'
     }
-    if (field.type === 'date') {
-      inputProps.type = 'date'
-      inputProps.shrink = true
-    }
     if (field.type === 'email') {
       inputProps.type = 'email'
     }
     if (field.type === 'tel') {
       inputProps.type = 'tel'
     }
+    if (field.type === 'date') {
+      inputProps.type = 'date'
+    }
 
     return (
       <TextField
         key={field.name}
-        size="small"
+        size='small'
         label={field.label}
         error={Boolean(formErrors[field.name])}
         helperText={formErrors[field.name]}
@@ -892,9 +911,15 @@ function CrudEntityView({
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={1.5} sx={{ mt: 0.5, ...(config.key === 'employees' ? { display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 } : {}) } }>
-            {visibleFields.map((field) => renderFormField(field))}
-          </Stack>
+          {config.key === 'employees' || config.key === 'companies' ? (
+            <Box sx={{ mt: 0.5, display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5, alignItems: 'start' }}>
+              {visibleFields.map((field) => renderFormField(field))}
+            </Box>
+          ) : (
+            <Stack spacing={1.5} sx={{ mt: 0.5 }}>
+              {visibleFields.map((field) => renderFormField(field))}
+            </Stack>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={confirmClose}>Annulla</Button>

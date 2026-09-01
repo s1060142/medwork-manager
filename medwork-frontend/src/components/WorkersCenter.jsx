@@ -49,7 +49,7 @@ function classifyFitness(outcome) {
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
 }
 
-function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud, onOpenEmployeeProfile }) {
+function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud, onOpenEmployeeProfile, onOpenMedicalRecord }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
@@ -555,23 +555,16 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     <TableCell>{row.periodicita || '-'}</TableCell>
                     <TableCell>{formatDate(row.dataUltimaVisita || latestVisit?.visitDate)}</TableCell>
                     <TableCell>{formatDate(row.dataProssimaVisita || latestVisit?.nextDeadlineDate)}</TableCell>
-                    <TableCell>{formatDate(latestVisit?.nextDeadlineDate)}</TableCell>
-                    <TableCell>
-                      <Box className="row-actions">
-                        <button
-                          type="button"
-                          className="legacy-icon-btn-sm"
-                          aria-label="Lista"
-                          title="Apri cartella lavoratore"
-                          onClick={() => onOpenEmployeeProfile?.(row)}
-                        >📋</button>
-                        <button
-                          type="button"
-                          className="legacy-icon-btn-sm"
-                          aria-label="Scudo"
-                          title="Idoneità / cartella sanitaria"
-                          onClick={() => onOpenEmployeeProfile?.(row)}
-                        >🛡️</button>
+<TableCell>{formatDate(latestVisit?.nextDeadlineDate)}</TableCell>
+                     <TableCell>
+                       <Box className="row-actions">
+                         <button
+                           type="button"
+                           className="legacy-icon-btn-sm"
+                           aria-label="Lista"
+                           title="Apri cartella lavoratore"
+                           onClick={() => onOpenEmployeeProfile?.(row)}
+                         >📋</button>
                         <button
                           type="button"
                           className="legacy-icon-btn-sm"
@@ -579,13 +572,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                           title={row.isArchived ? 'Ripristina' : 'Archivia'}
                           onClick={() => handleToggleArchive(row)}
                         >📁</button>
-                        <button
-                          type="button"
-                          className="legacy-icon-btn-sm"
-                          aria-label="Altro"
-                          title="Gestione / modifica"
-                          onClick={() => onOpenEmployeeCrud?.()}
-                        >⋯</button>
                         <button
                           type="button"
                           className="legacy-icon-btn-sm"

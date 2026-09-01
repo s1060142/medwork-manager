@@ -36,11 +36,15 @@ public class Company
     [StringLength(150)]
     public string? PEC { get; set; }
 
-    [Phone]
+    // Phone fields: accept realistic Italian/international formats (digits, +, spaces,
+    // dashes, dots, parentheses, slashes). The strict [Phone] data annotation built into
+    // .NET rejects common real-world values (e.g. "02 1234567", "+39 02/1234567",
+    // "02-1234-5678") which made it impossible to save otherwise-valid company profiles.
+    [RegularExpression(@"^[\d+\-\s\.\(\)/]{0,30}$", ErrorMessage = "Il campo Telefono contiene caratteri non ammessi.")]
     [StringLength(30)]
     public string? ContactPhone { get; set; }
 
-    [Phone]
+    [RegularExpression(@"^[\d+\-\s\.\(\)/]{0,30}$", ErrorMessage = "Il campo Fax contiene caratteri non ammessi.")]
     [StringLength(30)]
     public string? Fax { get; set; }
 

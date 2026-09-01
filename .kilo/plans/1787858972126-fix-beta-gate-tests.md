@@ -13,7 +13,7 @@ Fix the failing Beta Gate tests by ensuring the backend API can start and connec
 
 1. **SQL Server Status**: NOT installed on this machine (only SQLWriter service exists, which is not the database engine)
 2. **Backend Configuration**:
-   - `appsettings.json` and `appsettings.Development.json` use SQL Server connection string: `Server=localhost;Database=MedWorkDb;User Id=sa;Password=sasa;TrustServerCertificate=True;`
+   - `appsettings.json` and `appsettings.Development.json` use SQL Server connection string: `Server=localhost;Database=MedWorkDb;User Id=sa;Password=Sasa1234;TrustServerCertificate=True;`
    - `appsettings.Testing.json` exists but has no connection string
 3. **Program.cs Logic** (lines 106-116):
    - When `ASPNETCORE_ENVIRONMENT=Testing`: Uses InMemory database
@@ -152,7 +152,7 @@ If InMemory database doesn't meet requirements:
 
 2. **Configure SQL Server**:
    - Enable SQL Server authentication
-   - Set sa password to "sasa" (or update connection string)
+   - Set sa password to "Sasa1234" (or update connection string)
    - Create database "MedWorkDb"
 
 3. **Update Connection String** (if needed):

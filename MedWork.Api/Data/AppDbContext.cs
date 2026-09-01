@@ -86,18 +86,18 @@ public class AppDbContext : DbContext
         });
 
         modelBuilder.Entity<CompanyDoctor>(entity =>
-        {
-            entity.HasKey(x => x.Id);
-            entity.HasIndex(x => new { x.CompanyId, x.DoctorId }).IsUnique();
-            entity.HasOne(x => x.Company)
-                .WithMany()
-                .HasForeignKey(x => x.CompanyId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(x => x.Doctor)
-                .WithMany()
-                .HasForeignKey(x => x.DoctorId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+                {
+                    entity.HasKey(x => x.Id);
+                    entity.HasIndex(x => new { x.CompanyId, x.DoctorId }).IsUnique();
+                    entity.HasOne(x => x.Company)
+                        .WithMany(x => x.CompanyDoctors)
+                        .HasForeignKey(x => x.CompanyId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                    entity.HasOne(x => x.Doctor)
+                        .WithMany(x => x.CompanyDoctors)
+                        .HasForeignKey(x => x.DoctorId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
         modelBuilder.Entity<Branch>(entity =>
         {

@@ -23,6 +23,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
@@ -30,25 +31,7 @@ import ShieldIcon from '@mui/icons-material/Shield'
 import SaveIcon from '@mui/icons-material/Save'
 import { apiGet, apiSend } from '../services/apiClient'
 import CloseIcon from '@mui/icons-material/Close'
-
-function toDate(value) {
-  const parsed = new Date(value)
-  return Number.isNaN(parsed.getTime()) ? null : parsed
-}
-
-function daysFromNow(dateValue) {
-  const date = toDate(dateValue)
-  if (!date) return null
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  return Math.ceil((target - start) / (1000 * 60 * 60 * 24))
-}
-
-function formatDate(value) {
-  const date = toDate(value)
-  return date ? date.toLocaleDateString('it-IT') : '-'
-}
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE, daysDiffFromToday, formatDate } from '../utils/datePicker'
 
 function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSaveEmployee, onOpenMedicalVisitCreate }) {
   const [tab, setTab] = useState(0)
@@ -167,7 +150,10 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
   }, [visits])
 
   const latestVisit = sortedVisits[0]
-  const daysToDeadline = daysFromNow(latestVisit?.nextDeadlineDate)
+
+  const daysToDeadline = useMemo(() => {
+    return daysDiffFromToday(latestVisit?.nextDeadlineDate)
+  }, [latestVisit?.nextDeadlineDate])
 
   const healthStatus = useMemo(() => {
     if (!latestVisit) return { label: 'Nessuna visita', color: 'default' }
@@ -275,7 +261,15 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Cognome*" value={formData.lastName} onChange={handleFieldChange('lastName')} />
                   <TextField size="small" label="Nome*" value={formData.firstName} onChange={handleFieldChange('firstName')} />
-                  <TextField size="small" label="Data nascita*" type="date" value={formData.birthDate} onChange={handleFieldChange('birthDate')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data nascita*"
+                    value={currentDateValue(formData.birthDate)}
+                    onChange={(date) => handleFieldChange('birthDate')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Sesso*" select value={formData.gender} onChange={handleFieldChange('gender')}>
                     <MenuItem value="M">Maschio</MenuItem>
                     <MenuItem value="F">Femmina</MenuItem>
@@ -318,34 +312,82 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                   <TextField size="small" label="Ruoli" value="" onChange={() => {}} />
                   <TextField size="small" label="Reparto" value="" onChange={() => {}} />
                   <TextField size="small" label="Luogo di lavoro" value="" onChange={() => {}} />
-                  <TextField size="small" label="Data ultima visita" type="date" value={formData.dataUltimaVisita} onChange={handleFieldChange('dataUltimaVisita')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data ultima visita"
+                    value={currentDateValue(formData.dataUltimaVisita)}
+                    onChange={(date) => handleFieldChange('dataUltimaVisita')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Periodicità" select value={formData.periodicita} onChange={handleFieldChange('periodicita')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Annuale">Annuale</MenuItem>
                     <MenuItem value="Biennale">Biennale</MenuItem>
                     <MenuItem value="Triennale">Triennale</MenuItem>
                   </TextField>
-                  <TextField size="small" label="Data prossima visita" type="date" value={formData.dataProssimaVisita} onChange={handleFieldChange('dataProssimaVisita')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data prossima visita"
+                    value={currentDateValue(formData.dataProssimaVisita)}
+                    onChange={(date) => handleFieldChange('dataProssimaVisita')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Tipo prossima visita" select value={formData.tipoProssimaVisita} onChange={handleFieldChange('tipoProssimaVisita')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Periodica">Periodica</MenuItem>
                     <MenuItem value="Preventiva">Preventiva</MenuItem>
                   </TextField>
-                  <TextField size="small" label="Data ultima visita RI" type="date" value={formData.dataUltimaVisitaRI} onChange={handleFieldChange('dataUltimaVisitaRI')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data ultima visita RI"
+                    value={currentDateValue(formData.dataUltimaVisitaRI)}
+                    onChange={(date) => handleFieldChange('dataUltimaVisitaRI')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Periodicità visita RI" select value={formData.periodicitaVisitaRI} onChange={handleFieldChange('periodicitaVisitaRI')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Annuale">Annuale</MenuItem>
                     <MenuItem value="Biennale">Biennale</MenuItem>
                   </TextField>
-                  <TextField size="small" label="Data prossima visita RI" type="date" value={formData.dataProssimaVisitaRI} onChange={handleFieldChange('dataProssimaVisitaRI')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data prossima visita RI"
+                    value={currentDateValue(formData.dataProssimaVisitaRI)}
+                    onChange={(date) => handleFieldChange('dataProssimaVisitaRI')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                 </Box>
               </Paper>
 
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Dati aziendali</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <TextField size="small" label="Data assunzione" type="date" value={formData.dataAssunzione} onChange={handleFieldChange('dataAssunzione')} InputLabelProps={{ shrink: true }} />
-                  <TextField size="small" label="Data attuale mansione" type="date" value={formData.dataAttualeMansione} onChange={handleFieldChange('dataAttualeMansione')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data assunzione"
+                    value={currentDateValue(formData.dataAssunzione)}
+                    onChange={(date) => handleFieldChange('dataAssunzione')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data attuale mansione"
+                    value={currentDateValue(formData.dataAttualeMansione)}
+                    onChange={(date) => handleFieldChange('dataAttualeMansione')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Referente aziendale" value={formData.referenteAziendale} onChange={handleFieldChange('referenteAziendale')} />
                   <TextField size="small" label="Identificativo MPI" value={formData.identificativoMPI} onChange={handleFieldChange('identificativoMPI')} />
                   <TextField size="small" label="Stato risorsa" select value={formData.statoRisorsa} onChange={handleFieldChange('statoRisorsa')}>
@@ -354,8 +396,24 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     <MenuItem value="Sospeso">Sospeso</MenuItem>
                   </TextField>
                   <TextField size="small" label="Motivazione" value={formData.motivazione} onChange={handleFieldChange('motivazione')} />
-                  <TextField size="small" label="Data cessazione/assenza" type="date" value={formData.dataCessazione} onChange={handleFieldChange('dataCessazione')} InputLabelProps={{ shrink: true }} />
-                  <TextField size="small" label="Data riattivazione" type="date" value={formData.dataRiattivazione} onChange={handleFieldChange('dataRiattivazione')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data cessazione/assenza"
+                    value={currentDateValue(formData.dataCessazione)}
+                    onChange={(date) => handleFieldChange('dataCessazione')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data riattivazione"
+                    value={currentDateValue(formData.dataRiattivazione)}
+                    onChange={(date) => handleFieldChange('dataRiattivazione')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <FormControlLabel
                       control={<Switch size="small" checked={formData.categoriaProtetta} onChange={handleFieldChange('categoriaProtetta')} />}

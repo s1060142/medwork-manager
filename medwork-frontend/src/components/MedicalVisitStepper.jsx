@@ -18,10 +18,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import FlashOnIcon from '@mui/icons-material/FlashOn'
 import { apiGet, apiSend } from '../services/apiClient'
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 const STEP_LABELS = ['Anamnesi', 'Esame Obiettivo', 'Giudizio di Idoneità']
 
@@ -336,13 +338,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                     value="Assegnazione automatica"
                     InputProps={{ readOnly: true }}
                   />
-                  <TextField
-                    type="date"
+                  <DesktopDatePicker
                     size="small"
                     label="Data visita *"
                     InputLabelProps={{ shrink: true }}
-                    value={formData.visitDate}
-                    onChange={(event) => setField('visitDate', event.target.value)}
+                    value={currentDateValue(formData.visitDate)}
+                    onChange={(date) => setField('visitDate', formDateValue(date))}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
                   />
                   <TextField
                     select
@@ -500,23 +503,27 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                     onChange={(event) => setField('outcome', event.target.value)}
                     placeholder="Es. Idoneo con prescrizioni"
                   />
-                  <TextField
-                    type="date"
+                  <DesktopDatePicker
                     size="small"
                     label="Prossima scadenza *"
                     InputLabelProps={{ shrink: true }}
-                    value={formData.nextDeadlineDate}
-                    onChange={(event) => {
-                      setField('nextDeadlineDate', event.target.value)
+                    value={currentDateValue(formData.nextDeadlineDate)}
+                    onChange={(date) => {
+                      setField('nextDeadlineDate', formDateValue(date))
                       setDeadlineSource('manual')
                     }}
-                    helperText={
-                      deadlineSource === 'auto'
-                        ? '✓ Calcolata automaticamente dal protocollo'
-                        : 'Inserita manualmente'
-                    }
-                    FormHelperTextProps={{
-                      sx: { color: deadlineSource === 'auto' ? 'success.main' : 'text.secondary' }
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    slotProps={{
+                      textField: {
+                        helperText:
+                          deadlineSource === 'auto'
+                            ? '✓ Calcolata automaticamente dal protocollo'
+                            : 'Inserita manualmente',
+                        FormHelperTextProps: {
+                          sx: { color: deadlineSource === 'auto' ? 'success.main' : 'text.secondary' },
+                        },
+                      },
                     }}
                   />
                 </Box>

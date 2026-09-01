@@ -17,6 +17,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
@@ -24,6 +25,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { apiGet, getHeaders, safeReadError, buildApiError, API_BASE_URL } from '../services/apiClient'
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 function formatDate(dateValue) {
   if (!dateValue) return '-'
@@ -795,8 +797,26 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
         <Box sx={{ mt: 2 }}>
           <Box className="legacy-table-toolbar">
             <Box className="legacy-table-toolbar-filters">
-              <TextField size="small" label="Data Da*" type="date" variant="outlined" value="2026-01-01" onChange={() => {}} InputLabelProps={{ shrink: true }} />
-              <TextField size="small" label="Data A*" type="date" variant="outlined" value="2026-12-31" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+              <DesktopDatePicker
+                size="small"
+                label="Data Da*"
+                variant="outlined"
+                value={currentDateValue('2026-01-01')}
+                onChange={() => {}}
+                inputFormat="dd/MM/yyyy"
+                locale={DATE_PICKER_LOCALE}
+                InputLabelProps={{ shrink: true }}
+              />
+              <DesktopDatePicker
+                size="small"
+                label="Data A*"
+                variant="outlined"
+                value={currentDateValue('2026-12-31')}
+                onChange={() => {}}
+                inputFormat="dd/MM/yyyy"
+                locale={DATE_PICKER_LOCALE}
+                InputLabelProps={{ shrink: true }}
+              />
               <TextField size="small" label="Tipologia" variant="outlined" select value="" onChange={() => {}}>
                 <MenuItem value="">Seleziona</MenuItem>
               </TextField>
@@ -861,8 +881,26 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                 <TextField size="small" label="Intervallo date" variant="outlined" select value="" onChange={() => {}}>
                   <MenuItem value="">Seleziona</MenuItem>
                 </TextField>
-                <TextField size="small" label="Data Da*" type="date" variant="outlined" value="2026-01-01" onChange={() => {}} InputLabelProps={{ shrink: true }} />
-                <TextField size="small" label="Data a" type="date" variant="outlined" value="2026-12-31" onChange={() => {}} InputLabelProps={{ shrink: true }} />
+                <DesktopDatePicker
+                  size="small"
+                  label="Data Da*"
+                  variant="outlined"
+                  value={currentDateValue('2026-01-01')}
+                  onChange={() => {}}
+                  inputFormat="dd/MM/yyyy"
+                  locale={DATE_PICKER_LOCALE}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <DesktopDatePicker
+                  size="small"
+                  label="Data a"
+                  variant="outlined"
+                  value={currentDateValue('2026-12-31')}
+                  onChange={() => {}}
+                  inputFormat="dd/MM/yyyy"
+                  locale={DATE_PICKER_LOCALE}
+                  InputLabelProps={{ shrink: true }}
+                />
                 <TextField size="small" label="Tipo analisi*" variant="outlined" select value="" onChange={() => {}}>
                   <MenuItem value="">Seleziona</MenuItem>
                 </TextField>

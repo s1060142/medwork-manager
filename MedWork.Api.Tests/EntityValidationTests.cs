@@ -146,6 +146,49 @@ public class EntityValidationTests
         Assert.True(validationResults.Count == 0, $"Validation errors: {string.Join(" | ", validationResults.Select(r => r.ErrorMessage))}");
     }
 
+    [Theory]
+    [InlineData("+39 02 1234567")]
+    [InlineData("+39 02/1234567")]
+    [InlineData("02-1234-5678")]
+    [InlineData("02.123.4567")]
+    [InlineData("+39 333 123 4567")]
+    [InlineData("(02) 1234567")]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Company_With_Realistic_ContactPhone_Fax_Passes_Validation(string? phone)
+    {
+        var company = new Company
+        {
+            TenantId = 1,
+            Name = "Acme Industria S.p.A.",
+            VATNumber = "IT01234567890",
+            ContactEmail = "hr@acme.it",
+            ContactPhone = phone,
+            Fax = phone
+        };
+
+        var validationResults = Validate(company);
+
+        Assert.True(validationResults.Count == 0, $"Validation errors: {string.Join(" | ", validationResults.Select(r => r.ErrorMessage))}");
+    }
+
+    [Fact]
+    public void Company_With_Invalid_Fax_Characters_Fails_Validation()
+    {
+        var company = new Company
+        {
+            TenantId = 1,
+            Name = "Acme Industria S.p.A.",
+            VATNumber = "IT01234567890",
+            // 's' (lettera) non è ammesso nel nuovo pattern: solo cifre, +, spazi, -, ., (, ), /
+            Fax = "fax: 02 1234567"
+        };
+
+        var validationResults = Validate(company);
+
+        Assert.Contains(validationResults, r => r.MemberNames.Contains(nameof(Company.Fax)));
+    }
+
     [Fact]
     public void MedicalVisit_With_Deadline_Before_Visit_Fails_Validation()
     {

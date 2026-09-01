@@ -127,12 +127,8 @@ test.describe('All Buttons - Comprehensive Coverage', () => {
       if ((await row.count()) > 0) {
         const profilo = row.locator('button[aria-label="Lista"]')
         if ((await profilo.count()) > 0) await expect(profilo).toBeVisible()
-        const scudo = row.locator('button[aria-label="Scudo"]')
-        if ((await scudo.count()) > 0) await expect(scudo).toBeVisible()
         const archivio = row.locator('button[aria-label="Archivio"]')
         if ((await archivio.count()) > 0) await expect(archivio).toBeVisible()
-        const altro = row.locator('button[aria-label="Altro"]')
-        if ((await altro.count()) > 0) await expect(altro).toBeVisible()
         const elimina = row.locator('button[aria-label="Elimina"]')
         if ((await elimina.count()) > 0) await expect(elimina).toBeVisible()
       }

@@ -9,6 +9,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import MenuIcon from '@mui/icons-material/Menu'
 import HomeIcon from '@mui/icons-material/Home'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -275,6 +277,9 @@ const App = () => {
   // When opening a new visit from an employee profile, preselect that employee in the stepper
   const [visitInitialEmployeeId, setVisitInitialEmployeeId] = useState<number | null>(null)
 
+  // When opening cartella sanitaria from an employee row, preselect that employee
+  const [cartellaSanitariaEmployeeId, setCartellaSanitariaEmployeeId] = useState<number | null>(null)
+
   // Quick create state
   const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
 
@@ -452,6 +457,12 @@ const App = () => {
     setProfileEmployee(employee)
   }
 
+  const handleOpenMedicalRecord = (employee: any) => {
+    setCartellaSanitariaEmployeeId(employee?.id ?? null)
+    setSelectedArea('health-surveillance')
+    setSelectedModuleKey('cartella-sanitaria')
+  }
+
   const handleOpenCompanyProfile = (company: any) => {
     setProfileCompany(company)
   }
@@ -545,6 +556,7 @@ const App = () => {
             onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
             onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
             onOpenEmployeeProfile={handleOpenEmployeeProfile}
+            onOpenMedicalRecord={handleOpenMedicalRecord}
           />
           <CrudEntityView
             config={ENTITY_BY_KEY.employees}
@@ -654,7 +666,7 @@ const App = () => {
     }
 
     if (moduleKey === 'cartella-sanitaria') {
-      return <CartellaSanitariaCenter />
+      return <CartellaSanitariaCenter employeeId={cartellaSanitariaEmployeeId ?? undefined} />
     }
 
     if (moduleKey === 'giudizio-idoneita') {
@@ -765,7 +777,7 @@ const App = () => {
       )
     }
 
-    const analysisMode = selectedArea === 'analysis' && selectedModuleKey === 'reporting'
+    const analysisMode = selectedArea === 'analysis' && ANALYSIS_TABS.some((tab) => tab.moduleKey === selectedModuleKey)
 
     if (analysisMode) {
       return (
@@ -859,7 +871,7 @@ const App = () => {
   }, [selectedArea, selectedModuleKey])
 
   const isAnalysisTabActive = useMemo(() => {
-    return selectedArea === 'analysis' && selectedModuleKey === 'reporting'
+    return selectedArea === 'analysis' && ANALYSIS_TABS.some((tab) => tab.moduleKey === selectedModuleKey)
   }, [selectedArea, selectedModuleKey])
 
   const isAdministrationTabActive = useMemo(() => {
@@ -1034,8 +1046,9 @@ const App = () => {
 
   return (
     <>
-      <CssBaseline />
-      <Box className="legacy-shell">
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <CssBaseline />
+        <Box className="legacy-shell">
         {!isAuthenticated ? (
           <Box className="legacy-login-wrap">
             <Paper className="legacy-login-card" elevation={0}>
@@ -1172,6 +1185,7 @@ const App = () => {
           }}
         />
       </Box>
+      </LocalizationProvider>
     </>
   )
 }

@@ -1,1 +1,1 @@
-        optionsBuilder.UseSqlServer("Server=(localdb)\\medwork;Database=MedWorkDb;User Id=sa;Password=sasa;TrustServerCertificate=True;MultipleActiveResultSets=true;");
+        optionsBuilder.UseSqlServer("Server=(localdb)\\medwork;Database=MedWorkDb;User Id=sa;Password=Sasa1234;TrustServerCertificate=True;MultipleActiveResultSets=true;");

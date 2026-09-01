@@ -22,6 +22,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import SaveIcon from '@mui/icons-material/Save'
@@ -37,6 +38,7 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
 import HealthPlanPreview from './HealthPlanPreview'
 import EnterpriseAnalyticsDashboard from './EnterpriseAnalyticsDashboard'
 import Allegato3BPreview from './Allegato3BPreview'
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 function formatDate(value) {
   if (!value) return '-'
@@ -342,7 +344,15 @@ function CompanyProfileDialog({ open, onClose, company }) {
                   <TextField size="small" label="Codice commessa" value={formData.codiceCommessa} onChange={handleFieldChange('codiceCommessa')} />
                   <TextField size="small" label="Codice CUP" value={formData.codiceCUP} onChange={handleFieldChange('codiceCUP')} />
                   <TextField size="small" label="Codice CIG" value={formData.codiceCig} onChange={handleFieldChange('codiceCig')} />
-                  <TextField size="small" label="Data contratto" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data contratto"
+                    value={currentDateValue(formData.dataLetteraIntenti)}
+                    onChange={(date) => handleFieldChange('dataLetteraIntenti')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                 </Box>
               </Paper>
 
@@ -374,8 +384,24 @@ function CompanyProfileDialog({ open, onClose, company }) {
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Altri dati</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Numero lettera intenti" value={formData.numeroLetteraIntenti} onChange={handleFieldChange('numeroLetteraIntenti')} />
-                  <TextField size="small" label="Data lettera intenti" type="date" value={formData.dataLetteraIntenti} onChange={handleFieldChange('dataLetteraIntenti')} InputLabelProps={{ shrink: true }} />
-                  <TextField size="small" label="Scadenza lettera intenti" type="date" value={formData.scadenzaLetteraIntenti} onChange={handleFieldChange('scadenzaLetteraIntenti')} InputLabelProps={{ shrink: true }} />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Data lettera intenti"
+                    value={currentDateValue(formData.dataLetteraIntenti)}
+                    onChange={(date) => handleFieldChange('dataLetteraIntenti')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <DesktopDatePicker
+                    size="small"
+                    label="Scadenza lettera intenti"
+                    value={currentDateValue(formData.scadenzaLetteraIntenti)}
+                    onChange={(date) => handleFieldChange('scadenzaLetteraIntenti')({ target: { value: formDateValue(date) } })}
+                    inputFormat="dd/MM/yyyy"
+                    locale={DATE_PICKER_LOCALE}
+                    InputLabelProps={{ shrink: true }}
+                  />
                   <TextField size="small" label="Addebito spese bancarie" select value={formData.addebitoSpeseBancarie} onChange={handleFieldChange('addebitoSpeseBancarie')}>
                     <MenuItem value="">Seleziona</MenuItem>
                     <MenuItem value="Sì">Sì</MenuItem>

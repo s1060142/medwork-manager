@@ -16,6 +16,8 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.8",
     "@mui/material": "^7.3.8",
+    "@mui/x-date-pickers": "^7.29.4",
+    "date-fns": "^2.30.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "playwright": "^1.62.1",

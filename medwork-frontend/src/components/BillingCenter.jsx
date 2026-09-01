@@ -15,8 +15,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
+import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 function BillingCenter() {
   const [companies, setCompanies] = useState([])
@@ -107,21 +109,23 @@ function BillingCenter() {
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 1.2, mt: 2, flexWrap: 'wrap' }}>
-          <TextField
+          <DesktopDatePicker
             size="small"
-            type="date"
             label="Da"
             InputLabelProps={{ shrink: true }}
-            value={periodFrom}
-            onChange={(e) => setPeriodFrom(e.target.value)}
+            value={currentDateValue(periodFrom)}
+            onChange={(date) => setPeriodFrom(formDateValue(date))}
+            inputFormat="dd/MM/yyyy"
+            locale={DATE_PICKER_LOCALE}
           />
-          <TextField
+          <DesktopDatePicker
             size="small"
-            type="date"
             label="A"
             InputLabelProps={{ shrink: true }}
-            value={periodTo}
-            onChange={(e) => setPeriodTo(e.target.value)}
+            value={currentDateValue(periodTo)}
+            onChange={(date) => setPeriodTo(formDateValue(date))}
+            inputFormat="dd/MM/yyyy"
+            locale={DATE_PICKER_LOCALE}
           />
           <Button
             variant="contained"
