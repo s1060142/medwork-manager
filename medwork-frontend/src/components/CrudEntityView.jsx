@@ -726,6 +726,7 @@ function CrudEntityView({
     }
     if (field.type === 'date') {
       inputProps.type = 'date'
+      inputProps.required = field.required
     }
 
     return (
@@ -738,6 +739,7 @@ function CrudEntityView({
         value={formData[field.name]}
         inputProps={Object.keys(inputProps).length ? inputProps : undefined}
         onChange={(event) => markDirty((current) => ({ ...current, [field.name]: event.target.value }))}
+        className={field.type === 'date' && formData[field.name] ? 'date-has-value' : undefined}
       />
     )
   }
@@ -956,3 +958,6 @@ function CrudEntityView({
 }
 
 export default CrudEntityView
+
+
+

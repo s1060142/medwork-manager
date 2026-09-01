@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { it as itLocale } from 'date-fns/locale'
 import MenuIcon from '@mui/icons-material/Menu'
 import HomeIcon from '@mui/icons-material/Home'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -1046,7 +1047,7 @@ const App = () => {
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={itLocale}>
         <CssBaseline />
         <Box className="legacy-shell">
         {!isAuthenticated ? (

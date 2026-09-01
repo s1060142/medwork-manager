@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@mui/material'
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import DatePicker from './DatePicker'
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
@@ -45,14 +46,16 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
   const [dirty, setDirty] = useState(false)
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    gender: '',
-    birthCity: '',
-    birthCityCode: '',
-    taxCode: '',
-    nazionalita: '',
+      companyId: null,
+      branchId: null,
+      firstName: '',
+      lastName: '',
+      birthDate: '',
+      gender: '',
+      birthCity: '',
+      birthCityCode: '',
+      taxCode: '',
+      nazionalita: '',
     domicilio: '',
     indirizzoDomicilio: '',
     jobRole: '',
@@ -87,13 +90,16 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
     if (!open || !employee?.id) return
 
     setFormData((current) => ({
-      ...current,
-      firstName: employee.firstName || current.firstName,
-      lastName: employee.lastName || current.lastName,
-      birthDate: employee.birthDate || current.birthDate,
-      gender: employee.gender || current.gender,
-      birthCity: employee.birthCity || current.birthCity,
-      taxCode: employee.taxCode || current.taxCode,
+          ...current,
+          companyId: employee.companyId ?? current.companyId,
+          branchId: employee.branchId ?? current.branchId,
+          firstName: employee.firstName || current.firstName,
+          lastName: employee.lastName || current.lastName,
+          birthDate: employee.birthDate || current.birthDate,
+          gender: employee.gender || current.gender,
+          birthCity: employee.birthCity || current.birthCity,
+          birthCityCode: employee.birthCityCode || current.birthCityCode,
+          taxCode: employee.taxCode || current.taxCode,
       jobRole: employee.jobRole || current.jobRole,
       phoneNumber: employee.phoneNumber || current.phoneNumber,
       personalEmail: employee.personalEmail || current.personalEmail,
@@ -201,7 +207,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
         id: employee.id,
         ...formData,
       }
-      const updated = await apiSend('PUT', '/api/admin-data/employees', payload)
+      const updated = await apiSend('PUT', `/api/admin-data/employees/${employee.id}`, payload)
       if (typeof onSaveEmployee === 'function') {
         onSaveEmployee(updated)
       }
@@ -261,7 +267,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Cognome*" value={formData.lastName} onChange={handleFieldChange('lastName')} />
                   <TextField size="small" label="Nome*" value={formData.firstName} onChange={handleFieldChange('firstName')} />
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data nascita*"
                     value={currentDateValue(formData.birthDate)}
@@ -269,6 +275,11 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     inputFormat="dd/MM/yyyy"
                     locale={DATE_PICKER_LOCALE}
                     InputLabelProps={{ shrink: true }}
+                    slotProps={{
+                      textField: {
+                        placeholder: '',
+                      },
+                    }}
                   />
                   <TextField size="small" label="Sesso*" select value={formData.gender} onChange={handleFieldChange('gender')}>
                     <MenuItem value="M">Maschio</MenuItem>
@@ -312,7 +323,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                   <TextField size="small" label="Ruoli" value="" onChange={() => {}} />
                   <TextField size="small" label="Reparto" value="" onChange={() => {}} />
                   <TextField size="small" label="Luogo di lavoro" value="" onChange={() => {}} />
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data ultima visita"
                     value={currentDateValue(formData.dataUltimaVisita)}
@@ -327,7 +338,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     <MenuItem value="Biennale">Biennale</MenuItem>
                     <MenuItem value="Triennale">Triennale</MenuItem>
                   </TextField>
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data prossima visita"
                     value={currentDateValue(formData.dataProssimaVisita)}
@@ -341,7 +352,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     <MenuItem value="Periodica">Periodica</MenuItem>
                     <MenuItem value="Preventiva">Preventiva</MenuItem>
                   </TextField>
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data ultima visita RI"
                     value={currentDateValue(formData.dataUltimaVisitaRI)}
@@ -355,7 +366,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     <MenuItem value="Annuale">Annuale</MenuItem>
                     <MenuItem value="Biennale">Biennale</MenuItem>
                   </TextField>
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data prossima visita RI"
                     value={currentDateValue(formData.dataProssimaVisitaRI)}
@@ -370,7 +381,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Dati aziendali</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data assunzione"
                     value={currentDateValue(formData.dataAssunzione)}
@@ -379,7 +390,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     locale={DATE_PICKER_LOCALE}
                     InputLabelProps={{ shrink: true }}
                   />
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data attuale mansione"
                     value={currentDateValue(formData.dataAttualeMansione)}
@@ -396,7 +407,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     <MenuItem value="Sospeso">Sospeso</MenuItem>
                   </TextField>
                   <TextField size="small" label="Motivazione" value={formData.motivazione} onChange={handleFieldChange('motivazione')} />
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data cessazione/assenza"
                     value={currentDateValue(formData.dataCessazione)}
@@ -405,7 +416,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     locale={DATE_PICKER_LOCALE}
                     InputLabelProps={{ shrink: true }}
                   />
-                  <DesktopDatePicker
+                  <DatePicker
                     size="small"
                     label="Data riattivazione"
                     value={currentDateValue(formData.dataRiattivazione)}

@@ -2,12 +2,31 @@
    MEDWORK THEME - Legacy gestionale layout
    ==================================== */
 
-/* Hide native date placeholder to avoid label overlap */
-input[type='date']::-webkit-datetime-edit {
+/* Hide native date placeholder when empty (invalid) */
+input[type='date']:invalid::-webkit-datetime-edit-fields-text,
+input[type='date']:invalid::-webkit-datetime-edit-text,
+input[type='date']:invalid::-webkit-datetime-edit-year-field,
+input[type='date']:invalid::-webkit-datetime-edit-month-field,
+input[type='date']:invalid::-webkit-datetime-edit-day-field {
   color: transparent;
+  display: none;
 }
-input[type='date']:focus::-webkit-datetime-edit {
-  color: inherit;
+/* Show date value when valid */
+input[type='date']:valid::-webkit-datetime-edit-fields-text,
+input[type='date']:valid::-webkit-datetime-edit-text,
+input[type='date']:valid::-webkit-datetime-edit-year-field,
+input[type='date']:valid::-webkit-datetime-edit-month-field,
+input[type='date']:valid::-webkit-datetime-edit-day-field {
+  color: var(--legacy-text, #111827);
+}
+
+/* Hide placeholder text in date picker inputs */
+input[placeholder="GG/MM/AAAA"]::placeholder,
+input[placeholder="dd/mm/yyyy"]::placeholder,
+input[data-placeholder*="AAAA"]::placeholder,
+.MuiInputBase-input::placeholder {
+  color: transparent !important;
+  opacity: 0 !important;
 }
 input[type='date']::-webkit-calendar-picker-indicator {
   opacity: 0.6;
