@@ -16,14 +16,14 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     hmr: {
-      host: '127.0.0.1',
+      host: 'localhost',
       protocol: 'ws',
       port: 5173,
       clientPort: 5173,
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5279',
+        target: 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },

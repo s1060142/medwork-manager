@@ -1,0 +1,30 @@
+- generic [ref=f8e5]:
+  - heading "Gestionale Medicina del Lavoro" [level=1] [ref=f8e6]
+  - paragraph [ref=f8e7]: Accesso alla piattaforma amministrativa e sanitaria.
+  - generic [ref=f8e8]:
+    - heading "Accesso piattaforma" [level=2] [ref=f8e9]
+    - paragraph [ref=f8e10]: Inserisci le credenziali fornite dal tuo studio medico.
+    - paragraph [ref=f8e11]:
+      - link "Password dimenticata?" [ref=f8e12] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=f8e14]:
+      - generic [ref=f8e15]:
+        - generic [ref=f8e16]:
+          - text: Username
+          - generic [aria-hidden] [ref=f8e17]: "*"
+        - generic [ref=f8e18]:
+          - textbox "Username" [active] [ref=f8e19]
+          - group [aria-hidden]:
+            - generic: Username *
+      - generic [ref=f8e20]:
+        - generic:
+          - text: Password
+          - generic [aria-hidden]: "*"
+        - generic [ref=f8e21]:
+          - textbox "Password" [ref=f8e22]
+          - group [aria-hidden]:
+            - generic: Password *
+      - generic [ref=f8e23] [cursor=pointer]:
+        - checkbox "Ricordami (30 giorni)" [ref=f8e25]
+        - generic [ref=f8e28]: Ricordami (30 giorni)
+      - button "Accedi" [ref=f8e29] [cursor=pointer]

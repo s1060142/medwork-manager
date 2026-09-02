@@ -1,0 +1,156 @@
+- generic [ref=f5e4]:
+  - banner [ref=f5e5]:
+    - generic [ref=f5e6]:
+      - button "Menu" [ref=f5e7] [cursor=pointer]
+      - generic [ref=f5e12]:
+        - combobox "Cerca lavoratore..." [ref=f5e15]
+        - group [aria-hidden]
+    - generic [ref=f5e16]:
+      - button "Notifiche" [ref=f5e17] [cursor=pointer]
+      - generic [ref=f5e21]: (it)
+      - button "ChangeLog" [ref=f5e23] [cursor=pointer]
+      - button "Manuale" [ref=f5e24] [cursor=pointer]
+      - button "Profilo" [ref=f5e25] [cursor=pointer]
+      - button "Logout" [ref=f5e29] [cursor=pointer]
+      - button [ref=f5e32] [cursor=pointer]
+      - button [ref=f5e36] [cursor=pointer]
+  - generic [ref=f5e40]:
+    - complementary [ref=f5e41]:
+      - button "Gestione aziende" [ref=f5e42] [cursor=pointer]
+      - button "Gestione lavoratori" [ref=f5e46] [cursor=pointer]
+      - button "Analisi e relazioni" [ref=f5e50] [cursor=pointer]
+      - button "Sorveglianza sanitaria" [ref=f5e54] [cursor=pointer]
+      - button "Scadenzario" [ref=f5e58] [cursor=pointer]
+      - button "Amministrazione" [ref=f5e62] [cursor=pointer]
+    - main [ref=f5e66]:
+      - generic [ref=f5e67]:
+        - generic [ref=f5e68]:
+          - button "Gruppi aziendali" [ref=f5e69] [cursor=pointer]
+          - button "Anagrafica" [ref=f5e70] [cursor=pointer]
+          - button "Checklist" [ref=f5e71] [cursor=pointer]
+          - button "Attività" [ref=f5e72] [cursor=pointer]
+        - generic [ref=f5e73]:
+          - generic [ref=f5e74]:
+            - generic: Nominativo
+            - generic [ref=f5e75]:
+              - textbox "Nominativo" [ref=f5e76]
+              - group [aria-hidden]:
+                - generic: Nominativo
+          - generic [ref=f5e77]:
+            - generic: Medico
+            - generic [ref=f5e78]:
+              - textbox "Medico" [ref=f5e79]
+              - group [aria-hidden]:
+                - generic: Medico
+          - generic [ref=f5e80]:
+            - generic: Gruppo aziendale
+            - generic [ref=f5e81]:
+              - textbox "Gruppo aziendale" [ref=f5e82]
+              - group [aria-hidden]:
+                - generic: Gruppo aziendale
+          - generic [ref=f5e83]:
+            - generic: Provincia
+            - generic [ref=f5e84]:
+              - textbox "Provincia" [ref=f5e85]
+              - group [aria-hidden]:
+                - generic: Provincia
+          - generic [ref=f5e86]:
+            - generic: Comune
+            - generic [ref=f5e87]:
+              - textbox "Comune" [ref=f5e88]
+              - group [aria-hidden]:
+                - generic: Comune
+          - generic [ref=f5e89]:
+            - generic: Riferimento
+            - generic [ref=f5e90]:
+              - textbox "Riferimento" [ref=f5e91]
+              - group [aria-hidden]:
+                - generic: Riferimento
+          - generic [ref=f5e92]:
+            - generic: Status
+            - generic [ref=f5e93]:
+              - textbox "Status" [ref=f5e94]
+              - group [aria-hidden]:
+                - generic: Status
+          - generic [ref=f5e95]:
+            - button [ref=f5e96] [cursor=pointer]
+            - button [ref=f5e100] [cursor=pointer]
+        - generic [ref=f5e106]:
+          - table [ref=f5e109]:
+            - rowgroup [ref=f5e110]:
+              - row [ref=f5e111]:
+                - columnheader [ref=f5e112]
+                - columnheader "Nome Azienda" [ref=f5e113]
+                - columnheader "Ragione Sociale" [ref=f5e114]
+                - columnheader "Partita IVA" [ref=f5e115]
+                - columnheader "Codice Fiscale" [ref=f5e116]
+                - columnheader "Codice ATECO" [ref=f5e117]
+                - columnheader "Attività Azienda" [ref=f5e118]
+                - columnheader "Denominazione Unità Locale" [ref=f5e119]
+                - columnheader "Tipologia" [ref=f5e120]
+                - columnheader "Riferimento" [ref=f5e121]
+                - columnheader "Status" [ref=f5e122]
+                - columnheader "Indirizzo Unità Locale" [ref=f5e123]
+                - columnheader "Città Unità Locale" [ref=f5e124]
+                - columnheader "CAP Unità Locale" [ref=f5e125]
+                - columnheader "Provincia Unità Locale" [ref=f5e126]
+                - columnheader "Indirizzo Sede Legale" [ref=f5e127]
+                - columnheader "Città Sede Legale" [ref=f5e128]
+                - columnheader "CAP Sede Legale" [ref=f5e129]
+                - columnheader "Provincia Sede Legale" [ref=f5e130]
+                - columnheader "Nazione" [ref=f5e131]
+                - columnheader "Luogo Conservazione Documenti" [ref=f5e132]
+                - columnheader "Luogo Abituale Visita" [ref=f5e133]
+                - columnheader "Ambulatorio" [ref=f5e134]
+                - columnheader "Email Comunicazioni" [ref=f5e135]
+                - columnheader "Email Fatturazione" [ref=f5e136]
+                - columnheader "Indirizzo PEC" [ref=f5e137]
+                - columnheader "Telefono" [ref=f5e138]
+                - columnheader "Fax" [ref=f5e139]
+                - columnheader "Nome Referente Interno" [ref=f5e140]
+                - columnheader "Email Referente Interno" [ref=f5e141]
+                - columnheader "Codice Esterno" [ref=f5e142]
+                - columnheader "Note" [ref=f5e143]
+                - columnheader "Email Contatto (legacy)" [ref=f5e144]
+                - columnheader "Codice Destinatario Fatturazione" [ref=f5e145]
+                - columnheader "Identificativo Contratto" [ref=f5e146]
+                - columnheader "Codice Commessa" [ref=f5e147]
+                - columnheader "Codice CUP" [ref=f5e148]
+                - columnheader "Codice CIG" [ref=f5e149]
+                - columnheader "Condizioni Pagamento" [ref=f5e150]
+                - columnheader "Modalità Pagamento" [ref=f5e151]
+                - columnheader "Intestatario" [ref=f5e152]
+                - columnheader "Istituto Bancario" [ref=f5e153]
+                - columnheader "IBAN" [ref=f5e154]
+                - columnheader "BIC/Swift" [ref=f5e155]
+                - columnheader "ABI" [ref=f5e156]
+                - columnheader "CAB" [ref=f5e157]
+                - columnheader "Numero Lettera Intenti" [ref=f5e158]
+                - columnheader "Data Lettera Intenti" [ref=f5e159]
+                - columnheader "Scadenza Lettera Intenti" [ref=f5e160]
+                - columnheader "Addebito Spese Bancarie" [ref=f5e161]
+                - columnheader "Importo Spese Bancarie" [ref=f5e162]
+                - columnheader "Split Payment" [ref=f5e163]
+                - columnheader "Azione" [ref=f5e164]
+            - rowgroup [ref=f5e165]:
+              - row [ref=f5e166]:
+                - cell [ref=f5e167]:
+                  - paragraph [ref=f5e168]: Nessun elemento disponibile.
+          - generic [ref=f5e169]:
+            - button [ref=f5e170] [cursor=pointer]
+            - button [ref=f5e174] [cursor=pointer]
+            - button [ref=f5e178] [cursor=pointer]
+            - button [ref=f5e182] [cursor=pointer]
+            - button [ref=f5e186] [cursor=pointer]
+          - generic [ref=f5e190]:
+            - generic [ref=f5e191]: 0 elementi
+            - generic [ref=f5e192]:
+              - generic [ref=f5e194]:
+                - combobox "10" [ref=f5e195] [cursor=pointer]
+                - textbox [aria-hidden]: "10"
+                - group [aria-hidden]
+              - generic [ref=f5e197]:
+                - paragraph [ref=f5e198]: 0–0 of 0
+                - generic [ref=f5e199]:
+                  - button "Go to previous page" [disabled]
+                  - button "Go to next page" [disabled]

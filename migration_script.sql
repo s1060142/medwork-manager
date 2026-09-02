@@ -1,4 +1,4 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -544,6 +544,7 @@ CREATE TABLE [NotificationLogs] (
     [DeliveredAt] datetime2 NULL,
     [ErrorMessage] nvarchar(500) NULL,
     [RetryCount] int NOT NULL,
+    [Email] nvarchar(150) NULL,
     CONSTRAINT [PK_NotificationLogs] PRIMARY KEY ([Id]),
     CONSTRAINT [FK_NotificationLogs_Employees_EmployeeId] FOREIGN KEY ([EmployeeId]) REFERENCES [Employees] ([Id]),
     CONSTRAINT [FK_NotificationLogs_Tenants_TenantId] FOREIGN KEY ([TenantId]) REFERENCES [Tenants] ([Id])
@@ -882,4 +883,6 @@ VALUES (N'20260827211131_AddNotificationLogEmailColumn', N'10.0.10');
 
 COMMIT;
 GO
+
+
 

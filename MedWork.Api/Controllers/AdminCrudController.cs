@@ -37,7 +37,48 @@ public class AdminCrudController : ControllerBase
                 x.Name,
                 x.VATNumber,
                 x.ContactEmail,
-                x.ContactPhone
+                x.ContactPhone,
+                x.OperationalAddress,
+                x.OperationalCity,
+                x.OperationalPostalCode,
+                x.OperationalProvince,
+                x.OperationalUnitName,
+                x.Activity,
+                x.Type,
+                x.Reference,
+                x.Status,
+                x.LegalName,
+                x.LegalAddress,
+                x.LegalCity,
+                x.LegalPostalCode,
+                x.LegalProvince,
+                x.Country,
+                x.DocumentStorageLocation,
+                x.UsualVisitLocation,
+                x.Clinic,
+                x.CommunicationsEmail,
+                x.BillingEmail,
+                x.InternalContactName,
+                x.InternalContactEmail,
+                x.ExternalCode,
+                x.Notes,
+                x.RecipientCode,
+                x.ContractIdentifier,
+                x.OrderCode,
+                x.CUPCode,
+                x.CIGCode,
+                x.PaymentTerms,
+                x.PaymentMethod,
+                x.AccountHolder,
+                x.BankName,
+                x.IBAN,
+                x.BICSwift,
+                x.ABI,
+                x.CAB,
+                x.Fax,
+                x.ATECOCode,
+                x.RiskClass,
+                x.IsActive,
             })
             .ToListAsync();
         return Ok(data);
@@ -64,35 +105,104 @@ public class AdminCrudController : ControllerBase
     }
 
     [HttpPut("companies/{id:int}")]
-    public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company request)
-    {
-        try
+        public async Task<IActionResult> UpdateCompany(int id, [FromBody] Company request)
+        {
+            try
+            {
+                var tenantId = GetTenantId();
+                var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+                if (entity is null) return NotFound();
+
+                // Full save: every scalar field the client sends is persisted.
+                // Server-controlled fields (Id, TenantId, CreatedAt) are not touched.
+                entity.Name = request.Name;
+                                entity.LegalName = request.LegalName;
+                                var incomingVat = string.IsNullOrWhiteSpace(request.VATNumber) ? null : request.VATNumber;
+                                if (incomingVat != entity.VATNumber)
+                                {
+                                    // Only reassign when the value actually changed. Setting the same
+                                    // value would issue an UPDATE that trips the unique index against
+                                    // the very same row.
+                                    entity.VATNumber = incomingVat;
+                                }
+                                entity.TaxCode = request.TaxCode;
+                                entity.ATECOCode = request.ATECOCode;
+                                entity.REANumber = request.REANumber;
+                                entity.ContactEmail = request.ContactEmail;
+                                entity.PEC = request.PEC;
+                                entity.ContactPhone = request.ContactPhone;
+                                entity.Fax = request.Fax;
+                                entity.LegalAddress = request.LegalAddress;
+                                entity.OperationalAddress = request.OperationalAddress;
+                                entity.LegalRepresentative = request.LegalRepresentative;
+                                entity.RSPP = request.RSPP;
+                                entity.RLS = request.RLS;
+                                entity.RiskClass = request.RiskClass;
+                                entity.INAILPosition = request.INAILPosition;
+                                entity.INAILPolicyNumber = request.INAILPolicyNumber;
+                                entity.IsActive = request.IsActive;
+                                // Extended fields (2026-09 alignment with frontend entityConfigs.js)
+                                entity.Activity = request.Activity;
+                                entity.OperationalUnitName = request.OperationalUnitName;
+                                entity.Type = request.Type;
+                                entity.Reference = request.Reference;
+                                entity.Status = request.Status;
+                                entity.OperationalCity = request.OperationalCity;
+                                entity.OperationalPostalCode = request.OperationalPostalCode;
+                                entity.OperationalProvince = request.OperationalProvince;
+                                entity.LegalCity = request.LegalCity;
+                                entity.LegalPostalCode = request.LegalPostalCode;
+                                entity.LegalProvince = request.LegalProvince;
+                                entity.Country = request.Country;
+                                entity.DocumentStorageLocation = request.DocumentStorageLocation;
+                                entity.UsualVisitLocation = request.UsualVisitLocation;
+                                entity.Clinic = request.Clinic;
+                                entity.CommunicationsEmail = request.CommunicationsEmail;
+                                entity.BillingEmail = request.BillingEmail;
+                                entity.InternalContactName = request.InternalContactName;
+                                entity.InternalContactEmail = request.InternalContactEmail;
+                                entity.ExternalCode = request.ExternalCode;
+                                entity.Notes = request.Notes;
+                                entity.RecipientCode = request.RecipientCode;
+                                entity.ContractIdentifier = request.ContractIdentifier;
+                                entity.OrderCode = request.OrderCode;
+                                entity.CUPCode = request.CUPCode;
+                                entity.CIGCode = request.CIGCode;
+                                entity.PaymentTerms = request.PaymentTerms;
+                                entity.PaymentMethod = request.PaymentMethod;
+                                entity.AccountHolder = request.AccountHolder;
+                                entity.BankName = request.BankName;
+                                entity.IBAN = request.IBAN;
+                                entity.BICSwift = request.BICSwift;
+                                entity.ABI = request.ABI;
+                                entity.CAB = request.CAB;
+                                entity.IntentLetterNumber = request.IntentLetterNumber;
+                                entity.IntentLetterDate = request.IntentLetterDate;
+                                entity.IntentLetterExpiry = request.IntentLetterExpiry;
+                                entity.BankChargesDebit = request.BankChargesDebit;
+                                entity.BankChargesAmount = request.BankChargesAmount;
+                                entity.SplitPayment = request.SplitPayment;
+                                entity.UpdatedAt = DateTime.UtcNow;
+
+                await _dbContext.SaveChangesAsync();
+                return Ok(entity);
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                return Conflict("Esiste gia un'azienda con la stessa Partita IVA.");
+            }
+        }
+
+        [HttpGet("companies/{id:int}")]
+        public async Task<IActionResult> GetCompany(int id)
         {
             var tenantId = GetTenantId();
-        var entity = await _dbContext.Companies.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+            var entity = await _dbContext.Companies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
             if (entity is null) return NotFound();
-
-            entity.Name = request.Name;
-
-            var incomingVat = string.IsNullOrWhiteSpace(request.VATNumber) ? null : request.VATNumber;
-            if (incomingVat != entity.VATNumber)
-            {
-                // Only reassign when the value actually changed. Setting the same
-                // value would issue an UPDATE that trips the unique index against
-                // the very same row.
-                entity.VATNumber = incomingVat;
-            }
-
-            entity.ContactEmail = request.ContactEmail;
-            entity.ContactPhone = request.ContactPhone;
-            await _dbContext.SaveChangesAsync();
             return Ok(entity);
         }
-        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
-        {
-            return Conflict("Esiste gia un'azienda con la stessa Partita IVA.");
-        }
-    }
 
     public class CompanyDoctorAssignmentRequest
     {
@@ -246,8 +356,47 @@ public class AdminCrudController : ControllerBase
         entity.Gender = request.Gender;
         entity.BirthCity = request.BirthCity;
         entity.BirthCityCode = request.BirthCityCode;
+        entity.BirthProvince = request.BirthProvince;
+        entity.BirthCountryCode = request.BirthCountryCode;
         entity.PersonalEmail = request.PersonalEmail;
         entity.PhoneNumber = request.PhoneNumber;
+        entity.Address = request.Address;
+        entity.City = request.City;
+        entity.Province = request.Province;
+        entity.PostalCode = request.PostalCode;
+        entity.Nationality = request.Nationality;
+        entity.DepartmentId = request.DepartmentId;
+        entity.WorkLocationId = request.WorkLocationId;
+        entity.Matricola = request.Matricola;
+        entity.Reparto = request.Reparto;
+        entity.LuogoDiLavoro = request.LuogoDiLavoro;
+        entity.Periodicita = request.Periodicita;
+        // Extended fields (2026-09)
+        entity.Domicilio = request.Domicilio;
+        entity.IndirizzoDomicilio = request.IndirizzoDomicilio;
+        entity.MedicoCurante = request.MedicoCurante;
+        entity.IndirizzoMedico = request.IndirizzoMedico;
+        entity.TelefonoMedico = request.TelefonoMedico;
+        entity.GruppoSanguigno = request.GruppoSanguigno;
+        entity.DataUltimaVisita = request.DataUltimaVisita;
+        entity.DataProssimaVisita = request.DataProssimaVisita;
+        entity.TipoProssimaVisita = request.TipoProssimaVisita;
+        entity.DataUltimaVisitaRI = request.DataUltimaVisitaRI;
+        entity.PeriodicitaVisitaRI = request.PeriodicitaVisitaRI;
+        entity.DataProssimaVisitaRI = request.DataProssimaVisitaRI;
+        entity.DataAssunzione = request.DataAssunzione;
+        entity.DataAttualeMansione = request.DataAttualeMansione;
+        entity.ReferenteAziendale = request.ReferenteAziendale;
+        entity.IdentificativoMPI = request.IdentificativoMPI;
+        entity.StatoRisorsa = request.StatoRisorsa;
+        entity.Motivazione = request.Motivazione;
+        entity.DataCessazione = request.DataCessazione;
+        entity.DataRiattivazione = request.DataRiattivazione;
+        entity.CategoriaProtetta = request.CategoriaProtetta;
+        entity.DocumentiPrivacy = request.DocumentiPrivacy;
+        entity.NoteRiservate = request.NoteRiservate;
+        entity.NotePerAzienda = request.NotePerAzienda;
+        entity.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }

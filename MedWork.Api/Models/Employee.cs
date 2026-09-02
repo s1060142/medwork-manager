@@ -24,6 +24,18 @@ public class Employee
     [Range(1, int.MaxValue)]
     public int? WorkLocationId { get; set; }
 
+    [StringLength(120)]
+    public string? Reparto { get; set; }
+
+    [StringLength(200)]
+    public string? LuogoDiLavoro { get; set; }
+
+    [StringLength(50)]
+    public string? Periodicita { get; set; }
+
+    [StringLength(120)]
+    public string? Matricola { get; set; }
+
     [Required]
     [StringLength(120, MinimumLength = 2)]
     public string FirstName { get; set; } = string.Empty;
@@ -84,8 +96,36 @@ public class Employee
     [StringLength(50)]
     public string? Nationality { get; set; } = "IT";
 
+    // Alias usato dal frontend (entityConfigs 'employees') come 'nazionalita'/'nationality'.
+    // Mappato al campo Nationality sottostante.
     [StringLength(100)]
     public string? EducationLevel { get; set; }
+
+    // === Extended fields (2026-09) — allineamento frontend entityConfigs.js ===
+    [StringLength(500)] public string? Domicilio { get; set; }
+    [StringLength(500)] public string? IndirizzoDomicilio { get; set; }
+    [StringLength(150)] public string? MedicoCurante { get; set; }
+    [StringLength(250)] public string? IndirizzoMedico { get; set; }
+    [StringLength(30)] public string? TelefonoMedico { get; set; }
+    [StringLength(5)] public string? GruppoSanguigno { get; set; }
+    public DateTime? DataUltimaVisita { get; set; }
+    public DateTime? DataProssimaVisita { get; set; }
+    [StringLength(50)] public string? TipoProssimaVisita { get; set; }
+    public DateTime? DataUltimaVisitaRI { get; set; }
+    [StringLength(50)] public string? PeriodicitaVisitaRI { get; set; }
+    public DateTime? DataProssimaVisitaRI { get; set; }
+    public DateTime? DataAssunzione { get; set; }
+    public DateTime? DataAttualeMansione { get; set; }
+    [StringLength(150)] public string? ReferenteAziendale { get; set; }
+    [StringLength(50)] public string? IdentificativoMPI { get; set; }
+    [StringLength(50)] public string? StatoRisorsa { get; set; } = "Attivo";
+    [StringLength(250)] public string? Motivazione { get; set; }
+    public DateTime? DataCessazione { get; set; }
+    public DateTime? DataRiattivazione { get; set; }
+    [StringLength(100)] public string? CategoriaProtetta { get; set; }
+    [StringLength(250)] public string? DocumentiPrivacy { get; set; }
+    [StringLength(2000)] public string? NoteRiservate { get; set; }
+    [StringLength(2000)] public string? NotePerAzienda { get; set; }
 
     public DateTime HireDate { get; set; } = DateTime.UtcNow;
 

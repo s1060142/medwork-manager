@@ -74,8 +74,50 @@ public class Company
 
     public bool IsActive { get; set; } = true;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    // Extended fields added in 2026-09 to align with frontend entityConfigs.js.
+    // All nullable so existing data is preserved.
+    [StringLength(500)] public string? Activity { get; set; }
+    [StringLength(200)] public string? OperationalUnitName { get; set; }
+    [StringLength(50)] public string? Type { get; set; }
+    [StringLength(120)] public string? Reference { get; set; }
+    [StringLength(50)] public string? Status { get; set; }
+    [StringLength(100)] public string? OperationalCity { get; set; }
+    [StringLength(10)] public string? OperationalPostalCode { get; set; }
+    [StringLength(100)] public string? OperationalProvince { get; set; }
+    [StringLength(100)] public string? LegalCity { get; set; }
+    [StringLength(10)] public string? LegalPostalCode { get; set; }
+    [StringLength(100)] public string? LegalProvince { get; set; }
+    [StringLength(100)] public string? Country { get; set; }
+    [StringLength(250)] public string? DocumentStorageLocation { get; set; }
+    [StringLength(250)] public string? UsualVisitLocation { get; set; }
+    [StringLength(250)] public string? Clinic { get; set; }
+    [EmailAddress] [StringLength(150)] public string? CommunicationsEmail { get; set; }
+    [EmailAddress] [StringLength(150)] public string? BillingEmail { get; set; }
+    [StringLength(120)] public string? InternalContactName { get; set; }
+    [EmailAddress] [StringLength(150)] public string? InternalContactEmail { get; set; }
+    [StringLength(50)] public string? ExternalCode { get; set; }
+    [StringLength(1000)] public string? Notes { get; set; }
+    [StringLength(10)] public string? RecipientCode { get; set; }
+    [StringLength(50)] public string? ContractIdentifier { get; set; }
+    [StringLength(50)] public string? OrderCode { get; set; }
+    [StringLength(50)] public string? CUPCode { get; set; }
+    [StringLength(50)] public string? CIGCode { get; set; }
+    [StringLength(50)] public string? PaymentTerms { get; set; }
+    [StringLength(50)] public string? PaymentMethod { get; set; }
+    [StringLength(150)] public string? AccountHolder { get; set; }
+    [StringLength(150)] public string? BankName { get; set; }
+    [StringLength(34)] public string? IBAN { get; set; }
+    [StringLength(11)] public string? BICSwift { get; set; }
+    [StringLength(5)] public string? ABI { get; set; }
+    [StringLength(5)] public string? CAB { get; set; }
+    [StringLength(50)] public string? IntentLetterNumber { get; set; }
+    public DateTime? IntentLetterDate { get; set; }
+    public DateTime? IntentLetterExpiry { get; set; }
+    [StringLength(200)] public string? BankChargesDebit { get; set; }
+    public decimal? BankChargesAmount { get; set; }
+    [StringLength(50)] public string? SplitPayment { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation properties

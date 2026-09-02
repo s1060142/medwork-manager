@@ -59,8 +59,10 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       domicilio: '',
       indirizzoDomicilio: '',
       jobRole: '',
+      reparto: '',
+      luogoDiLavoro: '',
       personalEmail: '',
-      phoneNumber: '',
+      phoneNumber: null,
       medicoCarante: '',
       indirizzoMedico: '',
       telefonoMedico: '',
@@ -101,17 +103,38 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
           birthCity: employee.birthCity || current.birthCity,
           taxCode: employee.taxCode || current.taxCode,
           jobRole: employee.jobRole || current.jobRole,
-      phoneNumber: employee.phoneNumber || current.phoneNumber,
-      personalEmail: employee.personalEmail || current.personalEmail,
-      domicilio: employee.domicilio || current.domicilio,
-      indirizzoDomicilio: employee.indirizzoDomicilio || current.indirizzoDomicilio,
-      nazionalita: employee.nazionalita || current.nazionalita,
-      matricola: employee.matricola || current.matricola,
-      referenteAziendale: employee.referenteAziendale || current.referenteAziendale,
-      identificativoMPI: employee.identificativoMPI || current.identificativoMPI,
-      statoRisorsa: employee.statoRisorsa || current.statoRisorsa,
-      noteRiservate: employee.noteRiservate || current.noteRiservate,
-      notePerAzienda: employee.notePerAzienda || current.notePerAzienda,
+          phoneNumber: employee.phoneNumber || current.phoneNumber,
+          personalEmail: employee.personalEmail || current.personalEmail,
+          domicilio: employee.domicilio || current.domicilio,
+          indirizzoDomicilio: employee.indirizzoDomicilio || current.indirizzoDomicilio,
+          nazionalita: employee.nazionalita || current.nazionalita,
+          matricola: employee.matricola || current.matricola,
+          referenteAziendale: employee.referenteAziendale || current.referenteAziendale,
+          identificativoMPI: employee.identificativoMPI || current.identificativoMPI,
+          statoRisorsa: employee.statoRisorsa || current.statoRisorsa,
+          noteRiservate: employee.noteRiservate || current.noteRiservate,
+          notePerAzienda: employee.notePerAzienda || current.notePerAzienda,
+          // New fields loaded from employee object
+          reparto: employee.reparto || current.reparto,
+          luogoDiLavoro: employee.luogoDiLavoro || current.luogoDiLavoro,
+          periodicita: employee.periodicita || current.periodicita,
+          dataUltimaVisita: employee.dataUltimaVisita || current.dataUltimaVisita,
+          dataProssimaVisita: employee.dataProssimaVisita || current.dataProssimaVisita,
+          tipoProssimaVisita: employee.tipoProssimaVisita || current.tipoProssimaVisita,
+          dataUltimaVisitaRI: employee.dataUltimaVisitaRI || current.dataUltimaVisitaRI,
+          periodicitaVisitaRI: employee.periodicitaVisitaRI || current.periodicitaVisitaRI,
+          dataProssimaVisitaRI: employee.dataProssimaVisitaRI || current.dataProssimaVisitaRI,
+          medicoCarante: employee.medicoCarante || current.medicoCarante,
+          indirizzoMedico: employee.indirizzoMedico || current.indirizzoMedico,
+          telefonoMedico: employee.telefonoMedico || current.telefonoMedico,
+          gruppoSanguigno: employee.gruppoSanguigno || current.gruppoSanguigno,
+          dataAssunzione: employee.dataAssunzione || current.dataAssunzione,
+          dataAttualeMansione: employee.dataAttualeMansione || current.dataAttualeMansione,
+          motivazione: employee.motivazione || current.motivazione,
+          dataCessazione: employee.dataCessazione || current.dataCessazione,
+          dataRiattivazione: employee.dataRiattivazione || current.dataRiattivazione,
+          categoriaProtetta: employee.categoriaProtetta ?? current.categoriaProtetta,
+          documentiPrivacy: employee.documentiPrivacy ?? current.documentiPrivacy,
     }))
 
     const load = async () => {
@@ -206,8 +229,19 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       const payload = {
         id: employee.id,
         ...formData,
+        phoneNumber: formData.phoneNumber === '' ? null : formData.phoneNumber,
+        reparto: formData.reparto || null,
+        luogoDiLavoro: formData.luogoDiLavoro || null,
+        periodicita: formData.periodicita || null,
       }
-      const updated = await apiSend('PUT', `/api/admin-data/employees/${employee.id}`, payload)
+      // Sanitize: convert empty strings to null for all fields
+      const sanitizedPayload = Object.fromEntries(
+        Object.entries(payload).map(([key, value]) => [
+          key,
+          value === '' ? null : value
+        ])
+      )
+      const updated = await apiSend('PUT', `/api/admin-data/employees/${employee.id}`, sanitizedPayload)
       if (typeof onSaveEmployee === 'function') {
         onSaveEmployee(updated)
       }
@@ -218,7 +252,6 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       setSaving(false)
     }
   }
-
   const confirmClose = () => {
     if (!dirty) return onClose()
     const ok = window.confirm('Hai modifiche non salvate. Chiudere comunque?')
@@ -320,9 +353,9 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Sorveglianza</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Mansione aziendale" value={formData.jobRole} onChange={handleFieldChange('jobRole')} />
-                  <TextField size="small" label="Ruoli" value="" onChange={() => {}} />
-                  <TextField size="small" label="Reparto" value="" onChange={() => {}} />
-                  <TextField size="small" label="Luogo di lavoro" value="" onChange={() => {}} />
+                  <TextField size="small" label="Ruoli" value={formData.jobRole} onChange={handleFieldChange('jobRole')} helperText="Mansione principale" />
+                  <TextField size="small" label="Reparto" value={formData.reparto} onChange={handleFieldChange('reparto')} />
+                  <TextField size="small" label="Luogo di lavoro" value={formData.luogoDiLavoro} onChange={handleFieldChange('luogoDiLavoro')} />
                   <DatePicker
                     size="small"
                     label="Data ultima visita"
@@ -534,3 +567,4 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
 }
 
 export default EmployeeProfileDialog
+

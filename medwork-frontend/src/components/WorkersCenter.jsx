@@ -103,8 +103,15 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     const handleEmployeeCreated = () => {
       loadData()
     }
+    const handleEmployeeUpdated = () => {
+      loadData()
+    }
     window.addEventListener('medwork:employee-created', handleEmployeeCreated)
-    return () => window.removeEventListener('medwork:employee-created', handleEmployeeCreated)
+    window.addEventListener('medwork:employee-updated', handleEmployeeUpdated)
+    return () => {
+      window.removeEventListener('medwork:employee-created', handleEmployeeCreated)
+      window.removeEventListener('medwork:employee-updated', handleEmployeeUpdated)
+    }
   }, [])
 
   const handleResetFilters = () => {
@@ -185,9 +192,9 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     }
     const rows = visibleCompanyRows.map((row) => ({
       id: row.id,
-      name: row.name || row.ragioneSociale || '',
+      name: row.name || row.legalName || '',
       vatNumber: row.vatNumber || '',
-      city: row.cittaUnitaLocal || '',
+      city: row.operationalCity || '',
       province: row.provincia || '',
       status: row.status || '',
     }))
@@ -200,7 +207,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
   const handlePrint = () => {
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.ragioneSociale || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.cittaUnitaLocal || '')}</td><td>${esc(row.provincia || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
+    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.legalName || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.operationalCity || '')}</td><td>${esc(row.provincia || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
     const win = window.open('', '_blank')
     if (!win) { window.alert('Stampa non disponibile: consenti i popup del browser.'); return }
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Elenco Aziende</title>
@@ -262,7 +269,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       if (companyArchiviation === 'active' && isArchived) return false
       if (companyArchiviation === 'archived' && !isArchived) return false
       if (!needle) return true
-      const searchable = `${row.name || ''} ${row.ragioneSociale || ''} ${row.cittaUnitaLocal || ''} ${row.provincia || ''}`.toLowerCase()
+      const searchable = `${row.name || ''} ${row.legalName || ''} ${row.operationalCity || ''} ${row.provincia || ''}`.toLowerCase()
       return searchable.includes(needle)
     })
   }, [companies, companySearch, companyArchiviation])
@@ -413,7 +420,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                 >
                   <TableCell padding="checkbox" />
                   <TableCell>{`${String(row.id || '').padStart(3, '0')} - ${row.name || '-'} - ${row.companyGroupCode || 1}`}</TableCell>
-                  <TableCell>{`${row.indirizzoUnitaLocal || ''}${row.cittaUnitaLocal ? ` - ${row.cittaUnitaLocal}` : ''}${row.provincia ? ` (${row.provincia})` : ''}`}</TableCell>
+                  <TableCell>{`${row.operationalAddress || ''}${row.operationalCity ? ` - ${row.operationalCity}` : ''}${row.provincia ? ` (${row.provincia})` : ''}`}</TableCell>
                   <TableCell>{row.vatNumber || '-'}</TableCell>
                   <TableCell>{row.doctorName || '-'}</TableCell>
                   <TableCell>-</TableCell>

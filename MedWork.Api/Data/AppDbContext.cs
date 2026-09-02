@@ -122,6 +122,10 @@ public class AppDbContext : DbContext
             entity.Property(x => x.Gender).HasMaxLength(1).IsRequired();
             entity.Property(x => x.PersonalEmail).HasMaxLength(150);
             entity.Property(x => x.PhoneNumber).HasMaxLength(30);
+            entity.Property(x => x.Reparto).HasMaxLength(120);
+            entity.Property(x => x.LuogoDiLavoro).HasMaxLength(200);
+            entity.Property(x => x.Periodicita).HasMaxLength(50);
+            entity.Property(x => x.Matricola).HasMaxLength(120);
             entity.HasIndex(x => x.TaxCode).IsUnique();
 
             entity.HasOne(x => x.Company)

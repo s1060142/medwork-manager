@@ -1,0 +1,721 @@
+- generic [ref=f7e1]:
+  - generic [ref=f7e4]:
+    - banner [ref=f7e5]:
+      - generic [ref=f7e6]:
+        - button [ref=f7e577] [cursor=pointer]
+        - generic [ref=f7e12]:
+          - combobox [ref=f7e578]
+          - group [aria-hidden]
+      - generic [ref=f7e16]:
+        - button [ref=f7e579] [cursor=pointer]
+        - generic [ref=f7e21]: (it)
+        - button [ref=f7e580] [cursor=pointer]: ChangeLog
+        - button [ref=f7e581] [cursor=pointer]: Manuale
+        - button [ref=f7e582] [cursor=pointer]: Profilo
+        - button [ref=f7e583] [cursor=pointer]: Logout
+        - button [ref=f7e584] [cursor=pointer]: Esporta CSV
+        - button [ref=f7e585] [cursor=pointer]: Esporta Excel
+    - generic [ref=f7e40]:
+      - complementary [ref=f7e41]:
+        - button [ref=f7e586] [cursor=pointer]:
+          - generic [ref=f7e45]: Gestione aziende
+        - button [ref=f7e587] [cursor=pointer]:
+          - generic [ref=f7e49]: Gestione lavoratori
+        - button [ref=f7e588] [cursor=pointer]:
+          - generic [ref=f7e53]: Analisi e relazioni
+        - button [ref=f7e589] [cursor=pointer]:
+          - generic [ref=f7e57]: Sorveglianza sanitaria
+        - button [ref=f7e590] [cursor=pointer]:
+          - generic [ref=f7e61]: Scadenzario
+        - button [ref=f7e591] [cursor=pointer]:
+          - generic [ref=f7e65]: Amministrazione
+      - main [ref=f7e66]:
+        - generic [ref=f7e67]:
+          - generic [ref=f7e68]:
+            - button [ref=f7e592] [cursor=pointer]: Gruppi aziendali
+            - button [ref=f7e593] [cursor=pointer]: Anagrafica
+            - button [ref=f7e594] [cursor=pointer]: Checklist
+            - button [ref=f7e595] [cursor=pointer]: Attività
+          - generic [ref=f7e73]:
+            - generic [ref=f7e74]:
+              - generic: Nominativo
+              - generic [ref=f7e75]:
+                - textbox [ref=f7e596]
+                - group [aria-hidden]:
+                  - generic: Nominativo
+            - generic [ref=f7e77]:
+              - generic: Medico
+              - generic [ref=f7e78]:
+                - textbox [ref=f7e597]
+                - group [aria-hidden]:
+                  - generic: Medico
+            - generic [ref=f7e80]:
+              - generic: Gruppo aziendale
+              - generic [ref=f7e81]:
+                - textbox [ref=f7e598]
+                - group [aria-hidden]:
+                  - generic: Gruppo aziendale
+            - generic [ref=f7e83]:
+              - generic: Provincia
+              - generic [ref=f7e84]:
+                - textbox [ref=f7e599]
+                - group [aria-hidden]:
+                  - generic: Provincia
+            - generic [ref=f7e86]:
+              - generic: Comune
+              - generic [ref=f7e87]:
+                - textbox [ref=f7e600]
+                - group [aria-hidden]:
+                  - generic: Comune
+            - generic [ref=f7e89]:
+              - generic: Riferimento
+              - generic [ref=f7e90]:
+                - textbox [ref=f7e601]
+                - group [aria-hidden]:
+                  - generic: Riferimento
+            - generic [ref=f7e92]:
+              - generic: Status
+              - generic [ref=f7e93]:
+                - textbox [ref=f7e602]
+                - group [aria-hidden]:
+                  - generic: Status
+            - generic [ref=f7e95]:
+              - button [ref=f7e603] [cursor=pointer]: Reset
+              - button [ref=f7e604] [cursor=pointer]: Ricerca
+          - generic [ref=f7e106]:
+            - table [ref=f7e109]:
+              - rowgroup [ref=f7e110]:
+                - row [ref=f7e605]:
+                  - columnheader [ref=f7e112]
+                  - columnheader [ref=f7e606]: Nome Azienda
+                  - columnheader [ref=f7e607]: Ragione Sociale
+                  - columnheader [ref=f7e608]: Partita IVA
+                  - columnheader [ref=f7e609]: Codice Fiscale
+                  - columnheader [ref=f7e610]: Codice ATECO
+                  - columnheader [ref=f7e611]: Attività Azienda
+                  - columnheader [ref=f7e612]: Denominazione Unità Locale
+                  - columnheader [ref=f7e613]: Tipologia
+                  - columnheader [ref=f7e614]: Riferimento
+                  - columnheader [ref=f7e615]: Status
+                  - columnheader [ref=f7e616]: Indirizzo Unità Locale
+                  - columnheader [ref=f7e617]: Città Unità Locale
+                  - columnheader [ref=f7e618]: CAP Unità Locale
+                  - columnheader [ref=f7e619]: Provincia Unità Locale
+                  - columnheader [ref=f7e620]: Indirizzo Sede Legale
+                  - columnheader [ref=f7e621]: Città Sede Legale
+                  - columnheader [ref=f7e622]: CAP Sede Legale
+                  - columnheader [ref=f7e623]: Provincia Sede Legale
+                  - columnheader [ref=f7e624]: Nazione
+                  - columnheader [ref=f7e625]: Luogo Conservazione Documenti
+                  - columnheader [ref=f7e626]: Luogo Abituale Visita
+                  - columnheader [ref=f7e627]: Ambulatorio
+                  - columnheader [ref=f7e628]: Email Comunicazioni
+                  - columnheader [ref=f7e629]: Email Fatturazione
+                  - columnheader [ref=f7e630]: Indirizzo PEC
+                  - columnheader [ref=f7e631]: Telefono
+                  - columnheader [ref=f7e632]: Fax
+                  - columnheader [ref=f7e633]: Nome Referente Interno
+                  - columnheader [ref=f7e634]: Email Referente Interno
+                  - columnheader [ref=f7e635]: Codice Esterno
+                  - columnheader [ref=f7e636]: Note
+                  - columnheader [ref=f7e637]: Email Contatto (legacy)
+                  - columnheader [ref=f7e638]: Codice Destinatario Fatturazione
+                  - columnheader [ref=f7e639]: Identificativo Contratto
+                  - columnheader [ref=f7e640]: Codice Commessa
+                  - columnheader [ref=f7e641]: Codice CUP
+                  - columnheader [ref=f7e642]: Codice CIG
+                  - columnheader [ref=f7e643]: Condizioni Pagamento
+                  - columnheader [ref=f7e644]: Modalità Pagamento
+                  - columnheader [ref=f7e645]: Intestatario
+                  - columnheader [ref=f7e646]: Istituto Bancario
+                  - columnheader [ref=f7e647]: IBAN
+                  - columnheader [ref=f7e648]: BIC/Swift
+                  - columnheader [ref=f7e649]: ABI
+                  - columnheader [ref=f7e650]: CAB
+                  - columnheader [ref=f7e651]: Numero Lettera Intenti
+                  - columnheader [ref=f7e652]: Data Lettera Intenti
+                  - columnheader [ref=f7e653]: Scadenza Lettera Intenti
+                  - columnheader [ref=f7e654]: Addebito Spese Bancarie
+                  - columnheader [ref=f7e655]: Importo Spese Bancarie
+                  - columnheader [ref=f7e656]: Split Payment
+                  - columnheader [ref=f7e657]: Id
+                  - columnheader [ref=f7e658]: Pec
+                  - columnheader [ref=f7e659]: Branches Count
+                  - columnheader [ref=f7e660]: Employees Count
+                  - columnheader [ref=f7e661]: Azione
+              - rowgroup [ref=f7e165]:
+                - row [ref=f7e662]:
+                  - cell [ref=f7e206]
+                  - cell [ref=f7e663]: Acme Industria S.p.A.
+                  - cell [ref=f7e664]: "-"
+                  - cell [ref=f7e665]: "-"
+                  - cell [ref=f7e666]: "-"
+                  - cell [ref=f7e667]: "-"
+                  - cell [ref=f7e668]: "-"
+                  - cell [ref=f7e669]: "-"
+                  - cell [ref=f7e670]: "-"
+                  - cell [ref=f7e671]: "-"
+                  - cell [ref=f7e672]: "-"
+                  - cell [ref=f7e673]: "-"
+                  - cell [ref=f7e674]: "-"
+                  - cell [ref=f7e675]: "-"
+                  - cell [ref=f7e676]: "-"
+                  - cell [ref=f7e677]: "-"
+                  - cell [ref=f7e678]: "-"
+                  - cell [ref=f7e679]: "-"
+                  - cell [ref=f7e680]: "-"
+                  - cell [ref=f7e681]: "-"
+                  - cell [ref=f7e682]: "-"
+                  - cell [ref=f7e683]: "-"
+                  - cell [ref=f7e684]: "-"
+                  - cell [ref=f7e685]: "-"
+                  - cell [ref=f7e686]: "-"
+                  - cell [ref=f7e687]: "-"
+                  - cell [ref=f7e688]: +39 999 495 3209
+                  - cell [ref=f7e689]: "-"
+                  - cell [ref=f7e690]: "-"
+                  - cell [ref=f7e691]: "-"
+                  - cell [ref=f7e692]: "-"
+                  - cell [ref=f7e693]: "-"
+                  - cell [ref=f7e694]: comms-test@test.com
+                  - cell [ref=f7e695]: "-"
+                  - cell [ref=f7e696]: "-"
+                  - cell [ref=f7e697]: "-"
+                  - cell [ref=f7e698]: "-"
+                  - cell [ref=f7e699]: "-"
+                  - cell [ref=f7e700]: "-"
+                  - cell [ref=f7e701]: "-"
+                  - cell [ref=f7e702]: "-"
+                  - cell [ref=f7e703]: "-"
+                  - cell [ref=f7e704]: "-"
+                  - cell [ref=f7e705]: "-"
+                  - cell [ref=f7e706]: "-"
+                  - cell [ref=f7e707]: "-"
+                  - cell [ref=f7e708]: "-"
+                  - cell [ref=f7e709]: "-"
+                  - cell [ref=f7e710]: "-"
+                  - cell [ref=f7e711]: "-"
+                  - cell [ref=f7e712]: "-"
+                  - cell [ref=f7e713]: "-"
+                  - cell [ref=f7e714]: "1"
+                  - cell [ref=f7e715]: pec-test@test.com
+                  - cell [ref=f7e716]: "3"
+                  - cell [ref=f7e717]: "14"
+                  - cell [ref=f7e718]:
+                    - generic [ref=f7e263]:
+                      - button [ref=f7e719] [cursor=pointer]: Modifica
+                      - button [ref=f7e720] [cursor=pointer]: Elimina
+                      - button [ref=f7e721] [cursor=pointer]: Profilo
+                - row [ref=f7e722]:
+                  - cell [ref=f7e268]
+                  - cell [ref=f7e723]: Acme Industria S.p.A.
+                  - cell [ref=f7e724]: "-"
+                  - cell [ref=f7e725]: IT01234567890
+                  - cell [ref=f7e726]: "-"
+                  - cell [ref=f7e727]: "-"
+                  - cell [ref=f7e728]: "-"
+                  - cell [ref=f7e729]: "-"
+                  - cell [ref=f7e730]: "-"
+                  - cell [ref=f7e731]: "-"
+                  - cell [ref=f7e732]: "-"
+                  - cell [ref=f7e733]: "-"
+                  - cell [ref=f7e734]: "-"
+                  - cell [ref=f7e735]: "-"
+                  - cell [ref=f7e736]: "-"
+                  - cell [ref=f7e737]: "-"
+                  - cell [ref=f7e738]: "-"
+                  - cell [ref=f7e739]: "-"
+                  - cell [ref=f7e740]: "-"
+                  - cell [ref=f7e741]: "-"
+                  - cell [ref=f7e742]: "-"
+                  - cell [ref=f7e743]: "-"
+                  - cell [ref=f7e744]: "-"
+                  - cell [ref=f7e745]: "-"
+                  - cell [ref=f7e746]: "-"
+                  - cell [ref=f7e747]: "-"
+                  - cell [ref=f7e748]: +39 02 1234567
+                  - cell [ref=f7e749]: "-"
+                  - cell [ref=f7e750]: "-"
+                  - cell [ref=f7e751]: "-"
+                  - cell [ref=f7e752]: "-"
+                  - cell [ref=f7e753]: "-"
+                  - cell [ref=f7e754]: hr@acme-industria.it
+                  - cell [ref=f7e755]: "-"
+                  - cell [ref=f7e756]: "-"
+                  - cell [ref=f7e757]: "-"
+                  - cell [ref=f7e758]: "-"
+                  - cell [ref=f7e759]: "-"
+                  - cell [ref=f7e760]: "-"
+                  - cell [ref=f7e761]: "-"
+                  - cell [ref=f7e762]: "-"
+                  - cell [ref=f7e763]: "-"
+                  - cell [ref=f7e764]: "-"
+                  - cell [ref=f7e765]: "-"
+                  - cell [ref=f7e766]: "-"
+                  - cell [ref=f7e767]: "-"
+                  - cell [ref=f7e768]: "-"
+                  - cell [ref=f7e769]: "-"
+                  - cell [ref=f7e770]: "-"
+                  - cell [ref=f7e771]: "-"
+                  - cell [ref=f7e772]: "-"
+                  - cell [ref=f7e773]: "-"
+                  - cell [ref=f7e774]: "10"
+                  - cell [ref=f7e775]: "-"
+                  - cell [ref=f7e776]: "2"
+                  - cell [ref=f7e777]: "1"
+                  - cell [ref=f7e778]:
+                    - generic [ref=f7e325]:
+                      - button [ref=f7e779] [cursor=pointer]: Modifica
+                      - button [ref=f7e780] [cursor=pointer]: Elimina
+                      - button [ref=f7e781] [cursor=pointer]: Profilo
+                - row [ref=f7e782]:
+                  - cell [ref=f7e330]
+                  - cell [ref=f7e783]: Nord Logistics S.r.l.
+                  - cell [ref=f7e784]: "-"
+                  - cell [ref=f7e785]: IT09876543210
+                  - cell [ref=f7e786]: "-"
+                  - cell [ref=f7e787]: "-"
+                  - cell [ref=f7e788]: "-"
+                  - cell [ref=f7e789]: "-"
+                  - cell [ref=f7e790]: "-"
+                  - cell [ref=f7e791]: "-"
+                  - cell [ref=f7e792]: "-"
+                  - cell [ref=f7e793]: "-"
+                  - cell [ref=f7e794]: "-"
+                  - cell [ref=f7e795]: "-"
+                  - cell [ref=f7e796]: "-"
+                  - cell [ref=f7e797]: "-"
+                  - cell [ref=f7e798]: "-"
+                  - cell [ref=f7e799]: "-"
+                  - cell [ref=f7e800]: "-"
+                  - cell [ref=f7e801]: "-"
+                  - cell [ref=f7e802]: "-"
+                  - cell [ref=f7e803]: "-"
+                  - cell [ref=f7e804]: "-"
+                  - cell [ref=f7e805]: "-"
+                  - cell [ref=f7e806]: "-"
+                  - cell [ref=f7e807]: "-"
+                  - cell [ref=f7e808]: +39 035 7654321
+                  - cell [ref=f7e809]: "-"
+                  - cell [ref=f7e810]: "-"
+                  - cell [ref=f7e811]: "-"
+                  - cell [ref=f7e812]: "-"
+                  - cell [ref=f7e813]: "-"
+                  - cell [ref=f7e814]: people@nordlogistics.it
+                  - cell [ref=f7e815]: "-"
+                  - cell [ref=f7e816]: "-"
+                  - cell [ref=f7e817]: "-"
+                  - cell [ref=f7e818]: "-"
+                  - cell [ref=f7e819]: "-"
+                  - cell [ref=f7e820]: "-"
+                  - cell [ref=f7e821]: "-"
+                  - cell [ref=f7e822]: "-"
+                  - cell [ref=f7e823]: "-"
+                  - cell [ref=f7e824]: "-"
+                  - cell [ref=f7e825]: "-"
+                  - cell [ref=f7e826]: "-"
+                  - cell [ref=f7e827]: "-"
+                  - cell [ref=f7e828]: "-"
+                  - cell [ref=f7e829]: "-"
+                  - cell [ref=f7e830]: "-"
+                  - cell [ref=f7e831]: "-"
+                  - cell [ref=f7e832]: "-"
+                  - cell [ref=f7e833]: "-"
+                  - cell [ref=f7e834]: "2"
+                  - cell [ref=f7e835]: "-"
+                  - cell [ref=f7e836]: "1"
+                  - cell [ref=f7e837]: "1"
+                  - cell [ref=f7e838]:
+                    - generic [ref=f7e387]:
+                      - button [ref=f7e839] [cursor=pointer]: Modifica
+                      - button [ref=f7e840] [cursor=pointer]: Elimina
+                      - button [ref=f7e841] [cursor=pointer]: Profilo
+                - row [ref=f7e842]:
+                  - cell [ref=f7e392]
+                  - cell [ref=f7e843]: Probe Co 230453 Updated
+                  - cell [ref=f7e844]: "-"
+                  - cell [ref=f7e845]: "12345678901"
+                  - cell [ref=f7e846]: "-"
+                  - cell [ref=f7e847]: "-"
+                  - cell [ref=f7e848]: "-"
+                  - cell [ref=f7e849]: "-"
+                  - cell [ref=f7e850]: "-"
+                  - cell [ref=f7e851]: "-"
+                  - cell [ref=f7e852]: "-"
+                  - cell [ref=f7e853]: "-"
+                  - cell [ref=f7e854]: "-"
+                  - cell [ref=f7e855]: "-"
+                  - cell [ref=f7e856]: "-"
+                  - cell [ref=f7e857]: "-"
+                  - cell [ref=f7e858]: "-"
+                  - cell [ref=f7e859]: "-"
+                  - cell [ref=f7e860]: "-"
+                  - cell [ref=f7e861]: "-"
+                  - cell [ref=f7e862]: "-"
+                  - cell [ref=f7e863]: "-"
+                  - cell [ref=f7e864]: "-"
+                  - cell [ref=f7e865]: "-"
+                  - cell [ref=f7e866]: "-"
+                  - cell [ref=f7e867]: "-"
+                  - cell [ref=f7e868]: "-"
+                  - cell [ref=f7e869]: "-"
+                  - cell [ref=f7e870]: "-"
+                  - cell [ref=f7e871]: "-"
+                  - cell [ref=f7e872]: "-"
+                  - cell [ref=f7e873]: "-"
+                  - cell [ref=f7e874]: "-"
+                  - cell [ref=f7e875]: "-"
+                  - cell [ref=f7e876]: "-"
+                  - cell [ref=f7e877]: "-"
+                  - cell [ref=f7e878]: "-"
+                  - cell [ref=f7e879]: "-"
+                  - cell [ref=f7e880]: "-"
+                  - cell [ref=f7e881]: "-"
+                  - cell [ref=f7e882]: "-"
+                  - cell [ref=f7e883]: "-"
+                  - cell [ref=f7e884]: "-"
+                  - cell [ref=f7e885]: "-"
+                  - cell [ref=f7e886]: "-"
+                  - cell [ref=f7e887]: "-"
+                  - cell [ref=f7e888]: "-"
+                  - cell [ref=f7e889]: "-"
+                  - cell [ref=f7e890]: "-"
+                  - cell [ref=f7e891]: "-"
+                  - cell [ref=f7e892]: "-"
+                  - cell [ref=f7e893]: "-"
+                  - cell [ref=f7e894]: "4"
+                  - cell [ref=f7e895]: "-"
+                  - cell [ref=f7e896]: "2"
+                  - cell [ref=f7e897]: "1"
+                  - cell [ref=f7e898]:
+                    - generic [ref=f7e449]:
+                      - button [ref=f7e899] [cursor=pointer]: Modifica
+                      - button [ref=f7e900] [cursor=pointer]: Elimina
+                      - button [ref=f7e901] [cursor=pointer]: Profilo
+                - row [ref=f7e902]:
+                  - cell [ref=f7e454]
+                  - cell [ref=f7e903]: Probe Co 230948 Updated
+                  - cell [ref=f7e904]: "-"
+                  - cell [ref=f7e905]: "23094812345"
+                  - cell [ref=f7e906]: "-"
+                  - cell [ref=f7e907]: "-"
+                  - cell [ref=f7e908]: "-"
+                  - cell [ref=f7e909]: "-"
+                  - cell [ref=f7e910]: "-"
+                  - cell [ref=f7e911]: "-"
+                  - cell [ref=f7e912]: "-"
+                  - cell [ref=f7e913]: "-"
+                  - cell [ref=f7e914]: "-"
+                  - cell [ref=f7e915]: "-"
+                  - cell [ref=f7e916]: "-"
+                  - cell [ref=f7e917]: "-"
+                  - cell [ref=f7e918]: "-"
+                  - cell [ref=f7e919]: "-"
+                  - cell [ref=f7e920]: "-"
+                  - cell [ref=f7e921]: "-"
+                  - cell [ref=f7e922]: "-"
+                  - cell [ref=f7e923]: "-"
+                  - cell [ref=f7e924]: "-"
+                  - cell [ref=f7e925]: "-"
+                  - cell [ref=f7e926]: "-"
+                  - cell [ref=f7e927]: "-"
+                  - cell [ref=f7e928]: "-"
+                  - cell [ref=f7e929]: "-"
+                  - cell [ref=f7e930]: "-"
+                  - cell [ref=f7e931]: "-"
+                  - cell [ref=f7e932]: "-"
+                  - cell [ref=f7e933]: "-"
+                  - cell [ref=f7e934]: "-"
+                  - cell [ref=f7e935]: "-"
+                  - cell [ref=f7e936]: "-"
+                  - cell [ref=f7e937]: "-"
+                  - cell [ref=f7e938]: "-"
+                  - cell [ref=f7e939]: "-"
+                  - cell [ref=f7e940]: "-"
+                  - cell [ref=f7e941]: "-"
+                  - cell [ref=f7e942]: "-"
+                  - cell [ref=f7e943]: "-"
+                  - cell [ref=f7e944]: "-"
+                  - cell [ref=f7e945]: "-"
+                  - cell [ref=f7e946]: "-"
+                  - cell [ref=f7e947]: "-"
+                  - cell [ref=f7e948]: "-"
+                  - cell [ref=f7e949]: "-"
+                  - cell [ref=f7e950]: "-"
+                  - cell [ref=f7e951]: "-"
+                  - cell [ref=f7e952]: "-"
+                  - cell [ref=f7e953]: "-"
+                  - cell [ref=f7e954]: "9"
+                  - cell [ref=f7e955]: "-"
+                  - cell [ref=f7e956]: "1"
+                  - cell [ref=f7e957]: "1"
+                  - cell [ref=f7e958]:
+                    - generic [ref=f7e511]:
+                      - button [ref=f7e959] [cursor=pointer]: Modifica
+                      - button [ref=f7e960] [cursor=pointer]: Elimina
+                      - button [ref=f7e961] [cursor=pointer]: Profilo
+                - row [ref=f7e962]:
+                  - cell [ref=f7e516]
+                  - cell [ref=f7e963]: TechFab Engineering S.p.A.
+                  - cell [ref=f7e964]: "-"
+                  - cell [ref=f7e965]: IT04561230987
+                  - cell [ref=f7e966]: "-"
+                  - cell [ref=f7e967]: "-"
+                  - cell [ref=f7e968]: "-"
+                  - cell [ref=f7e969]: "-"
+                  - cell [ref=f7e970]: "-"
+                  - cell [ref=f7e971]: "-"
+                  - cell [ref=f7e972]: "-"
+                  - cell [ref=f7e973]: "-"
+                  - cell [ref=f7e974]: "-"
+                  - cell [ref=f7e975]: "-"
+                  - cell [ref=f7e976]: "-"
+                  - cell [ref=f7e977]: "-"
+                  - cell [ref=f7e978]: "-"
+                  - cell [ref=f7e979]: "-"
+                  - cell [ref=f7e980]: "-"
+                  - cell [ref=f7e981]: "-"
+                  - cell [ref=f7e982]: "-"
+                  - cell [ref=f7e983]: "-"
+                  - cell [ref=f7e984]: "-"
+                  - cell [ref=f7e985]: "-"
+                  - cell [ref=f7e986]: "-"
+                  - cell [ref=f7e987]: "-"
+                  - cell [ref=f7e988]: +39 011 5557788
+                  - cell [ref=f7e989]: "-"
+                  - cell [ref=f7e990]: "-"
+                  - cell [ref=f7e991]: "-"
+                  - cell [ref=f7e992]: "-"
+                  - cell [ref=f7e993]: "-"
+                  - cell [ref=f7e994]: hr@techfab.it
+                  - cell [ref=f7e995]: "-"
+                  - cell [ref=f7e996]: "-"
+                  - cell [ref=f7e997]: "-"
+                  - cell [ref=f7e998]: "-"
+                  - cell [ref=f7e999]: "-"
+                  - cell [ref=f7e1000]: "-"
+                  - cell [ref=f7e1001]: "-"
+                  - cell [ref=f7e1002]: "-"
+                  - cell [ref=f7e1003]: "-"
+                  - cell [ref=f7e1004]: "-"
+                  - cell [ref=f7e1005]: "-"
+                  - cell [ref=f7e1006]: "-"
+                  - cell [ref=f7e1007]: "-"
+                  - cell [ref=f7e1008]: "-"
+                  - cell [ref=f7e1009]: "-"
+                  - cell [ref=f7e1010]: "-"
+                  - cell [ref=f7e1011]: "-"
+                  - cell [ref=f7e1012]: "-"
+                  - cell [ref=f7e1013]: "-"
+                  - cell [ref=f7e1014]: "3"
+                  - cell [ref=f7e1015]: "-"
+                  - cell [ref=f7e1016]: "1"
+                  - cell [ref=f7e1017]: "2"
+                  - cell [ref=f7e1018]:
+                    - generic [ref=f7e573]:
+                      - button [ref=f7e1019] [cursor=pointer]: Modifica
+                      - button [ref=f7e1020] [cursor=pointer]: Elimina
+                      - button [ref=f7e1021] [cursor=pointer]: Profilo
+            - generic [ref=f7e169]:
+              - button [ref=f7e1022] [cursor=pointer]: Nuova azienda
+              - button [ref=f7e1023] [cursor=pointer]: Stampa
+              - button [ref=f7e1024] [cursor=pointer]: Esporta dati in excel
+              - button [ref=f7e1025] [cursor=pointer]: Operazioni massive
+              - button [ref=f7e1026] [cursor=pointer]: Importa dati
+            - generic [ref=f7e190]:
+              - generic [ref=f7e191]: 6 elementi
+              - generic [ref=f7e192]:
+                - generic [ref=f7e194]:
+                  - combobox [ref=f7e1027] [cursor=pointer]: "10"
+                  - textbox [aria-hidden]: "10"
+                  - group [aria-hidden]
+                - generic [ref=f7e197]:
+                  - paragraph [ref=f7e198]: 1–6 of 6
+                  - generic [ref=f7e199]:
+                    - button [disabled]
+                    - button [disabled]
+  - dialog [ref=f7e1030]:
+    - generic [ref=f7e1031]:
+      - generic [ref=f7e1033]:
+        - generic [ref=f7e1034]:
+          - generic [ref=f7e1035]: AI
+          - generic [ref=f7e1036]:
+            - heading "Modifica azienda 1 - Acme Industria S.p.A." [level=6] [ref=f7e1037]
+            - generic [ref=f7e1038]: "- • -"
+        - generic [ref=f7e1039]:
+          - button [ref=f7e1040] [cursor=pointer]
+          - button [ref=f7e1044] [cursor=pointer]
+          - button [ref=f7e1048] [cursor=pointer]
+          - button [ref=f7e1052] [cursor=pointer]
+          - button "Chiudi" [ref=f7e1056] [cursor=pointer]
+          - button "Chiudi" [ref=f7e1057] [cursor=pointer]
+      - tablist [ref=f7e1063]:
+        - tab "Dati anagrafici" [selected] [ref=f7e1064] [cursor=pointer]
+        - tab "Dati fatturazione" [ref=f7e1065] [cursor=pointer]
+        - tab "Assegnazione medici" [ref=f7e1066] [cursor=pointer]
+        - tab "Figure aziendali" [ref=f7e1067] [cursor=pointer]
+      - separator [ref=f7e1069]
+      - generic [ref=f7e1071]:
+        - generic [ref=f7e1072]:
+          - heading "Anagrafica" [level=6] [ref=f7e1073]
+          - generic [ref=f7e1074]:
+            - generic [ref=f7e1075]:
+              - generic [ref=f7e1076]: Nome Azienda*
+              - generic [ref=f7e1077]:
+                - textbox "Nome Azienda*" [ref=f7e1078]: Acme Industria S.p.A.
+                - group [aria-hidden]:
+                  - generic: Nome Azienda*
+            - generic [ref=f7e1079]:
+              - generic: Ragione Sociale*
+              - generic [ref=f7e1080]:
+                - textbox "Ragione Sociale*" [ref=f7e1081]
+                - group [aria-hidden]:
+                  - generic: Ragione Sociale*
+            - generic [ref=f7e1082]:
+              - generic: Codice ATECO
+              - generic [ref=f7e1083]:
+                - textbox "Codice ATECO" [ref=f7e1084]
+                - group [aria-hidden]:
+                  - generic: Codice ATECO
+            - generic [ref=f7e1085]:
+              - generic: Attività Azienda
+              - generic [ref=f7e1086]:
+                - textbox "Attività Azienda" [ref=f7e1087]
+                - group [aria-hidden]:
+                  - generic: Attività Azienda
+            - generic [ref=f7e1088]:
+              - generic: Denominazione Unità Locale
+              - generic [ref=f7e1089]:
+                - textbox "Denominazione Unità Locale" [ref=f7e1090]
+                - group [aria-hidden]:
+                  - generic: Denominazione Unità Locale
+            - generic [ref=f7e1091]:
+              - generic: Tipologia
+              - generic [ref=f7e1092]:
+                - combobox "Tipologia" [ref=f7e1093] [cursor=pointer]
+                - textbox [aria-hidden]
+                - group [aria-hidden]:
+                  - generic: Tipologia
+            - generic [ref=f7e1094]:
+              - generic: Riferimento
+              - generic [ref=f7e1095]:
+                - textbox "Riferimento" [ref=f7e1096]
+                - group [aria-hidden]:
+                  - generic: Riferimento
+            - generic [ref=f7e1097]:
+              - generic [ref=f7e1098]: Status
+              - generic [ref=f7e1099]:
+                - combobox "Status Attiva" [ref=f7e1100] [cursor=pointer]: Attiva
+                - textbox [aria-hidden]: Attiva
+                - group [aria-hidden]:
+                  - generic: Status
+        - generic [ref=f7e1101]:
+          - heading "Indirizzi" [level=6] [ref=f7e1102]
+          - generic [ref=f7e1103]:
+            - generic [ref=f7e1104]:
+              - generic: Indirizzo Unità Locale
+              - generic [ref=f7e1105]:
+                - textbox "Indirizzo Unità Locale" [ref=f7e1106]
+                - group [aria-hidden]:
+                  - generic: Indirizzo Unità Locale
+            - generic [ref=f7e1107]:
+              - generic: Città Unità Locale
+              - generic [ref=f7e1108]:
+                - textbox "Città Unità Locale" [ref=f7e1109]
+                - group [aria-hidden]:
+                  - generic: Città Unità Locale
+            - generic [ref=f7e1110]:
+              - generic: CAP Unità Locale
+              - generic [ref=f7e1111]:
+                - textbox "CAP Unità Locale" [ref=f7e1112]
+                - group [aria-hidden]:
+                  - generic: CAP Unità Locale
+            - generic [ref=f7e1113]:
+              - generic: Provincia Unità Locale
+              - generic [ref=f7e1114]:
+                - textbox "Provincia Unità Locale" [ref=f7e1115]
+                - group [aria-hidden]:
+                  - generic: Provincia Unità Locale
+            - generic [ref=f7e1116]:
+              - generic: Indirizzo Sede Legale
+              - generic [ref=f7e1117]:
+                - textbox "Indirizzo Sede Legale" [ref=f7e1118]
+                - group [aria-hidden]:
+                  - generic: Indirizzo Sede Legale
+            - generic [ref=f7e1119]:
+              - generic: Città Sede Legale
+              - generic [ref=f7e1120]:
+                - textbox "Città Sede Legale" [ref=f7e1121]
+                - group [aria-hidden]:
+                  - generic: Città Sede Legale
+            - generic [ref=f7e1122]:
+              - generic: CAP Sede Legale
+              - generic [ref=f7e1123]:
+                - textbox "CAP Sede Legale" [ref=f7e1124]
+                - group [aria-hidden]:
+                  - generic: CAP Sede Legale
+            - generic [ref=f7e1125]:
+              - generic: Provincia Sede Legale
+              - generic [ref=f7e1126]:
+                - textbox "Provincia Sede Legale" [ref=f7e1127]
+                - group [aria-hidden]:
+                  - generic: Provincia Sede Legale
+        - generic [ref=f7e1128]:
+          - heading "Contatti" [level=6] [ref=f7e1129]
+          - generic [ref=f7e1130]:
+            - generic [ref=f7e1131]:
+              - generic [ref=f7e1132]: Email Comunicazioni
+              - generic [ref=f7e1133]:
+                - textbox "Email Comunicazioni" [ref=f7e1134]: comms-test@test.com
+                - group [aria-hidden]:
+                  - generic: Email Comunicazioni
+            - generic [ref=f7e1135]:
+              - generic [ref=f7e1136]: Email Fatturazione
+              - generic [ref=f7e1137]:
+                - textbox "Email Fatturazione" [ref=f7e1138]: comms-test@test.com
+                - group [aria-hidden]:
+                  - generic: Email Fatturazione
+            - generic [ref=f7e1139]:
+              - generic [ref=f7e1140]: PEC
+              - generic [ref=f7e1141]:
+                - textbox "PEC" [ref=f7e1142]: pec-test@test.com
+                - group [aria-hidden]:
+                  - generic: PEC
+            - generic [ref=f7e1143]:
+              - generic [ref=f7e1144]: Telefono
+              - generic [ref=f7e1145]:
+                - textbox "Telefono" [ref=f7e1146]: +39 999 495 3209
+                - group [aria-hidden]:
+                  - generic: Telefono
+            - generic [ref=f7e1147]:
+              - generic: Fax
+              - generic [ref=f7e1148]:
+                - textbox "Fax" [ref=f7e1149]
+                - group [aria-hidden]:
+                  - generic: Fax
+            - generic [ref=f7e1150]:
+              - generic: Nome Referente Interno
+              - generic [ref=f7e1151]:
+                - textbox "Nome Referente Interno" [ref=f7e1152]
+                - group [aria-hidden]:
+                  - generic: Nome Referente Interno
+            - generic [ref=f7e1153]:
+              - generic: Email Referente Interno
+              - generic [ref=f7e1154]:
+                - textbox "Email Referente Interno" [ref=f7e1155]
+                - group [aria-hidden]:
+                  - generic: Email Referente Interno
+            - generic [ref=f7e1156]:
+              - generic: Codice Esterno
+              - generic [ref=f7e1157]:
+                - textbox "Codice Esterno" [ref=f7e1158]
+                - group [aria-hidden]:
+                  - generic: Codice Esterno
+        - generic [ref=f7e1159]:
+          - heading "Note" [level=6] [ref=f7e1160]
+          - generic [ref=f7e1161]:
+            - generic: Note
+            - generic [ref=f7e1162]:
+              - textbox "Note" [ref=f7e1163]
+              - group [aria-hidden]:
+                - generic: Note

@@ -4,6 +4,7 @@ using MedWork.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedWork.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260902075131_AddCompanyExtendedFields")]
+    partial class AddCompanyExtendedFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -905,44 +908,8 @@ namespace MedWork.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CategoriaProtetta")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("DataAssunzione")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataAttualeMansione")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataCessazione")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataProssimaVisita")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataProssimaVisitaRI")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataRiattivazione")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataUltimaVisita")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataUltimaVisitaRI")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
-
-                    b.Property<string>("DocumentiPrivacy")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("Domicilio")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("EducationLevel")
                         .HasMaxLength(100)
@@ -962,24 +929,8 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(1)
                         .HasColumnType("nvarchar(1)");
 
-                    b.Property<string>("GruppoSanguigno")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
-
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("IdentificativoMPI")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("IndirizzoDomicilio")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("IndirizzoMedico")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1000,39 +951,7 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
 
-                    b.Property<string>("LuogoDiLavoro")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Matricola")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("MedicoCurante")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("Motivazione")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
                     b.Property<string>("Nationality")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("NotePerAzienda")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("NoteRiservate")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("Periodicita")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PeriodicitaVisitaRI")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1056,39 +975,19 @@ namespace MedWork.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ReferenteAziendale")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("Reparto")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
                     b.Property<int?>("RiskLevelId")
                         .HasColumnType("int");
-
-                    b.Property<string>("StatoRisorsa")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("TaxCode")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<string>("TelefonoMedico")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("TerminationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("TipoProssimaVisita")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
