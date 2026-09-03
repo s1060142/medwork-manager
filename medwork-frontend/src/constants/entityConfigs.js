@@ -97,8 +97,8 @@ export const ENTITY_CONFIGS = [
   },
   {
     key: 'employees',
-    label: 'Dipendenti',
-    singularLabel: 'Dipendente',
+    label: 'Lavoratori',
+    singularLabel: 'Lavoratore',
     role: 'Admin',
     readEndpoint: '/api/master-data/employees',
     createEndpoint: '/api/admin-data/employees',

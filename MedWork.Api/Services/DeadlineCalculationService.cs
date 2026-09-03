@@ -40,27 +40,34 @@ public sealed class DeadlineCalculationService : IDeadlineCalculationService
         // 2. FIX: Fallback to JobRole protocol (which affects 95% of employees)
         if (protocol == null)
         {
-            protocol = await _db.Employees
-                .AsNoTracking()
-                .Where(e => e.Id == employeeId)
-                .SelectMany(e => _db.Protocols.Where(p => p.JobRoleId == e.JobRoleId && p.IsActive))
-                .FirstOrDefaultAsync(cancellationToken);
+            var employee = await _db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.Id == employeeId, cancellationToken);
+            if (employee != null)
+            {
+                var q = _db.Protocols.Where(p => p.IsActive);
+                var matched = await q.Where(p => p.JobRoleId == employee.JobRoleId).FirstOrDefaultAsync(cancellationToken);
+                
+                if (matched == null && !string.IsNullOrWhiteSpace(employee.JobRole))
+                {
+                    matched = await q.Where(p => p.JobRole != null && p.JobRole.Name.ToLower() == employee.JobRole.ToLower()).FirstOrDefaultAsync(cancellationToken);
+                }
+                protocol = matched;
+            }
         }
 
         if (protocol == null) return null;
         var cadenceDays = protocol.CadenceDays;
 
         // 3. Apply age-based reduction: if worker >= 50 reduce cadence by 20% (minimum 30 days)
-        var employee = await _db.Employees
+        var employeeData = await _db.Employees
             .AsNoTracking()
             .Where(e => e.Id == employeeId)
             .Select(e => new { e.BirthDate, e.RiskLevelId })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (employee is not null)
+        if (employeeData is not null)
         {
-            var ageAtVisit = (visitDate - employee.BirthDate).Days / 365;
-            var isHighRisk = employee.RiskLevelId.HasValue;  // any explicit risk level = high-risk
+            var ageAtVisit = (visitDate - employeeData.BirthDate).Days / 365;
+            var isHighRisk = employeeData.RiskLevelId.HasValue;  // any explicit risk level = high-risk
 
             if (ageAtVisit >= 50 && isHighRisk)
             {

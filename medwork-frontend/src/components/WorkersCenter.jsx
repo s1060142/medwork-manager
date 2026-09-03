@@ -58,7 +58,7 @@ function classifyFitness(outcome, outcomeCode) {
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
 }
 
-function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeCrud, onOpenEmployeeProfile, onOpenMedicalRecord }) {
+function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate,  onOpenEmployeeProfile }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
@@ -235,7 +235,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       name: row.name || row.legalName || '',
       vatNumber: row.vatNumber || '',
       city: row.operationalCity || '',
-      province: row.provincia || '',
+      province: row.operationalProvince || '',
       status: row.status || '',
     }))
     downloadCsv(
@@ -247,7 +247,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
   const handlePrint = () => {
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.legalName || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.operationalCity || '')}</td><td>${esc(row.provincia || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
+    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.legalName || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.operationalCity || '')}</td><td>${esc(row.operationalProvince || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
     const win = window.open('', '_blank')
     if (!win) { window.alert('Stampa non disponibile: consenti i popup del browser.'); return }
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Elenco Aziende</title>
@@ -389,7 +389,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </Typography>
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button type="button" variant="outlined" onClick={onOpenEmployeeCrud} className="legacy-btn-secondary">Gestione completa</Button>
             <Button type="button" variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate} className="legacy-btn">Aggiungi</Button>
           </Stack>
         </Box>
@@ -431,8 +430,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           </Box>
           <Box className="legacy-table-toolbar-filters">
             <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-            <Button type="button" className="legacy-btn" startIcon={<SearchIcon />} onClick={loadData}>Ricerca</Button>
-            <Button type="button" className="legacy-btn" onClick={onOpenEmployeeCreate}>Ricerca lavoratori</Button>
           </Box>
         </Box>
 
@@ -479,7 +476,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                 >
                   <TableCell padding="checkbox" />
                   <TableCell>{`${String(row.id || '').padStart(3, '0')} - ${row.name || '-'} - ${row.companyGroupCode || 1}`}</TableCell>
-                  <TableCell>{`${row.operationalAddress || ''}${row.operationalCity ? ` - ${row.operationalCity}` : ''}${row.provincia ? ` (${row.provincia})` : ''}`}</TableCell>
+                  <TableCell>{`${row.operationalAddress || ''}${row.operationalCity ? ` - ${row.operationalCity}` : ''}${row.operationalProvince ? ` (${row.operationalProvince})` : ''}`}</TableCell>
                   <TableCell>{row.vatNumber || '-'}</TableCell>
                   <TableCell sx={{ color: (row.coordinatorDoctorName || row.doctorName) ? '#0f4c81' : 'inherit', fontWeight: (row.coordinatorDoctorName || row.doctorName) ? 500 : 400 }}>
                     {row.coordinatorDoctorName || row.doctorName || '-'}
@@ -533,10 +530,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           <Stack direction="row" spacing={1}>
             <Button type="button" variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
             <Button type="button" variant="outlined" onClick={handlePrint}>Stampa</Button>
-            <Button type="button" variant="outlined" onClick={() => window.alert('Stampe massive non ancora disponibile')}>Stampe massive</Button>
-            <Button type="button" variant="outlined" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
             <Button type="button" variant="outlined" onClick={handleExportCompanies}>Esporta dati in excel</Button>
-            <Button type="button" variant="outlined" onClick={() => window.alert('Importazione lavoratori non ancora disponibile')}>Importa lavoratori</Button>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
@@ -598,7 +592,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           </Box>
           <Box className="legacy-table-toolbar-filters">
             <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-            <Button type="button" className="legacy-btn" startIcon={<SearchIcon />} onClick={handleFilterEmployees}>Filtra</Button>
           </Box>
         </Box>
 

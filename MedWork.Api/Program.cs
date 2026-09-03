@@ -3,6 +3,7 @@ using MedWork.Api.Security;
 using MedWork.Api.Services;
 using MedWork.Api.Compliance;
 using MedWork.Api.Integrations;
+using MedWork.Api.Converters;
 using MedWork.Api.Analytics;
 using MedWork.Api.Enterprise;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -36,6 +37,11 @@ builder.Services.AddControllers(options =>
         // Avoid fatal 500s when serializing entities with bidirectional navigation
         // properties (e.g. VisitExam <-> ExamType).
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        // Treat JSON null as default value when deserializing into non-nullable value types.
+        // This prevents 400 errors when the frontend sends null for optional fields.
+        options.JsonSerializerOptions.Converters.Add(new NullableIntJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new NullableDateTimeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new NullableBoolJsonConverter());
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

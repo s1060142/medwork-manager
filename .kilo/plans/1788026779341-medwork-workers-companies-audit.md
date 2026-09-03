@@ -61,7 +61,6 @@ Trace every user-facing action on the Workers list, Worker profile, Company prof
 **New visit from profile:** see 2.2.
 
 **Other buttons:**
-- "Gestione completa" → `onOpenEmployeeCrud` (`:352`) — navigates to workers-management area. **WORKING**.
 - "Aggiungi" / "+ Nuovo lavoratore" → `onOpenEmployeeCreate` (`:353`, `:492`) — opens CrudEntityView create form. **WORKING**.
 - "Ricerca lavoratori" → `onOpenEmployeeCreate` (`:395`) — same as add. **WRONG BEHAVIOR** (label says search, opens create).
 - "Stampe massive" / "Operazioni massive" → `window.alert(...)` (`:494-495`) — **STUB**.

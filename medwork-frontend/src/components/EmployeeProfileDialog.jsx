@@ -238,11 +238,20 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
         categoriaProtetta: formData.categoriaProtetta ? 'true' : 'false',
         documentiPrivacy: formData.documentiPrivacy ? 'true' : 'false',
       }
-      // Sanitize: convert empty strings to null for all fields
+      // For required integer FK fields, preserve the existing value if the form has no value
+      // (e.g. when the seeder left them null). This prevents sending null for non-nullable ints.
+      if (payload.companyId == null || payload.companyId === '') {
+        payload.companyId = employee.companyId ?? 0
+      }
+      if (payload.branchId == null || payload.branchId === '') {
+        payload.branchId = employee.branchId ?? 0
+      }
+      // Sanitize: convert empty strings to null for all fields EXCEPT numeric/date/bool fields
+      const numericFields = new Set(['companyId', 'branchId', 'departmentId', 'workLocationId', 'jobRoleId', 'riskLevelId'])
       const sanitizedPayload = Object.fromEntries(
         Object.entries(payload).map(([key, value]) => [
           key,
-          value === '' ? null : value
+          value === '' && !numericFields.has(key) ? null : value
         ])
       )
       const updated = await apiSend('PUT', `/api/admin-data/employees/${employee.id}`, sanitizedPayload)
@@ -282,21 +291,6 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
             <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end" alignItems="center">
               <Chip icon={<HealthAndSafetyIcon />} label={healthStatus.label} color={healthStatus.color} />
               <Chip label={`CF: ${employee?.taxCode || '-'}`} variant="outlined" sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.35)' }} />
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={handleSave}
-                disabled={saving}
-                sx={{ bgcolor: '#1976d2', color: '#ffffff', '&:hover': { bgcolor: '#115293' }, fontWeight: 600 }}
-              >
-                {saving ? 'Salvataggio...' : 'Salva'}
-              </Button>
-              <Button variant="outlined" onClick={confirmClose} sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.5)' }}>
-                Chiudi
-              </Button>
-              <IconButton size="small" onClick={confirmClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
-                <CloseIcon fontSize="small" />
-              </IconButton>
             </Stack>
           </Stack>
         </Box>
@@ -554,6 +548,15 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
 
         <DialogActions sx={{ px: 2.5, py: 2, borderTop: '1px solid #eaeef5' }}>
           <Stack direction="row" spacing={1}>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              disabled={saving}
+              onClick={handleSave}
+              sx={{ bgcolor: '#1976d2', color: '#ffffff', '&:hover': { bgcolor: '#115293' }, fontWeight: 600 }}
+            >
+              {saving ? 'Salvataggio...' : 'Salva'}
+            </Button>
             <Button
               variant="contained"
               startIcon={<MedicalServicesIcon />}

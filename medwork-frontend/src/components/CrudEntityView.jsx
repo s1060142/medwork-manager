@@ -223,6 +223,7 @@ function CrudEntityView({
   refreshToken = 0,
   onExternalCreateConsumed,
   onOpenCompanyProfile,
+  onOpenEmployeeProfile,
   hiddenUI = false,
   onCreated,
 }) {
@@ -624,10 +625,17 @@ function CrudEntityView({
     try {
       const payload = { ...formData }
       
-      // Sanitize empty strings to null to prevent ASP.NET Core 400 Regex validation errors
+      // Sanitize empty strings to null to prevent ASP.NET Core 400 Regex validation errors.
+      // Exclude numeric/select fields that are required FK references — for those, preserve
+      // the existing value from the editing row to avoid sending null for non-nullable ints.
+      const numericFields = new Set(['companyId', 'branchId', 'departmentId', 'workLocationId', 'jobRoleId', 'riskLevelId'])
       Object.keys(payload).forEach(key => {
         if (payload[key] === '') {
-          payload[key] = null
+          if (numericFields.has(key) && editingRow && editingRow[key] != null) {
+            payload[key] = editingRow[key]
+          } else {
+            payload[key] = null
+          }
         }
       })
 
@@ -831,11 +839,13 @@ function CrudEntityView({
                 <TableRow
                   key={row.id ?? row._id}
                   hover
-                  onDoubleClick={
-                    config.key === 'companies' && onOpenCompanyProfile
-                      ? () => onOpenCompanyProfile(row)
-                      : undefined
-                  }
+                  onDoubleClick={() => {
+                    if (config.key === 'companies' && onOpenCompanyProfile) {
+                      onOpenCompanyProfile(row)
+                    } else if (config.key === 'employees' && onOpenEmployeeProfile) {
+                      onOpenEmployeeProfile(row)
+                    }
+                  }}
                 >
                   <TableCell padding="checkbox" />
                   {configuredColumns.map((column) => (
@@ -942,12 +952,6 @@ function CrudEntityView({
               : `Nuova ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Button size="small" variant="contained" onClick={handleSave} disabled={saving} sx={{ fontWeight: 600 }}>
-              {saving ? 'Salvataggio...' : 'Salva'}
-            </Button>
-            <Button size="small" variant="outlined" onClick={confirmClose}>
-              Annulla
-            </Button>
             <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">
               <CloseIcon fontSize="small" />
             </IconButton>

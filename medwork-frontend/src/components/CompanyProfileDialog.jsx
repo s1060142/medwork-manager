@@ -339,15 +339,6 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
               <Button variant="outlined" startIcon={<MedicalInformationIcon />} onClick={() => setHealthPlanOpen(true)} sx={{ color: 'white', borderColor: 'white' }}>
                 Piano Sanitario
               </Button>
-              <Button variant="outlined" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving} sx={{ color: 'white', borderColor: 'white' }}>
-                {saving ? 'Salvataggio...' : 'Salva'}
-              </Button>
-              <Button variant="contained" onClick={confirmClose}>
-                Chiudi
-              </Button>
-              <IconButton size="small" onClick={confirmClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
-                <CloseIcon fontSize="small" />
-              </IconButton>
             </Stack>
           </Stack>
         </Box>
@@ -700,6 +691,14 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           )}
         </Box>
       </DialogContent>
+      <DialogActions sx={{ px: 2.5, py: 2, borderTop: '1px solid #eaeef5', background: '#f8f9fa' }}>
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving} sx={{ bgcolor: '#1976d2', color: '#fff', fontWeight: 600 }}>
+          {saving ? 'Salvataggio...' : 'Salva'}
+        </Button>
+        <Button variant="outlined" onClick={confirmClose} sx={{ color: '#555', borderColor: '#ccc' }}>
+          Annulla
+        </Button>
+      </DialogActions>
       {healthPlanOpen && <HealthPlanPreview open={healthPlanOpen} onClose={() => setHealthPlanOpen(false)} companyId={company?.id} />}
       {analyticsOpen && <EnterpriseAnalyticsDashboard open={analyticsOpen} onClose={() => setAnalyticsOpen(false)} companyId={company?.id} />}
       {allegato3bOpen && <Allegato3BPreview open={allegato3bOpen} onClose={() => setAllegato3bOpen(false)} companyId={company?.id} />}

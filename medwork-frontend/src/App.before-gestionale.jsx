@@ -258,7 +258,6 @@ function App() {
         <WorkersCenter
           activeCompanyId={activeCompanyId}
           onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-          onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
         />
       )
     }

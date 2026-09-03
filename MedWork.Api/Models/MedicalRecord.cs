@@ -11,9 +11,8 @@ public class MedicalRecord
     [Range(1, int.MaxValue)]
     public int EmployeeId { get; set; }
 
-    [Required]
-    [StringLength(4000, MinimumLength = 20)]
-    public string MedicalHistory { get; set; } = string.Empty;
+    [StringLength(4000)]
+    public string? MedicalHistory { get; set; }
 
     [StringLength(2000)]
     public string? Notes { get; set; }

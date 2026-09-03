@@ -61,6 +61,12 @@ import FirmaGrafometricaCenter from './components/FirmaGrafometricaCenter'
 import Allegato3BCenter from './components/Allegato3BCenter'
 import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
 import PatientAnamnesisForm from './components/PatientAnamnesisForm'
+import AgendaCenter from './components/AgendaCenter'
+import AppointmentsCenter from './components/AppointmentsCenter'
+import ActivityDeadlinesCenter from './components/ActivityDeadlinesCenter'
+import SiteVisitDeadlinesCenter from './components/SiteVisitDeadlinesCenter'
+import NominationsDeadlinesCenter from './components/NominationsDeadlinesCenter'
+import VaccinationDeadlinesCenter from './components/VaccinationDeadlinesCenter'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
@@ -460,11 +466,6 @@ const App = () => {
     setProfileEmployee(employee)
   }
 
-  const handleOpenMedicalRecord = (employee: any) => {
-    setCartellaSanitariaEmployeeId(employee?.id ?? null)
-    setSelectedArea('health-surveillance')
-    setSelectedModuleKey('cartella-sanitaria')
-  }
 
   const handleOpenCompanyProfile = (company: any) => {
     setProfileCompany(company)
@@ -558,9 +559,7 @@ const App = () => {
           <WorkersCenter
             activeCompanyId={activeCompanyId}
             onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-            onOpenEmployeeCrud={() => setSelectedArea('workers-management')}
             onOpenEmployeeProfile={handleOpenEmployeeProfile}
-            onOpenMedicalRecord={handleOpenMedicalRecord}
           />
           <CrudEntityView
             config={ENTITY_BY_KEY.employees}
@@ -588,7 +587,7 @@ const App = () => {
           config={ENTITY_BY_KEY.employees}
           currentRole={role}
           externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
-          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} />
+          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} onOpenEmployeeProfile={handleOpenEmployeeProfile} />
       )
     }
 
@@ -597,14 +596,38 @@ const App = () => {
     }
 
     if (moduleKey === 'schedules') {
-      return (
-        <VisitPlanningCenter
-          activeCompanyId={activeCompanyId}
-          activeScheduleTab={selectedScheduleTab}
-          onScheduleTabChange={setSelectedScheduleTab}
-          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
-        />
-      )
+      switch (selectedScheduleTab) {
+        case 'agenda':
+          return <AgendaCenter activeCompanyId={activeCompanyId} />
+        case 'appointments':
+          return <AppointmentsCenter activeCompanyId={activeCompanyId} />
+        case 'visit-deadlines':
+          return (
+            <VisitPlanningCenter
+              activeCompanyId={activeCompanyId}
+              activeScheduleTab={selectedScheduleTab}
+              onScheduleTabChange={setSelectedScheduleTab}
+              onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+            />
+          )
+        case 'activity-deadlines':
+          return <ActivityDeadlinesCenter activeCompanyId={activeCompanyId} />
+        case 'site-visit-deadlines':
+          return <SiteVisitDeadlinesCenter activeCompanyId={activeCompanyId} />
+        case 'nominations':
+          return <NominationsDeadlinesCenter activeCompanyId={activeCompanyId} />
+        case 'vaccination-deadlines':
+          return <VaccinationDeadlinesCenter activeCompanyId={activeCompanyId} />
+        default:
+          return (
+            <VisitPlanningCenter
+              activeCompanyId={activeCompanyId}
+              activeScheduleTab={selectedScheduleTab}
+              onScheduleTabChange={setSelectedScheduleTab}
+              onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+            />
+          )
+      }
     }
 
     if (moduleKey === 'medical-visit-stepper') {
@@ -620,7 +643,10 @@ const App = () => {
     }
 
     if (moduleKey === 'appointments-calendar') {
-      return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
+      return <AppointmentsCalendar onCreateAppointment={() => {
+        setSelectedModuleKey('medical-visits')
+        setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })
+      }} />
     }
 
     if (moduleKey === 'compliance') {
