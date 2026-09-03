@@ -38,12 +38,21 @@ function normalizeText(value) {
   return String(value || '').toLowerCase()
 }
 
-function classifyFitness(outcome) {
+function classifyFitness(outcome, outcomeCode) {
+  // Prefer structured outcomeCode over regex on text
+  if (outcomeCode) {
+    if (outcomeCode === 'NONIDONE0') return { key: 'not-fit', label: 'Non idoneo', color: 'error' }
+    if (outcomeCode === 'IDONE0L') return { key: 'partial', label: 'Con limitazioni', color: 'warning' }
+    if (outcomeCode === 'IDONE0P') return { key: 'partial', label: 'Con prescrizioni', color: 'warning' }
+    if (outcomeCode === 'IDONE0') return { key: 'fit', label: 'Idoneo', color: 'success' }
+    if (outcomeCode === 'INATTESA') return { key: 'pending', label: 'In attesa', color: 'default' }
+  }
+  // Fallback regex on text
   const text = normalizeText(outcome)
   if (!text.trim()) return { key: 'none', label: 'Senza idoneità', color: 'default' }
   if (text.includes('non idone')) return { key: 'not-fit', label: 'Non idoneo', color: 'error' }
   if (text.includes('prescr') || text.includes('parzial') || text.includes('limit')) {
-    return { key: 'partial', label: 'Parzialmente idoneo', color: 'warning' }
+    return { key: 'partial', label: 'Parz. idoneo', color: 'warning' }
   }
   if (text.includes('idone')) return { key: 'fit', label: 'Idoneo', color: 'success' }
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
@@ -55,11 +64,13 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const [companies, setCompanies] = useState([])
   const [branches, setBranches] = useState([])
   const [jobRoles, setJobRoles] = useState([])
+  const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const [workerSearch, setWorkerSearch] = useState('')
   const [workerStatus, setWorkerStatus] = useState('active')
+  const [selectedDoctorId, setSelectedDoctorId] = useState('all')
   const [companySearch, setCompanySearch] = useState('')
   const [companyArchiviation, setCompanyArchiviation] = useState('active')
   const [companyContext, setCompanyContext] = useState(activeCompanyId || 'all')
@@ -75,12 +86,13 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       setLoading(true)
       setError('')
 
-      const [employeesData, visitsData, companiesData, branchesData, rolesData] = await Promise.all([
+      const [employeesData, visitsData, companiesData, branchesData, rolesData, doctorsData] = await Promise.all([
         apiGet('/api/master-data/employees?includeArchived=true'),
         apiGet('/api/master-data/medical-visits'),
         apiGet('/api/master-data/companies'),
         apiGet('/api/master-data/branches'),
         apiGet('/api/master-data/job-roles'),
+        apiGet('/api/master-data/doctors').catch(() => []),
       ])
 
       setEmployees(Array.isArray(employeesData) ? employeesData : [])
@@ -88,6 +100,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       setCompanies(Array.isArray(companiesData) ? companiesData : [])
       setBranches(Array.isArray(branchesData) ? branchesData : [])
       setJobRoles(Array.isArray(rolesData) ? rolesData : [])
+      setDoctors(Array.isArray(doctorsData) ? doctorsData : [])
     } catch (requestError) {
       setError(requestError.message || 'Errore nel caricamento dati lavoratori.')
     } finally {
@@ -103,12 +116,38 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     const handleEmployeeCreated = () => {
       loadData()
     }
-    const handleEmployeeUpdated = () => {
+    // On update: patch the specific row in-place for instant feedback, no full reload
+    const handleEmployeeUpdated = (event) => {
+      const updated = event.detail
+      if (updated && updated.id) {
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            Number(emp.id) === Number(updated.id)
+              ? {
+                  ...emp,
+                  ...updated,
+                  // Preserve computed fields that come from other data sources
+                  companyName: updated.companyName ?? emp.companyName,
+                  companyDoctorName: updated.companyDoctorName ?? emp.companyDoctorName,
+                  jobRoleName: updated.jobRoleName ?? emp.jobRoleName,
+                  branchAddress: updated.branchAddress ?? emp.branchAddress,
+                }
+              : emp
+          )
+        )
+      } else {
+        // Fallback: full reload if no detail
+        loadData()
+      }
+    }
+    const handleCompanyUpdated = () => {
       loadData()
     }
     window.addEventListener('medwork:employee-created', handleEmployeeCreated)
     window.addEventListener('medwork:employee-updated', handleEmployeeUpdated)
+    window.addEventListener('medwork:company-updated', handleCompanyUpdated)
     return () => {
+      window.removeEventListener('medwork:company-updated', handleCompanyUpdated)
       window.removeEventListener('medwork:employee-created', handleEmployeeCreated)
       window.removeEventListener('medwork:employee-updated', handleEmployeeUpdated)
     }
@@ -119,6 +158,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     setCompanyArchiviation('active')
     setWorkerSearch('')
     setWorkerStatus('active')
+    setSelectedDoctorId('all')
     setCompanyContext('all')
     setSelectedCompanyId('')
   }
@@ -235,19 +275,26 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     return employees
       .map((employee) => {
         const latestVisit = latestVisitByEmployee[Number(employee.id)]
-        const fitness = classifyFitness(latestVisit?.outcome)
+        const fitness = classifyFitness(latestVisit?.outcome, latestVisit?.outcomeCode)
+        const nextDue = latestVisit?.nextDeadlineDate ? new Date(latestVisit.nextDeadlineDate) : null
+        const isOverdue = nextDue && nextDue < new Date()
+        const isDueSoon = nextDue && !isOverdue && (nextDue - new Date()) < 30 * 24 * 60 * 60 * 1000
         return {
           ...employee,
           latestVisitDate: latestVisit?.visitDate || null,
           latestOutcome: latestVisit?.outcome || '',
+          latestOutcomeCode: latestVisit?.outcomeCode || null,
+          latestNextDeadline: latestVisit?.nextDeadlineDate || null,
           fitness,
-           isArchived: employee.isArchived === true,
-           jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
-           workingStatus: 'Attivo',
-         }
-       })
-       .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
-   }, [employees, latestVisitByEmployee])
+          isOverdue,
+          isDueSoon,
+          isArchived: employee.isArchived === true,
+          jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
+          workingStatus: 'Attivo',
+        }
+      })
+      .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
+  }, [employees, latestVisitByEmployee])
 
   useEffect(() => {
     if (companyContext === 'all') {
@@ -277,8 +324,13 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const filteredWorkerRows = useMemo(() => {
     const needle = normalizeText(workerSearch)
     const source = employees.filter((row) => {
-      if (!companyContext || companyContext === 'all') return true
-      return Number(row.companyId) === Number(companyContext)
+      if (companyContext && companyContext !== 'all' && Number(row.companyId) !== Number(companyContext)) {
+        return false
+      }
+      if (selectedDoctorId && selectedDoctorId !== 'all' && Number(row.companyDoctorId) !== Number(selectedDoctorId)) {
+        return false
+      }
+      return true
     })
 
     const statusFiltered = employeeStatusFilter(source, workerStatus)
@@ -286,12 +338,19 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     return statusFiltered
       .map((employee) => {
         const latestVisit = latestVisitByEmployee[Number(employee.id)]
-        const fitness = classifyFitness(latestVisit?.outcome)
+        const fitness = classifyFitness(latestVisit?.outcome, latestVisit?.outcomeCode)
+        const nextDue = latestVisit?.nextDeadlineDate ? new Date(latestVisit.nextDeadlineDate) : null
+        const isOverdue = nextDue && nextDue < new Date()
+        const isDueSoon = nextDue && !isOverdue && (nextDue - new Date()) < 30 * 24 * 60 * 60 * 1000
         return {
           ...employee,
           latestVisitDate: latestVisit?.visitDate || null,
           latestOutcome: latestVisit?.outcome || '',
+          latestOutcomeCode: latestVisit?.outcomeCode || null,
+          latestNextDeadline: latestVisit?.nextDeadlineDate || null,
           fitness,
+          isOverdue,
+          isDueSoon,
           isArchived: employee.isArchived === true,
           jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
           workingStatus: 'Attivo',
@@ -300,10 +359,10 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
       .filter((row) => {
         if (!needle) return true
-        const searchable = `${row.lastName || ''} ${row.firstName || ''} ${row.taxCode || ''} ${row.jobRoleDisplay || ''}`.toLowerCase()
+        const searchable = `${row.lastName || ''} ${row.firstName || ''} ${row.taxCode || ''} ${row.jobRoleDisplay || ''} ${row.companyDoctorName || ''}`.toLowerCase()
         return searchable.includes(needle)
       })
-  }, [employees, workerSearch, workerStatus, latestVisitByEmployee, companyContext])
+  }, [employees, workerSearch, workerStatus, selectedDoctorId, latestVisitByEmployee, companyContext])
 
   function employeeStatusFilter(list, status) {
     if (status === 'all') return list
@@ -422,8 +481,10 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                   <TableCell>{`${String(row.id || '').padStart(3, '0')} - ${row.name || '-'} - ${row.companyGroupCode || 1}`}</TableCell>
                   <TableCell>{`${row.operationalAddress || ''}${row.operationalCity ? ` - ${row.operationalCity}` : ''}${row.provincia ? ` (${row.provincia})` : ''}`}</TableCell>
                   <TableCell>{row.vatNumber || '-'}</TableCell>
-                  <TableCell>{row.doctorName || '-'}</TableCell>
-                  <TableCell>-</TableCell>
+                  <TableCell sx={{ color: (row.coordinatorDoctorName || row.doctorName) ? '#0f4c81' : 'inherit', fontWeight: (row.coordinatorDoctorName || row.doctorName) ? 500 : 400 }}>
+                    {row.coordinatorDoctorName || row.doctorName || '-'}
+                  </TableCell>
+                  <TableCell>{(row.isCoordinator || row.coordinatorDoctorName) ? 'Sì' : '-'}</TableCell>
                   <TableCell>{row.employeesCount ?? '-'}</TableCell>
                   <TableCell>{row.status === 'Archiviata' ? 'Sì' : 'No'}</TableCell>
                   <TableCell>
@@ -518,6 +579,22 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
               <MenuItem value="all">Tutti</MenuItem>
               <MenuItem value="archived">Archiviati</MenuItem>
             </TextField>
+            <TextField
+              size="small"
+              label="Medico Competente"
+              select
+              variant="outlined"
+              value={selectedDoctorId}
+              onChange={(event) => setSelectedDoctorId(event.target.value)}
+              sx={{ minWidth: 200 }}
+            >
+              <MenuItem value="all">Tutti i medici</MenuItem>
+              {doctors.map((doc) => (
+                <MenuItem key={doc.id} value={doc.id}>
+                  {`Dott. ${doc.firstName} ${doc.lastName}`}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
           <Box className="legacy-table-toolbar-filters">
             <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
@@ -533,6 +610,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                 <TableCell>Lavoratore</TableCell>
                 <TableCell>Data nascita</TableCell>
                 <TableCell>Mansione</TableCell>
+                <TableCell>Medico Competente</TableCell>
                 <TableCell>Reparto</TableCell>
                 <TableCell>Luogo di lavoro</TableCell>
                 <TableCell>Periodicità</TableCell>
@@ -552,40 +630,73 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     onDoubleClick={() => {
                       onOpenEmployeeProfile?.(row)
                     }}
+                    sx={{
+                      backgroundColor: row.isOverdue
+                        ? 'rgba(211,47,47,0.05)'
+                        : row.isDueSoon
+                        ? 'rgba(237,108,2,0.04)'
+                        : 'inherit',
+                    }}
                   >
                     <TableCell padding="checkbox" />
-                    <TableCell sx={{ fontWeight: 600 }}>{`${row.lastName || ''} ${row.firstName || ''}`.trim()}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {row.isOverdue && <span title="Visita scaduta">🔴</span>}
+                        {row.isDueSoon && !row.isOverdue && <span title="Visita in scadenza">🟡</span>}
+                        {`${row.lastName || ''} ${row.firstName || ''}`.trim()}
+                      </Box>
+                    </TableCell>
                     <TableCell>{formatDate(row.birthDate)}</TableCell>
                     <TableCell>{row.jobRoleDisplay}</TableCell>
+                    <TableCell sx={{ color: row.companyDoctorName ? '#0f4c81' : 'text.secondary', fontWeight: row.companyDoctorName ? 500 : 400 }}>
+                      {row.companyDoctorName || '-'}
+                    </TableCell>
                     <TableCell>{row.reparto || '-'}</TableCell>
                     <TableCell>{row.luogoDiLavoro || '-'}</TableCell>
                     <TableCell>{row.periodicita || '-'}</TableCell>
                     <TableCell>{formatDate(row.dataUltimaVisita || latestVisit?.visitDate)}</TableCell>
                     <TableCell>{formatDate(row.dataProssimaVisita || latestVisit?.nextDeadlineDate)}</TableCell>
-<TableCell>{formatDate(latestVisit?.nextDeadlineDate)}</TableCell>
-                     <TableCell>
-                       <Box className="row-actions">
-                         <button
-                           type="button"
-                           className="legacy-icon-btn-sm"
-                           aria-label="Lista"
-                           title="Apri cartella lavoratore"
-                           onClick={() => onOpenEmployeeProfile?.(row)}
-                         >📋</button>
-                        <button
-                          type="button"
-                          className="legacy-icon-btn-sm"
-                          aria-label="Archivio"
-                          title={row.isArchived ? 'Ripristina' : 'Archivia'}
-                          onClick={() => handleToggleArchive(row)}
-                        >📁</button>
-                        <button
-                          type="button"
-                          className="legacy-icon-btn-sm"
-                          aria-label="Elimina"
-                          title="Elimina lavoratore"
-                          onClick={() => handleDeleteEmployee(row)}
-                        >🗑️</button>
+                    <TableCell
+                      sx={{
+                        color: row.isOverdue ? 'error.main' : row.isDueSoon ? 'warning.main' : 'inherit',
+                        fontWeight: (row.isOverdue || row.isDueSoon) ? 600 : 400,
+                      }}
+                    >
+                      {formatDate(latestVisit?.nextDeadlineDate)}
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {row.fitness.key !== 'none' && (
+                          <Chip
+                            size="small"
+                            label={row.fitness.label}
+                            color={row.fitness.color}
+                            sx={{ fontSize: '0.65rem', height: 20 }}
+                          />
+                        )}
+                        <Box className="row-actions">
+                          <button
+                            type="button"
+                            className="legacy-icon-btn-sm"
+                            aria-label="Lista"
+                            title="Apri cartella lavoratore"
+                            onClick={() => onOpenEmployeeProfile?.(row)}
+                          >📋</button>
+                          <button
+                            type="button"
+                            className="legacy-icon-btn-sm"
+                            aria-label="Archivio"
+                            title={row.isArchived ? 'Ripristina' : 'Archivia'}
+                            onClick={() => handleToggleArchive(row)}
+                          >📁</button>
+                          <button
+                            type="button"
+                            className="legacy-icon-btn-sm"
+                            aria-label="Elimina"
+                            title="Elimina lavoratore"
+                            onClick={() => handleDeleteEmployee(row)}
+                          >🗑️</button>
+                        </Box>
                       </Box>
                     </TableCell>
                   </TableRow>

@@ -89,6 +89,8 @@ public class AdminCrudController : ControllerBase
     {
         try
         {
+            var tenantId = GetTenantId();
+            request.TenantId = tenantId;
             if (string.IsNullOrWhiteSpace(request.VATNumber))
             {
                 request.VATNumber = null;
@@ -266,6 +268,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("branches")]
     public async Task<IActionResult> CreateBranch([FromBody] Branch request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.Branches.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -326,6 +330,8 @@ public class AdminCrudController : ControllerBase
     {
         try
         {
+            var tenantId = GetTenantId();
+            request.TenantId = tenantId;
             _dbContext.Employees.Add(request);
             await _dbContext.SaveChangesAsync();
 
@@ -433,6 +439,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("risk-factors")]
     public async Task<IActionResult> CreateRiskFactor([FromBody] RiskFactor request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.RiskFactors.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -468,6 +476,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("exam-types")]
     public async Task<IActionResult> CreateExamType([FromBody] ExamType request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.ExamTypes.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -567,6 +577,8 @@ public class AdminCrudController : ControllerBase
     {
         try
         {
+            var tenantId = GetTenantId();
+            request.TenantId = tenantId;
             _dbContext.JobRoles.Add(request);
             await _dbContext.SaveChangesAsync();
             return Ok(request);
@@ -586,6 +598,9 @@ public class AdminCrudController : ControllerBase
 
         entity.Name = request.Name;
         entity.Description = request.Description;
+        entity.ISCOCode = request.ISCOCode;
+        entity.RiskCategory = request.RiskCategory;
+        entity.IsActive = request.IsActive;
         await _dbContext.SaveChangesAsync();
         return Ok(entity);
     }
@@ -605,6 +620,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("protocols")]
     public async Task<IActionResult> CreateProtocol([FromBody] Protocol request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.Protocols.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -641,14 +658,16 @@ public class AdminCrudController : ControllerBase
     [HttpPost("personal-protocols")]
     public async Task<IActionResult> CreatePersonalProtocol([FromBody] PersonalProtocol request)
     {
+        var tenantId = GetTenantId();
         var exists = await _dbContext.PersonalProtocols
-            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.ProtocolId == request.ProtocolId);
+            .AnyAsync(x => x.EmployeeId == request.EmployeeId && x.ProtocolId == request.ProtocolId && x.TenantId == tenantId);
 
         if (exists)
         {
             return Conflict("PersonalProtocol already exists for employee and protocol.");
         }
 
+        request.TenantId = tenantId;
         _dbContext.PersonalProtocols.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -685,6 +704,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("company-groups")]
     public async Task<IActionResult> CreateCompanyGroup([FromBody] CompanyGroup request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.CompanyGroups.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -697,6 +718,7 @@ public class AdminCrudController : ControllerBase
         var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
         if (entity is null) return NotFound();
 
+        entity.Name = request.Name;
         entity.LegalName = request.LegalName;
         entity.Address = request.Address;
         entity.City = request.City;
@@ -724,6 +746,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("company-contacts")]
     public async Task<IActionResult> CreateCompanyContact([FromBody] CompanyContact request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.CompanyContacts.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -760,6 +784,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("departments")]
     public async Task<IActionResult> CreateDepartment([FromBody] Department request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.Departments.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -796,6 +822,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("work-locations")]
     public async Task<IActionResult> CreateWorkLocation([FromBody] WorkLocation request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.WorkLocations.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);
@@ -809,6 +837,8 @@ public class AdminCrudController : ControllerBase
         if (entity is null) return NotFound();
 
         entity.CompanyId = request.CompanyId;
+        entity.Name = request.Name;
+        entity.Address = request.Address;
         entity.Notes = request.Notes;
         entity.City = request.City;
         entity.PostalCode = request.PostalCode;
@@ -833,6 +863,8 @@ public class AdminCrudController : ControllerBase
     [HttpPost("site-visits")]
     public async Task<IActionResult> CreateSiteVisit([FromBody] SiteVisit request)
     {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
         _dbContext.SiteVisits.Add(request);
         await _dbContext.SaveChangesAsync();
         return Ok(request);

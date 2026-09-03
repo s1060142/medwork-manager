@@ -63,7 +63,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       luogoDiLavoro: '',
       personalEmail: '',
       phoneNumber: null,
-      medicoCarante: '',
+      medicoCurante: '',
       indirizzoMedico: '',
       telefonoMedico: '',
       gruppoSanguigno: '',
@@ -107,7 +107,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
           personalEmail: employee.personalEmail || current.personalEmail,
           domicilio: employee.domicilio || current.domicilio,
           indirizzoDomicilio: employee.indirizzoDomicilio || current.indirizzoDomicilio,
-          nazionalita: employee.nazionalita || current.nazionalita,
+          nazionalita: employee.nazionalita || employee.nationality || current.nazionalita,
           matricola: employee.matricola || current.matricola,
           referenteAziendale: employee.referenteAziendale || current.referenteAziendale,
           identificativoMPI: employee.identificativoMPI || current.identificativoMPI,
@@ -124,7 +124,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
           dataUltimaVisitaRI: employee.dataUltimaVisitaRI || current.dataUltimaVisitaRI,
           periodicitaVisitaRI: employee.periodicitaVisitaRI || current.periodicitaVisitaRI,
           dataProssimaVisitaRI: employee.dataProssimaVisitaRI || current.dataProssimaVisitaRI,
-          medicoCarante: employee.medicoCarante || current.medicoCarante,
+          medicoCurante: employee.medicoCurante || employee.medicoCarante || current.medicoCurante,
           indirizzoMedico: employee.indirizzoMedico || current.indirizzoMedico,
           telefonoMedico: employee.telefonoMedico || current.telefonoMedico,
           gruppoSanguigno: employee.gruppoSanguigno || current.gruppoSanguigno,
@@ -133,8 +133,8 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
           motivazione: employee.motivazione || current.motivazione,
           dataCessazione: employee.dataCessazione || current.dataCessazione,
           dataRiattivazione: employee.dataRiattivazione || current.dataRiattivazione,
-          categoriaProtetta: employee.categoriaProtetta ?? current.categoriaProtetta,
-          documentiPrivacy: employee.documentiPrivacy ?? current.documentiPrivacy,
+          categoriaProtetta: Boolean(employee.categoriaProtetta === true || employee.categoriaProtetta === 'true' || employee.categoriaProtetta === 'Sì'),
+          documentiPrivacy: Boolean(employee.documentiPrivacy === true || employee.documentiPrivacy === 'true' || employee.documentiPrivacy === 'Sì'),
     }))
 
     const load = async () => {
@@ -229,10 +229,14 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       const payload = {
         id: employee.id,
         ...formData,
+        nationality: formData.nazionalita || null,
+        medicoCurante: formData.medicoCurante || null,
         phoneNumber: formData.phoneNumber === '' ? null : formData.phoneNumber,
         reparto: formData.reparto || null,
         luogoDiLavoro: formData.luogoDiLavoro || null,
         periodicita: formData.periodicita || null,
+        categoriaProtetta: formData.categoriaProtetta ? 'true' : 'false',
+        documentiPrivacy: formData.documentiPrivacy ? 'true' : 'false',
       }
       // Sanitize: convert empty strings to null for all fields
       const sanitizedPayload = Object.fromEntries(
@@ -245,6 +249,8 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       if (typeof onSaveEmployee === 'function') {
         onSaveEmployee(updated)
       }
+      // Notify WorkersCenter and any other listener to refresh this employee's row
+      window.dispatchEvent(new CustomEvent('medwork:employee-updated', { detail: updated }))
       setDirty(false)
     } catch (requestError) {
       setError(requestError.message || 'Errore durante il salvataggio.')
@@ -268,15 +274,27 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               <Box>
                 <Typography variant="h6" sx={{ color: '#ffffff' }}>{employee?.firstName} {employee?.lastName}</Typography>
                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>{employee?.jobRole || '-'}</Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)' }}>
-                  {employee?.companyName || '-'} • {employee?.branchAddress || '-'}
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+                  {employee?.companyName || '-'} • {employee?.branchAddress || '-'} • <strong>Medico Competente: {employee?.companyDoctorName || 'Non assegnato'}</strong>
                 </Typography>
               </Box>
             </Stack>
-            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
+            <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end" alignItems="center">
               <Chip icon={<HealthAndSafetyIcon />} label={healthStatus.label} color={healthStatus.color} />
               <Chip label={`CF: ${employee?.taxCode || '-'}`} variant="outlined" sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.35)' }} />
-              <IconButton size="small" onClick={onClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSave}
+                disabled={saving}
+                sx={{ bgcolor: '#1976d2', color: '#ffffff', '&:hover': { bgcolor: '#115293' }, fontWeight: 600 }}
+              >
+                {saving ? 'Salvataggio...' : 'Salva'}
+              </Button>
+              <Button variant="outlined" onClick={confirmClose} sx={{ color: '#ffffff', borderColor: 'rgba(255,255,255,0.5)' }}>
+                Chiudi
+              </Button>
+              <IconButton size="small" onClick={confirmClose} sx={{ color: '#ffffff' }} aria-label="Chiudi">
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Stack>
@@ -292,25 +310,27 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
 
         <Divider />
 
-        <Box sx={{ p: 2.5 }}>
+        <DialogContent sx={{ p: 2.5, background: '#f8f9fa' }}>
           {tab === 0 && (
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Dati lavoratore</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Anagrafica di base</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <TextField size="small" label="Cognome*" value={formData.lastName} onChange={handleFieldChange('lastName')} />
-                  <TextField size="small" label="Nome*" value={formData.firstName} onChange={handleFieldChange('firstName')} />
+                  <TextField size="small" label="Nome" value={employee?.firstName || ''} InputProps={{ readOnly: true }} />
+                  <TextField size="small" label="Cognome" value={employee?.lastName || ''} InputProps={{ readOnly: true }} />
                   <DatePicker
                     size="small"
-                    label="Data nascita*"
-                    value={currentDateValue(formData.birthDate)}
-                    onChange={(date) => handleFieldChange('birthDate')({ target: { value: formDateValue(date) } })}
+                    label="Data di nascita"
+                    value={currentDateValue(employee?.birthDate)}
                     inputFormat="dd/MM/yyyy"
+                    readOnly
+                    renderInput={(params) => <TextField size="small" {...params} />}
                     locale={DATE_PICKER_LOCALE}
                     InputLabelProps={{ shrink: true }}
                     slotProps={{
                       textField: {
-                        placeholder: '',
+                        size: 'small',
+                        InputLabelProps: { shrink: true },
                       },
                     }}
                   />
@@ -332,7 +352,14 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Riferimenti medici</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <TextField size="small" label="Medico curante" value={formData.medicoCarante} onChange={handleFieldChange('medicoCarante')} />
+                  <TextField
+                    size="small"
+                    label="Medico Competente (Aziendale)"
+                    value={employee?.companyDoctorName || 'Nessun medico assegnato'}
+                    InputProps={{ readOnly: true }}
+                    helperText="Rilevato dalla convenzione aziendale"
+                  />
+                  <TextField size="small" label="Medico curante (Personale)" value={formData.medicoCurante} onChange={handleFieldChange('medicoCurante')} />
                   <TextField size="small" label="Indirizzo medico" value={formData.indirizzoMedico} onChange={handleFieldChange('indirizzoMedico')} />
                   <TextField size="small" label="Telefono medico" value={formData.telefonoMedico} onChange={handleFieldChange('telefonoMedico')} />
                   <TextField size="small" label="Gruppo sanguigno" select value={formData.gruppoSanguigno} onChange={handleFieldChange('gruppoSanguigno')}>
@@ -517,7 +544,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               {sortedVisits.length === 0 && <Alert severity="info">Nessuna attività registrata.</Alert>}
             </Stack>
           )}
-        </Box>
+        </DialogContent>
 
         {!!error && (
           <Box sx={{ px: 2.5, pb: 1 }}>
@@ -556,9 +583,6 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
           </Stack>
           <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
             <Button variant="outlined" onClick={confirmClose}>Chiudi</Button>
-            <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
-              {saving ? 'Salvataggio...' : 'Salva'}
-            </Button>
           </Stack>
         </DialogActions>
       </DialogContent>

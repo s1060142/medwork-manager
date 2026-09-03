@@ -49,6 +49,12 @@ public class MasterDataController : ControllerBase
                 x.INAILPosition,
                 x.INAILPolicyNumber,
                 x.IsActive,
+                x.Activity,
+                x.OperationalUnitName,
+                x.Type,
+                x.Reference,
+                x.Status,
+                x.REANumber,
                 x.CreatedAt,
                 x.UpdatedAt,
                 x.OperationalCity,
@@ -87,7 +93,29 @@ public class MasterDataController : ControllerBase
                 x.BankChargesAmount,
                 x.SplitPayment,
                 BranchesCount = x.Branches.Count,
-                EmployeesCount = x.Employees.Count
+                EmployeesCount = x.Employees.Count,
+                CoordinatorDoctorId = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault(),
+                CoordinatorDoctorName = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault(),
+                DoctorName = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault(),
+                IsCoordinator = x.CompanyDoctors.Any(cd => cd.IsActive && cd.IsCoordinator)
             })
             .ToListAsync();
 
@@ -103,15 +131,19 @@ public class MasterDataController : ControllerBase
             .AsNoTracking()
             .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.City)
+            .ThenBy(x => x.Address)
             .Select(x => new
             {
                 x.Id,
+                x.TenantId,
                 x.CompanyId,
                 CompanyName = x.Company.Name,
                 x.Address,
                 x.City,
                 x.Province,
                 x.PostalCode,
+                x.Name,
+                x.IsActive,
                 EmployeesCount = x.Employees.Count
             })
             .ToListAsync();
@@ -121,7 +153,11 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("employees")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetEmployees([FromQuery] bool includeArchived = false)
+    public async Task<IActionResult> GetEmployees(
+        [FromQuery] bool includeArchived = false,
+        [FromQuery] int? companyId = null,
+        [FromQuery] int? doctorId = null,
+        [FromQuery] string? search = null)
     {
         var tenantId = GetTenantId();
         var query = _dbContext.Employees
@@ -131,6 +167,20 @@ public class MasterDataController : ControllerBase
         if (!includeArchived)
             query = query.Where(x => !x.IsArchived);
 
+        if (companyId.HasValue && companyId.Value > 0)
+            query = query.Where(x => x.CompanyId == companyId.Value);
+
+        if (doctorId.HasValue && doctorId.Value > 0)
+        {
+            query = query.Where(x => x.Company != null && x.Company.CompanyDoctors.Any(cd => cd.DoctorId == doctorId.Value && cd.IsActive));
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            query = query.Where(x => x.FirstName.ToLower().Contains(s) || x.LastName.ToLower().Contains(s) || x.TaxCode.ToLower().Contains(s));
+        }
+
         var data = await query
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
@@ -139,9 +189,23 @@ public class MasterDataController : ControllerBase
                 x.Id,
                 x.TenantId,
                 x.CompanyId,
-                CompanyName = x.Company.Name,
+                CompanyName = x.Company != null ? x.Company.Name : null,
+                CompanyDoctorId = x.Company != null ? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() ?? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() : null,
+                CompanyDoctorName = x.Company != null ? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() : null,
                 x.BranchId,
-                BranchAddress = x.Branch.Address,
+                BranchAddress = x.Branch != null ? x.Branch.Address : null,
                 x.DepartmentId,
                 x.WorkLocationId,
                 x.Reparto,
@@ -356,18 +420,27 @@ public class MasterDataController : ControllerBase
         var tenantId = GetTenantId();
         var data = await _dbContext.MedicalVisits
             .AsNoTracking()
+            .Include(x => x.Employee).ThenInclude(e => e!.Company)
+            .Include(x => x.Doctor)
             .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.VisitDate)
             .Select(x => new
             {
                 x.Id,
                 x.EmployeeId,
-                EmployeeFullName = x.Employee.FirstName + " " + x.Employee.LastName,
+                EmployeeFirstName = x.Employee != null ? x.Employee.FirstName : null,
+                EmployeeLastName = x.Employee != null ? x.Employee.LastName : null,
+                EmployeeFullName = x.Employee != null ? x.Employee.FirstName + " " + x.Employee.LastName : null,
+                CompanyId = x.Employee != null ? x.Employee.CompanyId : (int?)null,
+                CompanyName = x.Employee != null && x.Employee.Company != null ? x.Employee.Company.Name : null,
                 x.DoctorId,
-                DoctorFullName = x.Doctor.FirstName + " " + x.Doctor.LastName,
+                DoctorFullName = x.Doctor != null ? x.Doctor.FirstName + " " + x.Doctor.LastName : null,
                 x.VisitDate,
                 x.NextDeadlineDate,
                 x.Outcome,
+                x.OutcomeCode,
+                x.Prescriptions,
+                x.Limitations,
                 x.ClinicalNotes,
                 x.VisitType,
                 x.TargetOrgans,
@@ -626,12 +699,19 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("company-contacts")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetCompanyContacts()
+    public async Task<IActionResult> GetCompanyContacts([FromQuery] int? companyId = null)
     {
         var tenantId = GetTenantId();
-        var data = await _dbContext.CompanyContacts
+        var query = _dbContext.CompanyContacts
             .AsNoTracking()
-            .Where(x => x.TenantId == tenantId)
+            .Where(x => x.TenantId == tenantId);
+
+        if (companyId.HasValue && companyId.Value > 0)
+        {
+            query = query.Where(x => x.CompanyId == companyId.Value);
+        }
+
+        var data = await query
             .OrderBy(x => x.CompanyId)
             .ThenBy(x => x.Role)
             .Select(x => new
@@ -683,12 +763,14 @@ public class MasterDataController : ControllerBase
             .AsNoTracking()
             .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.CompanyId)
-            .ThenBy(x => x.Notes)
+            .ThenBy(x => x.Name)
             .Select(x => new
             {
                 x.Id,
                 x.CompanyId,
                 CompanyName = x.Company!.Name,
+                x.Name,
+                x.Address,
                 x.Notes,
                 x.City,
                 x.PostalCode,
@@ -719,7 +801,9 @@ public class MasterDataController : ControllerBase
                 x.DoctorName,
                 x.VisitDate,
                 x.Frequency,
-                x.NextDueDate
+                x.NextDueDate,
+                x.Notes,
+                x.Outcome
             })
             .ToListAsync();
 

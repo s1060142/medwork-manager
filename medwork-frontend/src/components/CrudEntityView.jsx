@@ -220,6 +220,7 @@ function CrudEntityView({
   activeCompanyId = '',
   activeBranchId = '',
   externalCreateToken = 0,
+  refreshToken = 0,
   onExternalCreateConsumed,
   onOpenCompanyProfile,
   hiddenUI = false,
@@ -455,7 +456,27 @@ function CrudEntityView({
   useEffect(() => {
     if (hiddenUI) return
     loadRows()
-  }, [config, hiddenUI])
+  }, [config, hiddenUI, refreshToken])
+
+  useEffect(() => {
+    const handleCompanyUpdated = (e) => {
+      if (config.key === 'companies') {
+        if (e?.detail?.id) {
+          setRows((current) =>
+            current.map((row) => {
+              const id = row[config.idField || 'id']
+              return Number(id) === Number(e.detail.id) ? { ...row, ...e.detail } : row
+            }),
+          )
+        }
+        loadRows()
+      }
+    }
+    window.addEventListener('medwork:company-updated', handleCompanyUpdated)
+    return () => {
+      window.removeEventListener('medwork:company-updated', handleCompanyUpdated)
+    }
+  }, [config])
 
   useEffect(() => {
     Promise.all([
@@ -614,16 +635,19 @@ function CrudEntityView({
         const updateUrl = rowId != null ? `${config.updateEndpoint}/${rowId}` : config.updateEndpoint
         const updated = await apiSend('PUT', updateUrl, payload)
         setRows((current) =>
-          current.map((row) => (row === editingRow ? { ...row, ...updated } : row)),
+          current.map((row) => {
+            const id = row[config.idField || 'id']
+            return id === rowId ? { ...row, ...updated } : row
+          }),
         )
         setSuccessMessage('Elemento aggiornato correttamente.')
         if (typeof onCreated === 'function') {
           onCreated(updated, 'updated')
         }
+        loadRows()
       } else {
-        const payload = { ...formData }
         config.fields.forEach((field) => {
-          if (!field.required && payload[field.name] === '') {
+          if (!field.required && (payload[field.name] === '' || payload[field.name] === undefined)) {
             delete payload[field.name]
           }
         })
@@ -904,13 +928,23 @@ function CrudEntityView({
       </Dialog>
 
       <Dialog open={dialogOpen} onClose={confirmClose} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {editingRow
-            ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`
-            : `Nuova ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
-          <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">
-            <CloseIcon fontSize="small" />
-          </IconButton>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+            {editingRow
+              ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`
+              : `Nuova ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Button size="small" variant="contained" onClick={handleSave} disabled={saving} sx={{ fontWeight: 600 }}>
+              {saving ? 'Salvataggio...' : 'Salva'}
+            </Button>
+            <Button size="small" variant="outlined" onClick={confirmClose}>
+              Annulla
+            </Button>
+            <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
         </DialogTitle>
         <DialogContent>
           {config.key === 'employees' || config.key === 'companies' ? (

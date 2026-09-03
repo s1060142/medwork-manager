@@ -1,5 +1,5 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 
 echo ============================================================
 echo   MedWork Manager - Avvio completo per medico tester
@@ -13,8 +13,10 @@ set "BACKEND_URL=http://127.0.0.1:5279"
 set "FRONTEND_URL=http://localhost:5173"
 
 set "DOTNET=%ProgramFiles%\dotnet\dotnet.exe"
-set "NPM=npm"
-set "NODE=node"
+if not exist "%DOTNET%" set "DOTNET=dotnet"
+
+set "NPM=%ProgramFiles%\nodejs\npm.cmd"
+if not exist "%NPM%" set "NPM=npm.cmd"
 
 echo [1/6] Controllo prerequisiti...
 
@@ -45,7 +47,7 @@ echo [2/6] Controllo porte libere...
 netstat -ano | findstr ":5279.*LISTENING" >nul 2>&1
 if %errorlevel%==0 (
     echo.
-    echo ATTENZIONE: Porta 5279 (backend) gia in uso.
+    echo ATTENZIONE: Porta 5279 [backend] gia in uso.
     echo       Verifica che non ci sia gia MedWork.Api in esecuzione.
     echo       Se si, chiudi la finestra "MedWork Backend" e riprova.
     echo.
@@ -56,7 +58,7 @@ if %errorlevel%==0 (
 netstat -ano | findstr ":5173.*LISTENING" >nul 2>&1
 if %errorlevel%==0 (
     echo.
-    echo ATTENZIONE: Porta 5173 (frontend) gia in uso.
+    echo ATTENZIONE: Porta 5173 [frontend] gia in uso.
     echo       Verifica che non ci sia gia Vite in esecuzione.
     echo       Se si, chiudi la finestra "MedWork Frontend" e riprova.
     echo.
@@ -98,16 +100,16 @@ echo.
 echo [5/6] Avvio servizi...
 
 echo       Avvio backend...
-start "MedWork Backend" /min cmd /c "cd /d "%BACKEND_DIR%" && set ASPNETCORE_ENVIRONMENT=Testing && "%DOTNET%" run --no-build --urls %BACKEND_URL%"
+start "MedWork Backend" /min cmd /c "cd /d "%BACKEND_DIR%" && "%DOTNET%" run --no-build --launch-profile Testing --urls %BACKEND_URL%"
 
 echo       Attendo 8 secondi per l'avvio del backend...
-timeout /t 8 /nobreak >nul
+timeout /t 8 /nobreak >nul 2>&1 || ping 127.0.0.1 -n 9 >nul
 
 echo       Avvio frontend...
 start "MedWork Frontend" /min cmd /c "cd /d "%FRONTEND_DIR%" && "%NPM%" run dev"
 
 echo       Attendo 5 secondi per l'avvio del frontend...
-timeout /t 5 /nobreak >nul
+timeout /t 5 /nobreak >nul 2>&1 || ping 127.0.0.1 -n 6 >nul
 
 echo.
 echo [6/6] Apertura browser...

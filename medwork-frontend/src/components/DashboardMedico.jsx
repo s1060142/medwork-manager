@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Grid,
@@ -18,6 +19,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import DrawIcon from '@mui/icons-material/Draw'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { apiGet } from '../services/apiClient'
 
 function MetricCard({ title, count, icon, color, subtitle }) {
@@ -35,7 +37,7 @@ function MetricCard({ title, count, icon, color, subtitle }) {
   )
 }
 
-export default function DashboardMedico() {
+export default function DashboardMedico({ onNewVisit }) {
   const [visits, setVisits] = useState([])
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
@@ -67,7 +69,7 @@ export default function DashboardMedico() {
 
     const next7 = all.filter((v) => v.due >= now && v.due <= in7).length
     const overdue = all.filter((v) => v.due < now).length
-    const toSign = all.filter((v) => v.due >= now && v.due <= in7 && !v.signed).length
+    const toSign = all.filter((v) => !v.signed).length
     const anomalies = records.filter((r) => r.status === 'Anomalia' || r.status === 'Flagged').length
 
     return { next7, overdue, toSign, anomalies }
@@ -84,10 +86,25 @@ export default function DashboardMedico() {
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-        <Typography variant="h6">Dashboard Medico</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Sintesi real-time: scadenze, firme e anomalie dei protocolli.
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h6">Dashboard Medico</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Sintesi real-time: scadenze, firme e anomalie dei protocolli.
+            </Typography>
+          </Box>
+          {onNewVisit && (
+            <Button
+              variant="contained"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={onNewVisit}
+              size="small"
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Nuova visita
+            </Button>
+          )}
+        </Box>
 
         <Grid container spacing={1.5} sx={{ mt: 1 }}>
           <Grid item xs={12} sm={6} md={3}>
@@ -132,13 +149,14 @@ export default function DashboardMedico() {
       </Paper>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Typography variant="subtitle1" sx={{ p: 2 }}>Visite in scadenza (prossime 7 giorni)</Typography>
+        <Typography variant="subtitle1" sx={{ p: 2 }}>Visite con scadenza nei prossimi 7 giorni</Typography>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Lavoratore</TableCell>
               <TableCell>Azienda</TableCell>
               <TableCell>Scadenza</TableCell>
+              <TableCell>Giudizio</TableCell>
               <TableCell>Stato</TableCell>
             </TableRow>
           </TableHead>
@@ -154,9 +172,12 @@ export default function DashboardMedico() {
               .slice(0, 10)
               .map((v) => (
                 <TableRow key={v.id} hover>
-                  <TableCell>{`${v.employeeFirstName || ''} ${v.employeeLastName || ''}`.trim() || `#${v.employeeId}`}</TableCell>
+                  <TableCell>{v.employeeFullName || `#${v.employeeId}`}</TableCell>
                   <TableCell>{v.companyName || '-'}</TableCell>
                   <TableCell>{new Date(v.nextDeadlineDate || v.visitDate).toLocaleDateString('it-IT')}</TableCell>
+                  <TableCell>
+                    <Typography variant="caption">{v.outcome || '-'}</Typography>
+                  </TableCell>
                   <TableCell>
                     <Chip
                       size="small"
@@ -166,15 +187,57 @@ export default function DashboardMedico() {
                   </TableCell>
                 </TableRow>
               ))}
-            {visits.length === 0 && (
+            {visits.filter((v) => {
+                const d = new Date(v.nextDeadlineDate || v.visitDate)
+                const now = new Date()
+                const in7 = new Date(now)
+                in7.setDate(in7.getDate() + 7)
+                return d >= now && d <= in7
+              }).length === 0 && (
               <TableRow>
-                <TableCell colSpan={4}>
-                  <Typography variant="body2" color="text.secondary">Nessuna visita disponibile.</Typography>
+                <TableCell colSpan={5}>
+                  <Typography variant="body2" color="text.secondary">Nessuna visita in scadenza nei prossimi 7 giorni.</Typography>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+
+        <Box sx={{ p: 2, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Visite scadute ({overdue})</Typography>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Lavoratore</TableCell>
+                <TableCell>Azienda</TableCell>
+                <TableCell>Scaduta il</TableCell>
+                <TableCell>Giudizio</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {visits
+                .filter((v) => new Date(v.nextDeadlineDate || v.visitDate) < new Date())
+                .slice(0, 5)
+                .map((v) => (
+                  <TableRow key={v.id} hover>
+                    <TableCell>{v.employeeFullName || `#${v.employeeId}`}</TableCell>
+                    <TableCell>{v.companyName || '-'}</TableCell>
+                    <TableCell sx={{ color: 'error.main', fontWeight: 600 }}>
+                      {new Date(v.nextDeadlineDate || v.visitDate).toLocaleDateString('it-IT')}
+                    </TableCell>
+                    <TableCell><Typography variant="caption">{v.outcome || '-'}</Typography></TableCell>
+                  </TableRow>
+                ))}
+              {overdue === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4}>
+                    <Typography variant="body2" color="success.main">✓ Nessuna visita scaduta.</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Box>
       </Paper>
     </Stack>
   )

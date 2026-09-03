@@ -194,6 +194,14 @@ async function safeReadError(response) {
         if (typeof parsed === 'string') {
           return parsed
         }
+        if (parsed?.errors && typeof parsed.errors === 'object') {
+          const details = Object.entries(parsed.errors)
+            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join(' | ')
+          if (details) {
+            return `${parsed.title ? `${parsed.title}: ` : ''}${details}`
+          }
+        }
         if (parsed?.message) {
           return parsed.message
         }

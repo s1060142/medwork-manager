@@ -35,6 +35,14 @@ const VISIT_TYPES = [
   { code: 5, label: 'Cessazione' },
 ]
 
+const OUTCOMES_STEPPER = [
+  { code: 'IDONE0', label: 'Idoneo alla mansione' },
+  { code: 'IDONE0P', label: 'Idoneo alla mansione con prescrizioni' },
+  { code: 'IDONE0L', label: 'Idoneo alla mansione con limitazioni' },
+  { code: 'NONIDONE0', label: 'Non idoneo' },
+  { code: 'INATTESA', label: 'In attesa di accertamenti' },
+]
+
 const initialData = {
   employeeId: '',
   doctorId: '',
@@ -47,7 +55,10 @@ const initialData = {
   remotePathology: '',
   recentPathology: '',
   targetOrgans: '',
+  outcomeCode: '',
   outcome: '',
+  prescriptions: '',
+  limitations: '',
   clinicalNotes: '',
   // Structured objective exam
   objCardio: 'nella norma',
@@ -111,17 +122,22 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       .catch(() => {})
   }, [])
 
-  // Auto-fetch context when employee changes
+  // Auto-fetch context and pre-fill company doctor when employee changes
   useEffect(() => {
     if (!formData.employeeId) {
       setEmployeeContext(null)
       return
     }
+
+    const emp = employees.find(e => Number(e.id) === Number(formData.employeeId))
+    if (emp?.companyDoctorId) {
+      setField('doctorId', emp.companyDoctorId)
+    }
     
     apiGet(`/api/doctor-data/employees/${formData.employeeId}/context`)
       .then(data => setEmployeeContext(data))
       .catch(() => setEmployeeContext(null))
-  }, [formData.employeeId])
+  }, [formData.employeeId, employees])
 
   // Auto-fetch deadline preview
   useEffect(() => {
@@ -191,8 +207,8 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       }
     }
     if (activeStep === 2) {
-      if (!String(formData.outcome).trim() || !formData.nextDeadlineDate) {
-        setError('Compila giudizio di idoneità e prossima scadenza.')
+      if (!formData.outcomeCode || !formData.nextDeadlineDate) {
+        setError('Seleziona il giudizio di idoneità e la prossima scadenza.')
         return false
       }
     }
@@ -235,6 +251,9 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
 
       const finalObjectiveExam = buildObjectiveExamString()
 
+      const selectedOutcome = OUTCOMES_STEPPER.find((o) => o.code === formData.outcomeCode)
+      const outcomeLabelFinal = selectedOutcome ? selectedOutcome.label : (formData.outcome || 'Idoneo alla mansione')
+
       const createdVisit = await apiSend('POST', '/api/doctor-data/medical-visits', {
         employeeId: Number(formData.employeeId),
         doctorId: formData.doctorId ? Number(formData.doctorId) : null,
@@ -245,7 +264,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
         visitType: formData.visitType,
         targetOrgans: formData.targetOrgans,
         objectiveExam: finalObjectiveExam,
-        outcome: formData.outcome,
+        outcomeCode: formData.outcomeCode || null,
+        outcome: outcomeLabelFinal,
+        prescriptions: formData.prescriptions || null,
+        limitations: formData.limitations || null,
         clinicalNotes: formData.clinicalNotes,
       })
 
@@ -334,9 +356,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 }}>
                   <TextField
                     size="small"
-                    label="Medico competente"
-                    value="Assegnazione automatica"
+                    label="Medico Competente (Aziendale)"
+                    value={employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyDoctorName || 'Nessun medico aziendale assegnato'}
                     InputProps={{ readOnly: true }}
+                    helperText={employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyName ? `Azienda: ${employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyName}` : ''}
                   />
                   <DesktopDatePicker
                     size="small"
@@ -498,11 +521,19 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
                   <TextField
-                    label="Giudizio di idoneità *"
-                    value={formData.outcome}
-                    onChange={(event) => setField('outcome', event.target.value)}
-                    placeholder="Es. Idoneo con prescrizioni"
-                  />
+                    select
+                    label="Esito Giudizio di Idoneità *"
+                    value={formData.outcomeCode}
+                    onChange={(event) => {
+                      const selected = OUTCOMES_STEPPER.find((o) => o.code === event.target.value)
+                      setField('outcomeCode', event.target.value)
+                      if (selected) setField('outcome', selected.label)
+                    }}
+                  >
+                    {OUTCOMES_STEPPER.map((o) => (
+                      <MenuItem key={o.code} value={o.code}>{o.label}</MenuItem>
+                    ))}
+                  </TextField>
                   <DesktopDatePicker
                     size="small"
                     label="Prossima scadenza *"
@@ -528,34 +559,60 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                   />
                 </Box>
 
+                <TextField
+                  label="Prescrizioni specifiche"
+                  multiline
+                  rows={2}
+                  fullWidth
+                  value={formData.prescriptions}
+                  onChange={(e) => setField('prescriptions', e.target.value)}
+                  placeholder="Es. Obbligo DPI uditivi SNR ≥ 28 dB, occhiali di sicurezza..."
+                  helperText="Misure, dispositivi o comportamenti obbligatori per il lavoratore (art. 41 D.Lgs. 81/08)"
+                />
+
+                <TextField
+                  label="Limitazioni operative"
+                  multiline
+                  rows={2}
+                  fullWidth
+                  value={formData.limitations}
+                  onChange={(e) => setField('limitations', e.target.value)}
+                  placeholder="Es. Escluso da movimentazione manuale carichi > 10 kg, non idoneo lavoro notturno..."
+                  helperText="Divieti o esclusioni da mansioni o posture specifiche"
+                />
+
                 <Box>
                   <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>Prescrizioni Standardizzate</Typography>
                   <FormGroup sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                     <FormControlLabel 
                       control={<Checkbox checked={selectedPrescriptions.dpi} onChange={(e) => {
                         setSelectedPrescriptions(p => ({ ...p, dpi: e.target.checked }))
-                        if (e.target.checked) setField('outcome', formData.outcome ? formData.outcome + ', uso obbligatorio DPI' : 'Uso obbligatorio DPI')
+                        const current = formData.prescriptions || ''
+                        if (e.target.checked) setField('prescriptions', current ? current + '; uso obbligatorio DPI (udito/vista)' : 'Uso obbligatorio DPI (udito/vista)')
                       }} />} 
                       label="Uso obbligatorio DPI (udito/vista)" 
                     />
                     <FormControlLabel 
                       control={<Checkbox checked={selectedPrescriptions.mmc} onChange={(e) => {
                         setSelectedPrescriptions(p => ({ ...p, mmc: e.target.checked }))
-                        if (e.target.checked) setField('outcome', formData.outcome ? formData.outcome + ', limitazione MMC' : 'Limitazione MMC')
+                        const current = formData.limitations || ''
+                        if (e.target.checked) setField('limitations', current ? current + '; limitazione MMC (max 10 kg)' : 'Limitazione MMC (max 10 kg)')
                       }} />} 
                       label="Limitazione MMC" 
                     />
                     <FormControlLabel 
                       control={<Checkbox checked={selectedPrescriptions.lenti} onChange={(e) => {
                         setSelectedPrescriptions(p => ({ ...p, lenti: e.target.checked }))
-                        if (e.target.checked) setField('outcome', formData.outcome ? formData.outcome + ', prescrizione lenti' : 'Prescrizione lenti')
+                        const current = formData.prescriptions || ''
+                        if (e.target.checked) setField('prescriptions', current ? current + '; prescrizione uso lenti correttive' : 'Prescrizione uso lenti correttive')
                       }} />} 
                       label="Prescrizione lenti" 
                     />
                     <FormControlLabel 
                       control={<Checkbox checked={selectedPrescriptions.vdt} onChange={(e) => {
                         setSelectedPrescriptions(p => ({ ...p, vdt: e.target.checked }))
-                        if (e.target.checked) setField('outcome', formData.outcome ? formData.outcome + ', pausa VDT 15 min ogni 2 ore' : 'Pausa VDT 15 min ogni 2 ore')
+                        const current = formData.prescriptions || ''
+                        if (e.target.checked) setField('prescriptions', current ? current + '; pausa VDT 15 min ogni 2 ore' : 'Pausa VDT 15 min ogni 2 ore')
                       }} />} 
                       label="Pausa VDT 15 min ogni 2 ore" 
                     />

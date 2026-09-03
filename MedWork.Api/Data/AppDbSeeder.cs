@@ -41,10 +41,103 @@ public static class AppDbSeeder
 
                 var companySeeds = new[]
                 {
-                    new Company { Name = "Acme Industria S.p.A.", VATNumber = "IT01234567890", ContactEmail = "hr@acme-industria.it", ContactPhone = "+39 02 1234567", TenantId = tid },
-            new Company { Name = "Nord Logistics S.r.l.", VATNumber = "IT09876543210", ContactEmail = "people@nordlogistics.it", ContactPhone = "+39 035 7654321", TenantId = tid },
-            new Company { Name = "TechFab Engineering S.p.A.", VATNumber = "IT04561230987", ContactEmail = "hr@techfab.it", ContactPhone = "+39 011 5557788", TenantId = tid },
-        };
+                    new Company
+                    {
+                        Name = "Acme Industria S.p.A.",
+                        LegalName = "Acme Industria S.p.A.",
+                        VATNumber = "IT01234567890",
+                        TaxCode = "01234567890",
+                        ATECOCode = "25.62.00",
+                        REANumber = "MI-1234567",
+                        Activity = "Produzione componenti meccanici di precisione",
+                        OperationalUnitName = "Stabilimento Nord",
+                        Type = "Produzione",
+                        Reference = "Ing. Mario Rossi",
+                        Status = "Attiva",
+                        OperationalAddress = "Via dell'Industria 12",
+                        OperationalCity = "Ancona",
+                        OperationalPostalCode = "60100",
+                        OperationalProvince = "AN",
+                        LegalAddress = "Via dell'Industria 12",
+                        LegalCity = "Ancona",
+                        LegalPostalCode = "60100",
+                        LegalProvince = "AN",
+                        Country = "Italia",
+                        ContactEmail = "hr@acme-industria.it",
+                        PEC = "acme@pec.it",
+                        ContactPhone = "+39 02 1234567",
+                        Fax = "+39 02 1234568",
+                        LegalRepresentative = "Mario Rossi",
+                        RSPP = "Ing. Roberto Neri",
+                        RLS = "Luca Gialli",
+                        RiskClass = "Medio",
+                        PaymentMethod = "Bonifico",
+                        IsActive = true,
+                        TenantId = tid
+                    },
+                    new Company
+                    {
+                        Name = "Nord Logistics S.r.l.",
+                        LegalName = "Nord Logistics S.r.l.",
+                        VATNumber = "IT09876543210",
+                        TaxCode = "09876543210",
+                        ATECOCode = "52.29.22",
+                        REANumber = "BG-987654",
+                        Activity = "Logistica integrata e trasporti nazionali",
+                        OperationalUnitName = "Hub Logistico Bergamo",
+                        Type = "Servizi",
+                        Reference = "Dott. Marco Neri",
+                        Status = "Attiva",
+                        OperationalAddress = "Via Cargo 5",
+                        OperationalCity = "Bergamo",
+                        OperationalPostalCode = "24100",
+                        OperationalProvince = "BG",
+                        LegalAddress = "Via Cargo 5",
+                        LegalCity = "Bergamo",
+                        LegalPostalCode = "24100",
+                        LegalProvince = "BG",
+                        Country = "Italia",
+                        ContactEmail = "people@nordlogistics.it",
+                        PEC = "nordlogistics@pec.it",
+                        ContactPhone = "+39 035 7654321",
+                        LegalRepresentative = "Marco Neri",
+                        RiskClass = "Basso",
+                        PaymentMethod = "Bonifico",
+                        IsActive = true,
+                        TenantId = tid
+                    },
+                    new Company
+                    {
+                        Name = "TechFab Engineering S.p.A.",
+                        LegalName = "TechFab Engineering S.p.A.",
+                        VATNumber = "IT04561230987",
+                        TaxCode = "04561230987",
+                        ATECOCode = "71.12.10",
+                        REANumber = "TO-555666",
+                        Activity = "Progettazione ingegneristica e automazione industriale",
+                        OperationalUnitName = "Sede Direzionale Torino",
+                        Type = "Servizi",
+                        Reference = "Ing. Laura Bianchi",
+                        Status = "Attiva",
+                        OperationalAddress = "Corso Svizzera 185",
+                        OperationalCity = "Torino",
+                        OperationalPostalCode = "10149",
+                        OperationalProvince = "TO",
+                        LegalAddress = "Corso Svizzera 185",
+                        LegalCity = "Torino",
+                        LegalPostalCode = "10149",
+                        LegalProvince = "TO",
+                        Country = "Italia",
+                        ContactEmail = "hr@techfab.it",
+                        PEC = "techfab@pec.it",
+                        ContactPhone = "+39 011 5557788",
+                        LegalRepresentative = "Laura Bianchi",
+                        RiskClass = "Medio",
+                        PaymentMethod = "Bonifico",
+                        IsActive = true,
+                        TenantId = tid
+                    },
+                };
 
         var existingVat = (await dbContext.Companies.Select(x => x.VATNumber).ToListAsync()).ToHashSet();
         var newCompanies = companySeeds.Where(x => !existingVat.Contains(x.VATNumber)).ToList();
@@ -168,6 +261,51 @@ public static class AppDbSeeder
         }
 
         await dbContext.SaveChangesAsync();
+
+        // Seed CompanyDoctors (Nomina Medico Competente per Azienda)
+        var existingCompanyDoctors = await dbContext.CompanyDoctors.ToListAsync();
+        if (!existingCompanyDoctors.Any())
+        {
+            if (companiesByVat.TryGetValue("IT01234567890", out var acme) && doctorsByLicense.TryGetValue("MED-LOM-98765", out var lauraBianchi))
+            {
+                dbContext.CompanyDoctors.Add(new CompanyDoctor
+                {
+                    CompanyId = acme.Id,
+                    DoctorId = lauraBianchi.Id,
+                    IsCoordinator = true,
+                    IsActive = true,
+                    AssignedAt = DateTime.UtcNow.AddMonths(-6),
+                    TenantId = tid
+                });
+            }
+
+            if (companiesByVat.TryGetValue("IT09876543210", out var nord) && doctorsByLicense.TryGetValue("MED-PIE-44112", out var paoloVerdi))
+            {
+                dbContext.CompanyDoctors.Add(new CompanyDoctor
+                {
+                    CompanyId = nord.Id,
+                    DoctorId = paoloVerdi.Id,
+                    IsCoordinator = true,
+                    IsActive = true,
+                    AssignedAt = DateTime.UtcNow.AddMonths(-3),
+                    TenantId = tid
+                });
+            }
+
+            if (companiesByVat.TryGetValue("IT04561230987", out var techfab) && doctorsByLicense.TryGetValue("MED-LOM-98765", out var lauraBianchi2))
+            {
+                dbContext.CompanyDoctors.Add(new CompanyDoctor
+                {
+                    CompanyId = techfab.Id,
+                    DoctorId = lauraBianchi2.Id,
+                    IsCoordinator = true,
+                    IsActive = true,
+                    AssignedAt = DateTime.UtcNow.AddMonths(-1),
+                    TenantId = tid
+                });
+            }
+            await dbContext.SaveChangesAsync();
+        }
 
         var riskSeeds = new[]
         {
@@ -423,7 +561,10 @@ public static class AppDbSeeder
                 TenantId = tid,
                 VisitDate = DateTime.UtcNow.Date.AddDays(-(15 + employee.Id * 3)),
                 NextDeadlineDate = DateTime.UtcNow.Date.AddDays(20 + employee.Id * 5),
-                Outcome = employee.Id % 4 == 0 ? "Parzialmente idoneo con limitazioni" : "Idoneo con prescrizioni",
+                Outcome = employee.Id % 4 == 0 ? "Parzialmente idoneo con limitazioni" : "Idoneo alla mansione con prescrizioni",
+                OutcomeCode = employee.Id % 4 == 0 ? "IDONE0L" : "IDONE0P",
+                Prescriptions = employee.Id % 4 != 0 ? "Uso obbligatorio DPI uditivi SNR ≥ 28 dB durante operazioni rumorose." : null,
+                Limitations = employee.Id % 4 == 0 ? "Escluso da movimentazione manuale carichi superiori a 10 kg." : null,
                 ClinicalNotes = "Visita demo per simulazione workflow clinico completo.",
                 VisitType = employee.Id % 2 == 0 ? MedicalVisitType.Periodic : MedicalVisitType.Preventive,
                 TargetOrgans = "Apparato respiratorio, apparato muscolo-scheletrico",

@@ -57,9 +57,9 @@ function daysDiffFromToday(targetDate) {
 }
 
 function alertSeverityLabel(diffDays) {
-  if (diffDays < 0) return { label: 'OVERDUE', color: 'error' }
-  if (diffDays === 0) return { label: 'SCADUTO', color: 'error' }
-  if (diffDays <= 5) return { label: 'DUE SOON', color: 'warning' }
+  if (diffDays < 0) return { label: 'SCADUTO', color: 'error' }
+  if (diffDays === 0) return { label: 'SCADUTO OGGI', color: 'error' }
+  if (diffDays <= 5) return { label: 'IN SCADENZA', color: 'warning' }
   return { label: 'IN PROGRAMMA', color: 'info' }
 }
 

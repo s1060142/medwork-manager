@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using MedWork.Api.Models.Common;
 
 namespace MedWork.Api.Models;
 
@@ -9,7 +11,6 @@ public class Employee
     [StringLength(100)]
     public string? ExternalId { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int TenantId { get; set; }
 
     [Range(1, int.MaxValue)]
@@ -96,8 +97,9 @@ public class Employee
     [StringLength(50)]
     public string? Nationality { get; set; } = "IT";
 
-    // Alias usato dal frontend (entityConfigs 'employees') come 'nazionalita'/'nationality'.
-    // Mappato al campo Nationality sottostante.
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? Nazionalita { get => Nationality; set => Nationality = value; }
+
     [StringLength(100)]
     public string? EducationLevel { get; set; }
 
@@ -105,6 +107,9 @@ public class Employee
     [StringLength(500)] public string? Domicilio { get; set; }
     [StringLength(500)] public string? IndirizzoDomicilio { get; set; }
     [StringLength(150)] public string? MedicoCurante { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? MedicoCarante { get => MedicoCurante; set => MedicoCurante = value; }
     [StringLength(250)] public string? IndirizzoMedico { get; set; }
     [StringLength(30)] public string? TelefonoMedico { get; set; }
     [StringLength(5)] public string? GruppoSanguigno { get; set; }
@@ -122,8 +127,13 @@ public class Employee
     [StringLength(250)] public string? Motivazione { get; set; }
     public DateTime? DataCessazione { get; set; }
     public DateTime? DataRiattivazione { get; set; }
-    [StringLength(100)] public string? CategoriaProtetta { get; set; }
-    [StringLength(250)] public string? DocumentiPrivacy { get; set; }
+    [StringLength(100)]
+    [JsonConverter(typeof(BooleanOrStringConverter))]
+    public string? CategoriaProtetta { get; set; }
+
+    [StringLength(250)]
+    [JsonConverter(typeof(BooleanOrStringConverter))]
+    public string? DocumentiPrivacy { get; set; }
     [StringLength(2000)] public string? NoteRiservate { get; set; }
     [StringLength(2000)] public string? NotePerAzienda { get; set; }
 

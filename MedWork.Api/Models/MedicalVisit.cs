@@ -8,7 +8,6 @@ public class MedicalVisit : IValidatableObject
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int TenantId { get; set; }
 
     [Range(1, int.MaxValue)]
@@ -35,6 +34,12 @@ public class MedicalVisit : IValidatableObject
 
     [StringLength(4000)]
     public string? ClinicalNotes { get; set; }
+
+    [StringLength(2000)]
+    public string? Prescriptions { get; set; }
+
+    [StringLength(2000)]
+    public string? Limitations { get; set; }
 
     
     [Column(TypeName = "nvarchar(max)")]

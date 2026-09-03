@@ -245,6 +245,7 @@ const App = () => {
   const [activeCompanyId, setActiveCompanyIdLocal] = useState(() => readActiveCompanyFromSettings())
   const [profileEmployee, setProfileEmployee] = useState(null)
   const [profileCompany, setProfileCompany] = useState(null)
+  const [companyRefreshToken, setCompanyRefreshToken] = useState(0)
   const [externalAuthProvider, setExternalAuthProvider] = useState<string | null>(null)
   const [isExternalAuth, setIsExternalAuth] = useState(false)
 
@@ -543,6 +544,7 @@ const App = () => {
           config={ENTITY_BY_KEY.companies}
           currentRole={role}
           externalCreateToken={0}
+          refreshToken={companyRefreshToken}
           onExternalCreateConsumed={handleQuickCreateConsumed}
           onOpenCompanyProfile={handleOpenCompanyProfile}
         />
@@ -663,7 +665,14 @@ const App = () => {
     }
 
     if (moduleKey === 'doctor-dashboard') {
-      return <DashboardMedico />
+      return (
+        <DashboardMedico
+          onNewVisit={() => {
+            setSelectedArea('health-surveillance')
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
+        />
+      )
     }
 
     if (moduleKey === 'cartella-sanitaria') {
@@ -1172,6 +1181,10 @@ const App = () => {
           open={Boolean(profileCompany)}
           onClose={() => setProfileCompany(null)}
           company={profileCompany}
+          onSaveCompany={(updated: any) => {
+            setProfileCompany((curr: any) => (curr ? { ...curr, ...updated } : null))
+            setCompanyRefreshToken((prev) => prev + 1)
+          }}
         />
         <HrImportExportDialog
           open={hrImportExportOpen}

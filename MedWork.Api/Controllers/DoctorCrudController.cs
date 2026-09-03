@@ -86,7 +86,25 @@ public class DoctorCrudController : ControllerBase
         if (request.DoctorId is null or <= 0)
         {
             var tenantId = GetTenantId();
-            request.DoctorId = await _dbContext.Doctors
+            var empCompanyId = await _dbContext.Employees
+                .AsNoTracking()
+                .Where(e => e.Id == request.EmployeeId && e.TenantId == tenantId)
+                .Select(e => (int?)e.CompanyId)
+                .FirstOrDefaultAsync();
+
+            int? companyDoctorId = null;
+            if (empCompanyId.HasValue && empCompanyId.Value > 0)
+            {
+                companyDoctorId = await _dbContext.CompanyDoctors
+                    .AsNoTracking()
+                    .Where(cd => cd.CompanyId == empCompanyId.Value && cd.TenantId == tenantId && cd.IsActive)
+                    .OrderByDescending(cd => cd.IsCoordinator)
+                    .ThenBy(cd => cd.Id)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefaultAsync();
+            }
+
+            request.DoctorId = companyDoctorId ?? await _dbContext.Doctors
                 .AsNoTracking()
                 .Where(x => x.TenantId == tenantId)
                 .OrderBy(x => x.Id)
@@ -123,7 +141,15 @@ public class DoctorCrudController : ControllerBase
                 });
             }
         }
-        // ── END NEW ─────────────────────────────────────────────────────────────
+        if (string.IsNullOrWhiteSpace(request.OutcomeCode) && !string.IsNullOrWhiteSpace(request.Outcome))
+        {
+            var o = request.Outcome.ToLowerInvariant();
+            if (o.Contains("non idoneo") || o.Contains("inidoneo")) request.OutcomeCode = "NONIDONE0";
+            else if (o.Contains("prescriz")) request.OutcomeCode = "IDONE0P";
+            else if (o.Contains("limitaz")) request.OutcomeCode = "IDONE0L";
+            else if (o.Contains("idone")) request.OutcomeCode = "IDONE0";
+            else request.OutcomeCode = "INATTESA";
+        }
 
         request.TenantId = GetTenantId();
         _dbContext.MedicalVisits.Add(request);
@@ -163,8 +189,10 @@ public class DoctorCrudController : ControllerBase
         entity.EmployeeId = request.EmployeeId;
         entity.DoctorId = doctorId;
         entity.VisitDate = request.VisitDate;
-        entity.NextDeadlineDate = request.NextDeadlineDate;
         entity.Outcome = request.Outcome;
+        entity.OutcomeCode = request.OutcomeCode ?? entity.OutcomeCode;
+        entity.Prescriptions = request.Prescriptions ?? entity.Prescriptions;
+        entity.Limitations = request.Limitations ?? entity.Limitations;
         entity.ClinicalNotes = request.ClinicalNotes;
         entity.VisitType = request.VisitType;
         entity.TargetOrgans = request.TargetOrgans;
@@ -565,6 +593,18 @@ public class DoctorCrudController : ControllerBase
         return Ok(new { entity.Id, entity.IsActive });
     }
 
+    [HttpDelete("protocols/{id:int}")]
+    public async Task<IActionResult> DeleteProtocol(int id)
+    {
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.Protocols.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        if (entity is null) return NotFound();
+
+        _dbContext.Protocols.Remove(entity);
+        await _dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboardSummary()
     {
@@ -960,6 +1000,75 @@ public class DoctorCrudController : ControllerBase
 
         await _dbContext.SaveChangesAsync();
         return Ok(new { success = true, signedCount = visits.Count });
+    }
+
+    [HttpGet("site-visits")]
+    public async Task<IActionResult> GetSiteVisits()
+    {
+        var tenantId = GetTenantId();
+        var data = await _dbContext.SiteVisits
+            .AsNoTracking()
+            .Where(x => x.TenantId == tenantId)
+            .OrderByDescending(x => x.VisitDate)
+            .Select(x => new
+            {
+                x.Id,
+                x.CompanyId,
+                CompanyName = x.Company!.Name,
+                x.VisitedStructure,
+                x.Location,
+                x.DoctorName,
+                x.VisitDate,
+                x.Frequency,
+                x.NextDueDate,
+                x.Notes,
+                x.Outcome
+            })
+            .ToListAsync();
+
+        return Ok(data);
+    }
+
+    [HttpPost("site-visits")]
+    public async Task<IActionResult> CreateSiteVisit([FromBody] SiteVisit request)
+    {
+        var tenantId = GetTenantId();
+        request.TenantId = tenantId;
+        _dbContext.SiteVisits.Add(request);
+        await _dbContext.SaveChangesAsync();
+        return Ok(request);
+    }
+
+    [HttpPut("site-visits/{id:int}")]
+    public async Task<IActionResult> UpdateSiteVisit(int id, [FromBody] SiteVisit request)
+    {
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        if (entity is null) return NotFound();
+
+        entity.CompanyId = request.CompanyId;
+        entity.VisitedStructure = request.VisitedStructure;
+        entity.Location = request.Location;
+        entity.DoctorName = request.DoctorName;
+        entity.VisitDate = request.VisitDate;
+        entity.Frequency = request.Frequency;
+        entity.NextDueDate = request.NextDueDate;
+        entity.Notes = request.Notes;
+        entity.Outcome = request.Outcome;
+        await _dbContext.SaveChangesAsync();
+        return Ok(entity);
+    }
+
+    [HttpDelete("site-visits/{id:int}")]
+    public async Task<IActionResult> DeleteSiteVisit(int id)
+    {
+        var tenantId = GetTenantId();
+        var entity = await _dbContext.SiteVisits.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        if (entity is null) return NotFound();
+
+        _dbContext.SiteVisits.Remove(entity);
+        await _dbContext.SaveChangesAsync();
+        return NoContent();
     }
 
     // Helper — reads TenantId from the claim set by TenantContextFilter

@@ -6,7 +6,6 @@ public class CompanyContact
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
     public int TenantId { get; set; }
 
     [Range(1, int.MaxValue)]

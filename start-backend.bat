@@ -34,6 +34,6 @@ echo       (premi Ctrl+C qui per fermare il backend)
 echo.
 
 set ASPNETCORE_ENVIRONMENT=Testing
-"%DOTNET%" run --no-build --urls http://127.0.0.1:5279
+"%DOTNET%" run --no-build --launch-profile Testing --urls http://127.0.0.1:5279
 
 pause

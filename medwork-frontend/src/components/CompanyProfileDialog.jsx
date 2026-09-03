@@ -7,7 +7,9 @@ import {
   Chip,
   CircularProgress,
   Dialog,
+  DialogTitle,
   DialogContent,
+  DialogActions,
   Divider,
   MenuItem,
   Paper,
@@ -58,6 +60,8 @@ function defaultFormData() {
   return {
     name: '',
     legalName: '',
+    vatNumber: '',
+    taxCode: '',
     atecoCode: '',
     activity: '',
     operationalUnitName: '',
@@ -124,6 +128,15 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
   const [allegato3bOpen, setAllegato3bOpen] = useState(false)
   const [dirty, setDirty] = useState(false)
 
+  const [contactDialogOpen, setContactDialogOpen] = useState(false)
+  const [contactForm, setContactForm] = useState({
+    role: 'RSPP',
+    fullName: '',
+    email: '',
+    phone: '',
+  })
+  const [contactSaving, setContactSaving] = useState(false)
+
   useEffect(() => {
     if (!open || !company?.id) return
 
@@ -139,6 +152,8 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           ...defaultFormData(),
           name: source.name || current.name,
           legalName: source.legalName ?? current.legalName,
+          vatNumber: source.vatNumber ?? source.vATNumber ?? current.vatNumber,
+          taxCode: source.taxCode ?? current.taxCode,
           atecoCode: source.atecoCode || current.atecoCode,
           activity: source.activity || current.activity,
           operationalUnitName: source.operationalUnitName || current.operationalUnitName,
@@ -269,8 +284,21 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
       setSuccess('Azienda aggiornata correttamente.')
       setDirty(false)
 
+      const coordDoc = availableDoctors.find((d) => Number(d.id) === Number(coordinatorDoctorId))
+      const docName = coordDoc ? `Dott. ${coordDoc.firstName} ${coordDoc.lastName}` : null
+
+      const updatedPayload = {
+        id: company.id,
+        ...sanitizedFormData,
+        coordinatorDoctorId: coordinatorDoctorId ? Number(coordinatorDoctorId) : null,
+        coordinatorDoctorName: docName,
+        doctorName: docName,
+        isCoordinator: Boolean(coordinatorDoctorId),
+      }
+      window.dispatchEvent(new CustomEvent('medwork:company-updated', { detail: updatedPayload }))
+
       if (typeof onSaveCompany === 'function') {
-        onSaveCompany(sanitizedFormData)
+        onSaveCompany(updatedPayload)
       }
     } catch (requestError) {
       setError(requestError.message || 'Errore durante il salvataggio.')
@@ -345,6 +373,8 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Nome Azienda*" value={formData.name} onChange={handleFieldChange('name')} />
                   <TextField size="small" label="Ragione Sociale" value={formData.legalName} onChange={handleFieldChange('legalName')} />
+                  <TextField size="small" label="Partita IVA" value={formData.vatNumber} onChange={handleFieldChange('vatNumber')} placeholder="Es. 01234567890" />
+                  <TextField size="small" label="Codice Fiscale" value={formData.taxCode} onChange={handleFieldChange('taxCode')} placeholder="Es. 01234567890" />
                   <TextField size="small" label="Codice ATECO" value={formData.atecoCode} onChange={handleFieldChange('atecoCode')} />
                   <TextField size="small" label="Attività Azienda" value={formData.activity} onChange={handleFieldChange('activity')} multiline minRows={2} />
                   <TextField size="small" label="Denominazione Unità Locale" value={formData.operationalUnitName} onChange={handleFieldChange('operationalUnitName')} />
@@ -544,23 +574,14 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           {tab === 3 && (
             <Stack spacing={2}>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button startIcon={<PersonAddIcon />} variant="outlined" onClick={async () => {
-                  const nominativo = window.prompt('Nominativo figura aziendale?')
-                  if (!nominativo) return
-                  const ruolo = window.prompt('Ruolo (RSPP / RLS / DL / Dirigente)?', 'RSPP')
-                  if (!ruolo) return
-                  try {
-                    const created = await apiSend('POST', '/api/admin-data/company-contacts', {
-                      companyId: company.id,
-                      nominativo,
-                      ruolo,
-                    })
-                    setCompanyContacts((current) => [...current, created])
-                    setDirty(true)
-                  } catch (requestError) {
-                    setError(requestError.message || 'Errore creazione contatto.')
-                  }
-                }}>
+                <Button
+                  startIcon={<PersonAddIcon />}
+                  variant="outlined"
+                  onClick={() => {
+                    setContactForm({ role: 'RSPP', fullName: '', email: '', phone: '' })
+                    setContactDialogOpen(true)
+                  }}
+                >
                   Aggiungi figura
                 </Button>
               </Box>
@@ -572,17 +593,17 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                       <TableCell>Nominativo</TableCell>
                       <TableCell>Email</TableCell>
                       <TableCell>Telefono</TableCell>
-                      <TableCell></TableCell>
+                      <TableCell align="right">Azioni</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {companyContacts.map((contact) => (
                       <TableRow key={contact.id}>
-                        <TableCell>{contact.ruolo}</TableCell>
-                        <TableCell>{contact.nominativo}</TableCell>
-                        <TableCell>{contact.email}</TableCell>
-                        <TableCell>{contact.telefono}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{contact.role || contact.ruolo}</TableCell>
+                        <TableCell>{contact.fullName || contact.nominativo}</TableCell>
+                        <TableCell>{contact.email || '-'}</TableCell>
+                        <TableCell>{contact.phone || contact.telefono || '-'}</TableCell>
+                        <TableCell align="right">
                           <Button size="small" color="error" onClick={async () => {
                             try {
                               await apiSend('DELETE', `/api/admin-data/company-contacts/${contact.id}`)
@@ -597,12 +618,84 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                     ))}
                     {companyContacts.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} align="center">Nessuna figura aziendale.</TableCell>
+                        <TableCell colSpan={5} align="center">Nessuna figura aziendale configurata.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
               </Paper>
+
+              <Dialog open={contactDialogOpen} onClose={() => !contactSaving && setContactDialogOpen(false)} maxWidth="xs" fullWidth>
+                <DialogTitle>Nuova Figura Aziendale</DialogTitle>
+                <DialogContent>
+                  <Stack spacing={2} sx={{ mt: 1 }}>
+                    <TextField
+                      select
+                      size="small"
+                      label="Ruolo Aziendale*"
+                      value={contactForm.role}
+                      onChange={(e) => setContactForm({ ...contactForm, role: e.target.value })}
+                    >
+                      <MenuItem value="RSPP">RSPP</MenuItem>
+                      <MenuItem value="RLS">RLS</MenuItem>
+                      <MenuItem value="DL">Datore di Lavoro (DL)</MenuItem>
+                      <MenuItem value="Dirigente">Dirigente</MenuItem>
+                      <MenuItem value="Medico Competente">Medico Competente</MenuItem>
+                    </TextField>
+                    <TextField
+                      size="small"
+                      label="Nominativo*"
+                      value={contactForm.fullName}
+                      onChange={(e) => setContactForm({ ...contactForm, fullName: e.target.value })}
+                      placeholder="Nome e cognome"
+                    />
+                    <TextField
+                      size="small"
+                      label="Email"
+                      type="email"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      placeholder="es. rspp@azienda.it"
+                    />
+                    <TextField
+                      size="small"
+                      label="Telefono"
+                      value={contactForm.phone}
+                      onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                      placeholder="es. +39 333 1234567"
+                    />
+                  </Stack>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setContactDialogOpen(false)} disabled={contactSaving}>Annulla</Button>
+                  <Button
+                    variant="contained"
+                    disabled={contactSaving || !contactForm.fullName.trim() || !contactForm.role}
+                    onClick={async () => {
+                      try {
+                        setContactSaving(true)
+                        setError('')
+                        const created = await apiSend('POST', '/api/admin-data/company-contacts', {
+                          companyId: company.id,
+                          role: contactForm.role.trim(),
+                          fullName: contactForm.fullName.trim(),
+                          email: contactForm.email?.trim() || null,
+                          phone: contactForm.phone?.trim() || null,
+                        })
+                        setCompanyContacts((current) => [...current, created])
+                        setDirty(true)
+                        setContactDialogOpen(false)
+                      } catch (requestError) {
+                        setError(requestError.message || 'Errore creazione contatto.')
+                      } finally {
+                        setContactSaving(false)
+                      }
+                    }}
+                  >
+                    {contactSaving ? 'Salvataggio...' : 'Aggiungi'}
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Stack>
           )}
         </Box>

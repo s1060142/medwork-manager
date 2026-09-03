@@ -83,8 +83,8 @@ public class DocumentGenerationService : IDocumentGenerationService
             VisitType: MapVisitType(visit.VisitType),
             OutcomeCode: visit.OutcomeCode ?? "INATTESA",
             OutcomeLabel: visit.Outcome,
-            Prescriptions: null,
-            Limitations: null,
+            Prescriptions: visit.Prescriptions,
+            Limitations: visit.Limitations,
             ClinicalNotes: visit.ClinicalNotes,
             NextDeadlineDate: visit.NextDeadlineDate
         );

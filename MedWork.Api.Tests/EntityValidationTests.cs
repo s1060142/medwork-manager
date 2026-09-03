@@ -210,6 +210,76 @@ public class EntityValidationTests
             result.ErrorMessage.Contains("greater than or equal", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public void Entity_Validation_Succeeds_When_TenantId_Is_Zero_From_Client_Binding()
+    {
+        var company = new Company
+        {
+            TenantId = 0, // Bound from client without tenantId
+            Name = "Azienda Test S.r.l.",
+            VATNumber = "12345678901"
+        };
+        var contact = new CompanyContact
+        {
+            TenantId = 0,
+            CompanyId = 1,
+            Role = "RSPP",
+            FullName = "Mario Bianchi"
+        };
+        var dept = new Department
+        {
+            TenantId = 0,
+            CompanyId = 1,
+            Name = "Amministrazione"
+        };
+        var location = new WorkLocation
+        {
+            TenantId = 0,
+            CompanyId = 1,
+            Name = "Sede Operativa"
+        };
+
+        Assert.Empty(Validate(company));
+        Assert.Empty(Validate(contact));
+        Assert.Empty(Validate(dept));
+        Assert.Empty(Validate(location));
+    }
+
+    [Fact]
+    public void CompanyContact_Requires_Role_And_FullName()
+    {
+        var invalidContact = new CompanyContact
+        {
+            CompanyId = 1,
+            Role = "",
+            FullName = ""
+        };
+
+        var results = Validate(invalidContact);
+
+        Assert.Contains(results, r => r.MemberNames.Contains(nameof(CompanyContact.Role)));
+        Assert.Contains(results, r => r.MemberNames.Contains(nameof(CompanyContact.FullName)));
+    }
+
+    [Fact]
+    public void Employee_Aliases_Map_Properly()
+    {
+        var employee = new Employee
+        {
+            FirstName = "Luca",
+            LastName = "Verdi",
+            TaxCode = "VRDLCU80A01F205X",
+            JobRole = "Operaio",
+            Nazionalita = "Italiana",
+            MedicoCarante = "Dott. Mario Rossi"
+        };
+
+        Assert.Equal("Italiana", employee.Nationality);
+        Assert.Equal("Dott. Mario Rossi", employee.MedicoCurante);
+        Assert.Equal("Italiana", employee.Nazionalita);
+        Assert.Equal("Dott. Mario Rossi", employee.MedicoCarante);
+    }
+
     private static List<ValidationResult> Validate(object entity)
     {
         var context = new ValidationContext(entity);
