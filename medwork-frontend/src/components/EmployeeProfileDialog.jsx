@@ -570,19 +570,6 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
             >
               Nuova visita
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<ShieldIcon />}
-              disabled={!onOpenMedicalVisitCreate}
-              onClick={() => {
-                if (onOpenMedicalVisitCreate) {
-                  onClose()
-                  onOpenMedicalVisitCreate(employee?.id)
-                }
-              }}
-            >
-              Controllo periodico
-            </Button>
           </Stack>
           <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
             <Button variant="outlined" onClick={confirmClose}>Chiudi</Button>

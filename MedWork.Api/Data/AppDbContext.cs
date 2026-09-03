@@ -59,6 +59,9 @@ public class AppDbContext : DbContext
     public DbSet<Signature> Signatures => Set<Signature>();
     public DbSet<BillingDocument> BillingDocuments => Set<BillingDocument>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<ActivityDeadline> ActivityDeadlines => Set<ActivityDeadline>();
+    public DbSet<CompanyNomination> CompanyNominations => Set<CompanyNomination>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -5,8 +5,9 @@ const ADMIN_CRED = { username: 'admin', password: 'Admin123!' }
 
 async function loginAsAdmin(page) {
   await page.goto(BASE)
-  await page.fill('input[type="text"]', ADMIN_CRED.username)
-  await page.fill('input[type="password"]', ADMIN_CRED.password)
+  await page.getByLabel('Tenant').fill('default')
+  await page.getByLabel('Username').fill(ADMIN_CRED.username)
+  await page.getByLabel('Password').fill(ADMIN_CRED.password)
   await page.click('button:has-text("Accedi")')
   await page.waitForSelector('button:has-text("Gestione aziende")', { timeout: 30000 })
 }

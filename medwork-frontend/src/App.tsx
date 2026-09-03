@@ -598,7 +598,7 @@ const App = () => {
     if (moduleKey === 'schedules') {
       switch (selectedScheduleTab) {
         case 'agenda':
-          return <AgendaCenter activeCompanyId={activeCompanyId} />
+          return <AgendaCenter activeCompanyId={activeCompanyId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
         case 'appointments':
           return <AppointmentsCenter activeCompanyId={activeCompanyId} />
         case 'visit-deadlines':
