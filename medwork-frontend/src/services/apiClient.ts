@@ -4,6 +4,36 @@ export function getApiBaseUrl() {
   return API_BASE_URL
 }
 
+async function fetchWithRefresh(url: string, config: RequestInit) {
+  let response = await fetch(url, config)
+  
+  if (response.status === 401) {
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (refreshResponse.ok) {
+        const text = await refreshResponse.text()
+        if (text) {
+          const data = JSON.parse(text)
+          if (data && data.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken)
+            if (config.headers && (config.headers as Record<string, string>)['Authorization']) {
+              (config.headers as Record<string, string>)['Authorization'] = `Bearer ${data.accessToken}`
+            }
+            response = await fetch(url, config)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Auto-refresh failed', e)
+    }
+  }
+  return response
+}
+
 export function getHeaders(tenantId?: string | null) {
   const token = localStorage.getItem('accessToken')
 
@@ -24,9 +54,10 @@ export function getHeaders(tenantId?: string | null) {
 }
 
 export async function hrExportCsv() {
-  const response = await fetch(`${API_BASE_URL}/api/integrations/export-employee-csv`, {
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/export-employee-csv`, {
     method: 'GET',
     headers: getHeaders(),
+    credentials: 'include'
   })
 
   if (!response.ok) {
@@ -44,9 +75,10 @@ export async function hrImportCsv(file: File, fileName: string) {
   const headers = getHeaders()
   delete headers['Content-Type']
 
-  const response = await fetch(`${API_BASE_URL}/api/integrations/import-employee`, {
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/import-employee`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: formData,
   })
 
@@ -58,9 +90,10 @@ export async function hrImportCsv(file: File, fileName: string) {
 }
 
 export async function hrExportExcel() {
-  const response = await fetch(`${API_BASE_URL}/api/integrations/export-employee-excel`, {
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/export-employee-excel`, {
     method: 'GET',
     headers: getHeaders(),
+    credentials: 'include'
   })
 
   if (!response.ok) {
@@ -76,9 +109,10 @@ export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin
   const config = {
     method: 'GET',
     headers: headers,
+    credentials: 'include' as RequestCredentials,
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, config)
 
   if (!response.ok) {
     const message = await safeReadError(response)
@@ -88,11 +122,12 @@ export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin
   return readJsonResponse(response)
 }
 
-export async function authLogin(username, password, tenantSlug = 'default') {
+export async function authLogin(username, password, tenantSlug = 'default', rememberMe = false) {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, tenantSlug }),
+    credentials: 'include',
+    body: JSON.stringify({ username, password, tenantSlug, rememberMe }),
   })
 
   if (!response.ok) {
@@ -101,6 +136,18 @@ export async function authLogin(username, password, tenantSlug = 'default') {
   }
 
   return readJsonResponse(response)
+}
+
+export async function authLogout() {
+  try {
+    await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+    })
+  } catch (e) {
+    console.error('Logout API error:', e)
+  }
 }
 
 export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | 'keycloak', token: string) {
@@ -120,9 +167,10 @@ export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | '
 
 export async function apiDownload(endpoint, options = {}) {
   const headers = options.tenantId ? getHeaders(options.tenantId) : getHeaders()
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
+    credentials: 'include'
   })
 
   if (!response.ok) {
@@ -135,9 +183,10 @@ export async function apiDownload(endpoint, options = {}) {
 
 export async function apiSend(method, endpoint, payload) {
   const headers = getHeaders()
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
     method,
     headers,
+    credentials: 'include',
     body: payload ? JSON.stringify(payload) : undefined,
   })
 

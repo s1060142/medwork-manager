@@ -63,7 +63,7 @@ import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
 import PatientAnamnesisForm from './components/PatientAnamnesisForm'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
-import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv } from './services/apiClient'
+import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
 import { HrImportExportDialog } from './components/HrImportExportDialog'
 import './App.css'
 
@@ -362,7 +362,8 @@ const App = () => {
     appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authLogout()
     localStorage.removeItem('accessToken')
     localStorage.removeItem('role')
     localStorage.removeItem(SETTINGS_STORAGE_KEY)

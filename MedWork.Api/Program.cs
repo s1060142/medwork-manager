@@ -111,13 +111,13 @@ builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationServi
         var testDbName = Environment.GetEnvironmentVariable("TEST_DB_NAME") ?? "MedWorkTestDb";
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase(testDbName)
-                   .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+                   .ConfigureWarnings(w => { })
+        );
     }
 else
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-               .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 }
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
@@ -160,7 +160,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 

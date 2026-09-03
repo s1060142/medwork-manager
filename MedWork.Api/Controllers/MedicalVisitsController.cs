@@ -38,7 +38,7 @@ public class MedicalVisitsController : ControllerBase
                 .ThenInclude(x => x.Company)
             .Include(x => x.VisitExams)
                 .ThenInclude(x => x.ExamType)
-            .Where(x => x.TenantId == tenantId && x.NextDeadlineDate.Date >= today && x.NextDeadlineDate.Date <= maxDate)
+            .Where(x => x.TenantId == tenantId && x.NextDeadlineDate.Date <= maxDate)
             .OrderBy(x => x.NextDeadlineDate)
             .Select(x => new ExpiringMedicalVisitDto
             {

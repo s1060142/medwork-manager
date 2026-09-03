@@ -623,6 +623,13 @@ function CrudEntityView({
     setSaving(true)
     try {
       const payload = { ...formData }
+      
+      // Sanitize empty strings to null to prevent ASP.NET Core 400 Regex validation errors
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === '') {
+          payload[key] = null
+        }
+      })
 
       config.fields.forEach((field) => {
         if (field.transform && typeof field.transform === 'function') {

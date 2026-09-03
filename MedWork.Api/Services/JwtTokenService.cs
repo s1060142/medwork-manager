@@ -36,6 +36,16 @@ public class JwtTokenService : IJwtTokenService
     // Legacy method for backward compatibility
     public string GenerateToken(string username, string role, int tenantId = 1)
     {
+        return GenerateTokenInternal(username, role, tenantId, false);
+    }
+
+    public string GenerateRefreshToken(string username, string role, int tenantId = 1)
+    {
+        return GenerateTokenInternal(username, role, tenantId, true);
+    }
+
+    private string GenerateTokenInternal(string username, string role, int tenantId, bool isRefresh)
+    {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, username),
@@ -44,17 +54,19 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.NameIdentifier, username),
             new(ClaimTypes.Role, role),
             new("tenant_id", tenantId.ToString()),
-            new("TenantId", tenantId.ToString())
+            new("TenantId", tenantId.ToString()),
+            new("type", isRefresh ? "refresh" : "access")
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiry = isRefresh ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes),
+            expires: expiry,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -62,6 +74,16 @@ public class JwtTokenService : IJwtTokenService
 
     // New method with full claims support
     public string GenerateToken(int userId, string email, List<string> roles, IEnumerable<string> permissions, int tenantId)
+    {
+        return GenerateTokenInternal(userId, email, roles, permissions, tenantId, false);
+    }
+
+    public string GenerateRefreshToken(int userId, string email, List<string> roles, IEnumerable<string> permissions, int tenantId)
+    {
+        return GenerateTokenInternal(userId, email, roles, permissions, tenantId, true);
+    }
+
+    private string GenerateTokenInternal(int userId, string email, List<string> roles, IEnumerable<string> permissions, int tenantId, bool isRefresh)
     {
         var claims = new List<Claim>
         {
@@ -71,7 +93,8 @@ public class JwtTokenService : IJwtTokenService
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, email),
             new("tenant_id", tenantId.ToString()),
-            new("TenantId", tenantId.ToString())
+            new("TenantId", tenantId.ToString()),
+            new("type", isRefresh ? "refresh" : "access")
         };
 
         foreach (var role in roles)
@@ -86,12 +109,13 @@ public class JwtTokenService : IJwtTokenService
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiry = isRefresh ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes),
+            expires: expiry,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

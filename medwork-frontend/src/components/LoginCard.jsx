@@ -16,6 +16,7 @@ import { authLogin, getTenantSlug } from '../services/apiClient'
 function LoginCard({ onLoginSuccess, onForgotPassword }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [tenant, setTenant] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [caricamento, setCaricamento] = useState(false)
   const [errore, setErrore] = useState('')
@@ -26,8 +27,14 @@ function LoginCard({ onLoginSuccess, onForgotPassword }) {
     setErrore('')
     setCaricamento(true)
 
+    if (!tenant) {
+      setErrore('Tenant slug is required')
+      setCaricamento(false)
+      return
+    }
+
     try {
-      const data = await authLogin(username, password, 'default')
+      const data = await authLogin(username, password, tenant, rememberMe)
       onLoginSuccess(data.accessToken, data.role)
     } catch (error) {
       setErrore(error.message || 'Errore durante il login.')
@@ -70,12 +77,19 @@ function LoginCard({ onLoginSuccess, onForgotPassword }) {
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <TextField
+            label="Tenant"
+            value={tenant}
+            onChange={(event) => setTenant(event.target.value)}
+            fullWidth
+            required
+            autoFocus
+          />
+          <TextField
             label="Username"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             fullWidth
             required
-            autoFocus
           />
           <TextField
             label="Password"

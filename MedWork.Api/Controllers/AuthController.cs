@@ -3,6 +3,7 @@ using MedWork.Api.Models;
 using MedWork.Api.Security;
 using MedWork.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,6 +57,20 @@ public class AuthController : ControllerBase
         var roles = (await _userService.GetByIdAsync(user.Id))?.UserRoles.Select(ur => ur.Role?.Name).Where(r => r != null).ToList() ?? new List<string>();
 
         var token = _jwtTokenService.GenerateToken(user.Id, user.Email, roles, permissions, tenant.Id);
+        
+        if (request.RememberMe)
+        {
+            var refreshToken = _jwtTokenService.GenerateRefreshToken(user.Id, user.Email, roles, permissions, tenant.Id);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Ensure HTTPS in production
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(30)
+            };
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+        }
+
         return Ok(new LoginResponse
         {
             AccessToken = token,
@@ -203,7 +218,17 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> RefreshToken()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized();
+
+        var principal = _jwtTokenService.ValidateToken(refreshToken);
+        if (principal == null || principal.FindFirst("type")?.Value != "refresh")
+            return Unauthorized();
+
+        var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            
         if (!int.TryParse(userIdClaim, out var userId))
             return Unauthorized();
 
@@ -211,7 +236,7 @@ public class AuthController : ControllerBase
         if (user == null || !user.IsActive)
             return Unauthorized();
 
-        var tenantIdClaim = User.FindFirst("tenant_id")?.Value;
+        var tenantIdClaim = principal.FindFirst("tenant_id")?.Value;
         int.TryParse(tenantIdClaim, out var tenantId);
 
         var permissions = await _userService.GetUserPermissionsAsync(userId);
@@ -231,6 +256,7 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public IActionResult Logout()
     {
+        Response.Cookies.Delete("refreshToken");
         // In a stateless JWT setup, logout is handled client-side
         // For future: implement token blacklist/revocation list
         return Ok(new { message = "Logged out successfully" });
