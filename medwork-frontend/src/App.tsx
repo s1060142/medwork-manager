@@ -38,6 +38,7 @@ import RecallCampaignsCenter from './components/RecallCampaignsCenter'
 import BatchSignatureCenter from './components/BatchSignatureCenter'
 import ComplianceCenter from './components/ComplianceCenter'
 import CrudEntityView from './components/CrudEntityView'
+import CompanyGroupsCenter from './components/CompanyGroupsCenter'
 import LoginCard from './components/LoginCard'
 import ReportsCenter from './components/ReportsCenter'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
@@ -578,10 +579,14 @@ const App = () => {
     }
 
     if (moduleKey === 'dashboard' || moduleKey === 'home') {
-      return <Dashboard />
-    }
+          return <Dashboard />
+        }
 
-    if (moduleKey === 'employees-crud') {
+        if (moduleKey === 'company-groups') {
+          return <CompanyGroupsCenter />
+        }
+
+        if (moduleKey === 'employees-crud') {
       return (
         <CrudEntityView
           config={ENTITY_BY_KEY.employees}

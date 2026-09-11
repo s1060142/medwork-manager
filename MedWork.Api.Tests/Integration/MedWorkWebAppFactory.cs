@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MedWork.Api.Tests.Integration;
 
 public class MedWorkWebAppFactory : WebApplicationFactory<Program>
-
+{
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development"); // Use Development to get SQL Server connection from appsettings
@@ -37,8 +37,4 @@ public class MedWorkWebAppFactory : WebApplicationFactory<Program>
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
-                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
-            }).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
-        });
-    }
-}
+            });
