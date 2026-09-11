@@ -47,6 +47,11 @@ public class AppDbContext : DbContext
     public DbSet<DoctorAvailability> DoctorAvailabilities => Set<DoctorAvailability>();
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
     public DbSet<CompanyGroup> CompanyGroups => Set<CompanyGroup>();
+    public DbSet<GroupProtocol> GroupProtocols => Set<GroupProtocol>();
+    public DbSet<GroupRiskFactor> GroupRiskFactors => Set<GroupRiskFactor>();
+    public DbSet<GroupDoctor> GroupDoctors => Set<GroupDoctor>();
+    public DbSet<GroupBillingConfig> GroupBillingConfigs => Set<GroupBillingConfig>();
+    public DbSet<CompanyGroupMembership> CompanyGroupMemberships => Set<CompanyGroupMembership>();
     public DbSet<CompanyContact> CompanyContacts => Set<CompanyContact>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<WorkLocation> WorkLocations => Set<WorkLocation>();

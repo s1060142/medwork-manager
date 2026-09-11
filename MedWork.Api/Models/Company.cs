@@ -127,5 +127,7 @@ public class Company
     public ICollection<Department> Departments { get; set; } = new List<Department>();
     public ICollection<WorkLocation> WorkLocations { get; set; } = new List<WorkLocation>();
     public ICollection<SiteVisit> SiteVisits { get; set; } = new List<SiteVisit>();
+    public int? CompanyGroupId { get; set; }
+    public CompanyGroup? CompanyGroup { get; set; }
     public ICollection<CompanyDoctor> CompanyDoctors { get; set; } = new List<CompanyDoctor>();
 }

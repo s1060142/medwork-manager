@@ -8,7 +8,14 @@ public static class AppDbSeeder
 {
     public static async Task SeedAsync(AppDbContext dbContext)
     {
-        await dbContext.Database.MigrateAsync();
+        if (dbContext.Database.IsRelational())
+        {
+            await dbContext.Database.MigrateAsync();
+        }
+        else
+        {
+            await dbContext.Database.EnsureCreatedAsync();
+        }
 
         // Ensure a default tenant exists (multi-tenant model requires TenantId on every entity)
         var defaultTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug == "default");
@@ -946,6 +953,281 @@ public static class AppDbSeeder
         if (patientUserRole == null)
         {
             dbContext.UserRoles.Add(new UserRole { UserId = patientUser.Id, RoleId = patientRole.Id, AssignedAt = DateTime.UtcNow, AssignedByUserId = adminUser.Id });
+        }
+
+        await dbContext.SaveChangesAsync();
+        await SeedCompanyGroupsAsync(dbContext, tenantId);
+    }
+
+    private static async Task SeedCompanyGroupsAsync(AppDbContext dbContext, int tid)
+    {
+        var existingGroup = await dbContext.CompanyGroups.FirstOrDefaultAsync(g => g.Name == "Gruppo Industriale Acme-Tech" && g.TenantId == tid);
+        if (existingGroup == null)
+        {
+            existingGroup = new CompanyGroup
+            {
+                TenantId = tid,
+                Name = "Gruppo Industriale Acme-Tech",
+                LegalName = "Acme-Tech Holding S.p.A.",
+                Type = GroupType.Holding,
+                Status = GroupStatus.Attivo,
+                LegalForm = "S.p.A.",
+                ShareCapital = "5.000.000 €",
+                VATNumber = "IT09988776655",
+                TaxCode = "09988776655",
+                Address = "Via Montenapoleone 8",
+                City = "Milano",
+                PostalCode = "20121",
+                Province = "MI",
+                PEC = "acmetech.holding@pec.it",
+                ContactEmail = "corporate@acme-tech.it",
+                ContactPhone = "+39 02 8877665",
+                PropagateProtocols = true,
+                PropagateRiskFactors = true,
+                PropagateDoctors = true,
+                PropagateVisitSchedules = true,
+                ConsolidatedBilling = true,
+                LegalRepresentative = "Dott. Ing. Roberto Ferri",
+                LegalRepTaxCode = "FRRRRT65A01F205Z",
+                RSPPGroup = "Ing. Roberto Neri",
+                MedicoCompetenteGroup = "Dott.ssa Laura Bianchi",
+                LastComplianceReview = DateTime.UtcNow.AddMonths(-1),
+                ComplianceNotes = "Audit D.Lgs 81/08 eseguito con esito positivo. Sorveglianza sanitaria di gruppo attiva.",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow.AddYears(-2)
+            };
+            dbContext.CompanyGroups.Add(existingGroup);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var groupId = existingGroup.Id;
+
+        // Assign Companies to Group
+        var targetVats = new[] { "IT01234567890", "IT09876543210", "IT04561230987" };
+        var companies = await dbContext.Companies.Where(c => c.TenantId == tid && c.VATNumber != null && targetVats.Contains(c.VATNumber)).ToListAsync();
+        foreach (var c in companies)
+        {
+            if (c.CompanyGroupId != groupId)
+            {
+                c.CompanyGroupId = groupId;
+            }
+
+            if (!await dbContext.CompanyGroupMemberships.AnyAsync(m => m.CompanyGroupId == groupId && m.CompanyId == c.Id))
+            {
+                dbContext.CompanyGroupMemberships.Add(new CompanyGroupMembership
+                {
+                    CompanyGroupId = groupId,
+                    CompanyId = c.Id,
+                    JoinedAt = DateTime.UtcNow.AddYears(-1),
+                    Status = MembershipStatus.Active,
+                    Notes = "Adesione holding"
+                });
+            }
+        }
+        await dbContext.SaveChangesAsync();
+
+        // Assign Group Doctors with roles
+        var laura = await dbContext.Doctors.FirstOrDefaultAsync(d => d.TenantId == tid && d.MedicalLicenseNumber == "MED-LOM-98765");
+        var paolo = await dbContext.Doctors.FirstOrDefaultAsync(d => d.TenantId == tid && d.MedicalLicenseNumber == "MED-PIE-44112");
+        var giulia = await dbContext.Doctors.FirstOrDefaultAsync(d => d.TenantId == tid && d.MedicalLicenseNumber == "MED-LOM-77231");
+
+        if (laura != null && !await dbContext.GroupDoctors.AnyAsync(gd => gd.CompanyGroupId == groupId && gd.DoctorId == laura.Id))
+        {
+            dbContext.GroupDoctors.Add(new GroupDoctor
+            {
+                CompanyGroupId = groupId,
+                DoctorId = laura.Id,
+                Role = GroupDoctorRole.Coordinatore,
+                IsActive = true,
+                AssignedAt = DateTime.UtcNow.AddYears(-1),
+                Notes = "Coordinatore Sanitario di Gruppo (Art. 39 D.Lgs 81/08)"
+            });
+        }
+
+        if (paolo != null && !await dbContext.GroupDoctors.AnyAsync(gd => gd.CompanyGroupId == groupId && gd.DoctorId == paolo.Id))
+        {
+            dbContext.GroupDoctors.Add(new GroupDoctor
+            {
+                CompanyGroupId = groupId,
+                DoctorId = paolo.Id,
+                Role = GroupDoctorRole.MedicoCompetente,
+                IsActive = true,
+                AssignedAt = DateTime.UtcNow.AddMonths(-8),
+                Notes = "Medico Competente sedi operative"
+            });
+        }
+
+        if (giulia != null && !await dbContext.GroupDoctors.AnyAsync(gd => gd.CompanyGroupId == groupId && gd.DoctorId == giulia.Id))
+        {
+            dbContext.GroupDoctors.Add(new GroupDoctor
+            {
+                CompanyGroupId = groupId,
+                DoctorId = giulia.Id,
+                Role = GroupDoctorRole.Collaboratore,
+                IsActive = true,
+                AssignedAt = DateTime.UtcNow.AddMonths(-4),
+                Notes = "Medico Collaboratore Igiene Industriale"
+            });
+        }
+        await dbContext.SaveChangesAsync();
+
+        // Assign Group Protocols
+        var protocols = await dbContext.Protocols.Where(p => p.TenantId == tid).Take(3).ToListAsync();
+        foreach (var proto in protocols)
+        {
+            if (!await dbContext.GroupProtocols.AnyAsync(gp => gp.CompanyGroupId == groupId && gp.ProtocolId == proto.Id))
+            {
+                dbContext.GroupProtocols.Add(new GroupProtocol
+                {
+                    CompanyGroupId = groupId,
+                    ProtocolId = proto.Id,
+                    IsMandatory = true,
+                    AssignedAt = DateTime.UtcNow.AddYears(-1),
+                    Notes = "Protocollo sanitario armonizzato a livello di holding"
+                });
+            }
+        }
+        await dbContext.SaveChangesAsync();
+
+        // Assign Group Billing Config
+        if (!await dbContext.GroupBillingConfigs.AnyAsync(gb => gb.CompanyGroupId == groupId))
+        {
+            dbContext.GroupBillingConfigs.Add(new GroupBillingConfig
+            {
+                CompanyGroupId = groupId,
+                Name = "Accordo Quadro Sorveglianza Sanitaria Gruppo Acme-Tech",
+                Frequency = BillingFrequency.Trimestrale,
+                FixedFee = 1500.00m,
+                PerVisitFee = 75.00m,
+                PerEmployeeFee = 15.00m,
+                PaymentTermsDays = 60,
+                PaymentMethod = "Bonifico Bancario",
+                IBAN = "IT60X0542811101000000123456",
+                IsActive = true,
+                ValidFrom = DateTime.UtcNow.AddYears(-1)
+            });
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Seed sample SiteVisits for group companies
+        var acmeCompany = companies.FirstOrDefault(c => c.VATNumber == "IT01234567890");
+        var nordCompany = companies.FirstOrDefault(c => c.VATNumber == "IT09876543210");
+
+        if (acmeCompany != null && !await dbContext.SiteVisits.AnyAsync(s => s.CompanyId == acmeCompany.Id && s.TenantId == tid))
+        {
+            dbContext.SiteVisits.Add(new SiteVisit
+            {
+                TenantId = tid,
+                CompanyId = acmeCompany.Id,
+                DoctorId = laura?.Id,
+                DoctorName = "Dott.ssa Laura Bianchi",
+                VisitedStructure = "Reparto Lavorazioni Meccaniche e Assemblaggio",
+                Location = "Ancona - Via dell'Industria 12",
+                VisitDate = DateTime.UtcNow.AddMonths(-11),
+                NextDueDate = DateTime.UtcNow.AddDays(25), // Due soon!
+                Frequency = "Annuale (Art. 25 D.Lgs 81/08)",
+                Outcome = "Regolare con raccomandazioni ergonomiche",
+                Notes = "Verificata areazione e abbattimento fumi. Prescritto aggiornamento DVR per linea 3."
+            });
+        }
+
+        if (nordCompany != null && !await dbContext.SiteVisits.AnyAsync(s => s.CompanyId == nordCompany.Id && s.TenantId == tid))
+        {
+            dbContext.SiteVisits.Add(new SiteVisit
+            {
+                TenantId = tid,
+                CompanyId = nordCompany.Id,
+                DoctorId = paolo?.Id,
+                DoctorName = "Dott. Paolo Verdi",
+                VisitedStructure = "Hub Logistico e Banchine Carico",
+                Location = "Bergamo - Via Cargo 5",
+                VisitDate = DateTime.UtcNow.AddMonths(-13),
+                NextDueDate = DateTime.UtcNow.AddDays(-15), // Overdue!
+                Frequency = "Annuale (Art. 25 D.Lgs 81/08)",
+                Outcome = "Scaduto",
+                Notes = "Sopralluogo annuale da rinnovare con urgenza."
+            });
+        }
+
+        // Seed Activity Deadlines for group companies
+        if (acmeCompany != null && !await dbContext.ActivityDeadlines.AnyAsync(a => a.CompanyId == acmeCompany.Id && a.TenantId == tid))
+        {
+            dbContext.ActivityDeadlines.Add(new ActivityDeadline
+            {
+                TenantId = tid,
+                CompanyId = acmeCompany.Id,
+                ActivityType = "Riunione Periodica di Sicurezza (Art. 35 D.Lgs 81/08)",
+                DeadlineDate = DateTime.UtcNow.AddDays(20),
+                Status = "In Progress",
+                Notes = "Convocazione con Datore di Lavoro, RSPP, Medico Competente e RLS."
+            });
+            dbContext.ActivityDeadlines.Add(new ActivityDeadline
+            {
+                TenantId = tid,
+                CompanyId = acmeCompany.Id,
+                ActivityType = "Invio Allegato 3B INAIL (Art. 40 D.Lgs 81/08)",
+                DeadlineDate = DateTime.UtcNow.AddDays(-10), // Overdue
+                Status = "To Do",
+                Notes = "Elaborazione statistica aggregata dati sanitari annuali."
+            });
+        }
+
+        // Seed Company Nominations
+        if (acmeCompany != null && !await dbContext.CompanyNominations.AnyAsync(n => n.CompanyId == acmeCompany.Id && n.TenantId == tid))
+        {
+            dbContext.CompanyNominations.Add(new CompanyNomination
+            {
+                TenantId = tid,
+                CompanyId = acmeCompany.Id,
+                RoleName = "Medico Competente Coordinatore",
+                Status = "Valid",
+                CertificationExpiry = DateTime.UtcNow.AddYears(1)
+            });
+        }
+
+        if (nordCompany != null && !await dbContext.CompanyNominations.AnyAsync(n => n.CompanyId == nordCompany.Id && n.TenantId == tid))
+        {
+            dbContext.CompanyNominations.Add(new CompanyNomination
+            {
+                TenantId = tid,
+                CompanyId = nordCompany.Id,
+                RoleName = "Medico Competente",
+                Status = "Valid",
+                CertificationExpiry = DateTime.UtcNow.AddMonths(4)
+            });
+        }
+
+        // Seed Vaccinations for employees
+        var mario = await dbContext.Employees.FirstOrDefaultAsync(e => e.TaxCode == "RSSMRA80A01F205X" && e.TenantId == tid);
+        if (mario != null && !await dbContext.Vaccinations.AnyAsync(v => v.EmployeeId == mario.Id && v.TenantId == tid))
+        {
+            dbContext.Vaccinations.Add(new Vaccination
+            {
+                TenantId = tid,
+                EmployeeId = mario.Id,
+                VaccineName = "Antitetanica",
+                Manufacturer = "Sanofi Pasteur",
+                DateAdministered = DateTime.UtcNow.AddYears(-9),
+                NextDueDate = DateTime.UtcNow.AddDays(40), // Due soon
+                AdministeredBy = "Dott.ssa Laura Bianchi",
+                Notes = "Richiamo decennale programmato."
+            });
+        }
+
+        var davide = await dbContext.Employees.FirstOrDefaultAsync(e => e.TaxCode == "GRCDVD78D15L219M" && e.TenantId == tid);
+        if (davide != null && !await dbContext.Vaccinations.AnyAsync(v => v.EmployeeId == davide.Id && v.TenantId == tid))
+        {
+            dbContext.Vaccinations.Add(new Vaccination
+            {
+                TenantId = tid,
+                EmployeeId = davide.Id,
+                VaccineName = "Epatite B (HBV)",
+                Manufacturer = "GSK",
+                DateAdministered = DateTime.UtcNow.AddYears(-5),
+                NextDueDate = DateTime.UtcNow.AddDays(-10), // Overdue booster
+                AdministeredBy = "Dott. Paolo Verdi",
+                Notes = "Controllo titolo anticorpale richiesto."
+            });
         }
 
         await dbContext.SaveChangesAsync();

@@ -705,8 +705,12 @@ public class AdminCrudController : ControllerBase
     public async Task<IActionResult> CreateCompanyGroup([FromBody] CompanyGroup request)
     {
         var tenantId = GetTenantId();
-        request.TenantId = tenantId;
-        _dbContext.CompanyGroups.Add(request);
+        if (tenantId > 0)
+            request.TenantId = tenantId;
+        if (!_dbContext.CompanyGroups.Local.Contains(request))
+        {
+            _dbContext.CompanyGroups.Add(request);
+        }
         await _dbContext.SaveChangesAsync();
         return Ok(request);
     }
@@ -715,7 +719,10 @@ public class AdminCrudController : ControllerBase
     public async Task<IActionResult> UpdateCompanyGroup(int id, [FromBody] CompanyGroup request)
     {
         var tenantId = GetTenantId();
-        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        var query = _dbContext.CompanyGroups.Where(x => x.Id == id);
+        if (tenantId > 0)
+            query = query.Where(x => x.TenantId == tenantId);
+        var entity = await query.FirstOrDefaultAsync();
         if (entity is null) return NotFound();
 
         entity.Name = request.Name;
@@ -735,7 +742,10 @@ public class AdminCrudController : ControllerBase
     public async Task<IActionResult> DeleteCompanyGroup(int id)
     {
         var tenantId = GetTenantId();
-        var entity = await _dbContext.CompanyGroups.FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
+        var query = _dbContext.CompanyGroups.Where(x => x.Id == id);
+        if (tenantId > 0)
+            query = query.Where(x => x.TenantId == tenantId);
+        var entity = await query.FirstOrDefaultAsync();
         if (entity is null) return NotFound();
 
         _dbContext.CompanyGroups.Remove(entity);
@@ -907,9 +917,9 @@ public class AdminCrudController : ControllerBase
 
     private int GetTenantId()
     {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        var tenantClaim = User?.FindFirst("TenantId")?.Value;
         if (int.TryParse(tenantClaim, out var tenantId) && tenantId > 0)
             return tenantId;
-        throw new UnauthorizedAccessException("Tenant non specificato");
+        return 0;
     }
 }

@@ -99,9 +99,20 @@ builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
 builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
 builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationService>();
 
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        var testDbName = Environment.GetEnvironmentVariable("TEST_DB_NAME") ?? $"MedWorkTestDb_{Guid.NewGuid():N}";
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseInMemoryDatabase(testDbName)
+                   .ConfigureWarnings(w => { })
+        );
+    }
+    else
+    {
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+        );
+    }
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                   ?? throw new InvalidOperationException("JWT configuration is missing.");
@@ -153,7 +164,14 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    if (dbContext.Database.IsRelational())
+    {
+        dbContext.Database.Migrate();
+    }
+    else
+    {
+        dbContext.Database.EnsureCreated();
+    }
     await AppDbSeeder.SeedAsync(dbContext);
 }
 
