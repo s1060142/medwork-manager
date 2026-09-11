@@ -6,17 +6,9 @@ namespace MedWork.Api.Data;
 
 public static class AppDbSeeder
 {
-    public static async Task SeedAsync(AppDbContext dbContext, bool isTesting = false)
+    public static async Task SeedAsync(AppDbContext dbContext)
     {
-        if (isTesting)
-        {
-            // InMemory provider auto-creates schema; EnsureCreatedAsync is relational-specific.
-            await Task.CompletedTask;
-        }
-        else
-        {
-            await dbContext.Database.MigrateAsync();
-        }
+        await dbContext.Database.MigrateAsync();
 
         // Ensure a default tenant exists (multi-tenant model requires TenantId on every entity)
         var defaultTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug == "default");
@@ -34,12 +26,9 @@ public static class AppDbSeeder
         }
         var tid = defaultTenant.Id;
 
-                if (!isTesting)
-                {
-                    await EnsureEncryptedDataReadableAsync(dbContext);
-                }
+        await EnsureEncryptedDataReadableAsync(dbContext);
 
-                var companySeeds = new[]
+        var companySeeds = new[]
                 {
                     new Company
                     {

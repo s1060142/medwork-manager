@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -63,20 +63,7 @@ builder.Services.AddSwaggerGen(options =>
     };
 
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securityScheme);
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = JwtBearerDefaults.AuthenticationScheme
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+    // Security requirement omitted for Swashbuckle 10 compatibility - OpenApiReference API changed
 });
 
 builder.Services.AddDataProtection();
@@ -112,19 +99,9 @@ builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
 builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
 builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationService>();
 
-    if (builder.Environment.IsEnvironment("Testing"))
-    {
-        var testDbName = Environment.GetEnvironmentVariable("TEST_DB_NAME") ?? "MedWorkTestDb";
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase(testDbName)
-                   .ConfigureWarnings(w => { })
-        );
-    }
-else
-{
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-}
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    );
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
                   ?? throw new InvalidOperationException("JWT configuration is missing.");
@@ -176,11 +153,8 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (!app.Environment.IsEnvironment("Testing"))
-    {
-        dbContext.Database.Migrate();
-    }
-    await AppDbSeeder.SeedAsync(dbContext, app.Environment.IsEnvironment("Testing"));
+    dbContext.Database.Migrate();
+    await AppDbSeeder.SeedAsync(dbContext);
 }
 
 if (app.Environment.IsDevelopment())

@@ -1,37 +1,13 @@
-# Build stage
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
+COPY medwork-frontend/package*.json ./
 RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build production bundle
+COPY medwork-frontend/ .
+ENV VITE_API_BASE_URL=http://localhost:5279
 RUN npm run build
 
-# Runtime stage - Nginx
 FROM nginx:alpine AS runtime
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# Create non-root user
-RUN addgroup -g 1001 -S nginx && adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
-
-# Expose port
+COPY --from=build /app/node_modules ./node_modules
 EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

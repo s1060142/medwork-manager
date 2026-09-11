@@ -1,0 +1,71 @@
+# Docker ignore
+node_modules
+bin
+obj
+.git
+.gitignore
+.vs
+.idea
+__pycache__
+*.log
+*.md
+docker-compose.yml
+docker-compose.*.yml
+.env
+.env.*
+!.env.example
+dist
+build
+coverage
+.nuget
+.vscode
+*.swp
+*.swo
+*~
+
+# .NET
+**/bin/
+**/obj/
+
+# Node
+**/node_modules/
+
+# Git
+.git/
+
+# VS
+.vs/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Docs
+*.md
+
+# Env
+.env*
+!.env.example
+
+# Docker
+docker-compose*.yml
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# NuGet
+.nuget/
+
+# VS Code
+.vscode/
+
+# IDE
+*.swp
+*.swo
+*~

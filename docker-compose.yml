@@ -1,0 +1,52 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: medwork-sql
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MedWork2024!
+      - MSSQL_PID=Developer
+    ports:
+      - "11433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "bash", "-c", "timeout 5 bash -c '</dev/tcp/localhost/1433' && echo ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: MedWork.Api/Dockerfile
+    container_name: medwork-api
+    restart: unless-stopped
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=MedWork2024!;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;
+    ports:
+      - "5279:80"
+    volumes:
+      - medwork_dataprotection:/app/data-protection-keys
+
+  frontend:
+    build:
+      context: .
+      dockerfile: medwork-frontend/Dockerfile
+    container_name: medwork-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5279
+    ports:
+      - "5173:5173"
+
+volumes:
+  sqlserver_data:
+  medwork_dataprotection:

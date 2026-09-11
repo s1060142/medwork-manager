@@ -8,16 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MedWork.Api.Tests.Integration;
 
 public class MedWorkWebAppFactory : WebApplicationFactory<Program>
-{
-    private readonly string _dbName = $"MedWorkTestDb_{Guid.NewGuid():N}";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment("Development"); // Use Development to get SQL Server connection from appsettings
 
         builder.ConfigureServices(services =>
         {
-            // Replace the shared InMemory database with a unique one for this factory instance
+            // Replace the shared InMemory database with SQL Server
             var serviceList = services as System.Collections.Generic.IList<Microsoft.Extensions.DependencyInjection.ServiceDescriptor>;
             if (serviceList != null)
             {
@@ -31,8 +29,9 @@ public class MedWorkWebAppFactory : WebApplicationFactory<Program>
                 }
             }
 
+            // Add SQL Server context using connection string from appsettings
             services.AddDbContext<MedWork.Api.Data.AppDbContext>(options =>
-                options.UseInMemoryDatabase(_dbName)
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
                        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
             services.AddAuthentication(options =>

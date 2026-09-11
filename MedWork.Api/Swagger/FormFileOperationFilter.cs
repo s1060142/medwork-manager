@@ -1,5 +1,5 @@
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,41 +13,34 @@ namespace MedWork.Api.Swagger
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            // Handle IFormFile parameters
             var formFileParams = context.ApiDescription.ActionDescriptor.Parameters
-                .Where(p => p.ParameterType == typeof(IFormFile));
+                .Where(p => p.ParameterType == typeof(Microsoft.AspNetCore.Http.IFormFile))
+                .ToList();
 
             foreach (var param in formFileParams)
             {
                 var parameterName = param.Name;
-                var openApiParam = operation.Parameters.FirstOrDefault(p => p.Name == parameterName);
+                if (string.IsNullOrEmpty(parameterName))
+                    continue;
 
-                if (openApiParam != null)
+                var existingParam = operation.Parameters.FirstOrDefault(p => p.Name == parameterName);
+                if (existingParam != null)
                 {
-                    // Use explicit cast to handle nullable ParameterLocation
-                    openApiParam.In = Microsoft.OpenApi.Models.ParameterLocation.Query;
-                    openApiParam.Schema = new OpenApiSchema
+                    operation.Parameters.Remove(existingParam);
+                }
+
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = parameterName,
+                    In = ParameterLocation.Query,
+                    Schema = new OpenApiSchema
                     {
-                        Type = "string",
+                        Type = JsonSchemaType.String,
                         Format = "binary",
                         Description = "Upload file"
-                    };
-                }
-                else
-                {
-                    operation.Parameters.Add(new OpenApiParameter
-                    {
-                        Name = parameterName,
-                        // Use explicit cast to handle nullable ParameterLocation
-                        In = Microsoft.OpenApi.Models.ParameterLocation.Query,
-                        Schema = new OpenApiSchema
-                        {
-                            Type = "string",
-                            Format = "binary",
-                            Description = "Upload file"
-                        }
-                    });
-                }
+                    },
+                    Required = false
+                });
             }
         }
     }

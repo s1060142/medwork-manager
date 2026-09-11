@@ -1,17 +1,15 @@
-# Start backend API in Testing mode with proper environment variable
+# Start backend API via Docker
 $ErrorActionPreference = 'Stop'
-Write-Host "Starting backend API in Testing mode..."
+Write-Host "Starting backend API via Docker..."
 
-Set-Location $PSScriptRoot/MedWork.Api
-$env:ASPNETCORE_ENVIRONMENT = 'Testing'
+Write-Host "Running: docker compose up -d sqlserver backend"
+Write-Host "To view logs: docker logs -f medwork-api"
+Write-Host "To stop: docker compose down"
+Write-Host ""
 
-$dotnetExe = "C:\Program Files\dotnet\dotnet.exe"
-$project = "MedWork.Api.csproj"
-$logFile = Join-Path $PSScriptRoot "backend.log"
+docker compose up -d sqlserver backend
 
-Write-Host "Running: dotnet run --project $project --launch-profile Testing --urls http://127.0.0.1:5279"
-Write-Host "Logging to: $logFile"
-
-# Use & call operator to invoke the executable.
-# *>> redirects both stdout and stderr to the log file.
-& $dotnetExe run --project $project --launch-profile Testing --urls http://127.0.0.1:5279 *>> $logFile
+Write-Host "Backend started in Docker!"
+Write-Host "API: http://localhost:5279"
+Write-Host "To view logs: docker logs -f medwork-api"
+Write-Host "To stop: docker compose down"
