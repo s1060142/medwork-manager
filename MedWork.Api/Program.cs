@@ -111,6 +111,7 @@ builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationServi
     {
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                   .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
         );
     }
 

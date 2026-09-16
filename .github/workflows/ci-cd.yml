@@ -143,12 +143,12 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: 'Strong!Passw0rd'
+          SA_PASSWORD: 'Sasa1234!'
           MSSQL_PID: Express
         ports:
           - 1433:1433
         options: >-
-          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong!Passw0rd' -Q 'SELECT 1'"
+          --health-cmd "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Sasa1234!' -Q 'SELECT 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -165,13 +165,13 @@ jobs:
       - name: Wait for SQL Server to be ready
         run: |
           for i in {1..30}; do
-            /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong!Passw0rd' -Q 'SELECT 1' && break
+            /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Sasa1234!' -Q 'SELECT 1' && break
             sleep 2
           done
 
       - name: Run integration tests
         env:
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=MedWorkTest;User Id=sa;Password=Strong!Passw0rd;TrustServerCertificate=true;"
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=MedWorkTest;User Id=sa;Password=Sasa1234!;TrustServerCertificate=true;"
           ASPNETCORE_ENVIRONMENT: Testing
         run: |
           dotnet test ${{ env.TEST_PROJECT }} --configuration Release --filter "FullyQualifiedName~Integration" --verbosity normal

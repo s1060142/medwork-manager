@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=sasa
+      - MSSQL_SA_PASSWORD=Sasa1234!
       - MSSQL_PID=Developer
     ports:
       - "11433:1433"
@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=sasa;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=Sasa1234!;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;
     ports:
       - "5279:8080"
     volumes:

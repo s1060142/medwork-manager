@@ -11,6 +11,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_ENVIRONMENT=Docker
-ENV ConnectionStrings__DefaultConnection="Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=sasa;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;"
+ENV ConnectionStrings__DefaultConnection="Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=Sasa1234!;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;"
 EXPOSE 80
 ENTRYPOINT ["dotnet", "MedWork.Api.dll"]
