@@ -1,11 +1,11 @@
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: medwork-sql
     restart: unless-stopped
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=MedWork2024!
+      - MSSQL_SA_PASSWORD=sasa
       - MSSQL_PID=Developer
     ports:
       - "11433:1433"
@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=MedWork2024!;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=MedWorkDb;User ID=sa;Password=sasa;TrustServerCertificate=True;Pooling=False;MultipleActiveResultSets=False;
     ports:
       - "5279:8080"
     volumes:

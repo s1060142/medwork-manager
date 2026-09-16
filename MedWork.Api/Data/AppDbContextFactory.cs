@@ -10,7 +10,7 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     public AppDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseSqlServer("Server=localhost,11433;Database=MedWorkDb;User ID=sa;Password=MedWork2024!;TrustServerCertificate=True;");
+        optionsBuilder.UseSqlServer("Server=localhost,11433;Database=MedWorkDb;User ID=sa;Password=sasa;TrustServerCertificate=True;");
 
         var dataProtectionProvider = DataProtectionProvider.Create("MedWork.Api.DesignTime");
         var encryptionService = new FieldEncryptionService(dataProtectionProvider);

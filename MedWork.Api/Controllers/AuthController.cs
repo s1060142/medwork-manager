@@ -178,6 +178,14 @@ public class AuthController : ControllerBase
         });
     }
 
+    [HttpGet("tenants")]
+    [ProducesResponseType<IEnumerable<object>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetTenants()
+    {
+        var tenants = await _tenantService.GetAllAsync();
+        return Ok(tenants.Select(t => new { t.Id, t.Name, t.Slug }));
+    }
+
     [HttpGet("me")]
     [ProducesResponseType<UserInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
