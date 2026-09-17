@@ -1,4 +1,4 @@
-using MedWork.Api.Data;
+﻿using MedWork.Api.Data;
 using MedWork.Api.Models;
 using MedWork.Api.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +23,7 @@ public class CompanyGroupsController : ControllerBase
     private int GetTenantId()
     {
         var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(tenantClaim, out var id) && id > 0 ? id : 1;
+        return int.TryParse(tenantClaim, out var id) && id > 0 ? id : 0;
     }
 
     // =========================================================================
@@ -102,15 +102,16 @@ public class CompanyGroupsController : ControllerBase
                 g.IsActive,
                 g.CreatedAt,
                 g.UpdatedAt,
-                CompaniesCount = _db.Companies.Count(c => c.CompanyGroupId == g.Id && c.TenantId == tenantId),
-                EmployeesCount = _db.Employees.Count(e => e.Company != null && e.Company.CompanyGroupId == g.Id && e.TenantId == tenantId),
+                CompanyCount = _db.Companies.Count(c => c.CompanyGroupId == g.Id && c.TenantId == tenantId),
+                EmployeeCount = _db.Employees.Count(e => e.Company != null && e.Company.CompanyGroupId == g.Id && e.TenantId == tenantId),
                 BranchesCount = _db.Branches.Count(b => b.Company != null && b.Company.CompanyGroupId == g.Id && b.TenantId == tenantId),
                 VisitsDue = _db.MedicalVisits.Count(v => v.Employee != null && v.Employee.Company != null && v.Employee.Company.CompanyGroupId == g.Id && v.TenantId == tenantId && v.NextDeadlineDate.Date >= today && v.NextDeadlineDate.Date <= in60Days),
                 VisitsOverdue = _db.MedicalVisits.Count(v => v.Employee != null && v.Employee.Company != null && v.Employee.Company.CompanyGroupId == g.Id && v.TenantId == tenantId && v.NextDeadlineDate.Date < today),
                 SiteVisitsDue = _db.SiteVisits.Count(s => s.Company != null && s.Company.CompanyGroupId == g.Id && s.TenantId == tenantId && (s.NextDueDate == null || s.NextDueDate.Value.Date <= in60Days)),
                 NominationsDue = _db.Companies.Count(c => c.CompanyGroupId == g.Id && c.TenantId == tenantId && !_db.CompanyDoctors.Any(cd => cd.CompanyId == c.Id && cd.IsActive)),
                 VaccinationDeadlines = _db.Vaccinations.Count(vac => vac.Employee != null && vac.Employee.Company != null && vac.Employee.Company.CompanyGroupId == g.Id && vac.TenantId == tenantId && vac.NextDueDate.HasValue && vac.NextDueDate.Value.Date <= in60Days),
-                ActiveProtocolsCount = _db.GroupProtocols.Count(gp => gp.CompanyGroupId == g.Id)
+                ActiveProtocolsCount = _db.GroupProtocols.Count(gp => gp.CompanyGroupId == g.Id),
+                singleArchive = g.SingleArchive
             })
             .ToListAsync();
 
@@ -197,7 +198,7 @@ public class CompanyGroupsController : ControllerBase
             {
                 d.Id,
                 d.DoctorId,
-                DoctorFullName = d.Doctor != null ? $"Dott. {d.Doctor.FirstName} {d.Doctor.LastName}" : $"Medico #{d.DoctorId}",
+                doctorName = d.Doctor != null ? $"Dott. {d.Doctor.FirstName} {d.Doctor.LastName}" : $"Medico #{d.DoctorId}",
                 Role = d.Role.ToString(),
                 d.IsActive,
                 d.AssignedAt,
@@ -418,19 +419,28 @@ public class CompanyGroupsController : ControllerBase
             var cHasMc = nominatedCompanyIds.Contains(c.Id);
             var cScore = Math.Max(20, Math.Min(100, 100 - (cVisitsOverdue * 15) - (cHasMc ? 0 : 30)));
 
+            var cAssignedDoctor = _db.CompanyDoctors
+                .AsNoTracking()
+                .Where(cd => cd.CompanyId == c.Id && cd.IsActive && cd.TenantId == tenantId)
+                .Select(cd => cd.Doctor != null ? $"Dott. {cd.Doctor.FirstName} {cd.Doctor.LastName}" : "Non assegnato")
+                .FirstOrDefault();
+            var cComplianceStatus = cScore >= 90 ? "In Regola" : cScore >= 75 ? "Attenzione" : "Non Conforme";
+
             companyBreakdown.Add(new
             {
-                c.Id,
-                c.Name,
-                c.LegalName,
-                c.VATNumber,
-                City = c.OperationalCity ?? c.LegalCity ?? "-",
-                EmployeesCount = cEmployees.Count,
-                VisitsDue = cVisitsDue,
-                VisitsOverdue = cVisitsOverdue,
-                HasMcNomination = cHasMc,
-                ComplianceScore = cScore,
-                RiskClass = c.RiskClass ?? "Medio"
+                companyId = c.Id,
+                companyName = c.Name,
+                legalName = c.LegalName,
+                vatNumber = c.VATNumber,
+                city = c.OperationalCity ?? c.LegalCity ?? "-",
+                employeeCount = cEmployees.Count,
+                branchesCount = _db.Branches.AsNoTracking().Count(b => b.CompanyId == c.Id && b.TenantId == tenantId),
+                activeProtocolsCount = _db.GroupProtocols.Count(gp => gp.CompanyGroupId == c.CompanyGroupId),
+                overdueVisitsCount = cVisitsOverdue,
+                assignedDoctorName = cAssignedDoctor,
+                complianceStatus = cComplianceStatus,
+                complianceScore = cScore,
+                riskClass = c.RiskClass ?? "Medio"
             });
         }
 
@@ -440,18 +450,19 @@ public class CompanyGroupsController : ControllerBase
             group.Name,
             Type = group.Type.ToString(),
             Status = group.Status.ToString(),
-            CompaniesCount = companies.Count,
-            BranchesCount = branchesCount,
-            EmployeesCount = employees.Count,
-            ActiveProtocolsCount = activeProtocolsCount,
-            VisitsDue = visitsDue,
-            VisitsOverdue = visitsOverdue,
-            SiteVisitsDue = siteVisitsDue,
-            NominationsDue = nominationsDue,
-            VaccinationDeadlines = vaccinationDeadlines,
-            MissingRecords = missingRecordsCount,
-            OverdueActivities = overdueActivities,
-            ComplianceAlerts = complianceAlerts,
+            kpis = new
+            {
+                CompaniesCount = companies.Count,
+                BranchesCount = branchesCount,
+                EmployeesCount = employees.Count,
+                ActiveProtocolsCount = activeProtocolsCount,
+                VisitsDueCount = visitsDue,
+                VisitsOverdueCount = visitsOverdue,
+                SiteVisitsDueCount = siteVisitsDue,
+                NominationsDueCount = nominationsDue,
+                VaccinationsDueCount = vaccinationDeadlines,
+                ComplianceAlertsCount = complianceAlerts,
+            },
             ComplianceScore = complianceScore,
             CompanyBreakdown = companyBreakdown
         });
@@ -469,16 +480,28 @@ public class CompanyGroupsController : ControllerBase
         int CompanyId,
         string CompanyName,
         int? EmployeeId,
-        string? EmployeeName,
+        string? TargetName,
         int? DoctorId,
-        string? DoctorName,
+        string? AssignedDoctor,
         DateTime DueDate,
         bool IsOverdue,
         int DaysRemaining,
         string Status,
-        string Severity,
-        string? RiskProfile
+        string Urgency,
+        string? RiskProfile,
+        string? Category
     );
+
+    public sealed record RemediationAlert(
+        string Id,
+        string Severity,
+        string Type,
+        string TargetCompany,
+        string Message,
+        string RemediationAction,
+        string ActionLabel
+    );
+
 
     [HttpGet("{id:int}/deadlines")]
     public async Task<IActionResult> GetDeadlines(
@@ -530,7 +553,7 @@ public class CompanyGroupsController : ControllerBase
             {
                 var daysRemaining = (v.NextDeadlineDate.Date - today).Days;
                 var isOverdue = daysRemaining < 0;
-                var itemSeverity = isOverdue ? "critical" : (daysRemaining <= 15 ? "high" : (daysRemaining <= 45 ? "medium" : "low"));
+                var itemSeverity = isOverdue ? "Critica" : (daysRemaining <= 15 ? "Alta" : (daysRemaining <= 45 ? "Medio" : "Bassa"));
                 var itemStatus = isOverdue ? "Scaduta" : (daysRemaining <= 30 ? "In Scadenza" : "Pianificata");
 
                 deadlines.Add(new UnifiedDeadlineItem(
@@ -549,7 +572,8 @@ public class CompanyGroupsController : ControllerBase
                     daysRemaining,
                     itemStatus,
                     itemSeverity,
-                    v.Employee?.JobRole
+                    v.Employee?.JobRole,
+                    "Visite Mediche"
                 ));
             }
         }
@@ -569,7 +593,7 @@ public class CompanyGroupsController : ControllerBase
             {
                 var daysRemaining = (a.DeadlineDate.Date - today).Days;
                 var isOverdue = daysRemaining < 0;
-                var itemSeverity = isOverdue ? "critical" : (daysRemaining <= 30 ? "high" : "medium");
+                var itemSeverity = isOverdue ? "Critica" : (daysRemaining <= 30 ? "Alta" : "Medio");
 
                 deadlines.Add(new UnifiedDeadlineItem(
                     a.Id,
@@ -587,7 +611,8 @@ public class CompanyGroupsController : ControllerBase
                     daysRemaining,
                     a.Status ?? (isOverdue ? "In Ritardo" : "In Corso"),
                     itemSeverity,
-                    "D.Lgs 81/08"
+                    "D.Lgs 81/08",
+                    "Attività di Sorveglianza"
                 ));
             }
         }
@@ -609,7 +634,7 @@ public class CompanyGroupsController : ControllerBase
                 var dueDate = s.NextDueDate ?? s.VisitDate.AddYears(1);
                 var daysRemaining = (dueDate.Date - today).Days;
                 var isOverdue = daysRemaining < 0;
-                var itemSeverity = isOverdue ? "critical" : (daysRemaining <= 30 ? "high" : "low");
+                var itemSeverity = isOverdue ? "Critica" : (daysRemaining <= 30 ? "Alta" : "Bassa");
 
                 deadlines.Add(new UnifiedDeadlineItem(
                     s.Id,
@@ -627,7 +652,8 @@ public class CompanyGroupsController : ControllerBase
                     daysRemaining,
                     isOverdue ? "Overdue" : "Pianificato",
                     itemSeverity,
-                    s.Location
+                    s.Location,
+                    "Sopralluoghi Ambienti Lavoro (Art. 25)"
                 ));
             }
         }
@@ -665,8 +691,9 @@ public class CompanyGroupsController : ControllerBase
                     isOverdue,
                     daysRemaining,
                     n.Status ?? "Valid",
-                    isOverdue ? "critical" : "medium",
-                    n.RoleName
+                    isOverdue ? "Critica" : "Medio",
+                    n.RoleName,
+                    "Nomine Medico Competente"
                 ));
             }
         }
@@ -704,8 +731,9 @@ public class CompanyGroupsController : ControllerBase
                     isOverdue,
                     daysRemaining,
                     isOverdue ? "Scaduto" : "In Scadenza",
-                    isOverdue ? "high" : "low",
-                    vac.VaccineName
+                    isOverdue ? "Alta" : "Bassa",
+                    vac.VaccineName,
+                    "Vaccinazioni Lavoratori"
                 ));
             }
         }
@@ -719,8 +747,8 @@ public class CompanyGroupsController : ControllerBase
             result = result.Where(d =>
                 d.Title.ToLowerInvariant().Contains(s) ||
                 d.CompanyName.ToLowerInvariant().Contains(s) ||
-                (d.EmployeeName != null && d.EmployeeName.ToLowerInvariant().Contains(s)) ||
-                (d.DoctorName != null && d.DoctorName.ToLowerInvariant().Contains(s))
+                (d.TargetName != null && d.TargetName.ToLowerInvariant().Contains(s)) ||
+                (d.AssignedDoctor != null && d.AssignedDoctor.ToLowerInvariant().Contains(s))
             );
         }
 
@@ -775,6 +803,7 @@ public class CompanyGroupsController : ControllerBase
                 .ThenInclude(er => er.RiskFactor)
             .Include(e => e.PersonalProtocols)
                 .ThenInclude(pp => pp.Protocol)
+            .Include(e => e.MedicalRecord)
             .Where(e => e.TenantId == tenantId && groupCompanyIds.Contains(e.CompanyId));
 
         if (companyId.HasValue && companyId.Value > 0)
@@ -863,7 +892,8 @@ public class CompanyGroupsController : ControllerBase
                 e.LastName,
                 FullName = $"{e.LastName} {e.FirstName}",
                 e.TaxCode,
-                e.JobRole,
+                JobTitle = e.JobRole,
+                Department = e.Department?.Name ?? e.Reparto ?? "Generale",
                 e.Gender,
                 e.BirthDate,
                 e.PersonalEmail,
@@ -873,6 +903,7 @@ public class CompanyGroupsController : ControllerBase
                 CompanyName = e.Company?.Name ?? "Azienda",
                 BranchId = e.BranchId,
                 BranchCity = e.Branch?.City ?? "-",
+                HealthProtocol = string.Join(", ", protocols),
                 LastVisitDate = lastVisit?.VisitDate,
                 NextDeadlineDate = nextDeadline,
                 DaysRemaining = daysRemaining,
@@ -881,8 +912,12 @@ public class CompanyGroupsController : ControllerBase
                 OutcomeCode = outcomeCode,
                 FitnessClass = fitClass,
                 FitnessLabel = fitLabel,
+                FitnessJudgment = fitLabel,
+                FitnessNotes = outcome != "Nessuna visita" ? outcome : null,
+                NextVisitDue = nextDeadline,
+                HasActiveFolder = e.MedicalRecord != null,
                 AssignedDoctorId = assignedDoctor,
-                AssignedDoctorName = assignedDoctorName,
+                AssignedDoctor = assignedDoctorName,
                 Risks = risks,
                 Protocols = protocols
             };
@@ -897,7 +932,17 @@ public class CompanyGroupsController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(fitnessStatus) && fitnessStatus != "all")
         {
-            filtered = filtered.Where(x => x.FitnessClass == fitnessStatus);
+            var fitnessClass = fitnessStatus.Trim() switch
+            {
+                "Idoneo" => "fit",
+                "Idoneo con prescrizioni" => "partial",
+                "Idoneo con limitazioni" => "partial",
+                "Non idoneo temporaneo" => "not-fit",
+                "Non idoneo permanente" => "not-fit",
+                "In attesa" => "pending",
+                _ => fitnessStatus
+            };
+            filtered = filtered.Where(x => x.FitnessClass == fitnessClass);
         }
 
         if (!string.IsNullOrWhiteSpace(riskProfile))
@@ -919,7 +964,9 @@ public class CompanyGroupsController : ControllerBase
         [FromQuery] int? companyId = null,
         [FromQuery] int? branchId = null,
         [FromQuery] int? physicianId = null,
-        [FromQuery] int? withinDays = 60)
+        [FromQuery] int? withinDays = 60,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         var tenantId = GetTenantId();
         var group = await _db.CompanyGroups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId);
@@ -947,6 +994,12 @@ public class CompanyGroupsController : ControllerBase
         if (branchId.HasValue && branchId.Value > 0)
             query = query.Where(e => e.BranchId == branchId.Value);
 
+        if (startDate.HasValue)
+            query = query.Where(e => e.MedicalVisits.Any(v => v.NextDeadlineDate >= startDate.Value));
+
+        if (endDate.HasValue)
+            query = query.Where(e => e.MedicalVisits.Any(v => v.NextDeadlineDate <= endDate.Value));
+
         var candidates = await query.ToListAsync();
 
         var result = candidates
@@ -957,22 +1010,26 @@ public class CompanyGroupsController : ControllerBase
                 var isOverdue = nextDate < DateTime.UtcNow.Date;
                 return new
                 {
-                    e.Id,
+                    employeeId = e.Id,
                     FullName = $"{e.LastName} {e.FirstName}",
                     e.TaxCode,
-                    e.JobRole,
+                    jobTitle = e.JobRole,
                     e.CompanyId,
                     CompanyName = e.Company?.Name ?? "Azienda",
                     e.BranchId,
                     BranchCity = e.Branch?.City ?? "-",
-                    LastVisitDate = lastVisit?.VisitDate,
-                    NextDeadlineDate = nextDate,
+                    lastVisitDate = lastVisit?.VisitDate,
+                    nextVisitDue = lastVisit?.NextDeadlineDate,
                     IsOverdue = isOverdue,
-                    NeedsPlanning = isOverdue || nextDate <= maxDate
+                    NeedsPlanning = isOverdue || nextDate <= maxDate,
+                    protocolName = e.PersonalProtocols.Any()
+                        ? e.PersonalProtocols.Select(pp => pp.Protocol?.Name ?? "Protocollo").FirstOrDefault()
+                        : (string.IsNullOrWhiteSpace(e.JobRole) ? null : $"Protocollo {e.JobRole}"),
+                    reason = isOverdue ? "Visita Scaduta" : "Visita in Scadenza"
                 };
             })
             .Where(x => x.NeedsPlanning)
-            .OrderBy(x => x.NextDeadlineDate)
+            .OrderBy(x => x.nextVisitDue)
             .ToList();
 
         return Ok(result);
@@ -1285,53 +1342,45 @@ public class CompanyGroupsController : ControllerBase
             .ToListAsync();
 
         // Actionable remediations list
-        var remediations = new List<object>();
+        var remediations = new List<RemediationAlert>();
 
         foreach (var item in missingNominationsList)
         {
-            remediations.Add(new
-            {
-                id = $"nomination-{item.Id}",
-                category = "Nomine Mediche",
-                severity = "CRITICAL",
-                title = $"Nomina MC Mancante: {item.CompanyName}",
-                description = item.Issue,
-                companyId = item.Id,
-                actionType = "nominate-doctor",
-                actionLabel = "Nomina Medico Gruppo"
-            });
+            remediations.Add(new RemediationAlert(
+                Id: $"nomination-{item.Id}",
+                Severity: "CRITICAL",
+                Type: "Nomine Mediche",
+                TargetCompany: $"Nomina MC Mancante: {item.CompanyName}",
+                Message: item.Issue,
+                RemediationAction: "nominate-doctor",
+                ActionLabel: "Nomina Medico Gruppo"
+            ));
         }
 
         foreach (var item in expiredVisitsList.Take(10))
         {
-            remediations.Add(new
-            {
-                id = $"visit-{item.Id}",
-                category = "Visite Periodiche",
-                severity = item.DaysOverdue > 90 ? "CRITICAL" : "HIGH",
-                title = $"Visita Scaduta: {item.FullName} ({item.CompanyName})",
-                description = item.Issue,
-                companyId = item.CompanyId,
-                employeeId = item.EmployeeId,
-                actionType = "plan-visit",
-                actionLabel = "Pianifica Subito"
-            });
+            remediations.Add(new RemediationAlert(
+                Id: $"visit-{item.Id}",
+                Severity: item.DaysOverdue > 90 ? "CRITICAL" : "HIGH",
+                Type: "Visite Periodiche",
+                TargetCompany: $"Visita Scaduta: {item.FullName} ({item.CompanyName})",
+                Message: item.Issue,
+                RemediationAction: "plan-visit",
+                ActionLabel: "Pianifica Subito"
+            ));
         }
 
         foreach (var item in missingRecordsList.Take(10))
         {
-            remediations.Add(new
-            {
-                id = $"record-{item.Id}",
-                category = "Cartelle Sanitarie",
-                severity = "MEDIUM",
-                title = $"Cartella Mancante: {item.FullName} ({item.CompanyName})",
-                description = item.Issue,
-                companyId = item.CompanyId,
-                employeeId = item.Id,
-                actionType = "create-record",
-                actionLabel = "Crea Cartella"
-            });
+            remediations.Add(new RemediationAlert(
+                Id: $"record-{item.Id}",
+                Severity: "MEDIUM",
+                Type: "Cartelle Sanitarie",
+                TargetCompany: $"Cartella Mancante: {item.FullName} ({item.CompanyName})",
+                Message: item.Issue,
+                RemediationAction: "create-record",
+                ActionLabel: "Crea Cartella"
+            ));
         }
 
         var totalAnomalies = missingRecordsList.Count + expiredVisitsList.Count + missingNominationsList.Count + missingProtocolsList.Count + overdueActivitiesList.Count;
@@ -1340,19 +1389,34 @@ public class CompanyGroupsController : ControllerBase
 
         return Ok(new
         {
-            ComplianceScore = score,
-            TotalAnomalies = totalAnomalies,
-            MissingRecords = missingRecordsList,
-            MissingRecordsCount = missingRecordsList.Count,
-            ExpiredVisits = expiredVisitsList,
-            ExpiredVisitsCount = expiredVisitsList.Count,
-            MissingNominations = missingNominationsList,
-            MissingNominationsCount = missingNominationsList.Count,
-            MissingProtocols = missingProtocolsList,
-            MissingProtocolsCount = missingProtocolsList.Count,
-            OverdueActivities = overdueActivitiesList,
-            OverdueActivitiesCount = overdueActivitiesList.Count,
-            Remediations = remediations
+            groupName = group.Name,
+            complianceScore = score,
+            totalAnomalies = totalAnomalies,
+            vectors = new
+            {
+                missingHealthRecords = missingRecordsList.Count,
+                expiredVisits = expiredVisitsList.Count,
+                missingNominations = missingNominationsList.Count,
+                missingPhysicians = companies.Count(c => !_db.CompanyDoctors.Any(cd => cd.CompanyId == c.Id && cd.IsActive && cd.TenantId == tenantId)),
+                missingProtocols = missingProtocolsList.Count,
+                overdueActivities = overdueActivitiesList.Count
+            },
+            alerts = remediations.Select(r => new
+            {
+                id = r.Id,
+                severity = r.Severity == "CRITICAL" ? "Critico" : r.Severity == "HIGH" ? "Alto" : "Medio",
+                type = r.Type,
+                targetCompany = r.TargetCompany,
+                message = r.Message,
+                remediationAction = r.RemediationAction,
+                actionLabel = r.ActionLabel
+            }).ToList(),
+            missingRecords = missingRecordsList,
+            expiredVisits = expiredVisitsList,
+            missingNominations = missingNominationsList,
+            missingProtocols = missingProtocolsList,
+            overdueActivities = overdueActivitiesList,
+            remediations = remediations
         });
     }
 
@@ -1415,7 +1479,7 @@ public class CompanyGroupsController : ControllerBase
         var permUnfitCount = 0;
         var pendingCount = 0;
 
-        var prescriptionsAndLimitations = new List<object>();
+        var prescriptionsAndLimitations = new List<dynamic>();
 
         foreach (var v in visits)
         {
@@ -1453,26 +1517,36 @@ public class CompanyGroupsController : ControllerBase
         {
             group.Id,
             group.Name,
-            TotalWorkers = employees.Count,
-            TotalVisits = visits.Count,
-            WorkersByCompany = workersByCompany,
-            WorkersByJobRole = workersByJobRole,
-            VisitsByType = visitsByType,
-            JudgmentsDistribution = new
+            totalWorkers = employees.Count,
+            totalVisits = visits.Count,
+            workersByCompany = workersByCompany.Select(w => new { companyId = w.CompanyId, companyName = w.CompanyName, count = w.Count }).ToList(),
+            workersByJobRole = workersByJobRole.Select(w => new { role = w.Role, count = w.Count }).ToList(),
+            visitsByType = visitsByType.Select(v => new { type = v.Type, count = v.Count }).ToList(),
+            judgmentsDistribution = new
             {
-                Fit = fitCount,
-                FitWithPrescriptions = fitWithPrescriptionsCount,
-                FitWithLimitations = fitWithLimitationsCount,
-                TemporaryUnfit = tempUnfitCount,
-                PermanentUnfit = permUnfitCount,
-                Pending = pendingCount
+                fit = fitCount,
+                fitWithPrescriptions = fitWithPrescriptionsCount,
+                fitWithLimitations = fitWithLimitationsCount,
+                unfitTemporary = tempUnfitCount,
+                unfitPermanent = permUnfitCount,
+                pending = pendingCount
             },
-            PrescriptionsAndLimitations = prescriptionsAndLimitations,
-            PrescriptionsCount = prescriptionsAndLimitations.Count,
-            ComplianceMetrics = new
+            prescriptionsAndLimitations = prescriptionsAndLimitations.Select(p => new
             {
-                VisitAdherencePercentage = visits.Any() ? Math.Round((double)visits.Count(v => v.NextDeadlineDate >= DateTime.UtcNow.Date) / visits.Count * 100, 1) : 100,
-                ProtocolCoveragePercentage = employees.Any() ? Math.Round((double)employees.Count(e => !string.IsNullOrWhiteSpace(e.JobRole)) / employees.Count * 100, 1) : 100
+                p.Id,
+                employeeName = p.EmployeeFullName,
+                companyName = p.CompanyName,
+                judgment = p.JobRole,
+                prescriptions = p.Prescriptions,
+                limitations = p.Limitations,
+                notes = $"{p.Prescriptions ?? ""} {p.Limitations ?? ""}".Trim() ?? "-",
+                visitDate = p.VisitDate,
+                expirationDate = p.NextReviewDate
+            }).ToList(),
+            complianceMetrics = new
+            {
+                visitAdherencePercentage = visits.Any() ? Math.Round((double)visits.Count(v => v.NextDeadlineDate >= DateTime.UtcNow.Date) / visits.Count * 100, 1) : 100,
+                protocolCoveragePercentage = employees.Any() ? Math.Round((double)employees.Count(e => !string.IsNullOrWhiteSpace(e.JobRole)) / employees.Count * 100, 1) : 100
             }
         });
     }
@@ -1547,7 +1621,7 @@ public class CompanyGroupsController : ControllerBase
         var today = DateTime.UtcNow.Date;
         var in30Days = today.AddDays(30);
 
-        var workloads = new List<object>();
+        var workloads = new List<dynamic>();
         foreach (var doc in allDoctors)
         {
             var isGroupDoc = groupDoctors.FirstOrDefault(gd => gd.DoctorId == doc.Id);
@@ -1612,15 +1686,38 @@ public class CompanyGroupsController : ControllerBase
                 CompanyName = v.Employee != null && v.Employee.Company != null ? v.Employee.Company.Name : "-",
                 v.Outcome,
                 v.OutcomeCode,
-                v.IsSigned
+                v.IsSigned,
+                AssignedDoctorName = v.Doctor != null ? $"Dott. {v.Doctor.FirstName} {v.Doctor.LastName}" : "-",
             })
             .ToListAsync();
 
         return Ok(new
         {
-            SelectedDoctor = selectedDoc != null ? new { selectedDoc.Id, FullName = $"Dott. {selectedDoc.FirstName} {selectedDoc.LastName}", selectedDoc.Specialty } : null,
-            Workloads = workloads,
-            UpcomingSchedule = upcomingVisitsList
+            selectedDoctor = selectedDoc != null ? new { id = selectedDoc.Id, doctorName = $"Dott. {selectedDoc.FirstName} {selectedDoc.LastName}", selectedDoc.Specialty } : null,
+            doctors = workloads.Select(w => new
+            {
+                w.Id,
+                doctorName = w.DoctorFullName,
+                w.Specialty,
+                groupRole = w.RoleInGroup,
+                assignedCompaniesCount = w.AssignedCompaniesCount,
+                assignedWorkersCount = w.AssignedWorkersCount,
+                visitsNext30Days = w.UpcomingVisitsCount,
+                overdueVisits = w.PendingSiteVisitsCount,
+                isPrimaryCoordinator = w.IsPrimaryCoordinator
+            }).ToList(),
+            upcomingVisits = upcomingVisitsList.Select(v => new
+            {
+                id = v.Id,
+                assignedDoctorName = v.AssignedDoctorName,
+                scheduledDate = v.VisitDate,
+                visitType = v.VisitType,
+                employeeName = v.EmployeeFullName,
+                companyName = v.CompanyName,
+                judgment = v.Outcome,
+                judgmentCode = v.OutcomeCode,
+                isSigned = v.IsSigned
+            }).ToList()
         });
     }
 
@@ -1800,4 +1897,151 @@ public class CompanyGroupsController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+    // =========================================================================
+    // 10. Compliance Remediation Actions
+    // =========================================================================
+
+    [HttpPost("{id:int}/compliance/remediate")]
+    [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
+    public async Task<IActionResult> RemediateCompliance(int id, [FromBody] RemediationRequest request)
+    {
+        var tenantId = GetTenantId();
+        var group = await _db.CompanyGroups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId);
+        if (group == null)
+            return NotFound(new { message = $"Gruppo aziendale {id} non trovato." });
+
+        var groupCompanyIds = await _db.Companies
+            .AsNoTracking()
+            .Where(c => c.CompanyGroupId == id && c.TenantId == tenantId)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        switch (request.Action)
+        {
+            case "nominate-doctor":
+            {
+                // Assign a doctor to companies missing a doctor
+                var companiesWithoutDoctor = groupCompanyIds
+                    .Where(cid => !_db.CompanyDoctors.Any(cd => cd.CompanyId == cid && cd.IsActive && cd.TenantId == tenantId))
+                    .ToList();
+
+                var availableDoctor = await _db.Doctors
+                    .Where(d => d.TenantId == tenantId)
+                    .FirstOrDefaultAsync();
+
+                if (availableDoctor == null)
+                    return BadRequest(new { message = "Nessun medico disponibile per la nomina." });
+
+                var addedCount = 0;
+                foreach (var cId in companiesWithoutDoctor)
+                {
+                    if (!_db.CompanyDoctors.Any(cd => cd.CompanyId == cId && cd.DoctorId == availableDoctor.Id))
+                    {
+                        _db.CompanyDoctors.Add(new CompanyDoctor
+                        {
+                            TenantId = tenantId,
+                            CompanyId = cId,
+                            DoctorId = availableDoctor.Id,
+                            IsCoordinator = false,
+                            IsActive = true,
+                            AssignedAt = DateTime.UtcNow
+                        });
+                        addedCount++;
+                    }
+                }
+                await _db.SaveChangesAsync();
+                return Ok(new { message = $"Medico competente nominato per {addedCount} aziende.", companiesCount = addedCount });
+            }
+
+            case "plan-visit":
+            {
+                // Plan visits for employees with expired visits
+                var employeeIds = await _db.Employees
+                    .Where(e => groupCompanyIds.Contains(e.CompanyId) && e.TenantId == tenantId)
+                    .Select(e => e.Id)
+                    .ToListAsync();
+
+                var expiredEmployeeIds = await _db.MedicalVisits
+                    .AsNoTracking()
+                    .Where(v => employeeIds.Contains(v.EmployeeId) && v.TenantId == tenantId)
+                    .GroupBy(v => v.EmployeeId)
+                    .Select(g => new
+                    {
+                        EmployeeId = g.Key,
+                        LatestDeadline = g.OrderByDescending(v => v.VisitDate).First().NextDeadlineDate
+                    })
+                    .Where(x => x.LatestDeadline < DateTime.UtcNow.Date)
+                    .Select(x => x.EmployeeId)
+                    .ToListAsync();
+
+                if (!expiredEmployeeIds.Any())
+                    return Ok(new { message = "Nessuna visita da pianificare.", count = 0 });
+
+                var defaultDoctor = await _db.Doctors.FirstOrDefaultAsync(d => d.TenantId == tenantId);
+                var plannedVisits = new List<MedicalVisit>();
+                var scheduledDate = DateTime.UtcNow.AddDays(7);
+
+                foreach (var empId in expiredEmployeeIds.Take(50))
+                {
+                    plannedVisits.Add(new MedicalVisit
+                    {
+                        TenantId = tenantId,
+                        EmployeeId = empId,
+                        DoctorId = defaultDoctor?.Id,
+                        VisitDate = scheduledDate,
+                        NextDeadlineDate = scheduledDate.AddYears(1),
+                        VisitType = MedicalVisitType.Periodic,
+                        Outcome = "In attesa di visita",
+                        OutcomeCode = "INATTESA",
+                        ClinicalNotes = "Pianificata come rimedio conformità",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
+                _db.MedicalVisits.AddRange(plannedVisits);
+                await _db.SaveChangesAsync();
+                return Ok(new { message = $"{plannedVisits.Count} visite pianificate per lavoratori con visite scadute.", count = plannedVisits.Count });
+            }
+
+            case "create-record":
+            {
+                // Create medical records for employees without one
+                var employeeIds = await _db.Employees
+                    .Where(e => groupCompanyIds.Contains(e.CompanyId) && e.TenantId == tenantId)
+                    .Select(e => e.Id)
+                    .ToListAsync();
+
+                var employeesWithoutRecord = employeeIds
+                    .Where(eid => !_db.MedicalRecords.Any(mr => mr.EmployeeId == eid && mr.TenantId == tenantId))
+                    .ToList();
+
+                if (!employeesWithoutRecord.Any())
+                    return Ok(new { message = "Nessuna cartella da creare.", count = 0 });
+
+                var records = new List<MedicalRecord>();
+                foreach (var empId in employeesWithoutRecord.Take(50))
+                {
+                    records.Add(new MedicalRecord
+                    {
+                        EmployeeId = empId,
+                        TenantId = tenantId,
+                        MedicalHistory = "Cartella sanitaria creata durante rimedio conformità",
+                        Notes = "",
+                        CurrentTherapies = "",
+                        Status = MedicalRecordStatus.Active,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
+                _db.MedicalRecords.AddRange(records);
+                await _db.SaveChangesAsync();
+                return Ok(new { message = $"{records.Count} cartelle sanitarie create.", count = records.Count });
+            }
+
+            default:
+                return BadRequest(new { message = $"Azione '{request.Action}' non riconosciuta." });
+        }
+    }
+
+    public sealed record RemediationRequest(string Action);
 }

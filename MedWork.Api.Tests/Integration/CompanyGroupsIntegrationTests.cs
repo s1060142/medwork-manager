@@ -157,7 +157,7 @@ public class CompanyGroupsIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(body.TryGetProperty("workloads", out var workloads));
+        Assert.True(body.TryGetProperty("doctors", out var workloads));
         Assert.Equal(JsonValueKind.Array, workloads.ValueKind);
     }
 

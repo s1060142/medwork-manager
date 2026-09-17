@@ -1235,8 +1235,8 @@ export default function CompanyGroupsCenter() {
                     </Typography>
                   </Box>
                   <Chip
-                    label={`Punteggio Conformità: ${complianceData.overallComplianceScore}%`}
-                    color={complianceData.overallComplianceScore >= 85 ? 'success' : 'error'}
+                    label={`Punteggio Conformità: ${complianceData.complianceScore}%`}
+                    color={complianceData.complianceScore >= 85 ? 'success' : 'error'}
                     sx={{ fontWeight: 800, fontSize: '1rem', px: 1 }}
                   />
                 </Box>
@@ -1352,7 +1352,7 @@ export default function CompanyGroupsCenter() {
                 <Grid item xs={12} sm={4}>
                   <Card variant="outlined" sx={{ borderRadius: 2.5, p: 2 }}>
                     <Typography variant="body2" color="text.secondary" fontWeight={600}>Visite Eseguite</Typography>
-                    <Typography variant="h3" fontWeight={800} color="success.main">{reportsData.totalCompletedVisits}</Typography>
+                    <Typography variant="h3" fontWeight={800} color="success.main">{reportsData.totalVisits}</Typography>
                   </Card>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -1380,27 +1380,27 @@ export default function CompanyGroupsCenter() {
                     <Stack spacing={1.5}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">Idonei Senza Limitazioni</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.fit} color="success" size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.fit} color="success" size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">Idonei con Prescrizioni</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.fitWithPrescriptions} color="warning" size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.fitWithPrescriptions} color="warning" size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">Idonei con Limitazioni</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.fitWithLimitations} color="warning" size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.fitWithLimitations} color="warning" size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">Non Idonei Temporanei</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.unfitTemporary} color="error" size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.unfitTemporary} color="error" size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">Non Idonei Permanenti</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.unfitPermanent} color="error" size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.unfitPermanent} color="error" size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2">In Attesa di Giudizio</Typography>
-                        <Chip label={reportsData.fitnessJudgmentsSummary.pending} size="small" sx={{ fontWeight: 700 }} />
+                        <Chip label={reportsData.judgmentsDistribution.pending} size="small" sx={{ fontWeight: 700 }} />
                       </Box>
                     </Stack>
                   </Paper>
@@ -1412,10 +1412,10 @@ export default function CompanyGroupsCenter() {
                       Distribuzione Rischi e Protocolli
                     </Typography>
                     <Stack spacing={1.5}>
-                      {reportsData.riskDistribution?.map((r, idx) => (
+                      {reportsData.workersByJobRole?.map((r, idx) => (
                         <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="body2">{r.riskName}</Typography>
-                          <Chip label={`${r.workerCount} lavoratori`} size="small" sx={{ fontWeight: 600, bgcolor: '#f1f5f9' }} />
+                          <Typography variant="body2">{r.role}</Typography>
+                          <Chip label={`${r.count} lavoratori`} size="small" sx={{ fontWeight: 600, bgcolor: '#f1f5f9' }} />
                         </Box>
                       ))}
                     </Stack>
@@ -1475,7 +1475,7 @@ export default function CompanyGroupsCenter() {
               </Typography>
               <Grid container spacing={2.5} sx={{ mb: 4 }}>
                 {physicianData.doctors.map((doc) => (
-                  <Grid item xs={12} md={6} key={doc.doctorId}>
+                  <Grid item xs={12} md={6} key={doc.id}>
                     <Card variant="outlined" sx={{ borderRadius: 2.5, p: 2.5, borderLeft: '6px solid #1976d2' }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                         <Box>
@@ -1533,7 +1533,7 @@ export default function CompanyGroupsCenter() {
                       </TableRow>
                     ) : (
                       physicianData.upcomingVisits.map((v) => (
-                        <TableRow key={v.visitId} hover>
+                        <TableRow key={v.id} hover>
                           <TableCell sx={{ fontWeight: 700, color: 'primary.main' }}>{v.scheduledDate}</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>{v.employeeName}</TableCell>
                           <TableCell>{v.companyName}</TableCell>
@@ -1656,7 +1656,7 @@ export default function CompanyGroupsCenter() {
                           <TableRow key={d.doctorId} hover>
                             <TableCell sx={{ fontWeight: 600 }}>{d.doctorName}</TableCell>
                             <TableCell>
-                              <Chip label={d.roleInGroup} size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
+                              <Chip label={d.role} size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
                             </TableCell>
                             <TableCell align="right">
                               <IconButton size="small" color="error" onClick={() => handleRemoveDoctorFromGroup(d.doctorId)}>

@@ -335,6 +335,7 @@ const App = () => {
       'protocols',
       'protocols-registry',
       'personal-protocols',
+      'company-groups',
       'schedules',
       'medical-visit-stepper',
       'appointments-calendar',
