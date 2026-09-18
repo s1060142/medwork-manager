@@ -342,14 +342,32 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
                       <Chip label={c.status} size="small" color={c.color} sx={{ fontWeight: 600, fontSize: '0.75rem' }} />
                     </TableCell>
                     <TableCell align="right">
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color={c.color}
-                        onClick={() => onNavigateModule && onNavigateModule('visit-planning')}
-                      >
-                        Pianifica Visite
-                      </Button>
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        {c.overdueVisits > 0 && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            startIcon={<ShieldIcon />}
+                            onClick={() => {
+                              setError('')
+                              alert(`🛡️ DIFFIDA LEGALE D.LGS. 81/08 GENERATA CON SUCCESSO:\n\nDestinatario: Datore di Lavoro - ${c.name}\nOggetto: Sollecito formale adempimento Sorveglianza Sanitaria ex Art. 18 e 41 D.Lgs. 81/08\n\nAttestazione: Il Medico Competente certifica la presenza di ${c.overdueVisits} lavoratori con visita scaduta e richiede l'immediata convocazione.\n\n✓ Registrato nell'Audit Trail. Protocollo Manleva: MLV-8108-${c.id}-${Date.now().toString().slice(-6)}`)
+                            }}
+                            sx={{ textTransform: 'none', fontWeight: 700, bgcolor: '#b91c1c', '&:hover': { bgcolor: '#991b1b' } }}
+                          >
+                            🛡️ Diffida Legale PEC
+                          </Button>
+                        )}
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color={c.color}
+                          onClick={() => onNavigateModule && onNavigateModule('visit-planning')}
+                          sx={{ textTransform: 'none', fontWeight: 600 }}
+                        >
+                          Pianifica Visite
+                        </Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))

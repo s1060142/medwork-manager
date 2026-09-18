@@ -292,7 +292,7 @@ const App = () => {
 
   // Area / module navigation state
   const [selectedArea, setSelectedArea] = useState<string>('company-management')
-  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
+  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('company-groups')
 
   // When opening a new visit from an employee profile, preselect that employee in the stepper
   const [visitInitialEmployeeId, setVisitInitialEmployeeId] = useState<number | null>(null)
@@ -419,7 +419,7 @@ const App = () => {
     setSelectedAnalysisTab('visits')
     setSelectedHealthTab('protocols')
     setSelectedAdminTab('settings')
-    setSelectedModuleKey('companies')
+    setSelectedModuleKey('company-groups')
     setQuickCreateRequest(null)
     setProfileEmployee(null)
     setProfileCompany(null)
@@ -551,9 +551,11 @@ const App = () => {
 
   const handleAreaNavigation = (nextArea: string) => {
     setSelectedArea(nextArea)
-    setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
     if (nextArea === 'company-management') {
       setSelectedCompanyTab('groups')
+      setSelectedModuleKey('company-groups')
+    } else {
+      setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
     }
     appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
   }
@@ -1288,6 +1290,11 @@ const App = () => {
           open={globalSearchOpen}
           onClose={() => setGlobalSearchOpen(false)}
           onSelectWorker={(emp: any) => handleOpenEmployeeProfile(emp)}
+          onStartVisit={(emp: any) => {
+            setSelectedArea('health-surveillance')
+            setSelectedHealthTab('medical-visit-stepper')
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
           onSelectCompany={(comp: any) => handleOpenCompanyProfile(comp)}
           onNavigateModule={(mod: string) => {
             setSelectedModuleKey(mod)

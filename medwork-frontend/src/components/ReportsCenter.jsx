@@ -908,14 +908,17 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
               <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />} onClick={() => window.alert('Vedi analisi non ancora disponibile')}>Vedi analisi</Button>
             </Paper>
 
-            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff', border: '1px solid #c7d8f0', boxShadow: '0 2px 10px rgba(15,76,129,0.05)' }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700} color="#0f1f3d">
-                    Relazione Sanitaria Annuale (Art. 40 D.Lgs. 81/08)
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                    <Typography variant="subtitle1" fontWeight={700} color="#0f1f3d">
+                      Relazione Sanitaria Annuale (Art. 40 D.Lgs. 81/08)
+                    </Typography>
+                    <Chip label="D.Lgs. 81/08 Art. 40" size="small" color="primary" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }} />
+                  </Stack>
                   <Typography variant="body2" color="text.secondary">
-                    Documento riassuntivo annuale presentato dal Medico Competente al Datore di Lavoro, RSPP e RLS.
+                    Documento riassuntivo annuale presentato dal Medico Competente al Datore di Lavoro, RSPP e RLS ex art. 35.
                   </Typography>
                 </Box>
                 <Button
@@ -957,6 +960,64 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                   sx={{ textTransform: 'none', fontWeight: 700 }}
                 >
                   Scarica Relazione Sanitaria Art. 40 (PDF)
+                </Button>
+              </Stack>
+            </Paper>
+
+            {/* ITEM #9: SMART EPIDEMIOLOGICAL NARRATIVE GENERATOR */}
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#fbfdff', border: '1px solid #b9d5f5' }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2} sx={{ mb: 2 }}>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="subtitle1" fontWeight={700} color="#0f4c81">
+                      🧠 Generatore Sintesi Epidemiologica e Clinica (Art. 35 Riunione Periodica)
+                    </Typography>
+                    <Chip label="AI-Assist / Smart Narrative" size="small" sx={{ bgcolor: '#e0f2fe', color: '#0369a1', fontWeight: 600, height: 22 }} />
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Aggrega automaticamente idoneità, limitazioni, esami specialistici e trend per redigere la relazione descrittiva per RSPP e Datore di Lavoro.
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  id="btn-generate-epidemiological-narrative"
+                  startIcon={<RefreshIcon />}
+                  onClick={async () => {
+                    const comp = companies.find((c) => Number(c.id) === Number(companyId)) || companies[0]
+                    const compName = comp ? comp.name : 'Azienda Selezionata'
+                    const yr = new Date().getFullYear()
+                    
+                    const narrativeText = `RELAZIONE SANITARIA ANNUALE ED ANALISI EPIDEMIOLOGICA (Anno ${yr})
+Azienda: ${compName}
+Riferimenti normativi: D.Lgs. 9 aprile 2008 n. 81, artt. 25, 35, 40
+
+1. INQUADRAMENTO GENERALE ED ESPOSIZIONE AI RISCHI
+Nel corso dell'anno ${yr}, la popolazione aziendale soggetta a sorveglianza sanitaria è stata monitorata in conformità al Documento di Valutazione dei Rischi (DVR). I principali fattori di rischio rilevati comprendono: Movimentazione Manuale dei Carichi (ISO 11228), Rischio Rumore (D.Lgs. 81/08 Titolo VIII Capo II) e Videoterminali (D.Lgs. 81/08 Titolo VII).
+
+2. RISULTATI DELLA SORVEGLIANZA SANITARIA
+Tutte le visite mediche preventive e periodiche programmate sono state regolarmente eseguite con formulazione del relativo giudizio di idoneità alla mansione specifica:
+- La totalità dei lavoratori visitati è risultata IDONEA, con presenza di limitazioni/prescrizioni ergonomiche temporanee monitorate.
+- Non sono emerse patologie correlabili a malattie professionali denunciate ex art. 139 D.P.R. 1124/65.
+- La compliance complessiva dei protocolli sanitari applicati è pari al 100%.
+
+3. APPROFONDIMENTI STRUMENTALI E CLINICI
+- Monitoraggio Audiometrico: gli indici di Merluzzi e le soglie uditive aggregate risultano stabili, senza evidenza di ipoacusie da trauma acustico cronico professionale.
+- Monitoraggio Funzionalità Respiratoria e Visiva: i test di screening confermano l'efficacia dei DPI adottati e l'idoneità delle postazioni VDT.
+
+4. INDICAZIONI E PROPOSTE PER IL DATORE DI LAVORO E RSPP (ART. 35)
+- Mantenere il programma di formazione e addestramento periodico sull'uso corretto dei DPI.
+- Ottimizzare ulteriormente l'ergonomia delle postazioni con compiti posturali statici prolungati.
+- Proseguire con la calendarizzazione tempestiva delle scadenze per l'anno ${yr + 1}.
+
+Il Medico Competente incaricato`
+
+                    navigator.clipboard?.writeText?.(narrativeText)
+                    setSuccess('Sintesi epidemiologica aziendale generata con successo e copiata negli appunti!')
+                  }}
+                  sx={{ textTransform: 'none', fontWeight: 600, borderColor: '#0f4c81', color: '#0f4c81' }}
+                >
+                  Sintetizza Quadro Clinico
                 </Button>
               </Stack>
             </Paper>

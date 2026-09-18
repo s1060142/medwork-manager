@@ -247,7 +247,39 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
     setFormData((current) => ({ ...current, [name]: value }))
   }
 
-  // 1. SMART CLONE PREVIOUS VISIT
+  // Filter out expired temporary limitations/prescriptions based on visit date and duration keywords
+  const filterTemporalSunset = (text, previousVisitDate) => {
+    if (!text) return { activeText: '', sunsetItems: [] }
+    const lines = text.split('\n')
+    const activeLines = []
+    const sunsetItems = []
+    const now = new Date()
+    const prevDate = previousVisitDate ? new Date(previousVisitDate) : new Date(now.getTime() - 365 * 24 * 3600 * 1000)
+    const elapsedMonths = Math.max(1, (now.getFullYear() - prevDate.getFullYear()) * 12 + (now.getMonth() - prevDate.getMonth()))
+
+    lines.forEach(line => {
+      const lower = line.toLowerCase()
+      // Detect temporary indicators
+      const isTemporary = lower.includes('temporan') || lower.includes('mesi') || lower.includes('giorni') || lower.includes('settiman') || lower.includes('fino al') || lower.includes('rivedere a')
+      
+      if (isTemporary) {
+        // Extract month numbers if present e.g. "3 mesi", "6 mesi"
+        const monthMatch = lower.match(/(\d+)\s*mes/)
+        const durationMonths = monthMatch ? parseInt(monthMatch[1], 10) : 6
+        if (elapsedMonths >= durationMonths) {
+          sunsetItems.push(line.trim())
+          return
+        }
+      }
+      if (line.trim()) {
+        activeLines.push(line.trim())
+      }
+    })
+
+    return { activeText: activeLines.join('\n'), sunsetItems }
+  }
+
+  // 1. SMART CLONE PREVIOUS VISIT WITH INTELLIGENT TEMPORAL FILTER
   const handleCopyLastVisit = async () => {
     if (!formData.employeeId) return
     setCopyingVisit(true)
@@ -255,6 +287,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
     try {
       const data = await apiGet(`/api/doctor-data/employees/${formData.employeeId}/last-visit`)
       if (data) {
+        const prescFilter = filterTemporalSunset(data.prescriptions, data.visitDate)
+        const limitFilter = filterTemporalSunset(data.limitations, data.visitDate)
+        const allSunsets = [...prescFilter.sunsetItems, ...limitFilter.sunsetItems]
+
         setFormData(prev => ({
           ...prev,
           workHistory: data.workHistory || prev.workHistory,
@@ -264,9 +300,16 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
           recentPathology: data.recentPathology || prev.recentPathology,
           targetOrgans: data.targetOrgans || prev.targetOrgans || 'Udito, apparato respiratorio, rachide',
           objectiveExam: data.objectiveExam || prev.objectiveExam,
+          prescriptions: prescFilter.activeText || prev.prescriptions,
+          limitations: limitFilter.activeText || prev.limitations,
           clinicalNotes: data.clinicalNotes ? `${prev.clinicalNotes ? prev.clinicalNotes + '\n' : ''}[Da visita prec.]: ${data.clinicalNotes}` : prev.clinicalNotes,
         }))
-        setSuccess('✓ Dati anamnestici e clinici dell\'ultima visita copiati con successo!')
+
+        if (allSunsets.length > 0) {
+          setSuccess(`✓ Dati clonati con successo! Filtro Temporale: ${allSunsets.length} prescrizione/limitazione temporanea scaduta esclusa automaticamente.`)
+        } else {
+          setSuccess('✓ Dati anamnestici e clinici dell\'ultima visita copiati con successo!')
+        }
       } else {
         setError('Nessuna visita precedente trovata per questo lavoratore.')
       }
@@ -278,7 +321,65 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       }
     } finally {
       setCopyingVisit(false)
-      setTimeout(() => setSuccess(''), 4000)
+      setTimeout(() => setSuccess(''), 5000)
+    }
+  }
+
+  // 1B. DELTA VELOCE / QUADRO INVARIATO (ULTRA-FAST TRACK)
+  const handleDeltaVeloce = async () => {
+    if (!formData.employeeId) return
+    setCopyingVisit(true)
+    setError('')
+    try {
+      const data = await apiGet(`/api/doctor-data/employees/${formData.employeeId}/last-visit`)
+      const prescFilter = filterTemporalSunset(data?.prescriptions, data?.visitDate)
+      const limitFilter = filterTemporalSunset(data?.limitations, data?.visitDate)
+      const allSunsets = [...prescFilter.sunsetItems, ...limitFilter.sunsetItems]
+
+      setFormData(prev => ({
+        ...prev,
+        workHistory: data?.workHistory || prev.workHistory || 'Mansione invariata rispetto alla precedente sorveglianza.',
+        personalHistory: data?.personalHistory || prev.personalHistory || 'Condizioni anamnestiche generali invariate.',
+        familyHistory: data?.familyHistory || prev.familyHistory,
+        remotePathology: data?.remotePathology || prev.remotePathology,
+        recentPathology: 'Nessuna patologia insorta nel periodo intercorso.',
+        targetOrgans: data?.targetOrgans || prev.targetOrgans || 'Udito, apparato respiratorio, rachide',
+        objCardio: 'nella norma',
+        objResp: 'nella norma',
+        objAddome: 'nella norma',
+        objMusc: 'nella norma',
+        objNeuro: 'nella norma',
+        objCute: 'nella norma',
+        objVista: 'nella norma',
+        objUdito: 'nella norma',
+        outcomeCode: 'IDONE0',
+        outcome: 'Idoneo alla mansione specifica',
+        prescriptions: prescFilter.activeText || '',
+        limitations: limitFilter.activeText || '',
+        clinicalNotes: `[Delta Veloce]: Quadro clinico invariato rispetto alla visita del ${data?.visitDate ? new Date(data.visitDate).toLocaleDateString('it-IT') : 'periodo precedente'}.`,
+      }))
+
+      setActiveStep(1)
+      setSuccess(`⚡ Delta Veloce attivato: anamnesi clonata, apparati nella norma, ${allSunsets.length > 0 ? allSunsets.length + ' prescrizioni scadute depurate, ' : ''}idoneità preimpostata. Inserisci solo PAO e Peso!`)
+    } catch {
+      setActiveStep(1)
+      setFormData(prev => ({
+        ...prev,
+        objCardio: 'nella norma',
+        objResp: 'nella norma',
+        objAddome: 'nella norma',
+        objMusc: 'nella norma',
+        objNeuro: 'nella norma',
+        objCute: 'nella norma',
+        objVista: 'nella norma',
+        objUdito: 'nella norma',
+        outcomeCode: 'IDONE0',
+        outcome: 'Idoneo alla mansione specifica',
+      }))
+      setSuccess('⚡ Delta Veloce: parametri di normalità e idoneità preimpostati.')
+    } finally {
+      setCopyingVisit(false)
+      setTimeout(() => setSuccess(''), 6000)
     }
   }
 
@@ -509,31 +610,44 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
             ))}
           </Stepper>
 
-          {/* SMART CLONE BANNER */}
+          {/* SMART CLONE & DELTA VELOCE BANNER */}
           {lastVisitPreview && activeStep === 0 && (
             <Alert 
               severity="info" 
               icon={<HistoryIcon />}
               action={
-                <Button 
-                  color="primary" 
-                  size="small" 
-                  variant="contained" 
-                  startIcon={<ContentCopyIcon />}
-                  onClick={handleCopyLastVisit}
-                  disabled={copyingVisit}
-                  sx={{ textTransform: 'none', fontWeight: 600 }}
-                >
-                  {copyingVisit ? 'Copia in corso...' : '⚡ Copia Dati Anamnestici'}
-                </Button>
+                <Stack direction="row" spacing={1}>
+                  <Button 
+                    color="primary" 
+                    size="small" 
+                    variant="outlined" 
+                    startIcon={<ContentCopyIcon />}
+                    onClick={handleCopyLastVisit}
+                    disabled={copyingVisit}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                  >
+                    {copyingVisit ? 'Copia...' : 'Copia Anamnesi'}
+                  </Button>
+                  <Button 
+                    color="warning" 
+                    size="small" 
+                    variant="contained" 
+                    startIcon={<FlashOnIcon />}
+                    onClick={handleDeltaVeloce}
+                    disabled={copyingVisit}
+                    sx={{ textTransform: 'none', fontWeight: 700, bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
+                  >
+                    ⚡ Delta Veloce (1-Click)
+                  </Button>
+                </Stack>
               }
               sx={{ mb: 2, borderRadius: 2, alignItems: 'center' }}
             >
-              <Typography variant="body2" fontWeight={600}>
-                Trovata visita precedente registrata per questo lavoratore.
+              <Typography variant="body2" fontWeight={700}>
+                Visita precedente trovata ({new Date(lastVisitPreview.visitDate).toLocaleDateString('it-IT')}) — Filtro Temporale Attivo
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Puoi copiare con 1 clic l'anamnesi lavorativa, personale, familiare e patologie per aggiornare solo le variazioni.
+                Usa <strong>Delta Veloce</strong> per clonare l'anamnesi, epurare prescrizioni temporanee scadute, impostare normalità clinica e andare dritto ai parametri vitali.
               </Typography>
             </Alert>
           )}
@@ -835,60 +949,136 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                   helperText="Organi/apparati critici in relazione ai rischi specifici della mansione"
                 />
 
-                {/* 8 APPARATI STRUTTURATI */}
-                <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mt: 1 }}>
-                  ESAME OBIETTIVO PER APPARATI (ALLEGATO 3A)
-                </Typography>
+                {/* 8 APPARATI STRUTTURATI - RISK DRIVEN */}
+                <Box sx={{ mt: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
+                      ESAME OBIETTIVO PER APPARATI (ALLEGATO 3A)
+                    </Typography>
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                      <Chip
+                        size="small"
+                        icon={<FlashOnIcon />}
+                        label="🎯 Focus Rachide / MMC"
+                        clickable
+                        color={formData.targetOrgans?.toLowerCase().includes('rachid') || formData.targetOrgans?.toLowerCase().includes('carich') ? 'primary' : 'default'}
+                        variant="outlined"
+                        onClick={() => {
+                          setField('objMusc', 'Rachide in asse, articolarità integra e conservata su tutti i distretti, Lasègue e Wasserman negativi bilat., assenza di contratture paravertebrali, punti di Valleix non dolenti.')
+                          setSuccess('✓ Focus Rachide/MMC applicato')
+                          setTimeout(() => setSuccess(''), 3000)
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        icon={<FlashOnIcon />}
+                        label="🎯 Focus Udito / Rumore"
+                        clickable
+                        color={formData.targetOrgans?.toLowerCase().includes('udit') || formData.targetOrgans?.toLowerCase().includes('rumor') ? 'primary' : 'default'}
+                        variant="outlined"
+                        onClick={() => {
+                          setField('objUdito', 'Otoscopia bilat. negativa, membrane timpaniche integre, normoriflettenti e perlacee. Acufenometria negativa, soglia uditiva di conversazione conservata.')
+                          setSuccess('✓ Focus Udito/Rumore applicato')
+                          setTimeout(() => setSuccess(''), 3000)
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        icon={<FlashOnIcon />}
+                        label="🎯 Focus Respiratorio"
+                        clickable
+                        color={formData.targetOrgans?.toLowerCase().includes('respirat') || formData.targetOrgans?.toLowerCase().includes('chimic') ? 'primary' : 'default'}
+                        variant="outlined"
+                        onClick={() => {
+                          setField('objResp', 'Murmure vescicolare fisiologico su tutti i campi polmonari, basi polmonari mobili e pervie, assenza di rumori patologici aggiunti (rantoli, fischi o ronchi).')
+                          setSuccess('✓ Focus Respiratorio applicato')
+                          setTimeout(() => setSuccess(''), 3000)
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        icon={<FlashOnIcon />}
+                        label="🎯 Focus VDT & Vista"
+                        clickable
+                        color={formData.targetOrgans?.toLowerCase().includes('vist') || formData.targetOrgans?.toLowerCase().includes('vdt') ? 'primary' : 'default'}
+                        variant="outlined"
+                        onClick={() => {
+                          setField('objVista', 'Visus naturale/corretto 10/10 bilat., convergenza e motilità oculare integre, senso cromatico nella norma (Tavole di Ishihara), assenza astenopia.')
+                          setSuccess('✓ Focus VDT/Vista applicato')
+                          setTimeout(() => setSuccess(''), 3000)
+                        }}
+                      />
+                      <Chip
+                        size="small"
+                        icon={<FlashOnIcon />}
+                        label="🎯 Focus Cute & Chimico"
+                        clickable
+                        color={formData.targetOrgans?.toLowerCase().includes('cut') || formData.targetOrgans?.toLowerCase().includes('derm') ? 'primary' : 'default'}
+                        variant="outlined"
+                        onClick={() => {
+                          setField('objCute', 'Cute e mucose integre, assenza di dermatiti da contatto irritative o allergiche, assenza di lesioni eczematose, ipercheratosiche o discromiche.')
+                          setSuccess('✓ Focus Cute/Chimico applicato')
+                          setTimeout(() => setSuccess(''), 3000)
+                        }}
+                      />
+                    </Stack>
+                  </Box>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
-                  <TextField
-                    label="1. Cardiovascolare"
-                    size="small"
-                    value={formData.objCardio}
-                    onChange={(e) => setField('objCardio', e.target.value)}
-                  />
-                  <TextField
-                    label="2. Respiratorio"
-                    size="small"
-                    value={formData.objResp}
-                    onChange={(e) => setField('objResp', e.target.value)}
-                  />
-                  <TextField
-                    label="3. Addome & Visceri"
-                    size="small"
-                    value={formData.objAddome}
-                    onChange={(e) => setField('objAddome', e.target.value)}
-                  />
-                  <TextField
-                    label="4. Muscoloscheletrico & Rachide"
-                    size="small"
-                    value={formData.objMusc}
-                    onChange={(e) => setField('objMusc', e.target.value)}
-                  />
-                  <TextField
-                    label="5. Sistema Nervoso"
-                    size="small"
-                    value={formData.objNeuro}
-                    onChange={(e) => setField('objNeuro', e.target.value)}
-                  />
-                  <TextField
-                    label="6. Cute & Annessi"
-                    size="small"
-                    value={formData.objCute}
-                    onChange={(e) => setField('objCute', e.target.value)}
-                  />
-                  <TextField
-                    label="7. Vista & Oculistico"
-                    size="small"
-                    value={formData.objVista}
-                    onChange={(e) => setField('objVista', e.target.value)}
-                  />
-                  <TextField
-                    label="8. Udito & ORL"
-                    size="small"
-                    value={formData.objUdito}
-                    onChange={(e) => setField('objUdito', e.target.value)}
-                  />
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
+                    <TextField
+                      label="1. Cardiovascolare"
+                      size="small"
+                      value={formData.objCardio}
+                      onChange={(e) => setField('objCardio', e.target.value)}
+                    />
+                    <TextField
+                      label="2. Respiratorio"
+                      size="small"
+                      value={formData.objResp}
+                      onChange={(e) => setField('objResp', e.target.value)}
+                      sx={formData.targetOrgans?.toLowerCase().includes('respirat') || formData.targetOrgans?.toLowerCase().includes('chimic') ? { bgcolor: '#e3f2fd', borderRadius: 1 } : {}}
+                    />
+                    <TextField
+                      label="3. Addome & Visceri"
+                      size="small"
+                      value={formData.objAddome}
+                      onChange={(e) => setField('objAddome', e.target.value)}
+                    />
+                    <TextField
+                      label="4. Muscoloscheletrico & Rachide (MMC)"
+                      size="small"
+                      value={formData.objMusc}
+                      onChange={(e) => setField('objMusc', e.target.value)}
+                      sx={formData.targetOrgans?.toLowerCase().includes('rachid') || formData.targetOrgans?.toLowerCase().includes('carich') || formData.targetOrgans?.toLowerCase().includes('mmc') ? { bgcolor: '#e3f2fd', borderRadius: 1 } : {}}
+                    />
+                    <TextField
+                      label="5. Sistema Nervoso"
+                      size="small"
+                      value={formData.objNeuro}
+                      onChange={(e) => setField('objNeuro', e.target.value)}
+                    />
+                    <TextField
+                      label="6. Cute & Annessi (Chimico)"
+                      size="small"
+                      value={formData.objCute}
+                      onChange={(e) => setField('objCute', e.target.value)}
+                      sx={formData.targetOrgans?.toLowerCase().includes('cut') || formData.targetOrgans?.toLowerCase().includes('derm') ? { bgcolor: '#e3f2fd', borderRadius: 1 } : {}}
+                    />
+                    <TextField
+                      label="7. Vista & Oculistico (VDT)"
+                      size="small"
+                      value={formData.objVista}
+                      onChange={(e) => setField('objVista', e.target.value)}
+                      sx={formData.targetOrgans?.toLowerCase().includes('vist') || formData.targetOrgans?.toLowerCase().includes('vdt') ? { bgcolor: '#e3f2fd', borderRadius: 1 } : {}}
+                    />
+                    <TextField
+                      label="8. Udito & ORL (Rumore)"
+                      size="small"
+                      value={formData.objUdito}
+                      onChange={(e) => setField('objUdito', e.target.value)}
+                      sx={formData.targetOrgans?.toLowerCase().includes('udit') || formData.targetOrgans?.toLowerCase().includes('rumor') ? { bgcolor: '#e3f2fd', borderRadius: 1 } : {}}
+                    />
+                  </Box>
                 </Box>
 
                 <TextField

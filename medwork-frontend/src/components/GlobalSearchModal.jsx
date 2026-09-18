@@ -324,7 +324,31 @@ export default function GlobalSearchModal({ open, onClose, onSelectWorker, onSel
                             </Typography>
                           }
                         />
-                        <Chip label="Apri Scheda" size="small" color="primary" variant="outlined" sx={{ height: 22, fontSize: '0.7rem' }} />
+                        <Stack direction="row" spacing={1} onClick={(e) => e.stopPropagation()}>
+                          <Chip 
+                            label="⚡ Avvia Visita" 
+                            size="small" 
+                            color="warning" 
+                            variant="filled" 
+                            onClick={() => {
+                              onClose()
+                              if (onStartVisit) {
+                                onStartVisit(emp)
+                              } else if (onNavigateModule) {
+                                onNavigateModule('medical-visit-stepper')
+                              }
+                            }}
+                            sx={{ height: 24, fontSize: '0.75rem', fontWeight: 700, bgcolor: '#ed6c02', color: '#fff', '&:hover': { bgcolor: '#e65100' } }} 
+                          />
+                          <Chip 
+                            label="Apri Scheda" 
+                            size="small" 
+                            color="primary" 
+                            variant="outlined" 
+                            onClick={() => handleSelectItem({ type: 'employee', data: emp })}
+                            sx={{ height: 24, fontSize: '0.7rem' }} 
+                          />
+                        </Stack>
                       </ListItemButton>
                     </ListItem>
                   )

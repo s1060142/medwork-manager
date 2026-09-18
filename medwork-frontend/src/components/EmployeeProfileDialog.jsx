@@ -418,19 +418,24 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                 </Stack>
 
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <Card variant="outlined" sx={{ bgcolor: '#f4f9fd', borderColor: '#b8daf8', textAlign: 'center', p: 1.5 }}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                        PRESSIONE ARTERIOSA (ULTIMA)
+                        PRESSIONE ARTERIOSA & RISCHIO CV
                       </Typography>
                       <Typography variant="h5" fontWeight={700} color="#1976d2" sx={{ my: 0.5 }}>
                         {vitalsTrends[0]?.bloodPressure || '120/80'} <span style={{ fontSize: '0.9rem' }}>mmHg</span>
                       </Typography>
-                      <Chip label="Normale / Ottimale" color="success" size="small" sx={{ fontSize: '0.7rem', height: 20 }} />
+                      <Chip 
+                        label="ESH/ESC Grado 0 — Ottimale" 
+                        color="success" 
+                        size="small" 
+                        sx={{ fontSize: '0.7rem', height: 20, fontWeight: 700 }} 
+                      />
                     </Card>
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <Card variant="outlined" sx={{ bgcolor: '#fbf7ed', borderColor: '#fae3b3', textAlign: 'center', p: 1.5 }}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
                         FREQUENZA CARDIACA (ULTIMA)
@@ -442,7 +447,24 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                     </Card>
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
+                    <Card variant="outlined" sx={{ bgcolor: '#fbf0f8', borderColor: '#f3c5ea', textAlign: 'center', p: 1.5 }}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        INDICE MERLUZZI (UDITO/RUMORE)
+                      </Typography>
+                      <Typography variant="h5" fontWeight={700} color="#9c27b0" sx={{ my: 0.5 }}>
+                        Classe 0 <span style={{ fontSize: '0.8rem' }}>(&lt; 25 dB)</span>
+                      </Typography>
+                      <Chip 
+                        label="Normoacusia • Nessun Danno" 
+                        color="success" 
+                        size="small" 
+                        sx={{ fontSize: '0.7rem', height: 20, fontWeight: 700 }} 
+                      />
+                    </Card>
+                  </Grid>
+
+                  <Grid item xs={12} sm={3}>
                     <Card variant="outlined" sx={{ bgcolor: '#f4fbf6', borderColor: '#b5e5c7', textAlign: 'center', p: 1.5 }}>
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
                         STATO IDONEITÀ CORRENTE

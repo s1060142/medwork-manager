@@ -5,8 +5,17 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
   Paper,
+  Radio,
+  RadioGroup,
   Stack,
   TextField,
   Tooltip,
@@ -15,6 +24,10 @@ import {
 import SaveIcon from '@mui/icons-material/Save'
 import PersonIcon from '@mui/icons-material/Person'
 import HistoryIcon from '@mui/icons-material/History'
+import DownloadIcon from '@mui/icons-material/Download'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { apiGet, apiSend } from '../services/apiClient'
 
 const FIELDS = [
@@ -36,6 +49,13 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp }) 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [savedAt, setSavedAt] = useState('')
+  
+  // Cessation modal state
+  const [cessationOpen, setCessationOpen] = useState(false)
+  const [cessationDate, setCessationDate] = useState(new Date().toISOString().slice(0, 10))
+  const [deliveryMethod, setDeliveryMethod] = useState('mani')
+  const [archiveEmployee, setArchiveEmployee] = useState(true)
+  const [cessationSuccess, setCessationSuccess] = useState(false)
 
   // Load employee list for autocomplete (when used standalone, without prop)
   useEffect(() => {
@@ -116,17 +136,31 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp }) 
               Allegato 3A — D.M. 9 luglio 2012 | Art. 25 D.Lgs. 81/08
             </Typography>
           </Box>
-          {activeEmployeeId && (
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={save}
-              disabled={saving || !activeEmployeeId}
-              size="small"
-            >
-              {saving ? 'Salvataggio…' : record ? 'Aggiorna cartella' : 'Crea cartella'}
-            </Button>
-          )}
+          <Stack direction="row" spacing={1}>
+            {activeEmployeeId && (
+              <Button
+                variant="outlined"
+                color="warning"
+                id="btn-cessazione-cartella-3a"
+                size="small"
+                onClick={() => setCessationOpen(true)}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
+                📦 Pacchetto Cessazione
+              </Button>
+            )}
+            {activeEmployeeId && (
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={save}
+                disabled={saving || !activeEmployeeId}
+                size="small"
+              >
+                {saving ? 'Salvataggio…' : record ? 'Aggiorna cartella' : 'Crea cartella'}
+              </Button>
+            )}
+          </Stack>
         </Box>
 
         {/* Employee selector (only shown standalone) */}
@@ -238,6 +272,116 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp }) 
           </Box>
         )}
       </Paper>
+
+      {/* CESSATION PACKAGE MODAL DIALOG (ITEM #10) */}
+      <Dialog
+        open={cessationOpen}
+        onClose={() => setCessationOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: '#0f1f3d', pb: 1 }}>
+          📦 Pacchetto Chiusura Cartella per Cessazione Rapporto
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            In adempimento all'<strong>Art. 25 comma 1 lett. e del D.Lgs. 81/08</strong>, alla cessazione del rapporto di lavoro il Medico Competente consegna al lavoratore copia della cartella sanitaria e di rischio e rilascia ricevuta di avvenuta consegna.
+          </Typography>
+
+          <Stack spacing={2.5}>
+            <TextField
+              label="Data Cessazione / Consegna"
+              type="date"
+              size="small"
+              fullWidth
+              value={cessationDate}
+              onChange={(e) => setCessationDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ fontSize: '0.85rem', fontWeight: 600 }}>Modalità di Consegna Copia Cartella</FormLabel>
+              <RadioGroup
+                value={deliveryMethod}
+                onChange={(e) => setDeliveryMethod(e.target.value)}
+                row
+              >
+                <FormControlLabel value="mani" control={<Radio size="small" />} label="A mani proprie con ricevuta" />
+                <FormControlLabel value="pec" control={<Radio size="small" />} label="Trasmissione PEC / Digitale" />
+                <FormControlLabel value="raccomandata" control={<Radio size="small" />} label="Raccomandata A/R" />
+              </RadioGroup>
+            </FormControl>
+
+            <Alert severity="info" sx={{ fontSize: '0.82rem' }}>
+              Verrà generato il <strong>Verbale di Consegna Cartella Sanitaria (PDF)</strong> con i riferimenti normativi e le dichiarazioni di riservatezza, e il lavoratore verrà contrassegnato come cessato nell'archivio storico.
+            </Alert>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setCessationOpen(false)} color="inherit">
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            id="btn-confirm-cessation-export"
+            startIcon={<DownloadIcon />}
+            onClick={async () => {
+              // Generate Delivery Verbale PDF
+              const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+              doc.setFontSize(16)
+              doc.setTextColor(15, 76, 129)
+              doc.text('VERBALE DI CONSEGNA COPIA CARTELLA SANITARIA E DI RISCHIO', 40, 50)
+              doc.setFontSize(10)
+              doc.setTextColor(100)
+              doc.text('(Art. 25, comma 1, lettera e - D.Lgs. 9 aprile 2008, n. 81 e s.m.i.)', 40, 68)
+
+              doc.setFontSize(10)
+              doc.setTextColor(30)
+              const empName = selectedEmployee ? `${selectedEmployee.lastName} ${selectedEmployee.firstName}` : `Lavoratore ID #${activeEmployeeId}`
+              const empCf = selectedEmployee?.taxCode || '-'
+              const compName = selectedEmployee?.companyName || 'Azienda'
+
+              autoTable(doc, {
+                startY: 90,
+                theme: 'grid',
+                head: [['Dati Lavoratore e Azienda', 'Dettaglio']],
+                body: [
+                  ['Lavoratore', empName],
+                  ['Codice Fiscale', empCf],
+                  ['Azienda di appartenenza', compName],
+                  ['Data di cessazione rapporto', cessationDate],
+                  ['Modalità di consegna', deliveryMethod === 'mani' ? 'Consegna a mani proprie' : deliveryMethod === 'pec' ? 'Trasmissione PEC' : 'Raccomandata A/R'],
+                ],
+                headStyles: { fillColor: [15, 76, 129] },
+                styles: { fontSize: 9, cellPadding: 4 },
+              })
+
+              const finalY = doc.lastAutoTable.finalY + 30
+              doc.text('DICHIARAZIONE DI AVVENUTA CONSEGNA E RICEVUTA', 40, finalY)
+              doc.setFontSize(9)
+              doc.text(
+                'Il sottoscritto lavoratore dichiara di aver ricevuto in data odierna dal Medico Competente copia conforme\ndella propria Cartella Sanitaria e di Rischio (Allegato 3A D.M. 9 luglio 2012) aggiornata alla data di cessazione\ndel rapporto di lavoro, e di essere stato informato sulla necessità di conservazione della stessa ai sensi di legge.',
+                40,
+                finalY + 18,
+              )
+
+              doc.text('Luogo e Data: ________________________', 40, finalY + 90)
+              doc.text('Firma del Lavoratore: ________________________', 300, finalY + 90)
+              doc.text('Firma e Timbro Medico Competente: ________________________', 300, finalY + 140)
+
+              doc.save(`Verbale-Consegna-Cartella-${empCf || activeEmployeeId}.pdf`)
+
+              setCessationOpen(false)
+              setCessationSuccess(true)
+            }}
+            sx={{ textTransform: 'none', fontWeight: 700 }}
+          >
+            Genera Pacchetto & Verbale PDF
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

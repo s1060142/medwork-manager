@@ -678,6 +678,15 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                           <button
                             type="button"
                             className="legacy-icon-btn-sm"
+                            aria-label="Cessazione"
+                            title="Cessazione rapporto & Consegna Cartella (Art. 25 D.Lgs. 81/08)"
+                            onClick={() => {
+                              onOpenEmployeeProfile?.(row)
+                            }}
+                          >📦</button>
+                          <button
+                            type="button"
+                            className="legacy-icon-btn-sm"
                             aria-label="Archivio"
                             title={row.isArchived ? 'Ripristina' : 'Archivia'}
                             onClick={() => handleToggleArchive(row)}

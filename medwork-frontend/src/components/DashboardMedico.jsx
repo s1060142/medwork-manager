@@ -149,15 +149,19 @@ export default function DashboardMedico({ onNewVisit }) {
       </Paper>
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Typography variant="subtitle1" sx={{ p: 2 }}>Visite con scadenza nei prossimi 7 giorni</Typography>
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="subtitle1" fontWeight={700}>Visite con scadenza nei prossimi 7 giorni & Triage Clinico</Typography>
+          <Chip size="small" label="Triage & Readiness Attivo" color="primary" variant="outlined" />
+        </Box>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Lavoratore</TableCell>
               <TableCell>Azienda</TableCell>
               <TableCell>Scadenza</TableCell>
-              <TableCell>Giudizio</TableCell>
-              <TableCell>Stato</TableCell>
+              <TableCell>Readiness / Triage</TableCell>
+              <TableCell>Stato Firma</TableCell>
+              <TableCell align="right">Azione Clinica</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -172,18 +176,35 @@ export default function DashboardMedico({ onNewVisit }) {
               .slice(0, 10)
               .map((v) => (
                 <TableRow key={v.id} hover>
-                  <TableCell>{v.employeeFullName || `#${v.employeeId}`}</TableCell>
+                  <TableCell fontWeight={600}>{v.employeeFullName || `#${v.employeeId}`}</TableCell>
                   <TableCell>{v.companyName || '-'}</TableCell>
                   <TableCell>{new Date(v.nextDeadlineDate || v.visitDate).toLocaleDateString('it-IT')}</TableCell>
                   <TableCell>
-                    <Typography variant="caption">{v.outcome || '-'}</Typography>
+                    {v.outcomeCode === 'NONIDONE0' ? (
+                      <Chip size="small" label="🔴 Triage Prioritario" color="error" sx={{ fontWeight: 600 }} />
+                    ) : v.isSigned ? (
+                      <Chip size="small" label="🟢 Referti Completi & Firmato" color="success" />
+                    ) : (
+                      <Chip size="small" label="🟡 In Attesa Visita" color="warning" />
+                    )}
                   </TableCell>
                   <TableCell>
                     <Chip
                       size="small"
-                      label={v.isSigned ? 'Firmata' : 'Da firmare'}
-                      color={v.isSigned ? 'success' : 'warning'}
+                      label={v.isSigned ? 'Firmata' : 'Da completare'}
+                      color={v.isSigned ? 'success' : 'default'}
                     />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      onClick={() => onNewVisit && onNewVisit()}
+                      sx={{ textTransform: 'none', fontWeight: 600, py: 0.5 }}
+                    >
+                      ⚡ Avvia Visita
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -195,7 +216,7 @@ export default function DashboardMedico({ onNewVisit }) {
                 return d >= now && d <= in7
               }).length === 0 && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <Typography variant="body2" color="text.secondary">Nessuna visita in scadenza nei prossimi 7 giorni.</Typography>
                 </TableCell>
               </TableRow>

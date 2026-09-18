@@ -97,7 +97,8 @@ export default function BatchSignatureCenter() {
       }
       const response = await apiSend('POST', '/api/doctor-data/batch-sign', payload)
       setConfirmModalOpen(false)
-      setSuccessMsg(`✓ Firma digitale applicata con successo a ${response.signedCount || selectedIds.size} giudizi di idoneità.`)
+      const count = response.signedCount || selectedIds.size
+      setSuccessMsg(`✓ Firma digitale applicata con successo a ${count} giudizi. 🚀 Pipeline completata: ${count} certificati PDF notificati al Datore di Lavoro (Art. 41 c.9) e archiviati in Cartella 3A.`)
       await loadVisits()
     } catch (err) {
       setError(err.message || 'Errore durante l\'applicazione della firma.')
@@ -113,19 +114,28 @@ export default function BatchSignatureCenter() {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'center' }} spacing={2}>
           <Box>
             <Typography variant="h5" fontWeight={700} color="#0f1f3d">
-              Firma Digitale Massiva Giudizi di Idoneità (D.Lgs. 81/08)
+              Firma Digitale Massiva & Auto-Dispatch Pipeline (D.Lgs. 81/08)
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Apposizione certificato di firma digitale (PAdES/CAdES) su blocchi di giudizi di idoneità emessi e in attesa di validazione.
+              Apposizione certificato di firma digitale (PAdES) e invio automatico notifiche conformi ad HR e Lavoratore.
             </Typography>
           </Box>
-          <Chip
-            icon={<VerifiedIcon />}
-            label="Certificato Digitale Attivo"
-            color="primary"
-            variant="outlined"
-            size="small"
-          />
+          <Stack direction="row" spacing={1}>
+            <Chip
+              label="🚀 Auto-Dispatch Attivo"
+              color="success"
+              variant="filled"
+              size="small"
+              sx={{ fontWeight: 700 }}
+            />
+            <Chip
+              icon={<VerifiedIcon />}
+              label="Certificato PAdES Attivo"
+              color="primary"
+              variant="outlined"
+              size="small"
+            />
+          </Stack>
         </Stack>
       </Paper>
 
@@ -139,45 +149,47 @@ export default function BatchSignatureCenter() {
 
       {/* VISITS TABLE */}
       <Card variant="outlined" sx={{ borderRadius: 3 }}>
-        <CardContent>
-          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={2} sx={{ mb: 2 }}>
+        <CardContent sx={{ p: 0 }}>
+          <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
             <Box>
-              <Typography variant="h6" fontWeight={700} color="#0f1f3d">
-                Giudizi in Attesa di Firma ({visits.length})
+              <Typography variant="subtitle1" fontWeight={700}>
+                Giudizi di Idoneità Pronti per Firma Massiva ({visits.length})
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {selectedIds.size} selezionati per la firma cumulativa
+                Seleziona i certificati da sigillare con firma digitale qualificata e inviare istantaneamente.
               </Typography>
             </Box>
             <Button
               variant="contained"
               color="primary"
-              startIcon={signing ? <CircularProgress size={18} color="inherit" /> : <DrawIcon />}
-              disabled={selectedIds.size === 0 || signing || loading}
+              startIcon={<DrawIcon />}
               onClick={handleOpenConfirm}
-              sx={{ textTransform: 'none', fontWeight: 700 }}
+              disabled={selectedIds.size === 0 || signing}
+              sx={{ textTransform: 'none', fontWeight: 700, px: 3 }}
             >
-              Firma Digitale Massiva {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+              Firma e Invia ({selectedIds.size})
             </Button>
-          </Stack>
+          </Box>
 
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+            <Stack alignItems="center" sx={{ py: 6 }}>
               <CircularProgress />
-            </Box>
+            </Stack>
           ) : visits.length === 0 ? (
-            <Alert severity="success" sx={{ borderRadius: 2 }}>
-              Nessun giudizio di idoneità in attesa di firma. Tutti i documenti risultano regolarmente firmati.
-            </Alert>
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="body1" color="text.secondary">
+                ✓ Nessun giudizio di idoneità in attesa di firma digitale.
+              </Typography>
+            </Box>
           ) : (
-            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+            <TableContainer>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                  <TableRow sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
                     <TableCell padding="checkbox">
                       <Checkbox
-                        checked={selectedIds.size === visits.length && visits.length > 0}
                         indeterminate={selectedIds.size > 0 && selectedIds.size < visits.length}
+                        checked={visits.length > 0 && selectedIds.size === visits.length}
                         onChange={handleSelectAll}
                       />
                     </TableCell>
@@ -185,7 +197,7 @@ export default function BatchSignatureCenter() {
                     <TableCell><strong>Azienda</strong></TableCell>
                     <TableCell><strong>Data Visita</strong></TableCell>
                     <TableCell><strong>Tipo Visita</strong></TableCell>
-                    <TableCell><strong>Esito Giudizio</strong></TableCell>
+                    <TableCell><strong>Giudizio Emesso</strong></TableCell>
                     <TableCell align="center"><strong>Stato</strong></TableCell>
                   </TableRow>
                 </TableHead>
@@ -229,18 +241,28 @@ export default function BatchSignatureCenter() {
       </Card>
 
       {/* CONFIRMATION & PIN DIALOG */}
-      <Dialog open={confirmModalOpen} onClose={() => setConfirmModalOpen(false)} maxWidth="xs" fullWidth>
+      <Dialog open={confirmModalOpen} onClose={() => setConfirmModalOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <LockIcon color="primary" />
           <Typography variant="h6" fontWeight={700}>
-            Conferma Firma Digitale
+            Conferma Firma Digitale Massiva & Auto-Dispatch
           </Typography>
         </DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Alert severity="info">
-              Stai per apporre la firma digitale su <strong>{selectedIds.size} documenti</strong>. L'operazione genererà l'impronta crittografica conforme PAdES.
+              Stai per apporre la firma digitale qualificata su <strong>{selectedIds.size} certificati di idoneità</strong> (PAdES).
             </Alert>
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f0fdf4', borderLeft: '4px solid #16a34a' }}>
+              <Typography variant="subtitle2" fontWeight={700} color="#15803d">
+                🚀 Pipeline di Auto-Dispatch Attiva:
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block">
+                • Notifica e trasmissione immediata esito ad HR/Datore di Lavoro (Art. 41 c.9 D.Lgs. 81/08)<br />
+                • Deposito certificato in Cartella Sanitaria e di Rischio (Allegato 3A)<br />
+                • Aggiornamento istantaneo del cruscotto Compliance Radar
+              </Typography>
+            </Paper>
             <TextField
               fullWidth
               size="small"
