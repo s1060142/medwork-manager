@@ -157,4 +157,65 @@ public class DocumentsController : ControllerBase
             return NotFound($"Visita medica {medicalVisitId} non trovata.");
         }
     }
+
+    /// <summary>
+    /// Returns a PDF binary of the official Allegato 3A Cartella Sanitaria e di Rischio.
+    /// </summary>
+    [HttpGet("visits/{medicalVisitId:int}/allegato-3a-pdf")]
+    [HttpPost("allegato-3a/{medicalVisitId:int}")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> DownloadAllegato3APdf(
+        int medicalVisitId,
+        CancellationToken cancellationToken)
+    {
+        var tenantCheck = await ValidateVisitTenantAsync(medicalVisitId);
+        if (tenantCheck != null) return tenantCheck;
+
+        try
+        {
+            var pdfBytes = await _documentGenerationService
+                .GenerateAllegato3A(medicalVisitId, cancellationToken);
+
+            return File(
+                pdfBytes,
+                "application/pdf",
+                $"allegato-3a-cartella-sanitaria-{medicalVisitId}.pdf");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Visita medica {medicalVisitId} non trovata.");
+        }
+    }
+
+    /// <summary>
+    /// Returns a PDF binary of the Relazione Sanitaria Annuale Art. 40 D.Lgs. 81/08.
+    /// </summary>
+    [HttpGet("companies/{companyId:int}/annual-report-pdf")]
+    [HttpPost("companies/{companyId:int}/annual-report")]
+    [Produces("application/pdf")]
+    public async Task<IActionResult> DownloadAnnualReportPdf(
+        int companyId,
+        [FromQuery] int? year,
+        CancellationToken cancellationToken)
+    {
+        var tenantCheck = await ValidateCompanyTenantAsync(companyId);
+        if (tenantCheck != null) return tenantCheck;
+
+        var refYear = year ?? DateTime.UtcNow.Year;
+
+        try
+        {
+            var pdfBytes = await _documentGenerationService
+                .GenerateAnnualReport(companyId, refYear, cancellationToken);
+
+            return File(
+                pdfBytes,
+                "application/pdf",
+                $"relazione-sanitaria-art40-{companyId}-{refYear}.pdf");
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Azienda {companyId} non trovata.");
+        }
+    }
 }

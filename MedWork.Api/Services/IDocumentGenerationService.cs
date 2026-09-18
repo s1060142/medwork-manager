@@ -11,6 +11,8 @@ public interface IDocumentGenerationService
     Task<Allegato3BSubmissionResult> SubmitAllegato3B(int companyId, CancellationToken cancellationToken = default);
 
     Task<byte[]> GenerateFitnessJudgmentPdf(int medicalVisitId, CancellationToken cancellationToken = default);
+    Task<byte[]> GenerateAllegato3A(int medicalVisitId, CancellationToken cancellationToken = default);
+    Task<byte[]> GenerateAnnualReport(int companyId, int year, CancellationToken cancellationToken = default);
 }
 
 public sealed record Allegato3BValidationResult(bool IsValid, IReadOnlyList<string> Errors);

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Box,
   Button,
+  Chip,
   CssBaseline,
   Paper,
   Stack,
@@ -14,6 +15,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { it as itLocale } from 'date-fns/locale'
 import MenuIcon from '@mui/icons-material/Menu'
 import HomeIcon from '@mui/icons-material/Home'
+import DashboardIcon from '@mui/icons-material/Dashboard'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import BusinessIcon from '@mui/icons-material/Business'
@@ -59,6 +61,7 @@ import AnalyticsCenter from './components/AnalyticsCenter'
 import CartellaSanitariaCenter from './components/CartellaSanitariaCenter'
 import GiudizioIdoneitaCenter from './components/GiudizioIdoneitaCenter'
 import FirmaGrafometricaCenter from './components/FirmaGrafometricaCenter'
+import GlobalSearchModal from './components/GlobalSearchModal'
 import Allegato3BCenter from './components/Allegato3BCenter'
 import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
 import PatientAnamnesisForm from './components/PatientAnamnesisForm'
@@ -88,6 +91,7 @@ function readActiveCompanyFromSettings() {
 const ENTITY_BY_KEY = Object.fromEntries(ENTITY_CONFIGS.map((item) => [item.key, item]))
 
 const SIDE_NAV_ITEMS = [
+  { key: 'home', label: 'Il Mio Giorno', icon: DashboardIcon },
   { key: 'company-management', label: 'Gestione aziende', icon: BusinessIcon },
   { key: 'workers-management', label: 'Gestione lavoratori', icon: BadgeIcon },
   { key: 'analysis', label: 'Analisi e relazioni', icon: AssessmentIcon },
@@ -123,14 +127,20 @@ const SCHEDULE_TABS = [
 const ANALYSIS_TABS = [
   { key: 'visits', label: 'Elenco visite', moduleKey: 'reporting' },
   { key: 'activities', label: 'Elenco attività', moduleKey: 'recall-campaigns' },
-  { key: 'relations', label: 'Relazioni aziendali', moduleKey: 'company-contacts' },
+  { key: 'relations', label: 'Relazioni aziendali', moduleKey: 'reporting' },
   { key: 'charts', label: 'Grafici e analisi', moduleKey: 'analytics' },
 ]
 
 const HEALTH_TABS = [
-  { key: 'protocols', label: 'Protocolli', moduleKey: 'protocols' },
-  { key: 'appointments-calendar', label: 'Appuntamenti', moduleKey: 'appointments-calendar' },
-  { key: 'medical-visit-stepper', label: 'Nuova visita', moduleKey: 'medical-visit-stepper' },
+  { key: 'medical-visit-stepper', label: 'Nuova Visita', moduleKey: 'medical-visit-stepper' },
+  { key: 'giudizio-idoneita', label: 'Centro Giudizi', moduleKey: 'giudizio-idoneita' },
+  { key: 'batch-signature', label: 'Firma Massiva', moduleKey: 'batch-signature' },
+  { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
+  { key: 'cartella-sanitaria', label: 'Cartella 3A', moduleKey: 'cartella-sanitaria' },
+  { key: 'sopralluoghi', label: 'Sopralluoghi Art. 25', moduleKey: 'sopralluoghi' },
+  { key: 'protocols', label: 'Protocolli & Rischi', moduleKey: 'protocols' },
+  { key: 'compliance', label: 'Compliance Radar', moduleKey: 'compliance' },
+  { key: 'appointments-calendar', label: 'Calendario', moduleKey: 'appointments-calendar' },
 ]
 
 const ADMIN_TABS = [
@@ -198,6 +208,7 @@ const AREA_MODULE_KEYS: Record<string, string[]> = {
 }
 
 const AREA_DEFAULT_MODULE = {
+  home: 'dashboard',
   'company-management': 'companies',
   'workers-management': 'employees',
   analysis: 'reporting',
@@ -295,8 +306,20 @@ const App = () => {
   const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
   const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
 
-  // Global search (topbar Autocomplete)
+  // Global search modal state (Ctrl+K / Cmd+K)
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
   const [searchOptions, setSearchOptions] = useState<any[]>([])
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault()
+        setGlobalSearchOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [])
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
 
@@ -588,8 +611,25 @@ const App = () => {
     }
 
     if (moduleKey === 'dashboard' || moduleKey === 'home') {
-          return <Dashboard />
-        }
+      return (
+        <Dashboard
+          onOpenMedicalVisitCreate={(employeeId) => {
+            if (employeeId) setVisitInitialEmployeeId(Number(employeeId))
+            setSelectedModuleKey('medical-visit-stepper')
+            setSelectedArea('health-surveillance')
+          }}
+          onNavigateModule={(mod) => {
+            setSelectedModuleKey(mod)
+            for (const [areaKey, modKeys] of Object.entries(AREA_MODULE_KEYS)) {
+              if (modKeys.includes(mod)) {
+                setSelectedArea(areaKey)
+                break
+              }
+            }
+          }}
+        />
+      )
+    }
 
         if (moduleKey === 'company-groups') {
           return <CompanyGroupsCenter />
@@ -730,6 +770,10 @@ const App = () => {
 
     if (moduleKey === 'allegato-3b') {
       return <Allegato3BCenter />
+    }
+
+    if (moduleKey === 'sopralluoghi' || moduleKey === 'site-visits' || moduleKey === 'site-visit-deadlines') {
+      return <SiteVisitDeadlinesCenter activeCompanyId={activeCompanyId} />
     }
 
     if (moduleKey === 'alert-multicanale') {
@@ -1120,28 +1164,29 @@ const App = () => {
                    <MenuIcon fontSize="small" />
                  </button>
 
-                <Autocomplete
-                   sx={{ width: 300, ml: 2, '& .MuiInputBase-root': { bgcolor: 'white', borderRadius: 1, height: 36 } }}
+                <Button
+                   variant="outlined"
                    size="small"
-                   options={searchOptions}
-                   onInputChange={handleSearchInputChange}
-                   onChange={handleSearchSelect}
-                   getOptionLabel={(option) => typeof option === 'string' ? option : `${option.firstName || ''} ${option.lastName || ''}`.trim()}
-                   freeSolo
-                   disableClearable
-                   noOptionsText="Nessun lavoratore"
-                   renderInput={(params) => (
-                     <TextField
-                       {...params}
-                       placeholder="Cerca lavoratore..."
-                       InputProps={{
-                         ...params.InputProps,
-                         type: 'search',
-                         startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                       }}
-                     />
-                   )}
-                 />
+                   startIcon={<SearchIcon fontSize="small" />}
+                   onClick={() => setGlobalSearchOpen(true)}
+                   sx={{
+                     ml: 2,
+                     bgcolor: 'white',
+                     color: 'text.primary',
+                     borderColor: '#d0d7de',
+                     borderRadius: 2,
+                     height: 36,
+                     px: 2,
+                     textTransform: 'none',
+                     display: 'flex',
+                     justifyContent: 'space-between',
+                     minWidth: 280,
+                     '&:hover': { bgcolor: '#f6f8fa', borderColor: '#1976d2' }
+                   }}
+                 >
+                   <span>Cerca lavoratore, azienda...</span>
+                   <Chip label="Ctrl+K" size="small" sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#f0f2f5', ml: 1.5 }} />
+                 </Button>
                </Box>
                <Box className="legacy-topbar-right">
                  <button type="button" className="legacy-toolbar-link" aria-label="Notifiche" onClick={handleNotificheClick}>
@@ -1237,6 +1282,30 @@ const App = () => {
           onExportSuccess={() => {
             setHrImportExportOpen(false)
             setHrImportExportType(null)
+          }}
+        />
+        <GlobalSearchModal
+          open={globalSearchOpen}
+          onClose={() => setGlobalSearchOpen(false)}
+          onSelectWorker={(emp: any) => handleOpenEmployeeProfile(emp)}
+          onSelectCompany={(comp: any) => handleOpenCompanyProfile(comp)}
+          onNavigateModule={(mod: string) => {
+            setSelectedModuleKey(mod)
+            // find parent area if applicable
+            for (const [areaKey, modKeys] of Object.entries(AREA_MODULE_KEYS)) {
+              if (modKeys.includes(mod)) {
+                setSelectedArea(areaKey)
+                if (areaKey === 'health-surveillance') {
+                  setSelectedHealthTab(mod)
+                } else if (areaKey === 'analysis') {
+                  const tab = ANALYSIS_TABS.find(t => t.moduleKey === mod)
+                  if (tab) setSelectedAnalysisTab(tab.key)
+                } else if (areaKey === 'schedule') {
+                  setSelectedScheduleTab(mod)
+                }
+                break
+              }
+            }
           }}
         />
       </Box>

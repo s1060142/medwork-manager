@@ -108,6 +108,7 @@ function defaultFormData() {
     bankChargesDebit: '',
     bankChargesAmount: '0',
     splitPayment: '',
+    companyGroupId: null,
     notes: '',
   }
 }
@@ -121,6 +122,7 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
   const [formData, setFormData] = useState(defaultFormData())
   const [companyContacts, setCompanyContacts] = useState([])
   const [availableDoctors, setAvailableDoctors] = useState([])
+  const [availableGroups, setAvailableGroups] = useState([])
   const [assignedDoctorIds, setAssignedDoctorIds] = useState([])
   const [coordinatorDoctorId, setCoordinatorDoctorId] = useState(null)
   const [healthPlanOpen, setHealthPlanOpen] = useState(false)
@@ -200,6 +202,7 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           bankChargesDebit: source.bankChargesDebit || current.bankChargesDebit,
           bankChargesAmount: source.bankChargesAmount ?? current.bankChargesAmount,
           splitPayment: source.splitPayment || current.splitPayment,
+          companyGroupId: source.companyGroupId ?? current.companyGroupId,
           notes: source.notes || current.notes,
         }))
         setDirty(false)
@@ -216,13 +219,15 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
 
     const load = async () => {
       try {
-        const [contactsData, doctorsData, companyDoctorsData] = await Promise.all([
+        const [contactsData, doctorsData, companyDoctorsData, groupsData] = await Promise.all([
           apiGet(`/api/master-data/company-contacts?companyId=${company.id}`).catch(() => []),
           apiGet('/api/master-data/doctors').catch(() => []),
           apiGet(`/api/master-data/company-doctors?companyId=${company.id}`).catch(() => []),
+          apiGet('/api/master-data/company-groups').catch(() => []),
         ])
         setCompanyContacts(Array.isArray(contactsData) ? contactsData : [])
         setAvailableDoctors(Array.isArray(doctorsData) ? doctorsData : [])
+        setAvailableGroups(Array.isArray(groupsData) ? groupsData : [])
         const assignments = Array.isArray(companyDoctorsData) ? companyDoctorsData : []
         setAssignedDoctorIds(assignments.map((item) => Number(item.doctorId)))
         const coordinator = assignments.find((item) => item.isCoordinator)
@@ -380,6 +385,48 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                     <MenuItem value="Attiva">Attiva</MenuItem>
                     <MenuItem value="Archiviata">Archiviata</MenuItem>
                   </TextField>
+                </Box>
+              </Paper>
+
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: formData.companyGroupId ? '#f0fdf4' : 'background.paper', borderColor: formData.companyGroupId ? '#22c55e' : 'divider' }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1} sx={{ mb: 1.5 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BusinessCenterIcon fontSize="small" color={formData.companyGroupId ? 'success' : 'action'} /> Gruppo Aziendale / Holding (D.Lgs. 81/08)
+                  </Typography>
+                  {formData.companyGroupId && (
+                    <Chip size="small" label="Azienda Consorziata / In Gruppo" color="success" variant="filled" />
+                  )}
+                </Stack>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 2, alignItems: 'center' }}>
+                  <TextField
+                    size="small"
+                    label="Gruppo Aziendale di Appartenenza"
+                    select
+                    value={formData.companyGroupId || ''}
+                    onChange={handleFieldChange('companyGroupId')}
+                    fullWidth
+                  >
+                    <MenuItem value=""><em>Nessun gruppo (Azienda Indipendente)</em></MenuItem>
+                    {availableGroups.map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {g.name} {g.legalName ? `(${g.legalName})` : ''}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  {formData.companyGroupId ? (
+                    <Box sx={{ p: 1.2, bgcolor: '#ffffff', borderRadius: 1.5, border: '1px solid #bbf7d0' }}>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Questa azienda appartiene a: <strong>{availableGroups.find(g => Number(g.id) === Number(formData.companyGroupId))?.name || `Gruppo #${formData.companyGroupId}`}</strong>.
+                      </Typography>
+                      <Typography variant="caption" color="success.main" sx={{ fontWeight: 600 }}>
+                        ✓ Eredita i protocolli sanitari di gruppo, il coordinamento medico e il piano di sorveglianza consolidato.
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      Associa l'azienda a una holding o consorzio per abilitare la condivisione automatica di protocolli sanitari e coordinamento medico.
+                    </Typography>
+                  )}
                 </Box>
               </Paper>
 

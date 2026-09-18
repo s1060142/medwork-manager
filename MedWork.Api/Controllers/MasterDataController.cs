@@ -115,7 +115,9 @@ public class MasterDataController : ControllerBase
                     .Where(cd => cd.IsActive && cd.Doctor != null)
                     .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
                     .FirstOrDefault(),
-                IsCoordinator = x.CompanyDoctors.Any(cd => cd.IsActive && cd.IsCoordinator)
+                IsCoordinator = x.CompanyDoctors.Any(cd => cd.IsActive && cd.IsCoordinator),
+                x.CompanyGroupId,
+                CompanyGroupName = x.CompanyGroup != null ? x.CompanyGroup.Name : null,
             })
             .ToListAsync();
 

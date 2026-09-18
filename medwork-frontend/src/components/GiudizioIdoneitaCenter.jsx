@@ -9,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Grid,
   IconButton,
   MenuItem,
@@ -30,6 +31,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import CloseIcon from '@mui/icons-material/Close'
+import HealingIcon from '@mui/icons-material/Healing'
+import DescriptionIcon from '@mui/icons-material/Description'
 
 import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -40,6 +43,23 @@ const OUTCOMES = [
   { code: 'IDONE0L', label: 'Idoneo alla mansione con limitazioni', color: 'warning' },
   { code: 'NONIDONE0', label: 'Non idoneo', color: 'error' },
   { code: 'INATTESA', label: 'In attesa di accertamenti', color: 'info' },
+]
+
+const PRESCRIPTION_PRESETS = [
+  { category: 'DPI', text: 'Uso obbligatorio DPI uditivi (otoprotettori SNR ≥ 28 dB)', type: 'presc' },
+  { category: 'DPI', text: 'Uso obbligatorio occhiali di protezione con ripari laterali', type: 'presc' },
+  { category: 'DPI', text: 'Uso guanti di protezione chimica/meccanica specifici', type: 'presc' },
+  { category: 'DPI', text: 'Uso calzature di sicurezza con puntale e suola antiscivolo', type: 'presc' },
+  { category: 'DPI', text: 'Uso maschera respiratoria filtrante FFP2/FFP3', type: 'presc' },
+  { category: 'VDT', text: 'Prescrizione uso lenti correttive per lavoro a VDT', type: 'presc' },
+  { category: 'VDT', text: 'Pausa visiva di 15 minuti ogni 120 minuti a VDT', type: 'presc' },
+  { category: 'MMC', text: 'Limitazione MMC: sollevamento massimo consentito 10 kg', type: 'limit' },
+  { category: 'MMC', text: 'Limitazione MMC: sollevamento massimo consentito 15 kg', type: 'limit' },
+  { category: 'MMC', text: 'Divieto di sollevamento carichi con torsione del tronco', type: 'limit' },
+  { category: 'Mansione', text: 'Esclusione da mansioni che comportano lavoro in quota (> 2m)', type: 'limit' },
+  { category: 'Mansione', text: 'Esclusione da lavoro in turno notturno (00:00 - 06:00)', type: 'limit' },
+  { category: 'Mansione', text: 'Divieto di guida carrelli elevatori e macchine semoventi', type: 'limit' },
+  { category: 'Mansione', text: 'Esclusione da spazi confinati o a rischio asfissia', type: 'limit' },
 ]
 
 function getOutcomeInfo(code, label) {
@@ -126,6 +146,26 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
     setEditDialogOpen(true)
   }
 
+  const handleToggleDialogPreset = (preset) => {
+    const isPrescription = preset.type === 'presc'
+    const targetField = isPrescription ? 'prescriptions' : 'limitations'
+    const currentVal = judgmentForm[targetField] || ''
+
+    if (currentVal.includes(preset.text)) {
+      const updated = currentVal
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s && s !== preset.text)
+        .join('; ')
+      setJudgmentForm(prev => ({ ...prev, [targetField]: updated }))
+    } else {
+      const updated = currentVal.trim()
+        ? `${currentVal.trim()}; ${preset.text}`
+        : preset.text
+      setJudgmentForm(prev => ({ ...prev, [targetField]: updated }))
+    }
+  }
+
   const handleSaveJudgment = async () => {
     if (!activeVisit?.id) return
     setSaving(true)
@@ -140,9 +180,8 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
         nextReviewDate: judgmentForm.nextReviewDate ? new Date(judgmentForm.nextReviewDate).toISOString() : null,
       }
       await apiSend('PUT', `/api/visit-judgments/${activeVisit.id}`, payload)
-      setSuccess('Giudizio di idoneità salvato e aggiornato con successo.')
+      setSuccess('✓ Giudizio di idoneità salvato e aggiornato con successo.')
 
-      // Update in local state
       setVisits((prev) =>
         prev.map((item) =>
           item.id === activeVisit.id
@@ -184,6 +223,30 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
       URL.revokeObjectURL(url)
     } catch (err) {
       setError('Impossibile scaricare il certificato PDF. Riprovare.')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  const downloadAllegato3APdf = async (visitId) => {
+    if (!visitId) return
+    setDownloadingId(visitId)
+    setError('')
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/documents/visits/${visitId}/allegato-3a-pdf`,
+        { headers: getHeaders() }
+      )
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `allegato-3a-cartella-sanitaria-${visitId}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError('Impossibile scaricare l\'Allegato 3A PDF. Riprovare.')
     } finally {
       setDownloadingId(null)
     }
@@ -232,14 +295,14 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
   }, [visits])
 
   return (
-    <Box sx={{ p: 2.5, maxWidth: 1400, mx: 'auto' }}>
+    <Box sx={{ p: 2.5, maxWidth: 1500, mx: 'auto' }}>
       {/* Header */}
       <Box sx={{ mb: 2.5 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
           Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Gestione, consultazione, verbalizzazione e rilascio dei certificati di idoneità alla mansione specifica.
+          Gestione, consultazione, verbalizzazione e rilascio dei certificati legali di idoneità alla mansione specifica.
         </Typography>
       </Box>
 
@@ -350,30 +413,29 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Data Visita</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Lavoratore</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Codice Fiscale</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Azienda</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Medico Competente</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Esito Giudizio</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Mansione / Reparto</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Esito Formale</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Prescrizioni / Limitazioni</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Prossima Revisione</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Scadenza</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 700 }}>Azioni</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredVisits.map((row) => {
                 const info = getOutcomeInfo(row.outcomeCode, row.outcome)
-                const visitDateStr = row.visitDate ? new Date(row.visitDate).toLocaleDateString('it-IT') : '—'
-                const deadlineStr = row.nextDeadlineDate ? new Date(row.nextDeadlineDate).toLocaleDateString('it-IT') : '—'
-                const notes = row.prescriptions || row.limitations || row.clinicalNotes || '—'
+                const visitDateStr = row.visitDate ? new Date(row.visitDate).toLocaleDateString('it-IT') : '-'
+                const deadlineStr = row.nextDeadlineDate ? new Date(row.nextDeadlineDate).toLocaleDateString('it-IT') : '-'
+                const notes = [row.prescriptions, row.limitations].filter(Boolean).join(' • ') || '-'
 
                 return (
                   <TableRow key={row.id} hover>
                     <TableCell>{visitDateStr}</TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{row.employeeFullName}</Typography>
-                      <Typography variant="caption" color="text.secondary">{row.employeeJobRole || '—'} • {row.employeeTaxCode || ''}</Typography>
-                    </TableCell>
-                    <TableCell>{row.companyName}</TableCell>
-                    <TableCell sx={{ color: '#0f4c81', fontWeight: 500 }}>{row.doctorFullName}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{row.employeeFullName || '-'}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{row.employeeTaxCode || '-'}</TableCell>
+                    <TableCell>{row.companyName || '-'}</TableCell>
+                    <TableCell>{row.jobRole || '-'}</TableCell>
                     <TableCell>
                       <Chip
                         label={info.label}
@@ -388,12 +450,12 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
                     <TableCell>{deadlineStr}</TableCell>
                     <TableCell align="center">
                       <Stack direction="row" spacing={1} justifyContent="center">
-                        <Tooltip title="Modifica Giudizio">
+                        <Tooltip title="Modifica Giudizio & Prescrizioni">
                           <IconButton size="small" color="primary" onClick={() => openEdit(row)}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Scarica Certificato PDF (Art. 41)">
+                        <Tooltip title="Scarica Certificato Idoneità PDF (Art. 41)">
                           <IconButton
                             size="small"
                             color="secondary"
@@ -401,6 +463,16 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
                             onClick={() => downloadPdf(row.id)}
                           >
                             {downloadingId === row.id ? <CircularProgress size={18} /> : <DownloadIcon fontSize="small" />}
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Scarica Cartella Sanitaria Allegato 3A (PDF)">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={downloadingId === row.id}
+                            onClick={() => downloadAllegato3APdf(row.id)}
+                          >
+                            <DescriptionIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </Stack>
@@ -418,7 +490,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
         <DialogTitle sx={{ bgcolor: '#0f1f3d', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
             <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 600 }}>
-              Verbalizzazione Giudizio di Idoneità
+              Verbalizzazione Giudizio di Idoneità (Art. 41 D.Lgs. 81/08)
             </Typography>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)' }}>
               Lavoratore: {activeVisit?.employeeFullName} • {activeVisit?.companyName}
@@ -452,10 +524,37 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
               ))}
             </TextField>
 
+            {/* PRESCRIZIONI CHIPS */}
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fcfdfe' }}>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                <HealingIcon color="primary" fontSize="small" />
+                <Typography variant="subtitle2" fontWeight={700} color="#0f1f3d">
+                  Inserisci Prescrizioni o Limitazioni Standard
+                </Typography>
+              </Stack>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
+                {PRESCRIPTION_PRESETS.map((p, idx) => {
+                  const targetField = p.type === 'presc' ? 'prescriptions' : 'limitations'
+                  const active = (judgmentForm[targetField] || '').includes(p.text)
+                  return (
+                    <Chip
+                      key={idx}
+                      label={p.text}
+                      size="small"
+                      color={active ? (p.type === 'presc' ? 'primary' : 'warning') : 'default'}
+                      variant={active ? 'filled' : 'outlined'}
+                      onClick={() => handleToggleDialogPreset(p)}
+                      sx={{ cursor: 'pointer', fontWeight: active ? 600 : 400 }}
+                    />
+                  )
+                })}
+              </Box>
+            </Paper>
+
             <TextField
               label="Prescrizioni specifiche"
               multiline
-              rows={3}
+              rows={2}
               fullWidth
               value={judgmentForm.prescriptions}
               onChange={(e) => setJudgmentForm({ ...judgmentForm, prescriptions: e.target.value })}
@@ -466,7 +565,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
             <TextField
               label="Limitazioni operative"
               multiline
-              rows={3}
+              rows={2}
               fullWidth
               value={judgmentForm.limitations}
               onChange={(e) => setJudgmentForm({ ...judgmentForm, limitations: e.target.value })}
@@ -478,34 +577,27 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
               label="Data Prossima Revisione / Scadenza Idoneità *"
               InputLabelProps={{ shrink: true }}
               value={currentDateValue(judgmentForm.nextReviewDate)}
-              onChange={(date) => setJudgmentForm({ ...judgmentForm, nextReviewDate: formDateValue(date) })}
+              onChange={(date) =>
+                setJudgmentForm({
+                  ...judgmentForm,
+                  nextReviewDate: formDateValue(date),
+                })
+              }
               inputFormat="dd/MM/yyyy"
               locale={DATE_PICKER_LOCALE}
             />
-
-            <Alert severity="info" sx={{ fontSize: '0.85rem' }}>
-              <strong>Comunicazione legale ex art. 41 D.Lgs. 81/08:</strong> Copia del giudizio viene notificata al datore di lavoro e rilasciata al lavoratore. Avverso il presente giudizio è ammesso ricorso entro 30 giorni all&apos;organo di vigilanza territorialmente competente (ASL / Spresal).
-            </Alert>
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #eaeef5' }}>
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={() => downloadPdf(activeVisit?.id)}
-            disabled={!activeVisit?.id || saving}
-          >
-            Scarica PDF Certificato
-          </Button>
-          <Box sx={{ flexGrow: 1 }} />
-          <Button onClick={() => setEditDialogOpen(false)}>Chiudi</Button>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setEditDialogOpen(false)}>Annulla</Button>
           <Button
             variant="contained"
             startIcon={<SaveIcon />}
+            disabled={saving}
             onClick={handleSaveJudgment}
-            disabled={saving || !judgmentForm.outcomeCode}
+            sx={{ fontWeight: 600 }}
           >
-            {saving ? 'Salvataggio…' : 'Salva e Conferma Giudizio'}
+            {saving ? 'Salvataggio...' : 'Salva Giudizio'}
           </Button>
         </DialogActions>
       </Dialog>

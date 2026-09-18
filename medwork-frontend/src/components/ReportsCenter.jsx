@@ -908,23 +908,57 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
               <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />} onClick={() => window.alert('Vedi analisi non ancora disponibile')}>Vedi analisi</Button>
             </Paper>
 
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>Relazioni</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 }}>
-                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria annuale predefinita</Typography>
-                </Paper>
-                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria personalizzata</Typography>
-                </Paper>
-                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>Relazione sanitaria comparativa</Typography>
-                </Paper>
-                <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                  <Typography variant="body2" fontWeight={700}>Resoconto aziendale</Typography>
-                </Paper>
-              </Box>
-              <Button className="legacy-btn" sx={{ mt: 1.5 }} onClick={() => window.alert('Nuovo documento non ancora disponibile')}>+ Nuovo documento</Button>
+            <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={700} color="#0f1f3d">
+                    Relazione Sanitaria Annuale (Art. 40 D.Lgs. 81/08)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Documento riassuntivo annuale presentato dal Medico Competente al Datore di Lavoro, RSPP e RLS.
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={loadingKey === 'annual-report-art40' ? <CircularProgress size={18} color="inherit" /> : <PictureAsPdfIcon />}
+                  disabled={loadingKey === 'annual-report-art40'}
+                  onClick={async () => {
+                    const targetCompId = companyId || companies[0]?.id
+                    if (!targetCompId) {
+                      setError('Seleziona un\'azienda per generare la Relazione Sanitaria.')
+                      return
+                    }
+                    setLoadingKey('annual-report-art40')
+                    setError('')
+                    setSuccess('')
+                    try {
+                      const yr = new Date().getFullYear()
+                      const response = await fetch(`${API_BASE_URL}/api/documents/companies/${targetCompId}/annual-report-pdf?year=${yr}`, {
+                        headers: getHeaders(),
+                      })
+                      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+                      const blob = await response.blob()
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `relazione-sanitaria-art40-${targetCompId}-${yr}.pdf`
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                      URL.revokeObjectURL(url)
+                      setSuccess('Relazione Sanitaria Annuale Art. 40 generata e scaricata con successo.')
+                    } catch (err) {
+                      setError(err.message || 'Errore nella generazione della Relazione Sanitaria Art. 40.')
+                    } finally {
+                      setLoadingKey('')
+                    }
+                  }}
+                  sx={{ textTransform: 'none', fontWeight: 700 }}
+                >
+                  Scarica Relazione Sanitaria Art. 40 (PDF)
+                </Button>
+              </Stack>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>

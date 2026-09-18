@@ -79,6 +79,8 @@ public class AdminCrudController : ControllerBase
                 x.ATECOCode,
                 x.RiskClass,
                 x.IsActive,
+                x.CompanyGroupId,
+                CompanyGroupName = x.CompanyGroup != null ? x.CompanyGroup.Name : null,
             })
             .ToListAsync();
         return Ok(data);
@@ -184,6 +186,7 @@ public class AdminCrudController : ControllerBase
                                 entity.BankChargesDebit = request.BankChargesDebit;
                                 entity.BankChargesAmount = request.BankChargesAmount;
                                 entity.SplitPayment = request.SplitPayment;
+                                entity.CompanyGroupId = request.CompanyGroupId;
                                 entity.UpdatedAt = DateTime.UtcNow;
 
                 await _dbContext.SaveChangesAsync();

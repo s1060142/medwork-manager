@@ -3,12 +3,15 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
   MenuItem,
   Paper,
   Stack,
@@ -23,6 +26,7 @@ import {
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import AddIcon from '@mui/icons-material/Add'
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import { apiGet, apiSend } from '../services/apiClient'
 import { downloadCsv } from '../utils/csv'
 
@@ -34,12 +38,76 @@ const EMPTY_FORM = {
   description: '',
 }
 
+const SMART_PRESETS = [
+  {
+    id: 'rumore',
+    title: '🎧 Rischio Rumore (> 85 dB)',
+    name: 'Protocollo Sorveglianza Rumore (Art. 196 D.Lgs. 81/08)',
+    cadenceDays: 365,
+    lawReference: 'D.Lgs. 81/08 Titolo VIII Capo II',
+    objective: 'Prevenzione ipoacusia da rumore e sordità professionale',
+    description: 'Visita medica annuale con anamnesi audiologica, otoscopia ed esame audiometrico tonale liminare in cabina silente.',
+    color: '#1976d2',
+  },
+  {
+    id: 'vdt',
+    title: '💻 Videoterminale (VDT > 20h/sett)',
+    name: 'Protocollo Videoterminalisti (Art. 176 D.Lgs. 81/08)',
+    cadenceDays: 730,
+    lawReference: 'D.Lgs. 81/08 Titolo VII',
+    objective: 'Prevenzione astenopia, disturbi visivi ed ergoftalmologici',
+    description: 'Visita medica biennale (<50 anni) o quinquennale con screening visivo (Visiotest), valutazione posturale e rachide.',
+    color: '#0284c7',
+  },
+  {
+    id: 'mmc',
+    title: '📦 Movimentazione Manuale Carichi (MMC)',
+    name: 'Protocollo Biomeccanico Rachide & MMC (Art. 168 D.Lgs. 81/08)',
+    cadenceDays: 365,
+    lawReference: 'D.Lgs. 81/08 Titolo VI & ISO 11228',
+    objective: 'Prevenzione patologie muscoloscheletriche e discopatie',
+    description: 'Valutazione clinica funzionale del rachide, flessibilità, test di Lasègue/Wasserman, dinamometria e consigli ergonomici.',
+    color: '#d97706',
+  },
+  {
+    id: 'chimico',
+    title: '🧪 Rischio Chimico / Polveri / Solventi',
+    name: 'Protocollo Rischio Chimico & Polmonare (Art. 229 D.Lgs. 81/08)',
+    cadenceDays: 365,
+    lawReference: 'D.Lgs. 81/08 Titolo IX',
+    objective: 'Sorveglianza per esposizione a sostanze chimiche e vapori organici',
+    description: 'Visita medica annuale, spirometria con curva flusso/volume, monitoraggio biologico urinario (IBE) e funzionalità epatorenale.',
+    color: '#9333ea',
+  },
+  {
+    id: 'guida',
+    title: '🚜 Mulettisti / Autisti / Incolumità Terzi',
+    name: 'Protocollo Idoneità Guida & Mansioni a Rischio Terzi',
+    cadenceDays: 365,
+    lawReference: 'DPR 309/90 & Accordo Stato-Regioni 30/10/07',
+    objective: 'Accertamento assenza di tossicodipendenza e idoneità alla guida',
+    description: 'Visita medica annuale con riflessometria, drug test urine a catena di custodia (screening rapido + conferma) e alcolimetria.',
+    color: '#dc2626',
+  },
+  {
+    id: 'notturno',
+    title: '🌙 Lavoro Notturno (D.Lgs. 66/2003)',
+    name: 'Protocollo Lavoro Notturno (D.Lgs. 66/2003 Art. 14)',
+    cadenceDays: 730,
+    lawReference: 'D.Lgs. 66/2003 Art. 14',
+    objective: 'Valutazione idoneità al lavoro notturno (ore 22:00 - 06:00)',
+    description: 'Visita medica biennale con monitoraggio profilo cardiovascolare, disturbi del sonno e apparato gastrointestinale.',
+    color: '#475569',
+  },
+]
+
 function ProtocolsCenter() {
   const [protocols, setProtocols] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchText, setSearchText] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [smartDialogOpen, setSmartDialogOpen] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
@@ -59,7 +127,7 @@ function ProtocolsCenter() {
 
   useEffect(() => { load() }, [load])
 
-const visibleProtocols = useMemo(() => {
+  const visibleProtocols = useMemo(() => {
     const needle = searchText.toLowerCase()
     if (!needle) return protocols
     return protocols.filter(p =>
@@ -70,8 +138,8 @@ const visibleProtocols = useMemo(() => {
     )
   }, [protocols, searchText])
 
-  const handleSave = async () => {
-    if (!formData.name.trim()) {
+  const handleSave = async (dataToSave = formData) => {
+    if (!dataToSave.name.trim()) {
       setFormError('Il nome del protocollo è obbligatorio.')
       return
     }
@@ -79,13 +147,14 @@ const visibleProtocols = useMemo(() => {
     setFormError('')
     try {
       await apiSend('POST', '/api/doctor-data/protocols', {
-        name: formData.name.trim(),
-        cadenceDays: Number(formData.cadenceDays),
-        lawReference: formData.lawReference,
-        objective: formData.objective,
-        description: formData.description,
+        name: dataToSave.name.trim(),
+        cadenceDays: Number(dataToSave.cadenceDays),
+        lawReference: dataToSave.lawReference,
+        objective: dataToSave.objective,
+        description: dataToSave.description,
       })
       setDialogOpen(false)
+      setSmartDialogOpen(false)
       setFormData(EMPTY_FORM)
       await load()
     } catch (err) {
@@ -93,6 +162,23 @@ const visibleProtocols = useMemo(() => {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleApplyPreset = (preset) => {
+    setFormData({
+      name: preset.name,
+      cadenceDays: preset.cadenceDays,
+      lawReference: preset.lawReference,
+      objective: preset.objective,
+      description: preset.description,
+    })
+    handleSave({
+      name: preset.name,
+      cadenceDays: preset.cadenceDays,
+      lawReference: preset.lawReference,
+      objective: preset.objective,
+      description: preset.description,
+    })
   }
 
   const handleToggle = async (id) => {
@@ -126,28 +212,50 @@ const visibleProtocols = useMemo(() => {
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="h6">Protocolli sanitari</Typography>
+    <Stack spacing={2.5}>
+      <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ md: 'center' }}>
+          <Box>
+            <Typography variant="h6" fontWeight={700} color="#0f1f3d">
+              Protocolli Sanitari & Piani di Sorveglianza
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Definizione accertamenti periodici, cadenze e basi normative ex D.Lgs. 81/08.
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={1.5} flexWrap="wrap">
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AutoFixHighIcon />}
+              onClick={() => setSmartDialogOpen(true)}
+              sx={{ bgcolor: '#7c3aed', '&:hover': { bgcolor: '#6d28d9' }, textTransform: 'none', fontWeight: 700 }}
+            >
+              ✨ Smart Protocol Generator
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => { setFormData(EMPTY_FORM); setFormError(''); setDialogOpen(true) }}
+              sx={{ textTransform: 'none' }}
+            >
+              + Nuovo Protocollo
+            </Button>
+            <Button variant="outlined" onClick={handleExport}>Esporta CSV</Button>
+          </Stack>
+        </Stack>
+      </Paper>
+
       {/* Toolbar */}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} justifyContent="space-between">
+      <Stack direction="row" spacing={1} justifyContent="space-between">
         <TextField
           size="small"
-          label="Cerca protocollo"
+          label="Cerca protocollo per nome, rischio o legge..."
           value={searchText}
           onChange={e => setSearchText(e.target.value)}
           InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ mr: 0.5 }} /> }}
-          sx={{ minWidth: 260 }}
+          sx={{ minWidth: 320 }}
         />
-        <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={handleExport}>Esporta CSV</Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => { setFormData(EMPTY_FORM); setFormError(''); setDialogOpen(true) }}
-          >
-            Nuovo protocollo
-          </Button>
-        </Stack>
       </Stack>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -156,31 +264,39 @@ const visibleProtocols = useMemo(() => {
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
         <TableContainer>
           <Table size="small">
-            <TableHead>
+            <TableHead sx={{ bgcolor: '#f8fafc' }}>
               <TableRow>
-                <TableCell>Protocollo</TableCell>
-                <TableCell>Riferimento normativo</TableCell>
-                <TableCell align="center">Cadenza</TableCell>
-                <TableCell align="center">Stato</TableCell>
-                <TableCell align="right">Azioni</TableCell>
+                <TableCell><strong>Protocollo Sanitario</strong></TableCell>
+                <TableCell><strong>Riferimento Normativo</strong></TableCell>
+                <TableCell align="center"><strong>Cadenza</strong></TableCell>
+                <TableCell align="center"><strong>Stato</strong></TableCell>
+                <TableCell align="right"><strong>Azioni</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {visibleProtocols.map(row => (
                 <TableRow key={row.id} hover>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+                    <Typography variant="body2" fontWeight={700}>{row.name}</Typography>
                     {row.objective && (
                       <Typography variant="caption" color="text.secondary">{row.objective}</Typography>
                     )}
                   </TableCell>
-                  <TableCell>{row.lawReference}</TableCell>
-                  <TableCell align="center">{row.cadenceDays} gg</TableCell>
+                  <TableCell>
+                    <Chip label={row.lawReference || 'D.Lgs. 81/08'} size="small" variant="outlined" sx={{ fontSize: '0.75rem' }} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2" fontWeight={600}>{row.cadenceDays} gg</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      ({row.cadenceDays === 365 ? '1 anno' : row.cadenceDays === 730 ? '2 anni' : `${Math.round(row.cadenceDays / 365)} anni`})
+                    </Typography>
+                  </TableCell>
                   <TableCell align="center">
                     <Chip
                       size="small"
                       color={row.isActive ? 'success' : 'default'}
                       label={row.isActive ? 'Attivo' : 'Disattivo'}
+                      sx={{ fontWeight: 600 }}
                     />
                   </TableCell>
                   <TableCell align="right">
@@ -193,8 +309,8 @@ const visibleProtocols = useMemo(() => {
               {visibleProtocols.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5}>
-                    <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
-                      Nessun protocollo trovato.
+                    <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
+                      Nessun protocollo trovato. Usa lo Smart Generator per crearne subito uno conforme.
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -204,7 +320,65 @@ const visibleProtocols = useMemo(() => {
         </TableContainer>
       </Paper>
 
-      {/* Create Dialog */}
+      {/* SMART PROTOCOL GENERATOR DIALOG */}
+      <Dialog open={smartDialogOpen} onClose={() => setSmartDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ bgcolor: '#7c3aed', color: '#ffffff', py: 2 }}>
+          ✨ Smart Protocol Generator (D.Lgs. 81/08)
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Seleziona un fattore di rischio occupazionale: MedWork compilerà automaticamente la base giuridica, la periodicità di legge, gli accertamenti mirati e le formule sanitarie ministeriali.
+          </Typography>
+
+          <Grid container spacing={2}>
+            {SMART_PRESETS.map((preset) => (
+              <Grid item xs={12} sm={6} key={preset.id}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    borderRadius: 2.5, 
+                    borderLeft: `5px solid ${preset.color}`,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    '&:hover': { boxShadow: '0 4px 14px rgba(0,0,0,0.1)' }
+                  }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" fontWeight={700} color={preset.color}>
+                      {preset.title}
+                    </Typography>
+                    <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5, fontWeight: 600 }}>
+                      ⚖️ {preset.lawReference} • ⏱️ {preset.cadenceDays} giorni
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1, fontSize: '0.85rem' }}>
+                      {preset.description}
+                    </Typography>
+                  </CardContent>
+                  <Box sx={{ p: 1.5, pt: 0 }}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      size="small"
+                      disabled={saving}
+                      onClick={() => handleApplyPreset(preset)}
+                      sx={{ bgcolor: preset.color, '&:hover': { opacity: 0.9 }, textTransform: 'none', fontWeight: 700 }}
+                    >
+                      Genera & Applica Protocollo
+                    </Button>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setSmartDialogOpen(false)}>Chiudi</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Manual Create Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nuovo protocollo sanitario</DialogTitle>
         <DialogContent>
@@ -248,7 +422,7 @@ const visibleProtocols = useMemo(() => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)} disabled={saving}>Annulla</Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
+          <Button variant="contained" onClick={() => handleSave()} disabled={saving}>
             {saving ? 'Salvataggio…' : 'Salva protocollo'}
           </Button>
         </DialogActions>

@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import {
   Alert,
   Box,
   Button,
+  ButtonGroup,
   Card,
   CardContent,
-  Checkbox,
+  Chip,
   Divider,
-  FormControlLabel,
-  FormGroup,
+  Grid,
+  IconButton,
   MenuItem,
   Paper,
   Stack,
@@ -16,31 +17,73 @@ import {
   StepLabel,
   Stepper,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import FlashOnIcon from '@mui/icons-material/FlashOn'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart'
+import HealingIcon from '@mui/icons-material/Healing'
+import VerifiedIcon from '@mui/icons-material/Verified'
+import HistoryIcon from '@mui/icons-material/History'
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
-const STEP_LABELS = ['Anamnesi', 'Esame Obiettivo', 'Giudizio di Idoneità']
+const STEP_LABELS = ['Anamnesi & Dati Clinici', 'Esame Obiettivo & Parametri Vitali', 'Giudizio di Idoneità']
 
 const VISIT_TYPES = [
-  { code: 2, label: 'Periodica' },
-  { code: 1, label: 'Preventiva' },
-  { code: 3, label: 'Cambio Mansione' },
-  { code: 4, label: 'Richiesta lavoratore' },
-  { code: 5, label: 'Cessazione' },
+  { code: 2, label: 'Periodica (Art. 41 c.2 lett. b)' },
+  { code: 1, label: 'Preventiva (Art. 41 c.2 lett. a)' },
+  { code: 3, label: 'Cambio Mansione (Art. 41 c.2 lett. d)' },
+  { code: 4, label: 'Su richiesta lavoratore (Art. 41 c.2 lett. c)' },
+  { code: 5, label: 'Rientro da malattia > 60gg (Art. 41 c.2 lett. e-ter)' },
+  { code: 6, label: 'Cessazione rapporto di lavoro (Art. 41 c.2 lett. e)' },
 ]
 
 const OUTCOMES_STEPPER = [
-  { code: 'IDONE0', label: 'Idoneo alla mansione' },
-  { code: 'IDONE0P', label: 'Idoneo alla mansione con prescrizioni' },
-  { code: 'IDONE0L', label: 'Idoneo alla mansione con limitazioni' },
-  { code: 'NONIDONE0', label: 'Non idoneo' },
-  { code: 'INATTESA', label: 'In attesa di accertamenti' },
+  { code: 'IDONE0', label: 'Idoneo alla mansione specifica' },
+  { code: 'IDONE0P', label: 'Idoneo con prescrizioni' },
+  { code: 'IDONE0L', label: 'Idoneo con limitazioni' },
+  { code: 'NONIDONE0', label: 'Inidoneo temporaneamente o permanentemente' },
+  { code: 'INATTESA', label: 'In attesa di accertamenti specialistici' },
+]
+
+// Standard textbook formulas for normal physical exam
+const NORMAL_EXAM_DEFAULTS = {
+  objCardio: 'Toni cardiaci netti e puri, pause libere, attività cardiaca ritmica.',
+  objResp: 'Murmure vescicolare fisiologico su tutti i campi polmonari, assenza di rumori patologici aggiunti.',
+  objAddome: 'Addome trattabile, indolente alla palpazione superficiale e profonda, organi ipocondriaci nei limiti.',
+  objMusc: 'Rachide in asse, articolarità integra e conservata su tutti i distretti, Lasègue e Wasserman negativi bilat.',
+  objNeuro: 'Riflessi osteotendinei presenti e simmetrici, Romberg negativo, deambulazione e coordinazione nella norma.',
+  objCute: 'Cute e mucose visibili integre, assenza di lesioni da contatto o dermatosi occupazionali.',
+  objVista: 'Visus naturale/corretto 10/10 bilateralmente, motilità oculare conservata, senso cromatico nella norma.',
+  objUdito: 'Otoscopia bilaterale negativa, voce di conversazione e bisbigliata udita bilateralmente a distanza canonica.',
+}
+
+// Coded Legal Prescriptions & Limitations (D.Lgs. 81/08)
+const PRESCRIPTION_PRESETS = [
+  { category: 'DPI & Protezione', text: 'Uso obbligatorio DPI uditivi (otoprotettori SNR ≥ 28 dB)', type: 'presc' },
+  { category: 'DPI & Protezione', text: 'Uso obbligatorio occhiali di protezione con ripari laterali', type: 'presc' },
+  { category: 'DPI & Protezione', text: 'Uso guanti di protezione chimica/meccanica specifici (EN 388/374)', type: 'presc' },
+  { category: 'DPI & Protezione', text: 'Uso calzature di sicurezza con suola antiscivolo e puntale (S3)', type: 'presc' },
+  { category: 'DPI & Protezione', text: 'Uso maschera respiratoria filtrante FFP2/FFP3/A2P3', type: 'presc' },
+  { category: 'VDT & Postura', text: 'Prescrizione uso lenti correttive per lavoro a VDT', type: 'presc' },
+  { category: 'VDT & Postura', text: 'Pausa visiva di 15 minuti ogni 120 minuti di lavoro continuativo a VDT', type: 'presc' },
+  { category: 'VDT & Postura', text: 'Regolazione ergonomica postazione e supporto lombare', type: 'presc' },
+  { category: 'Movimentazione Carichi', text: 'Limitazione MMC: sollevamento massimo consentito 10 kg', type: 'limit' },
+  { category: 'Movimentazione Carichi', text: 'Limitazione MMC: sollevamento massimo consentito 15 kg', type: 'limit' },
+  { category: 'Movimentazione Carichi', text: 'Divieto di movimentazione carichi con torsione del tronco', type: 'limit' },
+  { category: 'Movimentazione Carichi', text: 'Divieto di sollevamento carichi oltre l\'altezza delle spalle', type: 'limit' },
+  { category: 'Ambienti & Turni', text: 'Esclusione da mansioni che comportano lavoro in quota (> 2 metri)', type: 'limit' },
+  { category: 'Ambienti & Turni', text: 'Esclusione da lavoro in turno notturno (fascia 00:00 - 06:00)', type: 'limit' },
+  { category: 'Ambienti & Turni', text: 'Divieto di guida carrelli elevatori e macchine semoventi', type: 'limit' },
+  { category: 'Ambienti & Turni', text: 'Esclusione da spazi confinati o a rischio asfissia', type: 'limit' },
+  { category: 'Ambienti & Turni', text: 'Esclusione da esposizione a vibrazioni al corpo intero / mano-braccio', type: 'limit' },
 ]
 
 const initialData = {
@@ -54,7 +97,7 @@ const initialData = {
   familyHistory: '',
   remotePathology: '',
   recentPathology: '',
-  targetOrgans: '',
+  targetOrgans: 'Udito, apparato respiratorio, rachide',
   outcomeCode: '',
   outcome: '',
   prescriptions: '',
@@ -67,7 +110,16 @@ const initialData = {
   objMusc: 'nella norma',
   objNeuro: 'nella norma',
   objCute: 'nella norma',
-  objectiveExam: '', // Used for extra notes or legacy copied text
+  objVista: 'nella norma',
+  objUdito: 'nella norma',
+  objectiveExam: '',
+  // Vital signs
+  systolicBp: '120',
+  diastolicBp: '80',
+  heartRate: '72',
+  spO2: '98',
+  weightKg: '',
+  heightCm: '',
 }
 
 function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) {
@@ -85,18 +137,28 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
   const [saving, setSaving] = useState(false)
   const [deadlineSource, setDeadlineSource] = useState('manual')
   
-  // Phase 2 context state
   const [employeeContext, setEmployeeContext] = useState(null)
+  const [lastVisitPreview, setLastVisitPreview] = useState(null)
+  const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
   const [copyingVisit, setCopyingVisit] = useState(false)
-
-  // Phase 3 state
   const [phraseTemplates, setPhraseTemplates] = useState([])
-  const [selectedPrescriptions, setSelectedPrescriptions] = useState({
-    dpi: false,
-    mmc: false,
-    lenti: false,
-    vdt: false
-  })
+
+  // BMI Calculation
+  const bmiInfo = useMemo(() => {
+    const w = parseFloat(formData.weightKg)
+    const h = parseFloat(formData.heightCm) / 100
+    if (w > 0 && h > 0) {
+      const val = (w / (h * h)).toFixed(1)
+      const num = parseFloat(val)
+      let label = 'Normopeso'
+      let color = 'success'
+      if (num < 18.5) { label = 'Sottopeso'; color = 'info' }
+      else if (num >= 25 && num < 30) { label = 'Sovrappeso'; color = 'warning' }
+      else if (num >= 30) { label = 'Obesità'; color = 'error' }
+      return { val, label, color }
+    }
+    return null
+  }, [formData.weightKg, formData.heightCm])
 
   useEffect(() => {
     apiGet('/api/master-data/employees')
@@ -122,10 +184,12 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       .catch(() => {})
   }, [])
 
-  // Auto-fetch context and pre-fill company doctor when employee changes
+  // Auto-fetch context, last visit and self-service responses when employee changes
   useEffect(() => {
     if (!formData.employeeId) {
       setEmployeeContext(null)
+      setLastVisitPreview(null)
+      setSelfServiceAnamnesis(null)
       return
     }
 
@@ -135,8 +199,30 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
     }
     
     apiGet(`/api/doctor-data/employees/${formData.employeeId}/context`)
-      .then(data => setEmployeeContext(data))
+      .then(data => {
+        setEmployeeContext(data)
+      })
       .catch(() => setEmployeeContext(null))
+
+    apiGet(`/api/doctor-data/employees/${formData.employeeId}/last-visit`)
+      .then(lastVisit => {
+        if (lastVisit) {
+          setLastVisitPreview(lastVisit)
+        } else {
+          setLastVisitPreview(null)
+        }
+      })
+      .catch(() => setLastVisitPreview(null))
+
+    apiGet(`/api/questionnaires/responses/employee/${formData.employeeId}`)
+      .then(resp => {
+        if (Array.isArray(resp) && resp.length > 0) {
+          setSelfServiceAnamnesis(resp[0])
+        } else {
+          setSelfServiceAnamnesis(null)
+        }
+      })
+      .catch(() => setSelfServiceAnamnesis(null))
   }, [formData.employeeId, employees])
 
   // Auto-fetch deadline preview
@@ -161,6 +247,7 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
     setFormData((current) => ({ ...current, [name]: value }))
   }
 
+  // 1. SMART CLONE PREVIOUS VISIT
   const handleCopyLastVisit = async () => {
     if (!formData.employeeId) return
     setCopyingVisit(true)
@@ -175,10 +262,13 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
           familyHistory: data.familyHistory || prev.familyHistory,
           remotePathology: data.remotePathology || prev.remotePathology,
           recentPathology: data.recentPathology || prev.recentPathology,
-          // Put old objective exam string into the extra notes to not overwrite structured inputs
+          targetOrgans: data.targetOrgans || prev.targetOrgans || 'Udito, apparato respiratorio, rachide',
           objectiveExam: data.objectiveExam || prev.objectiveExam,
+          clinicalNotes: data.clinicalNotes ? `${prev.clinicalNotes ? prev.clinicalNotes + '\n' : ''}[Da visita prec.]: ${data.clinicalNotes}` : prev.clinicalNotes,
         }))
-        setSuccess('Dati copiati con successo dall\'ultima visita.')
+        setSuccess('✓ Dati anamnestici e clinici dell\'ultima visita copiati con successo!')
+      } else {
+        setError('Nessuna visita precedente trovata per questo lavoratore.')
       }
     } catch (err) {
       if (err.status === 204) {
@@ -188,27 +278,101 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       }
     } finally {
       setCopyingVisit(false)
-      // clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000)
+      setTimeout(() => setSuccess(''), 4000)
     }
+  }
+
+  // IMPORT SELF-SERVICE DIGITAL ANAMNESIS
+  const handleImportSelfService = () => {
+    if (!selfServiceAnamnesis) return
+    try {
+      const answers = JSON.parse(selfServiceAnamnesis.answersJson || '{}')
+      const answerSummary = Object.entries(answers)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')
+      setFormData(prev => ({
+        ...prev,
+        personalHistory: prev.personalHistory ? `${prev.personalHistory}\n[Questionario]: ${answerSummary}` : `[Questionario Lavoratore]: ${answerSummary}`,
+        clinicalNotes: `${prev.clinicalNotes ? prev.clinicalNotes + '\n' : ''}[Questionario Pre-visita compilato digitalmente il ${new Date(selfServiceAnamnesis.completedAt).toLocaleDateString('it-IT')}${selfServiceAnamnesis.isAnomalous ? ' - REPERTI ANOMALI SEGNALATI' : ' - NDP'}]`
+      }))
+      setSuccess('✓ Questionario anamnestico digitale del lavoratore importato con successo!')
+    } catch {
+      setError('Impossibile interpretare il formato del questionario.')
+    }
+  }
+
+  // 2. PHYSICAL EXAM FAST ACTIONS
+  const handleSetAllNormalShort = () => {
+    setFormData(prev => ({
+      ...prev,
+      objCardio: 'nella norma',
+      objResp: 'nella norma',
+      objAddome: 'nella norma',
+      objMusc: 'nella norma',
+      objNeuro: 'nella norma',
+      objCute: 'nella norma',
+      objVista: 'nella norma',
+      objUdito: 'nella norma',
+    }))
+    setSuccess('✓ Tutti gli 8 apparati impostati su "Nella norma (N.D.P.)"')
+    setTimeout(() => setSuccess(''), 3000)
+  }
+
+  const handleSetAllNormalFull = () => {
+    setFormData(prev => ({
+      ...prev,
+      ...NORMAL_EXAM_DEFAULTS,
+    }))
+    setSuccess('✓ Inserite formule cliniche standard per tutti gli apparati')
+    setTimeout(() => setSuccess(''), 3000)
+  }
+
+  // 3. PRESCRIPTIONS & LIMITATIONS CHIP TOGGLE
+  const handleTogglePreset = (preset) => {
+    const isPrescription = preset.type === 'presc'
+    const targetField = isPrescription ? 'prescriptions' : 'limitations'
+    const currentVal = formData[targetField] || ''
+    
+    if (currentVal.includes(preset.text)) {
+      // Remove it
+      const updated = currentVal
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s && s !== preset.text)
+        .join('; ')
+      setField(targetField, updated)
+    } else {
+      // Add it
+      const updated = currentVal.trim()
+        ? `${currentVal.trim()}; ${preset.text}`
+        : preset.text
+      setField(targetField, updated)
+    }
+  }
+
+  const isPresetActive = (preset) => {
+    const isPrescription = preset.type === 'presc'
+    const targetField = isPrescription ? 'prescriptions' : 'limitations'
+    const currentVal = formData[targetField] || ''
+    return currentVal.includes(preset.text)
   }
 
   const validateStep = () => {
     if (activeStep === 0) {
       if (!formData.employeeId || !formData.visitDate) {
-        setError('Compila lavoratore e data visita nella sezione anamnesi.')
+        setError('Seleziona il lavoratore e la data della visita per procedere.')
         return false
       }
     }
     if (activeStep === 1) {
       if (!String(formData.targetOrgans).trim()) {
-        setError('Compila organi bersaglio.')
+        setError('Compila gli organi bersaglio della sorveglianza.')
         return false
       }
     }
     if (activeStep === 2) {
       if (!formData.outcomeCode || !formData.nextDeadlineDate) {
-        setError('Seleziona il giudizio di idoneità e la prossima scadenza.')
+        setError('Seleziona l\'esito del giudizio di idoneità e la data della prossima scadenza.')
         return false
       }
     }
@@ -233,10 +397,24 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       `Addome: ${formData.objAddome}`,
       `Muscoloscheletrico: ${formData.objMusc}`,
       `Neurologico: ${formData.objNeuro}`,
-      `Cute e Annessi: ${formData.objCute}`
+      `Cute e Annessi: ${formData.objCute}`,
+      `Vista/Oculistico: ${formData.objVista}`,
+      `Udito/ORL: ${formData.objUdito}`,
     ]
+    
+    // Append vitals if entered
+    const vitalsParts = []
+    if (formData.systolicBp && formData.diastolicBp) vitalsParts.push(`PA: ${formData.systolicBp}/${formData.diastolicBp} mmHg`)
+    if (formData.heartRate) vitalsParts.push(`FC: ${formData.heartRate} bpm`)
+    if (formData.spO2) vitalsParts.push(`SpO2: ${formData.spO2}%`)
+    if (bmiInfo) vitalsParts.push(`BMI: ${bmiInfo.val} (${bmiInfo.label})`)
+    
+    if (vitalsParts.length > 0) {
+      parts.push(`--- Parametri Vitali: ${vitalsParts.join(' | ')} ---`)
+    }
+
     if (formData.objectiveExam) {
-      parts.push(`Note aggiuntive/Storico: ${formData.objectiveExam}`)
+      parts.push(`Note aggiuntive: ${formData.objectiveExam}`)
     }
     return parts.join('\n')
   }
@@ -250,9 +428,9 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
       setSuccess('')
 
       const finalObjectiveExam = buildObjectiveExamString()
-
       const selectedOutcome = OUTCOMES_STEPPER.find((o) => o.code === formData.outcomeCode)
       const outcomeLabelFinal = selectedOutcome ? selectedOutcome.label : (formData.outcome || 'Idoneo alla mansione')
+      const bpFormatted = (formData.systolicBp && formData.diastolicBp) ? `${formData.systolicBp}/${formData.diastolicBp}` : null
 
       const createdVisit = await apiSend('POST', '/api/doctor-data/medical-visits', {
         employeeId: Number(formData.employeeId),
@@ -269,6 +447,8 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
         prescriptions: formData.prescriptions || null,
         limitations: formData.limitations || null,
         clinicalNotes: formData.clinicalNotes,
+        bloodPressure: bpFormatted,
+        heartRate: formData.heartRate ? `${formData.heartRate} bpm` : null,
       })
 
       await apiSend('POST', '/api/doctor-data/anamneses', {
@@ -280,10 +460,11 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
         recentPathology: formData.recentPathology,
       })
 
-      setSuccess('Visita medica e anamnesi registrate con successo.')
+      setSuccess('✓ Visita medica, parametri vitali e anamnesi registrate con successo nel fascicolo sanitario!')
       setFormData(initialData)
       setActiveStep(0)
       setEmployeeContext(null)
+      setLastVisitPreview(null)
 
       if (typeof onCreated === 'function') {
         onCreated(createdVisit)
@@ -296,18 +477,31 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
   }
 
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="flex-start">
+    <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2.5} alignItems="flex-start" sx={{ maxWidth: 1600, mx: 'auto' }}>
       {/* MAIN CONTENT AREA */}
-      <Stack spacing={2} sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Typography variant="h6">Inserimento Visita Medica (Stepper)</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Step 1: Anamnesi • Step 2: Esame Obiettivo • Step 3: Giudizio di Idoneità.
-          </Typography>
+      <Stack spacing={2} sx={{ flexGrow: 1, minWidth: 0, width: '100%' }}>
+        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1}>
+            <Box>
+              <Typography variant="h6" fontWeight={700} color="#0f1f3d">
+                Nuova Visita Medica & Sorveglianza Sanitaria
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Inserimento rapido conforme D.Lgs. 81/08 (Allegato 3A) con precompilazione intelligente.
+              </Typography>
+            </Box>
+            <Chip 
+              icon={<VerifiedIcon />} 
+              label="Standard SIML Conforme" 
+              color="primary" 
+              variant="outlined" 
+              size="small" 
+            />
+          </Stack>
         </Paper>
 
-        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: '#ffffff' }}>
+          <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
             {STEP_LABELS.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -315,214 +509,415 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
             ))}
           </Stepper>
 
-          <Box sx={{ mt: 3 }}>
+          {/* SMART CLONE BANNER */}
+          {lastVisitPreview && activeStep === 0 && (
+            <Alert 
+              severity="info" 
+              icon={<HistoryIcon />}
+              action={
+                <Button 
+                  color="primary" 
+                  size="small" 
+                  variant="contained" 
+                  startIcon={<ContentCopyIcon />}
+                  onClick={handleCopyLastVisit}
+                  disabled={copyingVisit}
+                  sx={{ textTransform: 'none', fontWeight: 600 }}
+                >
+                  {copyingVisit ? 'Copia in corso...' : '⚡ Copia Dati Anamnestici'}
+                </Button>
+              }
+              sx={{ mb: 2, borderRadius: 2, alignItems: 'center' }}
+            >
+              <Typography variant="body2" fontWeight={600}>
+                Trovata visita precedente registrata per questo lavoratore.
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Puoi copiare con 1 clic l'anamnesi lavorativa, personale, familiare e patologie per aggiornare solo le variazioni.
+              </Typography>
+            </Alert>
+          )}
+
+          {/* SELF-SERVICE DIGITAL QUESTIONNAIRE BANNER */}
+          {selfServiceAnamnesis && activeStep === 0 && (
+            <Alert 
+              severity="success" 
+              icon={<AssignmentIcon />}
+              action={
+                <Button 
+                  color="success" 
+                  size="small" 
+                  variant="contained" 
+                  startIcon={<FlashOnIcon />}
+                  onClick={handleImportSelfService}
+                  sx={{ textTransform: 'none', fontWeight: 700 }}
+                >
+                  📥 Importa Questionario Pre-Visita
+                </Button>
+              }
+              sx={{ mb: 3, borderRadius: 2, alignItems: 'center', bgcolor: '#f0fdf4', borderColor: '#bbf7d0' }}
+            >
+              <Typography variant="body2" fontWeight={700} color="#166534">
+                Disponibile questionario anamnestico pre-compilato dal lavoratore!
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Compilato il {new Date(selfServiceAnamnesis.completedAt).toLocaleDateString('it-IT')}. Clicca per importare abitudini, anamnesi e sintomi.
+              </Typography>
+            </Alert>
+          )}
+
+          <Box sx={{ mt: 2 }}>
+            {/* STEP 0: ANAMNESI */}
             {activeStep === 0 && (
-              <Stack spacing={2}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Stack spacing={2.5}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
                   <TextField
                     select
-                    label="Lavoratore *"
+                    label="Lavoratore in Visita *"
                     size="small"
                     value={formData.employeeId}
                     onChange={(event) => setField('employeeId', event.target.value)}
-                    sx={{ flexGrow: 1 }}
+                    sx={{ gridColumn: { xs: '1 / -1', md: 'span 2' } }}
                   >
                     {employees.map((item) => (
-                      <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
+                      <MenuItem key={item.id} value={item.id}>
+                        {item.firstName} {item.lastName} — CF: {item.taxCode || 'N/D'} ({item.companyName || 'Azienda N/D'})
+                      </MenuItem>
                     ))}
                   </TextField>
-                  <TextField
-                    select
-                    label="Medico *"
-                    size="small"
-                    value={formData.doctorId}
-                    onChange={(event) => setField('doctorId', event.target.value)}
-                    sx={{ flexGrow: 1 }}
-                  >
-                    {doctors.map((item) => (
-                      <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
-                    ))}
-                  </TextField>
+
                   <Button
                     variant="outlined"
                     startIcon={<ContentCopyIcon />}
                     onClick={handleCopyLastVisit}
                     disabled={!formData.employeeId || copyingVisit}
+                    sx={{ height: 40, textTransform: 'none', fontWeight: 600 }}
                   >
                     Copia da ultima visita
                   </Button>
                 </Box>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
                   <TextField
+                    select
+                    label="Medico Competente *"
                     size="small"
-                    label="Medico Competente (Aziendale)"
-                    value={employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyDoctorName || 'Nessun medico aziendale assegnato'}
-                    InputProps={{ readOnly: true }}
-                    helperText={employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyName ? `Azienda: ${employees.find(e => Number(e.id) === Number(formData.employeeId))?.companyName}` : ''}
-                  />
+                    value={formData.doctorId}
+                    onChange={(event) => setField('doctorId', event.target.value)}
+                  >
+                    {doctors.map((item) => (
+                      <MenuItem key={item.id} value={item.id}>{`${item.firstName} ${item.lastName}`}</MenuItem>
+                    ))}
+                  </TextField>
+
                   <DesktopDatePicker
                     size="small"
-                    label="Data visita *"
+                    label="Data Visita *"
                     InputLabelProps={{ shrink: true }}
                     value={currentDateValue(formData.visitDate)}
                     onChange={(date) => setField('visitDate', formDateValue(date))}
                     inputFormat="dd/MM/yyyy"
                     locale={DATE_PICKER_LOCALE}
                   />
+
                   <TextField
                     select
-                    label="Tipo visita"
+                    label="Tipo Visita Medica *"
                     size="small"
                     value={formData.visitType}
                     onChange={(event) => setField('visitType', event.target.value)}
-                    sx={{ gridColumn: '1 / -1' }}
                   >
                     {VISIT_TYPES.map((item) => (
                       <MenuItem key={item.code} value={item.code}>{item.label}</MenuItem>
                     ))}
                   </TextField>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 1, gap: 1 }}>
+                </Box>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
                     <FlashOnIcon color="primary" fontSize="small" />
-                    <Typography variant="subtitle2" color="primary">Frasi Rapide (Shortcodes)</Typography>
-                  </Box>
+                    <Typography variant="subtitle2" color="primary" fontWeight={700}>
+                      Frasi Rapide & Template Anamnestici
+                    </Typography>
+                  </Stack>
                   <TextField
                     select
                     size="small"
-                    label="Inserisci template clinico..."
+                    label="Inserisci template anamnestico rapido..."
                     value=""
                     onChange={(e) => {
                       if (!e.target.value) return
                       const phrase = phraseTemplates.find(p => p.id === e.target.value)
                       if (phrase) {
-                        // Append to a default field (e.g. personalHistory) based on category
                         const targetField = phrase.category === 'AnamnesiLavorativa' ? 'workHistory' : 
                                             phrase.category === 'AnamnesiFamiliare' ? 'familyHistory' : 
-                                            'personalHistory';
+                                            'personalHistory'
                         setField(targetField, formData[targetField] ? `${formData[targetField]}\n${phrase.text}` : phrase.text)
                       }
                     }}
+                    sx={{ minWidth: 320 }}
                   >
-                    <MenuItem value=""><em>Seleziona...</em></MenuItem>
+                    <MenuItem value=""><em>Seleziona formula clinica...</em></MenuItem>
                     {phraseTemplates.map(p => (
-                      <MenuItem key={p.id} value={p.id}>{p.category} - {p.text.substring(0, 40)}...</MenuItem>
+                      <MenuItem key={p.id} value={p.id}>[{p.category}] {p.text.substring(0, 50)}...</MenuItem>
                     ))}
                   </TextField>
-
-                  <TextField
-                    multiline
-                    minRows={2}
-                    label="Anamnesi lavorativa"
-                    value={formData.workHistory}
-                    onChange={(event) => setField('workHistory', event.target.value)}
-                  />
-                  <TextField
-                    multiline
-                    minRows={2}
-                    label="Anamnesi personale"
-                    value={formData.personalHistory}
-                    onChange={(event) => setField('personalHistory', event.target.value)}
-                  />
-                  <TextField
-                    multiline
-                    minRows={2}
-                    label="Anamnesi familiare"
-                    value={formData.familyHistory}
-                    onChange={(event) => setField('familyHistory', event.target.value)}
-                  />
-                  <TextField
-                    multiline
-                    minRows={2}
-                    label="Patologie remote/recenti"
-                    value={`${formData.remotePathology}${formData.remotePathology && formData.recentPathology ? '\n' : ''}${formData.recentPathology}`}
-                    onChange={(event) => {
-                      const parts = String(event.target.value || '').split('\n')
-                      setField('remotePathology', parts[0] || '')
-                      setField('recentPathology', parts.slice(1).join('\n') || '')
-                    }}
-                  />
                 </Box>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Anamnesi Lavorativa (Esposizioni pregresse, mansioni, anzianità)"
+                      value={formData.workHistory}
+                      onChange={(event) => setField('workHistory', event.target.value)}
+                      placeholder="Es. Addetto alla produzione da 10 anni, esposto a rumore e MMC. Precedente impiego come magazziniere..."
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Anamnesi Personale (Abitudini di vita, fumo, alcol, attività fisica)"
+                      value={formData.personalHistory}
+                      onChange={(event) => setField('personalHistory', event.target.value)}
+                      placeholder="Es. Non fumatore, consumo moderato alcolici ai pasti. Non assume farmaci cronici..."
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Anamnesi Familiare (Ereditarietà patologie cardiovascolari, metaboliche, oncologiche)"
+                      value={formData.familyHistory}
+                      onChange={(event) => setField('familyHistory', event.target.value)}
+                      placeholder="Es. Anamnesi familiare negativa per patologie cardiovascolari precoci. Madre ipertesa..."
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="Patologie Remote & Recenti (Interventi, ricoveri, allergie)"
+                      value={`${formData.remotePathology}${formData.remotePathology && formData.recentPathology ? '\n' : ''}${formData.recentPathology}`}
+                      onChange={(event) => {
+                        const parts = String(event.target.value || '').split('\n')
+                        setField('remotePathology', parts[0] || '')
+                        setField('recentPathology', parts.slice(1).join('\n') || '')
+                      }}
+                      placeholder="Es. Remota: Appendicectomia in età pediatrica. Recente: Nessuna patologia degna di nota."
+                    />
+                  </Grid>
+                </Grid>
               </Stack>
             )}
 
+            {/* STEP 1: ESAME OBIETTIVO STRUTTURATO & PARAMETRI VITALI */}
             {activeStep === 1 && (
-              <Stack spacing={2}>
+              <Stack spacing={2.5}>
+                {/* FAST NORMAL BUTTONS */}
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#f4f8fc', borderColor: '#b6d7f7' }}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.5}>
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={700} color="#115293">
+                        ⚡ Compilazione Rapida Esame Obiettivo
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        I pazienti sani possono essere impostati su &quot;Nella norma&quot; in 1 clic. Modifica solo i reperti con anomalie.
+                      </Typography>
+                    </Box>
+                    <Stack direction="row" spacing={1}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        color="primary"
+                        startIcon={<CheckCircleIcon />}
+                        onClick={handleSetAllNormalShort}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        Tutto N.D.P. (Nella Norma)
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<AutoFixHighIcon />}
+                        onClick={handleSetAllNormalFull}
+                        sx={{ textTransform: 'none' }}
+                      >
+                        Formule Standard Complete
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </Paper>
+
+                {/* PARAMETRI VITALI */}
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                    <MonitorHeartIcon color="primary" fontSize="small" />
+                    <Typography variant="subtitle2" fontWeight={700}>
+                      Parametri Vitali & Biometria
+                    </Typography>
+                    {bmiInfo && (
+                      <Chip 
+                        size="small" 
+                        color={bmiInfo.color} 
+                        label={`BMI ${bmiInfo.val} — ${bmiInfo.label}`} 
+                        sx={{ ml: 'auto', fontWeight: 600 }}
+                      />
+                    )}
+                  </Stack>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' }, gap: 1.5 }}>
+                    <TextField
+                      size="small"
+                      label="PA Sistolica"
+                      placeholder="120"
+                      value={formData.systolicBp}
+                      onChange={(e) => setField('systolicBp', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">mmHg</Typography> }}
+                    />
+                    <TextField
+                      size="small"
+                      label="PA Diastolica"
+                      placeholder="80"
+                      value={formData.diastolicBp}
+                      onChange={(e) => setField('diastolicBp', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">mmHg</Typography> }}
+                    />
+                    <TextField
+                      size="small"
+                      label="Freq. Cardiaca"
+                      placeholder="72"
+                      value={formData.heartRate}
+                      onChange={(e) => setField('heartRate', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">bpm</Typography> }}
+                    />
+                    <TextField
+                      size="small"
+                      label="SpO2"
+                      placeholder="98"
+                      value={formData.spO2}
+                      onChange={(e) => setField('spO2', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">%</Typography> }}
+                    />
+                    <TextField
+                      size="small"
+                      label="Peso"
+                      placeholder="75"
+                      value={formData.weightKg}
+                      onChange={(e) => setField('weightKg', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">kg</Typography> }}
+                    />
+                    <TextField
+                      size="small"
+                      label="Altezza"
+                      placeholder="175"
+                      value={formData.heightCm}
+                      onChange={(e) => setField('heightCm', e.target.value)}
+                      InputProps={{ endAdornment: <Typography variant="caption" color="text.secondary">cm</Typography> }}
+                    />
+                  </Box>
+                </Paper>
+
                 <TextField
-                  label="Organi bersaglio *"
+                  label="Organi Bersaglio della Sorveglianza *"
                   value={formData.targetOrgans}
                   onChange={(event) => setField('targetOrgans', event.target.value)}
-                  placeholder="Es. Udito, apparato respiratorio"
+                  placeholder="Es. Udito, apparato respiratorio, rachide, vista"
                   fullWidth
+                  size="small"
+                  helperText="Organi/apparati critici in relazione ai rischi specifici della mansione"
                 />
-                
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2 }}>
-                  ESAME OBIETTIVO STRUTTURATO
+
+                {/* 8 APPARATI STRUTTURATI */}
+                <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mt: 1 }}>
+                  ESAME OBIETTIVO PER APPARATI (ALLEGATO 3A)
                 </Typography>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
                   <TextField
-                    label="Cardiovascolare"
+                    label="1. Cardiovascolare"
                     size="small"
                     value={formData.objCardio}
                     onChange={(e) => setField('objCardio', e.target.value)}
                   />
                   <TextField
-                    label="Respiratorio"
+                    label="2. Respiratorio"
                     size="small"
                     value={formData.objResp}
                     onChange={(e) => setField('objResp', e.target.value)}
                   />
                   <TextField
-                    label="Addome"
+                    label="3. Addome & Visceri"
                     size="small"
                     value={formData.objAddome}
                     onChange={(e) => setField('objAddome', e.target.value)}
                   />
                   <TextField
-                    label="Muscoloscheletrico"
+                    label="4. Muscoloscheletrico & Rachide"
                     size="small"
                     value={formData.objMusc}
                     onChange={(e) => setField('objMusc', e.target.value)}
                   />
                   <TextField
-                    label="Neurologico"
+                    label="5. Sistema Nervoso"
                     size="small"
                     value={formData.objNeuro}
                     onChange={(e) => setField('objNeuro', e.target.value)}
                   />
                   <TextField
-                    label="Cute e Annessi"
+                    label="6. Cute & Annessi"
                     size="small"
                     value={formData.objCute}
                     onChange={(e) => setField('objCute', e.target.value)}
+                  />
+                  <TextField
+                    label="7. Vista & Oculistico"
+                    size="small"
+                    value={formData.objVista}
+                    onChange={(e) => setField('objVista', e.target.value)}
+                  />
+                  <TextField
+                    label="8. Udito & ORL"
+                    size="small"
+                    value={formData.objUdito}
+                    onChange={(e) => setField('objUdito', e.target.value)}
                   />
                 </Box>
 
                 <TextField
                   multiline
-                  minRows={3}
-                  label="Note aggiuntive esame obiettivo / Storico"
+                  minRows={2}
+                  label="Note aggiuntive esame obiettivo / Reperti specialistici"
                   value={formData.objectiveExam}
                   onChange={(event) => setField('objectiveExam', event.target.value)}
-                  placeholder="Eventuali note libere..."
+                  placeholder="Eventuali note libere o esiti di test complementari..."
                 />
 
                 <TextField
                   multiline
-                  minRows={3}
-                  label="Note cliniche libere"
+                  minRows={2}
+                  label="Note cliniche riservate del Medico Competente"
                   value={formData.clinicalNotes}
                   onChange={(event) => setField('clinicalNotes', event.target.value)}
+                  placeholder="Note confidenziali visibili solo al medico competente..."
                 />
               </Stack>
             )}
 
+            {/* STEP 2: GIUDIZIO DI IDONEITÀ & PRESCRIZIONI */}
             {activeStep === 2 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1.5 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     select
-                    label="Esito Giudizio di Idoneità *"
+                    label="Esito Giudizio di Idoneità (Art. 41 c.6) *"
                     value={formData.outcomeCode}
                     onChange={(event) => {
                       const selected = OUTCOMES_STEPPER.find((o) => o.code === event.target.value)
@@ -534,9 +929,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                       <MenuItem key={o.code} value={o.code}>{o.label}</MenuItem>
                     ))}
                   </TextField>
+
                   <DesktopDatePicker
                     size="small"
-                    label="Prossima scadenza *"
+                    label="Prossima Scadenza Sorveglianza Sanitaria *"
                     InputLabelProps={{ shrink: true }}
                     value={currentDateValue(formData.nextDeadlineDate)}
                     onChange={(date) => {
@@ -549,85 +945,93 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                       textField: {
                         helperText:
                           deadlineSource === 'auto'
-                            ? '✓ Calcolata automaticamente dal protocollo'
-                            : 'Inserita manualmente',
+                            ? '✓ Calcolata automaticamente dal protocollo sanitario'
+                            : 'Inserita manualmente dal medico',
                         FormHelperTextProps: {
-                          sx: { color: deadlineSource === 'auto' ? 'success.main' : 'text.secondary' },
+                          sx: { color: deadlineSource === 'auto' ? 'success.main' : 'text.secondary', fontWeight: 500 },
                         },
                       },
                     }}
                   />
                 </Box>
 
+                {/* PRESCRIZIONI & LIMITAZIONI LIBRARY */}
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fcfdfe' }}>
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.5 }}>
+                    <HealingIcon color="primary" fontSize="small" />
+                    <Typography variant="subtitle2" fontWeight={700} color="#0f1f3d">
+                      Libreria Normativa Prescrizioni & Limitazioni (D.Lgs. 81/08)
+                    </Typography>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                    Clicca sui tag per includere o rimuovere le prescrizioni/limitazioni codificate:
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {PRESCRIPTION_PRESETS.map((p, idx) => {
+                      const active = isPresetActive(p)
+                      return (
+                        <Chip
+                          key={idx}
+                          label={p.text}
+                          onClick={() => handleTogglePreset(p)}
+                          color={active ? (p.type === 'presc' ? 'primary' : 'warning') : 'default'}
+                          variant={active ? 'filled' : 'outlined'}
+                          size="small"
+                          sx={{ 
+                            cursor: 'pointer',
+                            fontWeight: active ? 600 : 400,
+                            borderColor: p.type === 'presc' ? '#1976d2' : '#ed6c02',
+                          }}
+                        />
+                      )
+                    })}
+                  </Box>
+                </Paper>
+
                 <TextField
-                  label="Prescrizioni specifiche"
+                  label="Prescrizioni specifiche (Misure e DPI obbligatori)"
                   multiline
                   rows={2}
                   fullWidth
                   value={formData.prescriptions}
                   onChange={(e) => setField('prescriptions', e.target.value)}
                   placeholder="Es. Obbligo DPI uditivi SNR ≥ 28 dB, occhiali di sicurezza..."
-                  helperText="Misure, dispositivi o comportamenti obbligatori per il lavoratore (art. 41 D.Lgs. 81/08)"
+                  helperText="Dispositivi di protezione individuale o comportamenti obbligatori per il lavoratore (art. 41 D.Lgs. 81/08)"
                 />
 
                 <TextField
-                  label="Limitazioni operative"
+                  label="Limitazioni operative (Divieti o esclusioni mansione)"
                   multiline
                   rows={2}
                   fullWidth
                   value={formData.limitations}
                   onChange={(e) => setField('limitations', e.target.value)}
                   placeholder="Es. Escluso da movimentazione manuale carichi > 10 kg, non idoneo lavoro notturno..."
-                  helperText="Divieti o esclusioni da mansioni o posture specifiche"
+                  helperText="Divieti di esposizione o esclusioni da specifiche attività operative"
                 />
-
-                <Box>
-                  <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>Prescrizioni Standardizzate</Typography>
-                  <FormGroup sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-                    <FormControlLabel 
-                      control={<Checkbox checked={selectedPrescriptions.dpi} onChange={(e) => {
-                        setSelectedPrescriptions(p => ({ ...p, dpi: e.target.checked }))
-                        const current = formData.prescriptions || ''
-                        if (e.target.checked) setField('prescriptions', current ? current + '; uso obbligatorio DPI (udito/vista)' : 'Uso obbligatorio DPI (udito/vista)')
-                      }} />} 
-                      label="Uso obbligatorio DPI (udito/vista)" 
-                    />
-                    <FormControlLabel 
-                      control={<Checkbox checked={selectedPrescriptions.mmc} onChange={(e) => {
-                        setSelectedPrescriptions(p => ({ ...p, mmc: e.target.checked }))
-                        const current = formData.limitations || ''
-                        if (e.target.checked) setField('limitations', current ? current + '; limitazione MMC (max 10 kg)' : 'Limitazione MMC (max 10 kg)')
-                      }} />} 
-                      label="Limitazione MMC" 
-                    />
-                    <FormControlLabel 
-                      control={<Checkbox checked={selectedPrescriptions.lenti} onChange={(e) => {
-                        setSelectedPrescriptions(p => ({ ...p, lenti: e.target.checked }))
-                        const current = formData.prescriptions || ''
-                        if (e.target.checked) setField('prescriptions', current ? current + '; prescrizione uso lenti correttive' : 'Prescrizione uso lenti correttive')
-                      }} />} 
-                      label="Prescrizione lenti" 
-                    />
-                    <FormControlLabel 
-                      control={<Checkbox checked={selectedPrescriptions.vdt} onChange={(e) => {
-                        setSelectedPrescriptions(p => ({ ...p, vdt: e.target.checked }))
-                        const current = formData.prescriptions || ''
-                        if (e.target.checked) setField('prescriptions', current ? current + '; pausa VDT 15 min ogni 2 ore' : 'Pausa VDT 15 min ogni 2 ore')
-                      }} />} 
-                      label="Pausa VDT 15 min ogni 2 ore" 
-                    />
-                  </FormGroup>
-                </Box>
               </Box>
             )}
           </Box>
 
-          <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 3 }}>
-            <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || saving}>Indietro</Button>
+          <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 3, pt: 2, borderTop: '1px solid #eaeef5' }}>
+            <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || saving}>
+              Indietro
+            </Button>
             {activeStep < STEP_LABELS.length - 1 ? (
-              <Button variant="contained" onClick={handleNext} disabled={saving}>Avanti</Button>
+              <Button variant="contained" onClick={handleNext} disabled={saving}>
+                Avanti
+              </Button>
             ) : (
-              <Button variant="contained" onClick={handleSave} disabled={saving}>Salva Visita</Button>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleSave} 
+                disabled={saving}
+                sx={{ px: 4, fontWeight: 700 }}
+              >
+                {saving ? 'Salvataggio in corso...' : 'Salva & Rilascia Giudizio'}
+              </Button>
             )}
           </Stack>
         </Paper>
@@ -636,56 +1040,75 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
         {!!success && <Alert severity="success">{success}</Alert>}
       </Stack>
 
-      {/* SIDEBAR CONTESTUALE */}
-      <Box sx={{ width: { xs: '100%', md: '300px' }, flexShrink: 0 }}>
-        <Paper variant="outlined" sx={{ borderRadius: 3, p: 2, bgcolor: 'background.default' }}>
+      {/* CONTEXTUAL SIDEBAR: CLINICAL TIMELINE & VITALS TRENDS */}
+      <Box sx={{ width: { xs: '100%', lg: '340px' }, flexShrink: 0 }}>
+        <Paper variant="outlined" sx={{ borderRadius: 3, p: 2.5, bgcolor: '#f8f9fa' }}>
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
             <InfoIcon color="primary" fontSize="small" />
-            <Typography variant="subtitle1" fontWeight="bold">Contesto Lavoratore</Typography>
+            <Typography variant="subtitle1" fontWeight={700} color="#0f1f3d">
+              Dossier Clinico Lavoratore
+            </Typography>
           </Stack>
           
           {!formData.employeeId ? (
             <Typography variant="body2" color="text.secondary">
-              Seleziona un lavoratore per visualizzare lo storico.
+              Seleziona un lavoratore dal menu a tendina per visualizzare il profilo di rischio e lo storico clinico.
             </Typography>
           ) : !employeeContext ? (
             <Typography variant="body2" color="text.secondary">
-              Caricamento contesto...
+              Caricamento contesto clinico...
             </Typography>
           ) : (
             <Stack spacing={2}>
               <Box>
-                <Typography variant="caption" color="text.secondary">Mansione</Typography>
-                <Typography variant="body2" fontWeight="medium">
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>MANSIONE ATTUALE</Typography>
+                <Typography variant="body2" fontWeight={700} color="#0f1f3d">
                   {employeeContext.jobRole || 'Non specificata'}
                 </Typography>
               </Box>
+              
               <Divider />
+              
               <Box>
-                <Typography variant="caption" color="text.secondary">Classe di Rischio</Typography>
-                <Typography variant="body2" fontWeight="medium" color={employeeContext.riskLevelName ? 'error.main' : 'text.primary'}>
-                  {employeeContext.riskLevelName || 'Nessun rischio assegnato'}
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>LIVELLO DI RISCHIO</Typography>
+                <Typography variant="body2" fontWeight={700} color={employeeContext.riskLevelName ? 'error.main' : 'text.primary'}>
+                  {employeeContext.riskLevelName || 'Nessun livello assegnato'}
                 </Typography>
               </Box>
+
               <Divider />
+
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>Ultime Visite (Storico)</Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    TIMELINE VISITE PRECEDENTI
+                  </Typography>
+                  <HistoryIcon fontSize="inherit" color="action" />
+                </Stack>
+
                 {(!employeeContext.recentVisits || employeeContext.recentVisits.length === 0) ? (
-                  <Typography variant="body2" color="text.secondary">Nessuna visita precedente.</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Nessuna visita precedente registrata.
+                  </Typography>
                 ) : (
                   <Stack spacing={1}>
                     {employeeContext.recentVisits.map((v, idx) => (
-                      <Card key={idx} variant="outlined" sx={{ bgcolor: 'white' }}>
-                        <CardContent sx={{ p: '8px !important' }}>
-                          <Typography variant="body2" fontWeight="bold">
-                            {new Date(v.visitDate).toLocaleDateString()}
-                          </Typography>
-                          <Typography variant="caption" display="block">
-                            Esito: {v.outcome || 'N/D'}
-                          </Typography>
+                      <Card key={idx} variant="outlined" sx={{ bgcolor: '#ffffff', borderRadius: 2 }}>
+                        <CardContent sx={{ p: '10px !important' }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="body2" fontWeight={700}>
+                              {new Date(v.visitDate).toLocaleDateString('it-IT')}
+                            </Typography>
+                            <Chip 
+                              size="small" 
+                              label={v.outcome?.includes('Idoneo') ? 'Idoneo' : (v.outcome || 'Eseguita')}
+                              color={v.outcome?.includes('Idoneo con') ? 'warning' : v.outcome?.includes('Non') ? 'error' : 'success'}
+                              sx={{ height: 20, fontSize: '0.7rem' }}
+                            />
+                          </Stack>
                           {(v.bloodPressure || v.heartRate) && (
-                            <Typography variant="caption" display="block" color="text.secondary">
-                              PA: {v.bloodPressure || '-'} | FC: {v.heartRate || '-'}
+                            <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
+                              ❤️ PA: <strong>{v.bloodPressure || '-'}</strong> | FC: <strong>{v.heartRate || '-'}</strong>
                             </Typography>
                           )}
                         </CardContent>

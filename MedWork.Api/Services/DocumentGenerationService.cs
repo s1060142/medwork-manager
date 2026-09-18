@@ -86,7 +86,10 @@ public class DocumentGenerationService : IDocumentGenerationService
             Prescriptions: visit.Prescriptions,
             Limitations: visit.Limitations,
             ClinicalNotes: visit.ClinicalNotes,
-            NextDeadlineDate: visit.NextDeadlineDate
+            NextDeadlineDate: visit.NextDeadlineDate,
+            IsSigned: visit.IsSigned,
+            SignedAt: visit.SignedAt,
+            SignatureThumbprint: visit.DigitalCertificateThumbprint
         );
     }
 
@@ -105,6 +108,209 @@ public class DocumentGenerationService : IDocumentGenerationService
     {
         var data = await BuildFitnessJudgmentData(medicalVisitId, cancellationToken);
         var document = new FitnessJudgmentPdfDocument(data);
+        return await Task.Run(() => document.GeneratePdf(), cancellationToken);
+    }
+
+    // ── Allegato 3A: Cartella Sanitaria e di Rischio PDF ──────────────────────
+    public async Task<byte[]> GenerateAllegato3A(int medicalVisitId, CancellationToken cancellationToken = default)
+    {
+        var tenantId = GetTenantId();
+
+        var visit = await _db.MedicalVisits
+            .AsNoTracking()
+            .Include(v => v.Doctor)
+            .Include(v => v.Employee)
+                .ThenInclude(e => e!.Company)
+            .Include(v => v.Anamnesis)
+            .FirstOrDefaultAsync(v => v.Id == medicalVisitId && v.TenantId == tenantId, cancellationToken);
+
+        if (visit is null)
+        {
+            throw new KeyNotFoundException($"Medical visit {medicalVisitId} not found.");
+        }
+
+        var progressiveNumber = await _db.MedicalVisits
+            .AsNoTracking()
+            .Where(v => v.TenantId == visit.TenantId
+                     && v.DoctorId == visit.DoctorId
+                     && v.VisitDate.Year == visit.VisitDate.Year
+                     && v.Id <= medicalVisitId)
+            .CountAsync(cancellationToken);
+
+        var employeeId = visit.EmployeeId;
+
+        var risks = await _db.EmployeeRisks
+            .AsNoTracking()
+            .Include(r => r.RiskFactor)
+            .Where(r => r.EmployeeId == employeeId && r.TenantId == tenantId)
+            .Select(r => r.RiskFactor != null ? r.RiskFactor.Name : "Rischio generico")
+            .ToListAsync(cancellationToken);
+
+        var protocols = await _db.PersonalProtocols
+            .AsNoTracking()
+            .Include(p => p.Protocol)
+            .Where(p => p.EmployeeId == employeeId && p.TenantId == tenantId)
+            .Select(p => p.Protocol != null ? $"{p.Protocol.Name} (ogni {p.Protocol.CadenceDays} gg)" : "Protocollo standard")
+            .ToListAsync(cancellationToken);
+
+        var exams = await _db.ScheduledExams
+            .AsNoTracking()
+            .Include(e => e.ExamType)
+            .Where(e => e.EmployeeId == employeeId && e.TenantId == tenantId)
+            .Select(e => e.ExamType != null ? $"{e.ExamType.Name} ({e.Status})" : "Esame strumentale")
+            .ToListAsync(cancellationToken);
+
+        var anamnesis = visit.Anamnesis;
+
+        var data = new Allegato3AData(
+            DoctorFullName: $"Dr. {visit.Doctor?.FirstName} {visit.Doctor?.LastName}",
+            DoctorLicenseNumber: visit.Doctor?.MedicalLicenseNumber ?? "N/D",
+            DoctorSpecialty: visit.Doctor?.Specialty,
+            DoctorEmail: visit.Doctor?.Email,
+            DoctorPec: visit.Doctor?.PEC,
+            CompanyName: visit.Employee?.Company?.Name ?? "—",
+            CompanyVatNumber: visit.Employee?.Company?.VATNumber,
+            CompanyAddress: visit.Employee?.Company?.LegalAddress ?? visit.Employee?.Company?.OperationalAddress,
+            CompanySector: visit.Employee?.Company?.ATECOCode ?? "Attività produttiva / servizi",
+            EmployeeFullName: $"{visit.Employee?.FirstName} {visit.Employee?.LastName}",
+            EmployeeTaxCode: visit.Employee?.TaxCode ?? "N/D",
+            EmployeeBirthDate: visit.Employee?.BirthDate ?? DateTime.MinValue,
+            EmployeeBirthPlace: null,
+            EmployeeGender: null,
+            EmployeeJobRole: visit.Employee?.JobRole ?? "Mansione non specificata",
+            EmployeeDepartment: null,
+            EmployeeHireDate: null,
+            VisitId: visit.Id,
+            VisitProgressiveNumber: progressiveNumber,
+            VisitDate: visit.VisitDate,
+            VisitType: MapVisitType(visit.VisitType),
+            WorkHistory: anamnesis?.WorkHistory,
+            PersonalHistory: anamnesis?.PersonalHistory,
+            FamilyHistory: anamnesis?.FamilyHistory,
+            RemotePathology: anamnesis?.RemotePathology,
+            RecentPathology: anamnesis?.RecentPathology,
+            LifestyleHabits: anamnesis?.LifestyleHabits,
+            BloodPressure: visit.BloodPressure,
+            HeartRate: visit.HeartRate,
+            BMI: visit.BMI,
+            SpO2: visit.SpO2,
+            ObjectiveExam: visit.ObjectiveExam,
+            ObjCardio: null,
+            ObjResp: null,
+            ObjAddome: null,
+            ObjMusc: null,
+            ObjNeuro: null,
+            ObjCute: null,
+            ObjVista: null,
+            ObjUdito: null,
+            RiskFactors: risks,
+            Protocols: protocols,
+            ScheduledExams: exams,
+            OutcomeCode: visit.OutcomeCode ?? "INATTESA",
+            OutcomeLabel: visit.Outcome ?? "In attesa",
+            Prescriptions: visit.Prescriptions,
+            Limitations: visit.Limitations,
+            ClinicalNotes: visit.ClinicalNotes,
+            NextDeadlineDate: visit.NextDeadlineDate,
+            IsSigned: visit.IsSigned,
+            SignedAt: visit.SignedAt,
+            SignatureThumbprint: visit.DigitalCertificateThumbprint
+        );
+
+        var document = new Allegato3APdfDocument(data);
+        return await Task.Run(() => document.GeneratePdf(), cancellationToken);
+    }
+
+    // ── Relazione Sanitaria Annuale Art. 40 PDF ──────────────────────────────
+    public async Task<byte[]> GenerateAnnualReport(int companyId, int year, CancellationToken cancellationToken = default)
+    {
+        var tenantId = GetTenantId();
+
+        var company = await _db.Companies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == companyId && c.TenantId == tenantId, cancellationToken);
+
+        if (company is null)
+        {
+            throw new KeyNotFoundException($"Company {companyId} not found.");
+        }
+
+        var employees = await _db.Employees
+            .AsNoTracking()
+            .Where(e => e.CompanyId == companyId && e.TenantId == tenantId)
+            .ToListAsync(cancellationToken);
+
+        var employeeIds = employees.Select(e => e.Id).ToList();
+
+        var visits = await _db.MedicalVisits
+            .AsNoTracking()
+            .Include(v => v.Doctor)
+            .Where(v => employeeIds.Contains(v.EmployeeId) && v.TenantId == tenantId && v.VisitDate.Year == year)
+            .ToListAsync(cancellationToken);
+
+        var defaultDoctor = visits.FirstOrDefault()?.Doctor ?? await _db.Doctors
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.TenantId == tenantId, cancellationToken);
+
+        var risks = await _db.EmployeeRisks
+            .AsNoTracking()
+            .Include(r => r.RiskFactor)
+            .Where(r => employeeIds.Contains(r.EmployeeId) && r.TenantId == tenantId)
+            .GroupBy(r => r.RiskFactor != null ? r.RiskFactor.Name : "Generico")
+            .ToDictionaryAsync(g => g.Key, g => g.Count(), cancellationToken);
+
+        var examsCount = await _db.ScheduledExams
+            .AsNoTracking()
+            .Where(e => employeeIds.Contains(e.EmployeeId) && e.TenantId == tenantId && e.DueDate.Year == year)
+            .CountAsync(cancellationToken);
+
+        var totalSurveillance = employees.Count;
+        var totalVisits = visits.Count;
+
+        var preventiveCount = visits.Count(v => v.VisitType == MedWork.Api.Models.MedicalVisitType.Preventive);
+        var periodicCount = visits.Count(v => v.VisitType == MedWork.Api.Models.MedicalVisitType.Periodic);
+        var roleChangeCount = visits.Count(v => v.VisitType == MedWork.Api.Models.MedicalVisitType.RoleChange);
+        var returnSickCount = visits.Count(v => (int)v.VisitType == 5);
+        var requestCount = visits.Count(v => v.VisitType == MedWork.Api.Models.MedicalVisitType.EmployeeRequest);
+
+        var fitCount = visits.Count(v => (v.OutcomeCode ?? "").ToUpperInvariant() == "IDONE0");
+        var prescCount = visits.Count(v => (v.OutcomeCode ?? "").ToUpperInvariant() == "IDONE0P");
+        var limitCount = visits.Count(v => (v.OutcomeCode ?? "").ToUpperInvariant() == "IDONE0L");
+        var unfitCount = visits.Count(v => (v.OutcomeCode ?? "").ToUpperInvariant() == "NONIDONE0");
+        var pendingCount = visits.Count(v => (v.OutcomeCode ?? "").ToUpperInvariant() == "INATTESA" || string.IsNullOrEmpty(v.OutcomeCode));
+
+        var data = new AnnualHealthReportData(
+            CompanyId: company.Id,
+            CompanyName: company.Name,
+            CompanyVatNumber: company.VATNumber,
+            CompanyAddress: company.LegalAddress ?? company.OperationalAddress,
+            CompanySector: company.ATECOCode ?? "Attività produttiva e servizi",
+            ReferenceYear: year,
+            DoctorFullName: defaultDoctor != null ? $"Dr. {defaultDoctor.FirstName} {defaultDoctor.LastName}" : "Dr. Medico Competente Incaricato",
+            DoctorLicenseNumber: defaultDoctor?.MedicalLicenseNumber ?? "Iscritto Ordine Medici",
+            DoctorSpecialty: defaultDoctor?.Specialty ?? "Specialista in Medicina del Lavoro",
+            DoctorPec: defaultDoctor?.PEC,
+            TotalEmployeesUnderSurveillance: totalSurveillance,
+            TotalVisitsConducted: totalVisits,
+            PreventiveVisitsCount: preventiveCount,
+            PeriodicVisitsCount: periodicCount,
+            RoleChangeVisitsCount: roleChangeCount,
+            ReturnFromSickLeaveVisitsCount: returnSickCount,
+            EmployeeRequestVisitsCount: requestCount,
+            FitCount: fitCount,
+            FitWithPrescriptionsCount: prescCount,
+            FitWithLimitationsCount: limitCount,
+            UnfitCount: unfitCount,
+            PendingCount: pendingCount,
+            RiskFactorCounts: risks,
+            TotalExamsConducted: examsCount > 0 ? examsCount : totalVisits,
+            OccupationalDiseasesReported: 0,
+            WorkInjuriesReported: 0,
+            GeneralObservations: "L'attività di sorveglianza sanitaria si è svolta regolarmente in conformità al Documento di Valutazione dei Rischi (DVR) aziendale e ai protocolli sanitari definiti. Non sono emerse anomalie cliniche attribuibili a fattori di rischio occupazionale non controllati.",
+            PreventionRecommendations: "1. Mantenere l'adozione e il corretto utilizzo dei DPI forniti; 2. Proseguire con la formazione periodica su ergonomia e movimentazione carichi; 3. Rispettare le periodicità degli accertamenti integrativi programmati."
+        );
+
+        var document = new AnnualHealthReportPdfDocument(data);
         return await Task.Run(() => document.GeneratePdf(), cancellationToken);
     }
 

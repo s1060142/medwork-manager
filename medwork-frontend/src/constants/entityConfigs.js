@@ -14,6 +14,7 @@ export const ENTITY_CONFIGS = [
     idField: 'id',
     fields: [
       { name: 'name', label: 'Nome Azienda', type: 'text', required: true, minLength: 2, maxLength: 200, placeholder: 'Es. Acme Industria S.p.A.' },
+      { name: 'companyGroupId', label: 'Gruppo Aziendale', type: 'select', required: false, optionsEndpoint: '/api/master-data/company-groups', optionValue: 'id', optionLabel: 'name' },
       { name: 'coordinatorDoctorName', label: 'Medico Competente', type: 'text', readOnly: true },
       { name: 'legalName', label: 'Ragione Sociale', type: 'text', required: false, minLength: 2, maxLength: 250, placeholder: 'Es. ACME SPA' },
       {

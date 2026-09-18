@@ -122,7 +122,21 @@ function AgendaCenter({ activeCompanyId = '', onOpenMedicalVisitCreate }) {
                     <TableCell>{item.description}</TableCell>
                     <TableCell>{item.location}</TableCell>
                     <TableCell align="right">
-                      <Button size="small" onClick={() => setSelectedItem(item)}>Dettagli</Button>
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                        <Button size="small" variant="outlined" onClick={() => setSelectedItem(item)}>Dettagli</Button>
+                        {item.type === 'Visita Medica' && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              if (onOpenMedicalVisitCreate) onOpenMedicalVisitCreate(item.employeeId)
+                            }}
+                          >
+                            ⚡ Avvia Visita
+                          </Button>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))
@@ -149,7 +163,7 @@ function AgendaCenter({ activeCompanyId = '', onOpenMedicalVisitCreate }) {
               
               <Typography variant="body2" color="text.secondary">
                 {selectedItem.type === 'Visita Medica' 
-                  ? 'Usa il pulsante qui sotto per avviare direttamente la cartella sanitaria e registrare la visita per questo lavoratore.' 
+                  ? 'Usa il pulsante qui sotto per avviare direttamente la cartella sanitaria e registrare la visita per questo lavoratore in 1 clic.' 
                   : 'Questo è un sopralluogo programmato. Per compilare il report, usa lo Scadenzario Sopralluoghi.'}
               </Typography>
             </Stack>
@@ -157,12 +171,13 @@ function AgendaCenter({ activeCompanyId = '', onOpenMedicalVisitCreate }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSelectedItem(null)}>Chiudi</Button>
-          {selectedItem?.type === 'Visita Medica' && selectedItem?.status !== 'completed' && (
+          {selectedItem?.type === 'Visita Medica' && (
             <Button variant="contained" color="primary" onClick={() => {
+              const empId = selectedItem.employeeId
               setSelectedItem(null)
-              if (onOpenMedicalVisitCreate) onOpenMedicalVisitCreate()
+              if (onOpenMedicalVisitCreate) onOpenMedicalVisitCreate(empId)
             }}>
-              Inizia Visita
+              ⚡ Inizia Visita Subito
             </Button>
           )}
         </DialogActions>

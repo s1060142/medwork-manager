@@ -28,7 +28,10 @@ public sealed record FitnessJudgmentData(
     string? Prescriptions,
     string? Limitations,
     string? ClinicalNotes,
-    DateTime NextDeadlineDate
+    DateTime NextDeadlineDate,
+    bool IsSigned = false,
+    DateTime? SignedAt = null,
+    string? SignatureThumbprint = null
 );
 
 public enum MedicalVisitTypeLabel
@@ -235,7 +238,19 @@ public sealed class FitnessJudgmentPdfDocument : IDocument
                 {
                     inner.Item().Text("Il Medico Competente").FontSize(9);
                     inner.Item().PaddingTop(2).Text(_data.DoctorFullName).FontSize(9).Bold();
-                    inner.Item().PaddingTop(20).LineHorizontal(0.5f);
+                    if (_data.IsSigned)
+                    {
+                        inner.Item().PaddingTop(3).Border(0.5f).BorderColor(Colors.Green.Darken2)
+                            .Background(Colors.Green.Lighten5).Padding(3).Column(signBox =>
+                            {
+                                signBox.Item().Text("✓ DOCUMENTO FIRMATO DIGITALMENTE").Bold().FontSize(7).FontColor(Colors.Green.Darken3);
+                                signBox.Item().Text($"Data: {_data.SignedAt:dd/MM/yyyy HH:mm:ss} — Impronta: {_data.SignatureThumbprint?.Substring(0, Math.Min(16, _data.SignatureThumbprint.Length)) ?? "PADES-VERIFIED"}...").FontSize(6.5f).FontColor(Colors.Grey.Darken3);
+                            });
+                    }
+                    else
+                    {
+                        inner.Item().PaddingTop(20).LineHorizontal(0.5f);
+                    }
                 });
             });
         });
