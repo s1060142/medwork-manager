@@ -362,11 +362,19 @@ const App = () => {
     return roleAwareModules.filter((item) => allowed.has(item.key))
   }, [roleAwareModules, selectedArea])
 
-  const handleLoginSuccess = (accessToken: string, userRole: string) => {
+  const handleLoginSuccess = (accessToken: string, userRole: string, tenantId?: number, tenantSlug?: string) => {
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('role', userRole)
     setToken(accessToken)
     setRole(userRole)
+    if (tenantId != null) {
+      const settings = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+      settings.tenantId = tenantId.toString()
+      if (tenantSlug) settings.tenantSlug = tenantSlug
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+      setTenantIdLocal(tenantId.toString())
+      setSelectedTenantSlug(tenantSlug ?? null)
+    }
     appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
 

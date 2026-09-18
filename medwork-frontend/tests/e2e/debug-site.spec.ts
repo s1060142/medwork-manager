@@ -1,0 +1,51 @@
+import { test } from '@playwright/test'
+
+const BASE = 'http://127.0.0.1:5173'
+const ADMIN_CRED = { username: 'admin', password: 'Admin123!' }
+
+test('debug site visit', async ({ page }) => {
+  page.on('response', async (res) => {
+    if (/\/api\/company-groups\/.*\/(bulk-plan-site-visits)/.test(res.url()) && res.request().method() === 'POST') {
+      console.log('API', res.request().method(), res.url(), res.status(), await res.text())
+    }
+  })
+  await page.goto(BASE)
+  await page.fill('input[type="text"]', ADMIN_CRED.username)
+  await page.fill('input[type="password"]', ADMIN_CRED.password)
+  await page.click('button:has-text("Accedi")')
+  await page.waitForSelector('button:has-text("Gestione aziende")', { timeout: 30000 })
+  await page.click('button:has-text("Gruppi aziendali")')
+  await page.waitForTimeout(500)
+  const groupName = 'UI VALIDATION ' + Date.now()
+  await page.click('button:has-text("Nuovo Gruppo")')
+  await page.getByLabel('Denominazione Gruppo *').fill(groupName)
+  await page.getByLabel('Ragione Sociale Capogruppo *').fill('UI Validation SRL')
+  await page.click('[role="dialog"] button:has-text("Salva Gruppo")')
+  await page.waitForTimeout(2000)
+  await page.click('button:has-text("Governance & Struttura")')
+  await page.waitForTimeout(1000)
+  await page.click('button:has-text("Aggiungi Azienda")')
+  await page.waitForSelector('[role="dialog"]', { timeout: 5000 })
+  await page.locator('[role="dialog"] [role="combobox"]').first().click({ force: true })
+  await page.locator('[role="listbox"] [role="option"]').nth(1).click({ force: true })
+  await page.click('[role="dialog"] button:has-text("Aggiungi")')
+  await page.waitForTimeout(2000)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(1000)
+  await page.click('button:has-text("Gruppi aziendali")')
+  await page.waitForTimeout(500)
+  await page.getByLabel('Gruppo Attivo').first().click()
+  await page.locator('[role="option"]').filter({ hasText: groupName }).first().click()
+  await page.waitForTimeout(500)
+  await page.click('button:has-text("Governance & Struttura")')
+  await page.waitForTimeout(1500)
+  await page.click('button:has-text("Pianificazione Massiva")')
+  await page.waitForTimeout(1000)
+  await page.click('button:has-text("Pianifica Sopralluoghi Art. 25")')
+  await page.waitForSelector('[role="dialog"]', { timeout: 5000 })
+  await page.click('[role="dialog"] button:has-text("Programma per Tutte le Aziende")')
+  await page.waitForTimeout(3000)
+  console.log('SITE_TOAST', await page.locator('text=Sopralluoghi programmati per tutte le aziende del gruppo!').count())
+  console.log('SITE_ALERT', await page.locator('[role="alert"]').count())
+  console.log('SITE_TEXT', await page.locator('[role="alert"]').first().textContent().catch(() => 'NONE'))
+})

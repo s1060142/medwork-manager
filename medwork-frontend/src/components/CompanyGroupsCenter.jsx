@@ -33,6 +33,7 @@ import {
   LinearProgress,
   Badge,
   Checkbox,
+  FormControlLabel,
   Snackbar,
   Stack,
 } from '@mui/material'
@@ -93,6 +94,7 @@ export default function CompanyGroupsCenter() {
   const [siteVisitDialog, setSiteVisitDialog] = useState(false)
   const [createGroupDialog, setCreateGroupDialog] = useState(false)
   const [addCompanyDialog, setAddCompanyDialog] = useState(false)
+  const [editGroupDialog, setEditGroupDialog] = useState(false)
   const [addDoctorDialog, setAddDoctorDialog] = useState(false)
 
   // Forms state
@@ -124,9 +126,36 @@ export default function CompanyGroupsCenter() {
     postalCode: '',
     province: '',
     singleArchive: true,
+    type: 99,
+    status: 1,
+    isActive: true,
+    propagateProtocols: true,
+    propagateRiskFactors: true,
+    propagateDoctors: false,
+    propagateVisitSchedules: false,
+    consolidatedBilling: false,
+  })
+  const [editGroupForm, setEditGroupForm] = useState({
+    name: '',
+    legalName: '',
+    vatNumber: '',
+    taxCode: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    province: '',
+    singleArchive: true,
+    type: 99,
+    status: 1,
+    isActive: true,
+    propagateProtocols: true,
+    propagateRiskFactors: true,
+    propagateDoctors: false,
+    propagateVisitSchedules: false,
+    consolidatedBilling: false,
   })
   const [newCompanySelection, setNewCompanySelection] = useState('')
-  const [newDoctorSelection, setNewDoctorSelection] = useState({ doctorId: '', roleInGroup: 'Medico Competente' })
+  const [newDoctorSelection, setNewDoctorSelection] = useState({ doctorId: '', roleInGroup: 'MedicoCompetente' })
 
   const showToast = (message, severity = 'success') => {
     setToast({ open: true, message, severity })
@@ -243,12 +272,11 @@ export default function CompanyGroupsCenter() {
     }
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/bulk-plan-visits`, 'POST', {
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/bulk-plan-visits`, {
         employeeIds: selectedCandidates,
         scheduledDate: visitPlanForm.scheduledDate,
         visitType: visitPlanForm.visitType,
         doctorId: visitPlanForm.doctorId ? parseInt(visitPlanForm.doctorId, 10) : null,
-        ambulatory: visitPlanForm.ambulatory,
         notes: visitPlanForm.notes,
       })
       showToast(res?.message || 'Visite pianificate con successo!')
@@ -264,7 +292,7 @@ export default function CompanyGroupsCenter() {
   const handleExecuteCampaign = async () => {
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/bulk-plan-campaign`, 'POST', campaignForm)
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/bulk-plan-campaign`, { Title: campaignForm.title, CompanyIds: [], ProtocolId: null, TargetMonths: 1, Description: campaignForm.notes })
       showToast(res?.message || 'Campagna di sorveglianza avviata!')
       setCampaignDialog(false)
       loadActiveTabData()
@@ -278,10 +306,11 @@ export default function CompanyGroupsCenter() {
   const handleExecuteBulkSiteVisits = async () => {
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/bulk-plan-site-visits`, 'POST', {
-        scheduledDate: siteVisitForm.scheduledDate,
-        doctorId: siteVisitForm.doctorId ? parseInt(siteVisitForm.doctorId, 10) : null,
-        notes: siteVisitForm.notes,
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/bulk-plan-site-visits`, {
+        CompanyIds: [],
+        TargetDate: siteVisitForm.scheduledDate,
+        Structure: 'Stabilimento / Sede Operativa',
+        Notes: siteVisitForm.notes,
       })
       showToast(res?.message || 'Sopralluoghi programmati per tutte le aziende del gruppo!')
       setSiteVisitDialog(false)
@@ -297,7 +326,7 @@ export default function CompanyGroupsCenter() {
   const handleRemediate = async (actionKey) => {
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/compliance/remediate`, 'POST', { action: actionKey })
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/compliance/remediate`, { action: actionKey })
       showToast(res?.message || 'Azione correttiva applicata con successo!')
       loadActiveTabData()
     } catch (err) {
@@ -311,7 +340,7 @@ export default function CompanyGroupsCenter() {
   const handlePropagateDoctors = async () => {
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/propagate-doctors`, 'POST', {})
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/propagate-doctors`, {})
       showToast(res?.message || 'Medici propagati con successo a tutte le aziende!')
       loadActiveTabData()
     } catch (err) {
@@ -324,7 +353,7 @@ export default function CompanyGroupsCenter() {
   const handlePropagateProtocols = async () => {
     try {
       setTabLoading(true)
-      const res = await apiSend(`/api/company-groups/${selectedGroupId}/propagate-protocols`, 'POST', {})
+      const res = await apiSend('POST', `/api/company-groups/${selectedGroupId}/propagate-protocols`, {})
       showToast(res?.message || 'Protocolli propagati con successo a tutte le aziende!')
       loadActiveTabData()
     } catch (err) {
@@ -339,7 +368,7 @@ export default function CompanyGroupsCenter() {
     if (!newCompanySelection) return
     try {
       setTabLoading(true)
-      await apiSend(`/api/company-groups/${selectedGroupId}/companies`, 'POST', { companyId: parseInt(newCompanySelection, 10) })
+      await apiSend('POST', `/api/company-groups/${selectedGroupId}/companies`, parseInt(newCompanySelection, 10))
       showToast('Azienda aggiunta al gruppo!')
       setAddCompanyDialog(false)
       setNewCompanySelection('')
@@ -353,8 +382,9 @@ export default function CompanyGroupsCenter() {
 
   const handleRemoveCompanyFromGroup = async (cid) => {
     try {
+      if (!window.confirm('Sei sicuro di rimuovere questa azienda dal gruppo? L\'operazione non è reversibile.')) return;
       setTabLoading(true)
-      await apiSend(`/api/company-groups/${selectedGroupId}/companies/${cid}`, 'DELETE')
+      await apiSend('DELETE', `/api/company-groups/${selectedGroupId}/companies/${cid}`)
       showToast('Azienda rimossa dal gruppo')
       loadActiveTabData()
     } catch (err) {
@@ -369,9 +399,10 @@ export default function CompanyGroupsCenter() {
     if (!newDoctorSelection.doctorId) return
     try {
       setTabLoading(true)
-      await apiSend(`/api/company-groups/${selectedGroupId}/doctors`, 'POST', {
+      const roleMap = { Coordinatore: 1, MedicoCompetente: 2, Collaboratore: 3 }
+      await apiSend('POST', `/api/company-groups/${selectedGroupId}/doctors`, {
         doctorId: parseInt(newDoctorSelection.doctorId, 10),
-        roleInGroup: newDoctorSelection.roleInGroup,
+        Role: roleMap[newDoctorSelection.roleInGroup] || 2,
       })
       showToast('Medico associato al gruppo!')
       setAddDoctorDialog(false)
@@ -385,8 +416,9 @@ export default function CompanyGroupsCenter() {
 
   const handleRemoveDoctorFromGroup = async (docId) => {
     try {
+      if (!window.confirm('Sei sicuro di rimuovere questo medico dal team del gruppo? L\'operazione non è reversibile.')) return;
       setTabLoading(true)
-      await apiSend(`/api/company-groups/${selectedGroupId}/doctors/${docId}`, 'DELETE')
+      await apiSend('DELETE', `/api/company-groups/${selectedGroupId}/doctors/${docId}`)
       showToast('Medico rimosso dal team del gruppo')
       loadActiveTabData()
     } catch (err) {
@@ -404,7 +436,7 @@ export default function CompanyGroupsCenter() {
     }
     try {
       setTabLoading(true)
-      const created = await apiSend('/api/company-groups', 'POST', newGroupForm)
+      const created = await apiSend('POST', '/api/company-groups', newGroupForm)
       showToast('Gruppo aziendale creato con successo!')
       setCreateGroupDialog(false)
       setNewGroupForm({
@@ -417,6 +449,14 @@ export default function CompanyGroupsCenter() {
         postalCode: '',
         province: '',
         singleArchive: true,
+        type: 99,
+        status: 1,
+        isActive: true,
+        propagateProtocols: true,
+        propagateRiskFactors: true,
+        propagateDoctors: false,
+        propagateVisitSchedules: false,
+        consolidatedBilling: false,
       })
       await loadGroups(created?.id)
     } catch (err) {
@@ -426,11 +466,74 @@ export default function CompanyGroupsCenter() {
     }
   }
 
+  // Edit Group
+  const openEditGroup = async () => {
+    if (!selectedGroupId) return
+    try {
+      const details = await apiGet(`/api/company-groups/${selectedGroupId}`)
+      setEditGroupForm({
+        name: details?.name || '',
+        legalName: details?.legalName || '',
+        vatNumber: details?.vatNumber || '',
+        taxCode: details?.taxCode || '',
+        address: details?.address || '',
+        city: details?.city || '',
+        postalCode: details?.postalCode || '',
+        province: details?.province || '',
+        singleArchive: typeof details?.singleArchive === "boolean" ? details.singleArchive : details?.singleArchive === "true",
+        type: typeof details?.type === "number" ? details.type : (Number(details?.type) || 99),
+        status: typeof details?.status === "number" ? details.status : (Number(details?.status) || 1),
+        isActive: typeof details?.isActive === "boolean" ? details.isActive : details?.isActive === "true",
+        propagateProtocols: typeof details?.propagateProtocols === "boolean" ? details.propagateProtocols : details?.propagateProtocols === "true",
+        propagateRiskFactors: typeof details?.propagateRiskFactors === "boolean" ? details.propagateRiskFactors : details?.propagateRiskFactors === "true",
+        propagateDoctors: typeof details?.propagateDoctors === "boolean" ? details.propagateDoctors : details?.propagateDoctors === "true",
+        propagateVisitSchedules: typeof details?.propagateVisitSchedules === "boolean" ? details.propagateVisitSchedules : details?.propagateVisitSchedules === "true",
+        consolidatedBilling: typeof details?.consolidatedBilling === "boolean" ? details.consolidatedBilling : details?.consolidatedBilling === "true",
+      })
+      setEditGroupDialog(true)
+    } catch (err) {
+      showToast(err.message || 'Errore caricamento dati gruppo', 'error')
+    }
+  }
+
+  const handleEditGroup = async () => {
+    if (!editGroupForm.name || !editGroupForm.legalName) {
+      showToast('Denominazione e Ragione Sociale sono obbligatorie', 'warning')
+      return
+    }
+    try {
+      setTabLoading(true)
+      await apiSend('PUT', `/api/company-groups/${selectedGroupId}`, editGroupForm)
+      showToast('Gruppo aziendale aggiornato con successo!')
+      setEditGroupDialog(false)
+      await loadGroups(selectedGroupId)
+      loadActiveTabData()
+    } catch (err) {
+      showToast(err.message || 'Errore aggiornamento gruppo', 'error')
+    } finally {
+      setTabLoading(false)
+    }
+  }
+
+  const handleDeleteGroup = async () => {
+    if (!window.confirm("Sei sicuro di eliminare questo gruppo aziendale? L'operazione non \u00e8 reversibile.")) return
+    try {
+      setTabLoading(true)
+      await apiSend('DELETE', `/api/company-groups/${selectedGroupId}`)
+      showToast('Gruppo aziendale eliminato con successo!')
+      setSelectedGroupId(null)
+      await loadGroups()
+    } catch (err) {
+      showToast(err.message || 'Errore eliminazione gruppo', 'error')
+    } finally {
+      setTabLoading(false)
+    }
+  }
+
   // CSV Export Download
   const handleExportCsv = () => {
     if (!selectedGroupId) return
     const baseUrl = getApiBaseUrl()
-    const token = localStorage.getItem('accessToken')
     const url = `${baseUrl}/api/company-groups/${selectedGroupId}/reports/export`
     
     // Trigger download using bearer token fetch
@@ -559,6 +662,45 @@ export default function CompanyGroupsCenter() {
           >
             Nuovo Gruppo
           </Button>
+
+          {selectedGroupId && (
+            <>
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<BusinessIcon />}
+                onClick={openEditGroup}
+                disabled={!selectedGroupId}
+                sx={{
+                  color: '#0d47a1',
+                  bgcolor: '#ffffff',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  '&:hover': { bgcolor: '#f0f4f8' },
+                }}
+              >
+                Modifica Gruppo
+              </Button>
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<DeleteOutlineIcon />}
+                onClick={handleDeleteGroup}
+                disabled={!selectedGroupId}
+                sx={{
+                  color: '#c62828',
+                  bgcolor: '#ffffff',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  '&:hover': { bgcolor: '#ffebee' },
+                }}
+              >
+                Elimina Gruppo
+              </Button>
+            </>
+          )}
 
           {selectedGroupId && (
             <>
@@ -1244,11 +1386,11 @@ export default function CompanyGroupsCenter() {
                 {/* 6 Vectors Row */}
                 <Grid container spacing={2}>
                   {[
-                    { label: 'Cartelle Sanitarie Mancanti', count: complianceData.vectors.missingHealthRecords, action: 'generate-missing-folders', btn: 'Genera Cartelle' },
+                    { label: 'Cartelle Sanitarie Mancanti', count: complianceData.vectors.missingHealthRecords, action: 'create-record', btn: 'Genera Cartelle' },
                     { label: 'Visite Periodiche Scadute', count: complianceData.vectors.expiredVisits, action: null, btn: null },
-                    { label: 'Nomine Medico Mancanti', count: complianceData.vectors.missingNominations, action: 'assign-group-doctor', btn: 'Assegna Medico Gruppo' },
-                    { label: 'Aziende Senza Medico Assegnato', count: complianceData.vectors.missingPhysicians, action: 'assign-group-doctor', btn: 'Assegna Medico Gruppo' },
-                    { label: 'Lavoratori Senza Protocollo', count: complianceData.vectors.missingProtocols, action: 'align-protocols', btn: 'Allinea Protocolli' },
+                    { label: 'Nomine Medico Mancanti', count: complianceData.vectors.missingNominations, action: 'nominate-doctor', btn: 'Assegna Medico Gruppo' },
+                    { label: 'Aziende Senza Medico Assegnato', count: complianceData.vectors.missingPhysicians, action: 'nominate-doctor', btn: 'Assegna Medico Gruppo' },
+                    { label: 'Lavoratori Senza Protocollo', count: complianceData.vectors.missingProtocols, action: 'plan-visit', btn: 'Allinea Protocolli' },
                     { label: 'Sopralluoghi/Attività Scadute', count: complianceData.vectors.overdueActivities, action: null, btn: null },
                   ].map((v, idx) => (
                     <Grid item xs={12} sm={6} md={4} key={idx}>
@@ -1653,13 +1795,13 @@ export default function CompanyGroupsCenter() {
                       </TableHead>
                       <TableBody>
                         {groupDetails.doctors?.map((d) => (
-                          <TableRow key={d.doctorId} hover>
+                          <TableRow key={d.id} hover>
                             <TableCell sx={{ fontWeight: 600 }}>{d.doctorName}</TableCell>
                             <TableCell>
                               <Chip label={d.role} size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
                             </TableCell>
                             <TableCell align="right">
-                              <IconButton size="small" color="error" onClick={() => handleRemoveDoctorFromGroup(d.doctorId)}>
+                              <IconButton size="small" color="error" onClick={() => handleRemoveDoctorFromGroup(d.id)}>
                                 <DeleteOutlineIcon fontSize="small" />
                               </IconButton>
                             </TableCell>
@@ -1879,6 +2021,91 @@ export default function CompanyGroupsCenter() {
         </DialogActions>
       </Dialog>
 
+      {/* DIALOG: MODIFICA GRUPPO */}
+      <Dialog open={editGroupDialog} onClose={() => setEditGroupDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Modifica Gruppo Aziendale</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Denominazione Gruppo *"
+                fullWidth
+                value={editGroupForm.name}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ragione Sociale Capogruppo *"
+                fullWidth
+                value={editGroupForm.legalName}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, legalName: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Partita IVA"
+                fullWidth
+                value={editGroupForm.vatNumber}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, vatNumber: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Codice Fiscale"
+                fullWidth
+                value={editGroupForm.taxCode}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, taxCode: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={8}>
+              <TextField
+                label="Indirizzo Sede Legale"
+                fullWidth
+                value={editGroupForm.address}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, address: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                label="Città"
+                fullWidth
+                value={editGroupForm.city}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, city: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="CAP"
+                fullWidth
+                value={editGroupForm.postalCode}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, postalCode: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Provincia"
+                fullWidth
+                value={editGroupForm.province}
+                onChange={(e) => setEditGroupForm(prev => ({ ...prev, province: e.target.value }))}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox checked={editGroupForm.singleArchive} onChange={(e) => setEditGroupForm(prev => ({ ...prev, singleArchive: e.target.checked }))} />}
+                label="Archivio Unico"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setEditGroupDialog(false)}>Annulla</Button>
+          <Button variant="contained" onClick={handleEditGroup} sx={{ fontWeight: 700 }}>
+            Salva Modifiche
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* DIALOG: AGGIUNGI AZIENDA AL GRUPPO */}
       <Dialog open={addCompanyDialog} onClose={() => setAddCompanyDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 'bold' }}>Aggiungi Azienda al Gruppo</DialogTitle>
@@ -1934,9 +2161,9 @@ export default function CompanyGroupsCenter() {
                 label="Ruolo nel Gruppo"
                 onChange={(e) => setNewDoctorSelection(prev => ({ ...prev, roleInGroup: e.target.value }))}
               >
-                <MenuItem value="Medico Coordinatore">Medico Coordinatore (Art. 39 c. 6 D.Lgs 81/08)</MenuItem>
-                <MenuItem value="Medico Competente">Medico Competente Principale</MenuItem>
-                <MenuItem value="Medico Collaboratore">Medico Collaboratore</MenuItem>
+                <MenuItem value="Coordinatore">Medico Coordinatore (Art. 39 c. 6 D.Lgs 81/08)</MenuItem>
+                <MenuItem value="MedicoCompetente">Medico Competente Principale</MenuItem>
+                <MenuItem value="Collaboratore">Medico Collaboratore</MenuItem>
               </Select>
             </FormControl>
           </Stack>

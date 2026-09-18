@@ -58,7 +58,7 @@ function LoginCard({ onLoginSuccess, onForgotPassword }) {
 
     try {
       const data = await authLogin(username, password, tenant, rememberMe)
-      onLoginSuccess(data.accessToken, data.role)
+      onLoginSuccess(data.accessToken, data.role, data.tenantId, data.tenantSlug)
     } catch (error) {
       setErrore(error.message || 'Errore durante il login.')
     } finally {
