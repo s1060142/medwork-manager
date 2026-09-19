@@ -8,19 +8,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/doctor-data/agenda")]
 [Authorize]
-public class AgendaController : ControllerBase
+public class AgendaController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
     public AgendaController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(tenantClaim, out var id) ? id : 0;
     }
 
     [HttpGet]

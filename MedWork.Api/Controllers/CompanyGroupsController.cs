@@ -11,19 +11,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/company-groups")]
 [Authorize]
-public class CompanyGroupsController : ControllerBase
+public class CompanyGroupsController : BaseController
 {
     private readonly AppDbContext _db;
 
     public CompanyGroupsController(AppDbContext db)
     {
         _db = db;
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        return int.TryParse(tenantClaim, out var id) && id > 0 ? id : 0;
     }
 
     // =========================================================================
@@ -404,29 +398,78 @@ public class CompanyGroupsController : ControllerBase
         // Total compliance alerts
         var complianceAlerts = visitsOverdue + nominationsDue + missingRecordsCount + overdueActivities;
 
-        // Calculate overall compliance score (100 - penalties)
+        // Calculate overall compliance score (100 - penalties) - use decimal to avoid integer division issues
         var totalWorkforce = Math.Max(1, employees.Count);
-        var complianceScore = Math.Max(0, Math.Min(100, 100 - (visitsOverdue * 10 / totalWorkforce * 10) - (nominationsDue * 20) - (missingRecordsCount * 5 / totalWorkforce * 10)));
+        var complianceScore = Math.Max(0, Math.Min(100, 
+            (int)Math.Round(100.0 
+                - (visitsOverdue * 100.0 / totalWorkforce) 
+                - (nominationsDue * 20.0) 
+                - (missingRecordsCount * 50.0 / totalWorkforce))));
 
-        // Company breakdown comparison matrix
-        var companyBreakdown = new List<object>();
-        foreach (var c in companies)
+        // Company breakdown comparison matrix - batched to avoid N+1 queries
+        var companyIdsList = companies.Select(c => c.Id).ToList();
+
+        var visitsDueByCompany = await _db.MedicalVisits
+            .AsNoTracking()
+            .Where(v => v.TenantId == tenantId 
+                && companyIdsList.Contains(v.Employee.CompanyId)
+                && v.NextDeadlineDate.Date >= today 
+                && v.NextDeadlineDate.Date <= in60Days)
+            .GroupBy(v => v.Employee.CompanyId)
+            .Select(g => new { CompanyId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CompanyId, x => x.Count);
+
+        var visitsOverdueByCompany = await _db.MedicalVisits
+            .AsNoTracking()
+            .Where(v => v.TenantId == tenantId 
+                && companyIdsList.Contains(v.Employee.CompanyId)
+                && v.NextDeadlineDate.Date < today)
+            .GroupBy(v => v.Employee.CompanyId)
+            .Select(g => new { CompanyId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CompanyId, x => x.Count);
+
+        var branchesByCompany = await _db.Branches
+            .AsNoTracking()
+            .Where(b => b.TenantId == tenantId && companyIdsList.Contains(b.CompanyId))
+            .GroupBy(b => b.CompanyId)
+            .Select(g => new { CompanyId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CompanyId, x => x.Count);
+
+        var assignedDoctorsByCompany = await _db.CompanyDoctors
+            .AsNoTracking()
+            .Where(cd => cd.TenantId == tenantId 
+                && companyIdsList.Contains(cd.CompanyId) 
+                && cd.IsActive)
+            .Select(cd => new { cd.CompanyId, DoctorName = cd.Doctor != null ? $"Dott. {cd.Doctor.FirstName} {cd.Doctor.LastName}" : "Non assegnato", cd.IsCoordinator })
+            .OrderByDescending(x => x.IsCoordinator)
+            .GroupBy(x => x.CompanyId)
+            .Select(g => g.First())
+            .ToDictionaryAsync(x => x.CompanyId, x => x.DoctorName);
+
+        var groupProtocolsByGroup = await _db.GroupProtocols
+            .AsNoTracking()
+            .Where(gp => gp.CompanyGroupId == id)
+            .GroupBy(gp => gp.CompanyGroupId)
+            .Select(g => new { CompanyGroupId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CompanyGroupId, x => x.Count);
+
+        var companyBreakdown = companies.Select(c =>
         {
             var cEmployees = employees.Where(e => e.CompanyId == c.Id).ToList();
             var cEmpIds = cEmployees.Select(e => e.Id).ToList();
-            var cVisitsDue = await _db.MedicalVisits.CountAsync(v => cEmpIds.Contains(v.EmployeeId) && v.TenantId == tenantId && v.NextDeadlineDate.Date >= today && v.NextDeadlineDate.Date <= in60Days);
-            var cVisitsOverdue = await _db.MedicalVisits.CountAsync(v => cEmpIds.Contains(v.EmployeeId) && v.TenantId == tenantId && v.NextDeadlineDate.Date < today);
+
+            visitsDueByCompany.TryGetValue(c.Id, out var cVisitsDue);
+            visitsOverdueByCompany.TryGetValue(c.Id, out var cVisitsOverdue);
+            branchesByCompany.TryGetValue(c.Id, out var cBranchesCount);
+            assignedDoctorsByCompany.TryGetValue(c.Id, out var cAssignedDoctor);
+            groupProtocolsByGroup.TryGetValue(c.CompanyGroupId ?? 0, out var cActiveProtocolsCountVal);
+            var cActiveProtocolsCount = cActiveProtocolsCountVal;
+
             var cHasMc = nominatedCompanyIds.Contains(c.Id);
             var cScore = Math.Max(20, Math.Min(100, 100 - (cVisitsOverdue * 15) - (cHasMc ? 0 : 30)));
-
-            var cAssignedDoctor = _db.CompanyDoctors
-                .AsNoTracking()
-                .Where(cd => cd.CompanyId == c.Id && cd.IsActive && cd.TenantId == tenantId)
-                .Select(cd => cd.Doctor != null ? $"Dott. {cd.Doctor.FirstName} {cd.Doctor.LastName}" : "Non assegnato")
-                .FirstOrDefault();
             var cComplianceStatus = cScore >= 90 ? "In Regola" : cScore >= 75 ? "Attenzione" : "Non Conforme";
 
-            companyBreakdown.Add(new
+            return new
             {
                 companyId = c.Id,
                 companyName = c.Name,
@@ -434,15 +477,15 @@ public class CompanyGroupsController : ControllerBase
                 vatNumber = c.VATNumber,
                 city = c.OperationalCity ?? c.LegalCity ?? "-",
                 employeeCount = cEmployees.Count,
-                branchesCount = _db.Branches.AsNoTracking().Count(b => b.CompanyId == c.Id && b.TenantId == tenantId),
-                activeProtocolsCount = _db.GroupProtocols.Count(gp => gp.CompanyGroupId == c.CompanyGroupId),
+                branchesCount = cBranchesCount,
+                activeProtocolsCount = cActiveProtocolsCount,
                 overdueVisitsCount = cVisitsOverdue,
-                assignedDoctorName = cAssignedDoctor,
+                assignedDoctorName = cAssignedDoctor ?? "Non assegnato",
                 complianceStatus = cComplianceStatus,
                 complianceScore = cScore,
                 riskClass = c.RiskClass ?? "Medio"
-            });
-        }
+            };
+        }).ToList();
 
         return Ok(new
         {

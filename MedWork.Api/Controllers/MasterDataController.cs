@@ -9,7 +9,7 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/master-data")]
 [Authorize]
-public class MasterDataController : ControllerBase
+public class MasterDataController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
@@ -20,13 +20,21 @@ public class MasterDataController : ControllerBase
 
     [HttpGet("companies")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetCompanies()
+    public async Task<IActionResult> GetCompanies([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 200) pageSize = 50;
+        
         var tenantId = GetTenantId();
-        var data = await _dbContext.Companies
+        var query = _dbContext.Companies
             .AsNoTracking()
             .Where(x => x.TenantId == tenantId)
-            .OrderBy(x => x.Name)
+            .OrderBy(x => x.Name);
+
+        var totalCount = await query.CountAsync();
+        var data = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
@@ -121,19 +129,27 @@ public class MasterDataController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(data);
+        return Ok(new { data, totalCount, page, pageSize });
     }
 
     [HttpGet("branches")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
-    public async Task<IActionResult> GetBranches()
+    public async Task<IActionResult> GetBranches([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1 || pageSize > 200) pageSize = 50;
+        
         var tenantId = GetTenantId();
-        var data = await _dbContext.Branches
+        var query = _dbContext.Branches
             .AsNoTracking()
             .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.City)
-            .ThenBy(x => x.Address)
+            .ThenBy(x => x.Address);
+
+        var totalCount = await query.CountAsync();
+        var data = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
@@ -150,7 +166,7 @@ public class MasterDataController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(data);
+        return Ok(new { data, totalCount, page, pageSize });
     }
 
     [HttpGet("employees")]
@@ -861,14 +877,6 @@ public class MasterDataController : ControllerBase
             .ToListAsync();
 
         return Ok(data);
-    }
-
-    private int GetTenantId()
-    {
-        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        if (int.TryParse(claim, out var id) && id > 0)
-            return id;
-        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }
 

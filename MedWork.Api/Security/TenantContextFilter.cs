@@ -26,7 +26,7 @@ public sealed class TenantContextFilter : IActionFilter
             return;
         }
 
-        var tenantClaim = user.FindFirst("TenantId")?.Value ?? user.FindFirst("tenant_id")?.Value;
+        var tenantClaim = user.FindFirst("tenant_id")?.Value;
         if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
         {
             context.Result = new UnauthorizedResult();
@@ -46,11 +46,27 @@ public sealed class TenantContextFilter : IActionFilter
         // [ApiController] evaluates ModelState during model binding, i.e. before this
         // filter runs, so the bound TenantId = 0 already produced a validation error.
         // Clearing those entries lets the subsequent ModelStateInvalidFilter see a valid model.
-        foreach (var key in context.ModelState.Keys
-                     .Where(k => k.EndsWith("TenantId", StringComparison.OrdinalIgnoreCase))
-                     .ToList())
+        // Only remove TenantId errors that were caused by the binder receiving 0 before our filter set the value.
+        var tenantIdKeys = context.ModelState.Keys
+            .Where(k => k.EndsWith("TenantId", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var key in tenantIdKeys)
         {
-            context.ModelState.Remove(key);
+            var entry = context.ModelState[key];
+            if (entry != null && entry.Errors.Count > 0)
+            {
+                // Only clear errors if they appear to be "required" or "null" errors from a 0 value
+                var shouldClear = entry.Errors.Any(e => 
+                    e.ErrorMessage.Contains("required", StringComparison.OrdinalIgnoreCase) ||
+                    e.ErrorMessage.Contains("null", StringComparison.OrdinalIgnoreCase) ||
+                    e.ErrorMessage.Contains("0", StringComparison.OrdinalIgnoreCase));
+                
+                if (shouldClear)
+                {
+                    context.ModelState.Remove(key);
+                }
+            }
         }
     }
 

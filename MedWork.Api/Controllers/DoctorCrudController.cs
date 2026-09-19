@@ -12,7 +12,7 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/doctor-data")]
 [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
-public class DoctorCrudController : ControllerBase
+public class DoctorCrudController : BaseController
 {
     private readonly AppDbContext _dbContext;
     private readonly INotificationService _notificationService;
@@ -1165,15 +1165,6 @@ public class DoctorCrudController : ControllerBase
         _dbContext.SiteVisits.Remove(entity);
         await _dbContext.SaveChangesAsync();
         return NoContent();
-    }
-
-    // Helper — reads TenantId from the claim set by TenantContextFilter
-    private int GetTenantId()
-    {
-        var claim = User.FindFirst("TenantId")?.Value;
-        if (int.TryParse(claim, out var id) && id > 0)
-            return id;
-        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 }
 

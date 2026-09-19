@@ -44,19 +44,18 @@ public class JwtTokenService : IJwtTokenService
         return GenerateTokenInternal(username, role, tenantId, true);
     }
 
-    private string GenerateTokenInternal(string username, string role, int tenantId, bool isRefresh)
-    {
-        var claims = new List<Claim>
+private string GenerateTokenInternal(string username, string role, int tenantId, bool isRefresh)
         {
-            new(JwtRegisteredClaimNames.Sub, username),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Name, username),
-            new(ClaimTypes.NameIdentifier, username),
-            new(ClaimTypes.Role, role),
-            new("tenant_id", tenantId.ToString()),
-            new("TenantId", tenantId.ToString()),
-            new("type", isRefresh ? "refresh" : "access")
-        };
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, username),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.Name, username),
+                new(ClaimTypes.NameIdentifier, username),
+                new(ClaimTypes.Role, role),
+                new("tenant_id", tenantId.ToString()),
+                new("type", isRefresh ? "refresh" : "access")
+            };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GetSecretKey()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -83,19 +82,18 @@ public class JwtTokenService : IJwtTokenService
         return GenerateTokenInternal(userId, email, roles, permissions, tenantId, true);
     }
 
-    private string GenerateTokenInternal(int userId, string email, List<string> roles, IEnumerable<string> permissions, int tenantId, bool isRefresh)
-    {
-        var claims = new List<Claim>
+private string GenerateTokenInternal(int userId, string email, List<string> roles, IEnumerable<string> permissions, int tenantId, bool isRefresh)
         {
-            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Email, email),
-            new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Name, email),
-            new("tenant_id", tenantId.ToString()),
-            new("TenantId", tenantId.ToString()),
-            new("type", isRefresh ? "refresh" : "access")
-        };
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(JwtRegisteredClaimNames.Email, email),
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.Name, email),
+                new("tenant_id", tenantId.ToString()),
+                new("type", isRefresh ? "refresh" : "access")
+            };
 
         foreach (var role in roles)
         {

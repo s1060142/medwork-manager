@@ -515,40 +515,40 @@ public class DocumentGenerationService : IDocumentGenerationService
     }
 
     // ── Honest well-formedness validation (replaces fake XSD) ─────────────────
-    public Task<Allegato3BValidationResult> ValidateAllegato3BXsd(int companyId, CancellationToken cancellationToken = default)
+    public async Task<Allegato3BValidationResult> ValidateAllegato3BXsd(int companyId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var xmlBytes = GenerateAllegato3B(companyId, cancellationToken).GetAwaiter().GetResult();
+            var xmlBytes = await GenerateAllegato3B(companyId, cancellationToken);
             var xmlString = Encoding.UTF8.GetString(xmlBytes);
 
             // Honest check: verify the XML is well-formed
             var doc = new XmlDocument();
             doc.LoadXml(xmlString);
 
-            return Task.FromResult(new Allegato3BValidationResult(true, Array.Empty<string>()));
+            return new Allegato3BValidationResult(true, Array.Empty<string>());
         }
         catch (XmlException ex)
         {
-            return Task.FromResult(new Allegato3BValidationResult(false, new[] { ex.Message }));
+            return new Allegato3BValidationResult(false, new[] { ex.Message });
         }
         catch (Exception ex)
         {
-            return Task.FromResult(new Allegato3BValidationResult(false, new[] { ex.Message }));
+            return new Allegato3BValidationResult(false, new[] { ex.Message });
         }
     }
 
     // ── Honest submit: no simulated INAIL transmission ───────────────────────
-    public Task<Allegato3BSubmissionResult> SubmitAllegato3B(int companyId, CancellationToken cancellationToken = default)
+    public async Task<Allegato3BSubmissionResult> SubmitAllegato3B(int companyId, CancellationToken cancellationToken = default)
     {
-        var validation = ValidateAllegato3BXsd(companyId, cancellationToken).GetAwaiter().GetResult();
+        var validation = await ValidateAllegato3BXsd(companyId, cancellationToken);
         if (!validation.IsValid)
-            return Task.FromResult(new Allegato3BSubmissionResult(false, null, "XML non valido: " + string.Join("; ", validation.Errors)));
+            return new Allegato3BSubmissionResult(false, null, "XML non valido: " + string.Join("; ", validation.Errors));
 
-        return Task.FromResult(new Allegato3BSubmissionResult(
+        return new Allegato3BSubmissionResult(
             false,
             null,
-            "Generazione XML completata. La trasmissione telematica a INAIL non è ancora implementata."));
+            "Generazione XML completata. La trasmissione telematica a INAIL non è ancora implementata.");
     }
 
     // ── D3: Sanitary Plan PDF ─────────────────────────────────────────────────

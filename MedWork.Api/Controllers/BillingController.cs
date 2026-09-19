@@ -10,7 +10,7 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/billing")]
 [Authorize(Roles = AppRole.Admin)]
-public class BillingController : ControllerBase
+public class BillingController : BaseController
 {
     private readonly AppDbContext _db;
     private const decimal DefaultVisitTariff = 80m;
@@ -18,14 +18,6 @@ public class BillingController : ControllerBase
     public BillingController(AppDbContext db)
     {
         _db = db;
-    }
-
-    private int GetTenantId()
-    {
-        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
-        if (int.TryParse(claim, out var id) && id > 0)
-            return id;
-        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 
     /// <summary>

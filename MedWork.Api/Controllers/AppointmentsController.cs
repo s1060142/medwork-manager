@@ -11,19 +11,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/doctor-data/appointments")]
 [Authorize]
-public class AppointmentsController : ControllerBase
+public class AppointmentsController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
     public AppointmentsController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(tenantClaim, out var id) ? id : 0;
     }
 
     [HttpGet]

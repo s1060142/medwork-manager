@@ -9,19 +9,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/doctor-data/activity-deadlines")]
 [Authorize]
-public class ActivityDeadlinesController : ControllerBase
+public class ActivityDeadlinesController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
     public ActivityDeadlinesController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(tenantClaim, out var id) ? id : 0;
     }
 
     [HttpGet]

@@ -11,21 +11,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/audit")]
 [Authorize]
-public class AuditController : ControllerBase
+public class AuditController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
     public AuditController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-    }
-
-    private int GetTenantId()
-    {
-        var claim = User.FindFirst("TenantId")?.Value;
-        if (int.TryParse(claim, out var id) && id > 0)
-            return id;
-        throw new UnauthorizedAccessException("Tenant non specificato");
     }
 
     public record AuditEventRequest(string Module, string Action, string? Detail, string? UserName);

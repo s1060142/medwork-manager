@@ -9,19 +9,13 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/doctor-data/company-nominations")]
 [Authorize]
-public class CompanyNominationsController : ControllerBase
+public class CompanyNominationsController : BaseController
 {
     private readonly AppDbContext _dbContext;
 
     public CompanyNominationsController(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
-        return int.TryParse(tenantClaim, out var id) ? id : 0;
     }
 
     [HttpGet]

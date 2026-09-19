@@ -12,7 +12,7 @@ namespace MedWork.Api.Controllers;
 [ApiController]
 [Route("api/admin-data")]
 [Authorize(Roles = AppRole.Admin)]
-public class AdminCrudController : ControllerBase
+public class AdminCrudController : BaseController
 {
     private readonly AppDbContext _dbContext;
     private readonly IPersonalProtocolAssignmentService _personalProtocolAssignmentService;
@@ -916,13 +916,5 @@ public class AdminCrudController : ControllerBase
     private static bool IsUniqueConstraintViolation(DbUpdateException exception)
     {
         return exception.InnerException is SqlException { Number: 2601 or 2627 };
-    }
-
-    private int GetTenantId()
-    {
-        var tenantClaim = User?.FindFirst("TenantId")?.Value;
-        if (int.TryParse(tenantClaim, out var tenantId) && tenantId > 0)
-            return tenantId;
-        return 0;
     }
 }
