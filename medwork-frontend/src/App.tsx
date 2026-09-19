@@ -71,6 +71,7 @@ import ActivityDeadlinesCenter from './components/ActivityDeadlinesCenter'
 import SiteVisitDeadlinesCenter from './components/SiteVisitDeadlinesCenter'
 import NominationsDeadlinesCenter from './components/NominationsDeadlinesCenter'
 import VaccinationDeadlinesCenter from './components/VaccinationDeadlinesCenter'
+import EmployerPortalView from './components/EmployerPortalView'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
@@ -105,6 +106,7 @@ const COMPANY_TABS = [
   { key: 'registry', label: 'Anagrafica' },
   { key: 'checklist', label: 'Checklist' },
   { key: 'activities', label: 'Attività' },
+  { key: 'employer-portal', label: 'Portale RSPP/DdL' },
 ]
 
 const COMPANY_TAB_TO_MODULE: Record<string, string> = {
@@ -112,6 +114,7 @@ const COMPANY_TAB_TO_MODULE: Record<string, string> = {
   registry: 'companies',
   checklist: 'protocols',
   activities: 'schedules',
+  'employer-portal': 'employer-portal',
 }
 
 const SCHEDULE_TABS = [
@@ -764,6 +767,10 @@ const App = () => {
 
     if (moduleKey === 'giudizio-idoneita') {
       return <GiudizioIdoneitaCenter />
+    }
+
+    if (moduleKey === 'employer-portal') {
+      return <EmployerPortalView companyId={activeCompanyId} />
     }
 
     if (moduleKey === 'firma-grafometrica') {

@@ -58,13 +58,15 @@ export default function Allegato3BCenter() {
 
   const loadCompanies = async () => {
     try {
-      let data = await apiGet('/api/master-data/companies')
-      if (!Array.isArray(data) || data.length === 0) {
-        data = await apiGet('/api/doctor-data/companies')
+      let res = await apiGet('/api/master-data/companies')
+      let list = Array.isArray(res) ? res : (res?.data || [])
+      if (list.length === 0) {
+        const docRes = await apiGet('/api/doctor-data/companies')
+        list = Array.isArray(docRes) ? docRes : (docRes?.data || [])
       }
-      if (Array.isArray(data) && data.length > 0) {
-        setCompanies(data)
-        setSelectedCompanyId(data[0].id)
+      if (list.length > 0) {
+        setCompanies(list)
+        setSelectedCompanyId(list[0].id)
       }
     } catch (err) {
       setError('Impossibile caricare l\'elenco delle aziende.')

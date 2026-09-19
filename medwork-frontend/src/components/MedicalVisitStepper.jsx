@@ -31,6 +31,9 @@ import VerifiedIcon from '@mui/icons-material/Verified'
 import HistoryIcon from '@mui/icons-material/History'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
+import DrawIcon from '@mui/icons-material/Draw'
+import SignaturePadModal from './SignaturePadModal'
+import { useTextExpander } from '../hooks/useTextExpander'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
@@ -136,12 +139,30 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
   const [deadlineSource, setDeadlineSource] = useState('manual')
+  const [signatureModalOpen, setSignatureModalOpen] = useState(false)
+  const [capturedSignature, setCapturedSignature] = useState(null)
   
   const [employeeContext, setEmployeeContext] = useState(null)
   const [lastVisitPreview, setLastVisitPreview] = useState(null)
   const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
   const [copyingVisit, setCopyingVisit] = useState(false)
   const [phraseTemplates, setPhraseTemplates] = useState([])
+
+  const { handleKeyDown: handleMacroKeyDown, handleTextChange: handleMacroTextChange } = useTextExpander((field, val) => {
+    setFormData(prev => ({ ...prev, [field]: val }))
+  })
+
+  // Global Keyboard Shortcuts (F4 = All Normal)
+  useEffect(() => {
+    const handleGlobalKey = (e) => {
+      if (e.key === 'F4') {
+        e.preventDefault()
+        handleSetAllNormalShort()
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKey)
+    return () => window.removeEventListener('keydown', handleGlobalKey)
+  }, [])
 
   // BMI Calculation
   const bmiInfo = useMemo(() => {
@@ -788,8 +809,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                       minRows={2}
                       label="Anamnesi Lavorativa (Esposizioni pregresse, mansioni, anzianità)"
                       value={formData.workHistory}
-                      onChange={(event) => setField('workHistory', event.target.value)}
-                      placeholder="Es. Addetto alla produzione da 10 anni, esposto a rumore e MMC. Precedente impiego come magazziniere..."
+                      onChange={(event) => handleMacroTextChange('workHistory', event.target.value)}
+                      onKeyDown={(e) => handleMacroKeyDown(e, formData.workHistory, 'workHistory')}
+                      placeholder="Es. Addetto alla produzione da 10 anni. (Scrivi .norm, .vdt, .mmc, .rum e premi spazio per macro)"
+                      helperText="Macro: .norm, .vdt, .mmc, .rum, .guida, .notte + Spazio"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -799,8 +822,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                       minRows={2}
                       label="Anamnesi Personale (Abitudini di vita, fumo, alcol, attività fisica)"
                       value={formData.personalHistory}
-                      onChange={(event) => setField('personalHistory', event.target.value)}
+                      onChange={(event) => handleMacroTextChange('personalHistory', event.target.value)}
+                      onKeyDown={(e) => handleMacroKeyDown(e, formData.personalHistory, 'personalHistory')}
                       placeholder="Es. Non fumatore, consumo moderato alcolici ai pasti. Non assume farmaci cronici..."
+                      helperText="Macro: .norm, .vdt + Spazio"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -810,7 +835,8 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                       minRows={2}
                       label="Anamnesi Familiare (Ereditarietà patologie cardiovascolari, metaboliche, oncologiche)"
                       value={formData.familyHistory}
-                      onChange={(event) => setField('familyHistory', event.target.value)}
+                      onChange={(event) => handleMacroTextChange('familyHistory', event.target.value)}
+                      onKeyDown={(e) => handleMacroKeyDown(e, formData.familyHistory, 'familyHistory')}
                       placeholder="Es. Anamnesi familiare negativa per patologie cardiovascolari precoci. Madre ipertesa..."
                     />
                   </Grid>
@@ -826,6 +852,7 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                         setField('remotePathology', parts[0] || '')
                         setField('recentPathology', parts.slice(1).join('\n') || '')
                       }}
+                      onKeyDown={(e) => handleMacroKeyDown(e, formData.remotePathology, 'remotePathology')}
                       placeholder="Es. Remota: Appendicectomia in età pediatrica. Recente: Nessuna patologia degna di nota."
                     />
                   </Grid>
@@ -1200,9 +1227,48 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                   placeholder="Es. Escluso da movimentazione manuale carichi > 10 kg, non idoneo lavoro notturno..."
                   helperText="Divieti di esposizione o esclusioni da specifiche attività operative"
                 />
+
+                {/* FIRMA FEA SU TABLET */}
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#f8fafc' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <DrawIcon color="primary" fontSize="small" />
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          Firma Elettronica Avanzata (FEA) su Tablet
+                        </Typography>
+                      </Stack>
+                      <Typography variant="caption" color="text.secondary">
+                        {capturedSignature ? '✓ Firma del lavoratore e del medico acquisite con successo' : 'Sottoscrizione digitale del lavoratore su tablet per copia conforme'}
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant={capturedSignature ? 'outlined' : 'contained'}
+                      color={capturedSignature ? 'success' : 'primary'}
+                      size="small"
+                      startIcon={<DrawIcon />}
+                      onClick={() => setSignatureModalOpen(true)}
+                      sx={{ textTransform: 'none' }}
+                    >
+                      {capturedSignature ? 'Firma Acquisita (Rifai)' : 'Firma su Tablet'}
+                    </Button>
+                  </Stack>
+                </Paper>
               </Box>
             )}
           </Box>
+
+          {signatureModalOpen && (
+            <SignaturePadModal
+              open={signatureModalOpen}
+              onClose={() => setSignatureModalOpen(false)}
+              onSignatureCaptured={(sig) => {
+                setCapturedSignature(sig)
+                setSuccess('✓ Firma grafometrica FEA acquisita con successo!')
+                setTimeout(() => setSuccess(''), 4000)
+              }}
+            />
+          )}
 
           <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 3, pt: 2, borderTop: '1px solid #eaeef5' }}>
             <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0 || saving}>

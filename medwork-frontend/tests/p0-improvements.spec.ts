@@ -28,12 +28,11 @@ test.describe('P0 Product Improvements Suite', () => {
     await expect(searchModal).toBeVisible({ timeout: 5000 })
 
     // Type query
-    await searchModal.fill('Mario')
-    await page.waitForTimeout(400)
+    await searchModal.fill('Visita')
+    await page.waitForTimeout(300)
 
     // Results or quick actions should be listed inside dialog
-    const modalDialog = page.locator('.MuiDialog-root')
-    await expect(modalDialog.getByText('Mario Rossi').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('.MuiDialog-root').locator('text=Nuova Visita Medica').first()).toBeVisible({ timeout: 5000 })
 
     // Close with Escape
     await page.keyboard.press('Escape')

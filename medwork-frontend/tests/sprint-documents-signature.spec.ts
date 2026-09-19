@@ -61,11 +61,12 @@ test.describe('Sprint Objectives: Official Documents, Allegato 3A/3B & Batch Sig
     // Test XSD validation
     const validateBtn = page.locator('button:has-text("Valida XSD")')
     await expect(validateBtn).toBeVisible({ timeout: 5000 })
+    await expect(validateBtn).toBeEnabled({ timeout: 10000 })
     await validateBtn.click()
     await page.waitForTimeout(600)
 
     // Check success or error banner
-    await expect(page.locator('.MuiAlert-root')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('.MuiAlert-root').first()).toBeVisible({ timeout: 5000 })
   })
 
   test('3. Annual Health Report (Art. 40 D.Lgs. 81/08)', async ({ page }) => {
@@ -102,18 +103,18 @@ test.describe('Sprint Objectives: Official Documents, Allegato 3A/3B & Batch Sig
     await page.waitForTimeout(600)
 
     // Verify Batch Signature Center
-    await expect(page.locator('text=Firma Digitale Massiva Giudizi di Idoneità')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator('text=Firma Digitale Massiva & Auto-Dispatch Pipeline')).toBeVisible({ timeout: 5000 })
 
     // If unsigned visits exist, test modal flow
     const firstCheckbox = page.locator('tbody input[type="checkbox"]').first()
     if (await firstCheckbox.isVisible()) {
       await firstCheckbox.check()
-      const batchBtn = page.locator('button:has-text("Firma Digitale Massiva")')
+      const batchBtn = page.locator('button:has-text("Firma e Invia")')
       await expect(batchBtn).toBeEnabled({ timeout: 5000 })
       await batchBtn.click()
 
       // Confirm modal opens
-      await expect(page.locator('text=Conferma Firma Digitale')).toBeVisible({ timeout: 5000 })
+      await expect(page.locator('text=Conferma Firma Digitale Massiva')).toBeVisible({ timeout: 5000 })
       await page.locator('button:has-text("Annulla")').click()
     }
   })

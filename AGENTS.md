@@ -258,16 +258,58 @@ If implementation changes behavior:
 
 Update documentation.
 
-Required files:
-
-- product_bible.md
-- backlog.md
-- flussi_utente.md
-- ux_physician_analysis.md
-
 Keep documentation aligned with the actual product.
 
 Never allow documentation drift.
+
+## Active Documentation Set (docs/)
+
+The following 7 files are the **current** documentation. All other `.md` files in `/docs/` that are NOT prefixed with `ARCHIVED_` must be one of these:
+
+| File | Purpose |
+|---|---|
+| `PRODUCT_VISION.md` | Why MedWork exists, target users, competitive positioning, principles |
+| `CURRENT_CAPABILITIES.md` | What is implemented today, organized by module |
+| `ROADMAP.md` | Only future work (BETA HARDENING + post-Beta phases) |
+| `IMPLEMENTED_FEATURES.md` | Historical record: P0, P1, Legal Documents Sprint, Critical Improvements, ECC Remediation |
+| `ARCHITECTURE.md` | Backend, Frontend, Multi-tenancy, PDF generation, Authentication |
+| `OPERATIONAL_WORKFLOWS.md` | Physician, Secretary, Employer, RSPP workflows |
+| `RELEASE_READINESS.md` | Beta checklist, Production checklist, deploy/rollback plan |
+
+**All other `.md` files in `/docs/` are `ARCHIVED_*`** — historical record only, do not update.
+
+### Agent Rules for Documentation
+
+1. **When implementing a feature**: Update `CURRENT_CAPABILITIES.md` and `IMPLEMENTED_FEATURES.md`. Add the feature to the correct section.
+2. **When fixing a bug or security issue**: Update `IMPLEMENTED_FEATURES.md` (Critical Improvements / ECC Remediation section).
+3. **When architecture changes**: Update `ARCHITECTURE.md`.
+4. **When a workflow changes**: Update `OPERATIONAL_WORKFLOWS.md`.
+5. **When a feature is ready for release**: Update `RELEASE_READINESS.md` checklist.
+6. **When priorities shift**: Update `ROADMAP.md`.
+7. **Never** modify `PRODUCT_VISION.md` unless the core mission or target users change.
+8. **Never** create new standalone `.md` files in `/docs/` that aren't one of the 7 active files — add content to existing files instead.
+9. **Always** cross-reference with links, never duplicate text across files.
+10. **After every session that changes behavior**: Verify all 7 active files are still accurate. If any file describes a feature that no longer exists or is missing a feature that now exists, fix it immediately.
+
+### Documentation Maintenance
+
+Documentation is updated **proactively** as part of every task:
+
+1. Before implementing a feature, check the relevant active doc for accuracy.
+2. After implementing a feature, add it to `CURRENT_CAPABILITIES.md` and `IMPLEMENTED_FEATURES.md`.
+3. After fixing a bug or security issue, add it to `IMPLEMENTED_FEATURES.md` (Critical Improvements / ECC Remediation section).
+4. After any architecture change, update `ARCHITECTURE.md`.
+5. After any workflow change, update `OPERATIONAL_WORKFLOWS.md`.
+6. Before any release, verify `RELEASE_READINESS.md` checklist.
+7. When priorities shift, update `ROADMAP.md`.
+
+**Never** treat documentation as a separate task — it is part of every implementation. If you change behavior, the docs change in the same commit.
+
+**Never** create new standalone `.md` files in `/docs/` that aren't one of the 7 active files — add content to existing files instead.
+
+**Always** cross-reference with links, never duplicate text across files.
+
+**Always** verify all 7 active files are accurate after every session that changes behavior. If any file describes a feature that no longer exists or is missing a feature that now exists, fix it immediately.
 
 ---
 

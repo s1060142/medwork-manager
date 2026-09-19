@@ -98,6 +98,9 @@ builder.Services.AddScoped<ISlotOptimizationService, SlotOptimizationService>();
 builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
 builder.Services.AddScoped<IWhiteLabelResolver, WhiteLabelResolver>();
 builder.Services.AddScoped<IDeadlineCalculationService, DeadlineCalculationService>();
+builder.Services.AddScoped<IDeadlineRuleEngine, DeadlineRuleEngine>();
+builder.Services.AddScoped<ILegacyMigrationService, LegacyMigrationService>();
+builder.Services.AddScoped<IPecDeliveryService, PecDeliveryService>();
 
     if (builder.Environment.IsEnvironment("Testing"))
     {

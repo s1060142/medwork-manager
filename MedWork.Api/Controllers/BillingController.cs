@@ -192,6 +192,79 @@ public class BillingController : BaseController
 
         return Ok(entity);
     }
+
+    /// <summary>
+    /// Returns standardized service price list for occupational health services.
+    /// </summary>
+    [HttpGet("price-lists")]
+    public IActionResult GetPriceLists()
+    {
+        var services = new[]
+        {
+            new { Code = "VIS_PER", Name = "Visita Medica Preventiva / Periodica (Art. 41)", DefaultPrice = 45.00m, VatRate = 0m, IsSanitaryExempt = true },
+            new { Code = "AUD_TON", Name = "Esame Audiometrico Tonale Liminare", DefaultPrice = 20.00m, VatRate = 0m, IsSanitaryExempt = true },
+            new { Code = "SPI_CVF", Name = "Spirometria con curva Flusso/Volume", DefaultPrice = 22.00m, VatRate = 0m, IsSanitaryExempt = true },
+            new { Code = "VIS_ERG", Name = "Screening Ergoftalmologico (Visiotest / VDT)", DefaultPrice = 18.00m, VatRate = 0m, IsSanitaryExempt = true },
+            new { Code = "TOX_SCR", Name = "Drug Test Screening Rapido Urine a Catena di Custodia", DefaultPrice = 30.00m, VatRate = 0m, IsSanitaryExempt = true },
+            new { Code = "REL_A40", Name = "Relazione Sanitaria Annuale & Allegato 3B (Art. 40)", DefaultPrice = 150.00m, VatRate = 22.0m, IsSanitaryExempt = false },
+            new { Code = "NOM_MC", Name = "Quota Annuale Nomina Medico Competente (Art. 25)", DefaultPrice = 300.00m, VatRate = 22.0m, IsSanitaryExempt = false },
+            new { Code = "SOP_A25", Name = "Sopralluogo Ambienti di Lavoro (Art. 25 c.1 lett. l)", DefaultPrice = 200.00m, VatRate = 22.0m, IsSanitaryExempt = false },
+        };
+
+        return Ok(services);
+    }
+
+    /// <summary>
+    /// Returns itemized pre-invoicing summary for all companies in a given period.
+    /// </summary>
+    [HttpGet("pre-invoicing-summary")]
+    public async Task<IActionResult> GetPreInvoicingSummary([FromQuery] string? from, [FromQuery] string? to)
+    {
+        var tenantId = GetTenantId();
+        if (tenantId <= 0) return Unauthorized();
+
+        var fromDate = !string.IsNullOrWhiteSpace(from) && DateTime.TryParse(from, out var f) ? f : DateTime.UtcNow.AddMonths(-1);
+        var toDate = !string.IsNullOrWhiteSpace(to) && DateTime.TryParse(to, out var t) ? t : DateTime.UtcNow;
+
+        var companies = await _db.Companies
+            .AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.IsActive)
+            .ToListAsync();
+
+        var visits = await _db.MedicalVisits
+            .AsNoTracking()
+            .Include(v => v.Employee)
+            .Where(v => v.TenantId == tenantId && v.VisitDate >= fromDate && v.VisitDate <= toDate)
+            .ToListAsync();
+
+        var summaries = companies.Select(comp =>
+        {
+            var compVisits = visits.Where(v => v.Employee?.CompanyId == comp.Id).ToList();
+            int visitCount = compVisits.Count;
+            decimal visitTotal = visitCount * 45.00m;
+            decimal extraServicesTotal = visitCount * 20.00m; // Audiometry / Tests estimate
+            decimal subtotal = visitTotal + extraServicesTotal;
+            decimal vat = 0m; // Medical services exempt ex art. 10 DPR 633/72
+            decimal total = subtotal + vat;
+
+            return new
+            {
+                CompanyId = comp.Id,
+                CompanyName = comp.Name,
+                VatNumber = comp.VATNumber ?? comp.TaxCode,
+                PEC = comp.PEC,
+                VisitsCount = visitCount,
+                VisitsTotal = visitTotal,
+                ExtraServicesTotal = extraServicesTotal,
+                Subtotal = subtotal,
+                VatAmount = vat,
+                TotalAmount = total,
+                Period = $"{fromDate:dd/MM/yyyy} - {toDate:dd/MM/yyyy}"
+            };
+        }).Where(s => s.VisitsCount > 0 || companies.Count <= 5).ToList();
+
+        return Ok(summaries);
+    }
 }
 
 public class BillingStatusUpdateRequest

@@ -1,116 +1,49 @@
-import { getTenantId, setTenantId } from '../auth/storage'
-import {
-  API_BASE_URL,
-  buildApiError,
-  readJsonResponse,
-  safeReadError,
-} from './apiClientHelpers'
-import type { HttpMethod } from './http'
-
-const REFRESH_ENDPOINT = '/api/auth/refresh'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5279'
 
 export function getApiBaseUrl() {
   return API_BASE_URL
 }
 
-async function fetchWithRefresh(url: string, config: RequestInit): Promise<Response> {
-  const client = await ensureApiClient()
-  return client.fetch(url, config)
-}
-
-export function apiGet(endpoint: string) {
-  return apiRequest('GET', endpoint)
-}
-
-export function apiDelete(endpoint: string) {
-  return apiRequest('DELETE', endpoint)
-}
-
-export function apiPost<T = unknown>(endpoint: string, payload?: T) {
-  return apiRequest<T>('POST', endpoint, payload)
-}
-
-export function apiPut<T = unknown>(endpoint: string, payload?: T) {
-  return apiRequest<T>('PUT', endpoint, payload)
-}
-
-export async function apiPatch<T = unknown>(endpoint: string, payload?: T) {
-  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
-    method: 'PATCH',
-    headers: getHeaders(),
-    credentials: 'include',
-    body: payload ? JSON.stringify(payload) : undefined,
-  })
-
-  if (!response.ok) {
-    const message = await safeReadError(response)
-    throw buildApiError(message, response.status)
+async function fetchWithRefresh(url: string, config: RequestInit) {
+  let response = await fetch(url, config)
+  
+  if (response.status === 401) {
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (refreshResponse.ok) {
+        const text = await refreshResponse.text()
+        if (text) {
+          const data = JSON.parse(text)
+          if (data && data.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken)
+            if (config.headers && (config.headers as Record<string, string>)['Authorization']) {
+              (config.headers as Record<string, string>)['Authorization'] = `Bearer ${data.accessToken}`
+            }
+            response = await fetch(url, config)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Auto-refresh failed', e)
+    }
   }
-
-  return readJsonResponse(response)
-}
-
-export async function apiSend(
-  method: HttpMethod,
-  endpoint: string,
-  payload?: unknown,
-) {
-  const response = await send(method, endpoint, payload)
-  return readJsonResponse(response)
-}
-
-async function send(method: HttpMethod, endpoint: string, payload?: unknown) {
-  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
-    method,
-    headers: getHeaders(),
-    credentials: 'include',
-    body: payload ? JSON.stringify(payload) : undefined,
-  })
-
-  if (!response.ok) {
-    const message = await safeReadError(response)
-    throw buildApiError(message, response.status)
-  }
-
   return response
 }
 
-export async function apiGetRawBlob(endpoint: string) {
-  const response = await send('GET', endpoint)
-  return response.blob()
-}
+export function getHeaders(tenantId?: string | null) {
+  const token = localStorage.getItem('accessToken')
 
-async function apiRequest<T = unknown>(method: HttpMethod, endpoint: string, payload?: T) {
-  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
-    method,
-    headers: getHeaders(),
-    credentials: 'include',
-    body: payload ? JSON.stringify(payload) : undefined,
-  })
-
-  if (!response.ok) {
-    const message = await safeReadError(response)
-    throw buildApiError(message, response.status)
+  if (!token) {
+    return {}
   }
-
-  return readJsonResponse(response)
-}
-
-export function getHeaders(includeJson = true): Record<string, string> {
-  const headers = getBaseHeaders()
-
-  if (includeJson) {
-    headers['Content-Type'] = 'application/json'
-  }
-
-  return headers
-}
-
-function getBaseHeaders() {
-  const tenantId = getTenantId()
 
   const headers: Record<string, string> = {
-    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
   }
 
   if (tenantId) {
@@ -120,156 +53,280 @@ function getBaseHeaders() {
   return headers
 }
 
-async function ensureApiClient(): Promise<import('./http').ApiClient> {
-  const url = new URL(REFRESH_ENDPOINT, window.location.origin)
-  url.pathname = '/api/auth/refresh'
-
-  const { apiDelete, apiGet, apiPatch, apiPost, apiPut } = await import('./http')
-  return {
-    fetch: (url: string, config: RequestInit) => {
-      return refreshFetch({
-        baseUrl,
-        client: {
-          delete: (path, options) => apiDelete(path, options || {}),
-          get: (path, options) => apiGet(path, options || {}),
-          lastStatus: 0,
-          lastStatusSet: () => false,
-          patch: (path, options) => apiPatch(path, options || {}),
-          post: (path, options) => apiPost(path, options || {}),
-          put: (path, options) => apiPut(path, options || {}),
-        },
-        clientName: 'refresh',
-        fetch: window.fetch.bind(window),
-        getClientHeaders: getHeaders,
-        jumpToReauth: () => {
-          localStorage.removeItem('accessToken')
-          window.location.href = '/login?reauth=true'
-        },
-        postReauthRedirect: () => '/login?reauth=true',
-        refresh,
-        request,
-        setClientHeaders,
-        url,
-      })
-    },
-  } as unknown as import('./http').ApiClient
-}
-
-async function refreshFetch(
-  deps: import('./http').AuthDeps,
-): Promise<Response> {
-  const response = await apiFetch(deps)
-  if (response.status !== 401) {
-    return response
-  }
-
-  const refreshPrepared = await prepareRefresh(deps)
-  if (!refreshPrepared) {
-    deps.jumpToReauth()
-    return response
-  }
-
-  return apiFetch(deps)
-}
-
-const API_BASE_URL_FOR_REFRESH = returnApiBaseUrl()
-
-function returnApiBaseUrl() {
-  return API_BASE_URL
-}
-
-function baseUrl() {
-  return new URL(API_BASE_URL || window.location.origin)
-}
-
-async function apiFetch(deps: import('./http').AuthDeps): Promise<Response> {
-  const url = new URL(deps.url)
-  return deps.fetch(url.toString(), {
-    method: deps.request.method,
-    headers: deps.request.headers,
-    credentials: 'include',
+export async function hrExportCsv() {
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/export-employee-csv`, {
+    method: 'GET',
+    headers: getHeaders(),
+    credentials: 'include'
   })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'esportazione CSV.')
+  }
+
+  return response.blob()
 }
 
-async function prepareRefresh(deps: import('./http').AuthDeps): Promise<boolean> {
+export async function hrImportCsv(file: File, fileName: string) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('fileName', fileName)
+
+  const headers = getHeaders()
+  delete headers['Content-Type']
+
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/import-employee`, {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'importazione CSV.')
+  }
+
+  return response.json()
+}
+
+export async function hrExportExcel() {
+  const response = await fetchWithRefresh(`${API_BASE_URL}/api/integrations/export-employee-excel`, {
+    method: 'GET',
+    headers: getHeaders(),
+    credentials: 'include'
+  })
+
+  if (!response.ok) {
+    throw new Error('Errore durante l\'esportazione Excel.')
+  }
+
+  return response.blob()
+}
+
+export async function apiGet(endpoint, options?: { tenantId?: string; forceLogin?: boolean }) {
+  const headers = options?.tenantId ? getHeaders(options.tenantId) : getHeaders()
+
+  const config = {
+    method: 'GET',
+    headers: headers,
+    credentials: 'include' as RequestCredentials,
+  }
+
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, config)
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message, response.status)
+  }
+
+  return readJsonResponse(response)
+}
+
+export async function authLogin(username, password, tenantSlug = 'default', rememberMe = false) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password, tenantSlug, rememberMe }),
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message || 'Credenziali non valide.', response.status)
+  }
+
+  return readJsonResponse(response)
+}
+
+export async function authLogout() {
   try {
-    await refresh(deps)
-    return true
-  } catch {
-    return false
+    await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+    })
+  } catch (e) {
+    console.error('Logout API error:', e)
   }
 }
 
-async function refresh(deps: import('./http').AuthDeps): Promise<void> {
-  const url = new URL(`/api/auth/refresh`, API_BASE_URL_FOR_REFRESH)
-  const response = await fetch(url.toString(), {
+export async function authLoginWithExternalProvider(provider: 'spid' | 'cie' | 'keycloak', token: string) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/external/${provider}`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message || 'Autenticazione esterna fallita.', response.status)
+  }
+
+  return readJsonResponse(response)
+}
+
+export async function apiDownload(endpoint, options = {}) {
+  const headers = options.tenantId ? getHeaders(options.tenantId) : getHeaders()
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+    credentials: 'include'
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message, response.status)
+  }
+
+  return response.blob()
+}
+
+export async function apiGetRawBlob(endpoint: string) {
+  const headers = getHeaders()
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
+    method: 'GET',
+    headers,
     credentials: 'include',
   })
 
   if (!response.ok) {
-    throw new Error('REFRESH_FAILED')
+    const message = await safeReadError(response)
+    throw buildApiError(message, response.status)
   }
 
+  return response.blob()
+}
+
+export async function apiSend(method, endpoint, payload) {
+  const headers = getHeaders()
+  const response = await fetchWithRefresh(`${API_BASE_URL}${endpoint}`, {
+    method,
+    headers,
+    credentials: 'include',
+    body: payload ? JSON.stringify(payload) : undefined,
+  })
+
+  if (!response.ok) {
+    const message = await safeReadError(response)
+    throw buildApiError(message, response.status)
+  }
+
+  if (response.status === 204) {
+    return null
+  }
+
+  return readJsonResponse(response)
+}
+
+async function readJsonResponse(response) {
   const text = await response.text()
-  let data: Record<string, unknown> = {}
-  if (text) {
-    data = JSON.parse(text)
-    const tenantId = extractTenantId(data)
-    if (tenantId) {
-      setTenantId(tenantId)
+  if (!text) {
+    return null
+  }
+
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.toLowerCase().includes('application/json')) {
+    throw new Error('Risposta API non valida (atteso JSON). Verifica VITE_API_BASE_URL e backend attivo.')
+  }
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error('Impossibile leggere la risposta JSON dal backend.')
+  }
+}
+
+async function safeReadError(response) {
+  if (response.status === 401) {
+    return 'Sessione non valida o scaduta: esegui nuovamente il login.'
+  }
+
+  if (response.status === 403) {
+    const role = localStorage.getItem('role') || 'N/D'
+    return `Accesso negato per il ruolo corrente (${role}).`
+  }
+
+  try {
+    const text = await response.text()
+    if (!text) {
+      return 'Errore durante l\'operazione.'
     }
-  }
 
-  const header = getHeaders()
-  if (data.accessToken && typeof data.accessToken === 'string') {
-    deps.setClientHeaders({ ...header, Authorization: `Bearer ${data.accessToken}` })
-  }
-}
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.toLowerCase().includes('application/json')) {
+      try {
+        const parsed = JSON.parse(text)
+        if (typeof parsed === 'string') {
+          return parsed
+        }
+        if (parsed?.errors && typeof parsed.errors === 'object') {
+          const details = Object.entries(parsed.errors)
+            .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs.join(', ') : errs}`)
+            .join(' | ')
+          if (details) {
+            return `${parsed.title ? `${parsed.title}: ` : ''}${details}`
+          }
+        }
+        if (parsed?.message) {
+          return parsed.message
+        }
+        if (parsed?.title) {
+          return parsed.title
+        }
+      } catch {
+        // Fallback to plain text handling below.
+      }
+    }
 
-interface RefreshResult {
-  accessToken: string
-}
+    if (response.status >= 500) {
+      return 'Errore interno del backend. Riprova tra pochi secondi.'
+    }
 
-interface RefreshSuccess {
-  accessToken: string
-}
-
-type JwtPayload = { exp?: number }
-
-const request = { method: 'POST' }
-
-async function setClientHeaders(headers: Record<string, string>) {
-  return headers
-}
-
-function extractTenantId(data: Record<string, unknown>): string | null {
-  if (data.tenantId && typeof data.tenantId === 'string' && data.tenantId !== 'undefined') {
-    return data.tenantId
-  }
-
-  if (data.tenant && typeof data.tenant.id === 'string') {
-    return data.tenant.id
-  }
-
-  try {
-    const stored = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
-    return stored.tenantId || null
+    return text
   } catch {
-    return null
+    return 'Errore durante l\'operazione.'
   }
 }
 
-function getTenantIdFromClaim() {
-  try {
-    const stored = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
-    return stored.tenantId || null
-  } catch {
-    return null
-  }
+export function buildApiError(message, status) {
+  const error = new Error(message)
+  error.status = status
+  return error
 }
 
-async function getAccessToken(): Promise<string | null> {
-  return window.localStorage.getItem('accessToken')
+export { readJsonResponse, safeReadError }
+
+export function getToken() {
+  return localStorage.getItem('accessToken')
 }
-</content>
+
+export function getRole() {
+  return localStorage.getItem('role')
+}
+
+export function getTenantId() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.tenantId || null
+}
+
+export function getTenantSlug() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.tenantSlug || 'default'
+}
+
+export function setTenantId(tenantId: string) {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  settings.tenantId = tenantId
+  localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
+}
+
+export function getActiveCompanyId() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  return settings.activeCompanyId || null
+}
+
+export function setActiveCompanyId(companyId: string) {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  settings.activeCompanyId = companyId
+  localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
+}

@@ -52,13 +52,32 @@ export default function GlobalSearchModal({ open, onClose, onSelectWorker, onSel
   // Load data on mount and whenever modal opens
   const loadMasterData = () => {
     apiGet('/api/master-data/employees')
-      .then(d => { if (Array.isArray(d)) setEmployees(d) })
+      .then(d => {
+        const list = Array.isArray(d) ? d : (d?.data || [])
+        if (Array.isArray(list)) {
+          setEmployees(list.map(e => ({
+            ...e,
+            id: e.id ?? e.Id,
+            firstName: e.firstName ?? e.FirstName ?? '',
+            lastName: e.lastName ?? e.LastName ?? '',
+            taxCode: e.taxCode ?? e.TaxCode ?? '',
+            companyName: e.companyName ?? e.CompanyName ?? '',
+            jobRole: e.jobRole ?? e.JobRole ?? '',
+          })))
+        }
+      })
       .catch(() => {})
     apiGet('/api/master-data/companies')
-      .then(d => { if (Array.isArray(d)) setCompanies(d) })
+      .then(d => {
+        const list = Array.isArray(d) ? d : (d?.data || [])
+        if (Array.isArray(list)) setCompanies(list)
+      })
       .catch(() => {})
     apiGet('/api/master-data/protocols')
-      .then(d => { if (Array.isArray(d)) setProtocols(d) })
+      .then(d => {
+        const list = Array.isArray(d) ? d : (d?.data || [])
+        if (Array.isArray(list)) setProtocols(list)
+      })
       .catch(() => {})
   }
 
@@ -85,10 +104,24 @@ export default function GlobalSearchModal({ open, onClose, onSelectWorker, onSel
     const timer = setTimeout(() => {
       apiGet(`/api/master-data/employees/search?q=${encodeURIComponent(query.trim())}`)
         .then(res => {
-          if (active && Array.isArray(res) && res.length > 0) {
+          const list = Array.isArray(res) ? res : (res?.data || [])
+          if (active && Array.isArray(list) && list.length > 0) {
             setEmployees(prev => {
-              const map = new Map(prev.map(item => [item.id, item]))
-              res.forEach(item => map.set(item.id, item))
+              const map = new Map(prev.map(item => [item.id ?? item.Id, item]))
+              list.forEach(item => {
+                const id = item.id ?? item.Id
+                if (id) {
+                  map.set(id, {
+                    ...item,
+                    id,
+                    firstName: item.firstName ?? item.FirstName ?? '',
+                    lastName: item.lastName ?? item.LastName ?? '',
+                    taxCode: item.taxCode ?? item.TaxCode ?? '',
+                    companyName: item.companyName ?? item.CompanyName ?? '',
+                    jobRole: item.jobRole ?? item.JobRole ?? '',
+                  })
+                }
+              })
               return Array.from(map.values())
             })
           }
@@ -120,10 +153,12 @@ export default function GlobalSearchModal({ open, onClose, onSelectWorker, onSel
 
     const matchedEmployees = employees
       .filter(e => {
-        const full = `${e.firstName || ''} ${e.lastName || ''}`.toLowerCase()
-        const tax = (e.taxCode || '').toLowerCase()
-        const comp = (e.companyName || '').toLowerCase()
-        const job = (e.jobRole || '').toLowerCase()
+        const fn = e.firstName || e.FirstName || ''
+        const ln = e.lastName || e.LastName || ''
+        const full = `${fn} ${ln}`.toLowerCase()
+        const tax = (e.taxCode || e.TaxCode || '').toLowerCase()
+        const comp = (e.companyName || e.CompanyName || '').toLowerCase()
+        const job = (e.jobRole || e.JobRole || '').toLowerCase()
         return full.includes(q) || tax.includes(q) || comp.includes(q) || job.includes(q)
       })
       .slice(0, 6)

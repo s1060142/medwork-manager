@@ -40,6 +40,7 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered'
 import HealthPlanPreview from './HealthPlanPreview'
 import EnterpriseAnalyticsDashboard from './EnterpriseAnalyticsDashboard'
 import Allegato3BPreview from './Allegato3BPreview'
+import JobRoleRiskMatrix from './JobRoleRiskMatrix'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 function formatDate(value) {
@@ -52,6 +53,7 @@ const TABS = [
   { key: 'billing', label: 'Dati fatturazione' },
   { key: 'doctors', label: 'Assegnazione medici' },
   { key: 'contacts', label: 'Figure aziendali' },
+  { key: 'mansiogram', label: 'Smart Mansiogramma' },
 ]
 
 // State field names match the BACKEND PascalCase property names on Company.
@@ -735,6 +737,12 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                 </DialogActions>
               </Dialog>
             </Stack>
+          )}
+
+          {tab === 4 && (
+            <Box sx={{ mt: 1 }}>
+              <JobRoleRiskMatrix companyId={company?.id} companyName={formData.name || company?.name} />
+            </Box>
           )}
         </Box>
       </DialogContent>

@@ -118,6 +118,23 @@ function RecallCampaignsCenter() {
     }
   }
 
+  const handleMarkNoShow = async (candidate) => {
+    try {
+      setSending(true)
+      await apiSend('POST', '/api/alerts/send', {
+        recipient: candidate.companyName || 'Datore di Lavoro',
+        channel: 'Pec',
+        subject: `COMUNICAZIONE FORMALE: Mancata presentazione visita medica - ${candidate.employeeName}`,
+        message: `Si comunica che in data odierna il lavoratore ${candidate.employeeName} non si è presentato alla visita medica di sorveglianza sanitaria programmata ai sensi dell'Art. 41 D.Lgs. 81/08. Ai sensi della normativa, si richiede di concordare nuova data o procedere alle determinazioni di competenza.`,
+      })
+      setSuccessMsg(`✓ Registrata assenza lavoratore. Notifica formale No-Show inviata via PEC a ${candidate.companyName}.`)
+    } catch (err) {
+      setError('Errore nella registrazione No-Show: ' + (err.message || 'Server error'))
+    } finally {
+      setSending(false)
+    }
+  }
+
   const handleSendMorningDigest = async () => {
     try {
       setDigestMsg('Invio Morning Digest in corso...')
@@ -285,7 +302,18 @@ function RecallCampaignsCenter() {
                         <Chip label="Email + PEC" size="small" sx={{ fontSize: '0.75rem' }} />
                       </TableCell>
                       <TableCell align="right">
-                        <Chip label="In attesa invio" size="small" color="default" sx={{ fontSize: '0.75rem' }} />
+                        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                          <Chip label="In attesa invio" size="small" color="default" sx={{ fontSize: '0.75rem' }} />
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleMarkNoShow(row)}
+                            sx={{ textTransform: 'none', fontSize: '0.72rem', py: 0.2 }}
+                          >
+                            No-Show / Sollecito DdL
+                          </Button>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   ))}
