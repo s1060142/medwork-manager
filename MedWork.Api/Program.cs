@@ -15,6 +15,10 @@ using Microsoft.OpenApi;
 using System.Text;
 using System.Text.Json.Serialization;
 
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
