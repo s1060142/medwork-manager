@@ -1,1 +1,0 @@
-        optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=MedWorkDb;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;");

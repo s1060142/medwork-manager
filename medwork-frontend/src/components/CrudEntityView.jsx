@@ -415,8 +415,9 @@ function CrudEntityView({
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet(config.readEndpoint)
-      setRows(Array.isArray(data) ? data : [])
+      const res = await apiGet(config.readEndpoint)
+      const data = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : [])
+      setRows(data)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -429,8 +430,8 @@ function CrudEntityView({
     const uniqueEndpoints = [...new Set(selectFields.map((field) => field.optionsEndpoint))]
     const entries = await Promise.all(
       uniqueEndpoints.map(async (endpoint) => {
-        const data = await apiGet(endpoint)
-        const arrayData = Array.isArray(data) ? data : []
+        const res = await apiGet(endpoint)
+        const arrayData = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : [])
 
         if (endpoint.includes('/companies')) {
           return [endpoint, arrayData]

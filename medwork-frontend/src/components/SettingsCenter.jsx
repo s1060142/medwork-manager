@@ -34,8 +34,8 @@ function SettingsCenter({ activeCompanyId = '', onSettingsChange, themeMode = 'l
   useEffect(() => {
     Promise.all([apiGet('/api/master-data/companies'), apiGet('/api/master-data/branches')])
       .then(([companyList, branchList]) => {
-        setCompanies(Array.isArray(companyList) ? companyList : [])
-        setBranches(Array.isArray(branchList) ? branchList : [])
+        setCompanies(Array.isArray(companyList) ? companyList : (Array.isArray(companyList?.data) ? companyList.data : []))
+        setBranches(Array.isArray(branchList) ? branchList : (Array.isArray(branchList?.data) ? branchList.data : []))
       })
       .catch(() => {
         setCompanies([])

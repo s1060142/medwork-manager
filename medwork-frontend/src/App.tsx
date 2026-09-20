@@ -102,16 +102,16 @@ const SIDE_NAV_ITEMS = [
 ]
 
 const COMPANY_TABS = [
-  { key: 'groups', label: 'Gruppi aziendali' },
   { key: 'registry', label: 'Anagrafica' },
+  { key: 'groups', label: 'Gruppi aziendali' },
   { key: 'checklist', label: 'Checklist' },
   { key: 'activities', label: 'Attività' },
   { key: 'employer-portal', label: 'Portale RSPP/DdL' },
 ]
 
 const COMPANY_TAB_TO_MODULE: Record<string, string> = {
-  groups: 'company-groups',
   registry: 'companies',
+  groups: 'company-groups',
   checklist: 'protocols',
   activities: 'schedules',
   'employer-portal': 'employer-portal',
@@ -287,7 +287,7 @@ const App = () => {
       return null
     }
   })
-  const [selectedCompanyTab, setSelectedCompanyTab] = useState<string>('groups')
+  const [selectedCompanyTab, setSelectedCompanyTab] = useState<string>('registry')
   const [selectedScheduleTab, setSelectedScheduleTab] = useState<string>('visit-deadlines')
   const [selectedAnalysisTab, setSelectedAnalysisTab] = useState<string>('visits')
   const [selectedHealthTab, setSelectedHealthTab] = useState<string>('protocols')
@@ -295,7 +295,7 @@ const App = () => {
 
   // Area / module navigation state
   const [selectedArea, setSelectedArea] = useState<string>('company-management')
-  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('company-groups')
+  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
 
   // When opening a new visit from an employee profile, preselect that employee in the stepper
   const [visitInitialEmployeeId, setVisitInitialEmployeeId] = useState<number | null>(null)
@@ -555,8 +555,8 @@ const App = () => {
   const handleAreaNavigation = (nextArea: string) => {
     setSelectedArea(nextArea)
     if (nextArea === 'company-management') {
-      setSelectedCompanyTab('groups')
-      setSelectedModuleKey('company-groups')
+      setSelectedCompanyTab('registry')
+      setSelectedModuleKey('companies')
     } else {
       setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
     }

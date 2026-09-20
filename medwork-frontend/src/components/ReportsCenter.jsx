@@ -140,8 +140,8 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
       apiGet('/api/master-data/branches'),
     ])
       .then(([companiesData, branchesData]) => {
-        setCompanies(Array.isArray(companiesData) ? companiesData : [])
-        setBranches(Array.isArray(branchesData) ? branchesData : [])
+        setCompanies(Array.isArray(companiesData) ? companiesData : (Array.isArray(companiesData?.data) ? companiesData.data : []))
+        setBranches(Array.isArray(branchesData) ? branchesData : (Array.isArray(branchesData?.data) ? branchesData.data : []))
       })
       .catch(() => {
         setCompanies([])
@@ -279,9 +279,10 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
       apiGet('/api/master-data/employee-risks'),
     ])
 
-    const companyList = Array.isArray(companies) ? companies : []
-    const employeeList = Array.isArray(employees) ? employees : []
-    const employeeRiskList = Array.isArray(employeeRisks) ? employeeRisks : []
+    const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+    const companyList = unwrap(companies)
+    const employeeList = unwrap(employees)
+    const employeeRiskList = unwrap(employeeRisks)
 
     const scopedEmployees = employeeList.filter((employee) => {
       const matchesCompany = !companyId || Number(employee.companyId) === Number(companyId)
@@ -340,13 +341,14 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
       apiGet('/api/master-data/visit-exams'),
     ])
 
-    const companyList = Array.isArray(companiesData) ? companiesData : []
-    const branchList = Array.isArray(branchesData) ? branchesData : []
-    const employeeList = Array.isArray(employees) ? employees : []
-    const visitList = Array.isArray(visits) ? visits : []
-    const riskList = Array.isArray(risks) ? risks : []
-    const riskFactorList = Array.isArray(riskFactors) ? riskFactors : []
-    const visitExamList = Array.isArray(visitExams) ? visitExams : []
+    const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+    const companyList = unwrap(companiesData)
+    const branchList = unwrap(branchesData)
+    const employeeList = unwrap(employees)
+    const visitList = unwrap(visits)
+    const riskList = unwrap(risks)
+    const riskFactorList = unwrap(riskFactors)
+    const visitExamList = unwrap(visitExams)
 
     const defaultRefYear = new Date().getFullYear() - 1
     const referenceYear = dateFrom ? new Date(dateFrom).getFullYear() : defaultRefYear

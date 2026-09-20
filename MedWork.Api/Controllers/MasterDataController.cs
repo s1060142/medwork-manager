@@ -22,19 +22,13 @@ public class MasterDataController : BaseController
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetCompanies([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1 || pageSize > 200) pageSize = 50;
-        
         var tenantId = GetTenantId();
         var query = _dbContext.Companies
             .AsNoTracking()
             .Where(x => x.TenantId == tenantId)
             .OrderBy(x => x.Name);
 
-        var totalCount = await query.CountAsync();
         var data = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
@@ -129,16 +123,13 @@ public class MasterDataController : BaseController
             })
             .ToListAsync();
 
-        return Ok(new { data, totalCount, page, pageSize });
+        return Ok(data);
     }
 
     [HttpGet("branches")]
     [Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
     public async Task<IActionResult> GetBranches([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1 || pageSize > 200) pageSize = 50;
-        
         var tenantId = GetTenantId();
         var query = _dbContext.Branches
             .AsNoTracking()
@@ -146,10 +137,7 @@ public class MasterDataController : BaseController
             .OrderBy(x => x.City)
             .ThenBy(x => x.Address);
 
-        var totalCount = await query.CountAsync();
         var data = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
@@ -166,7 +154,7 @@ public class MasterDataController : BaseController
             })
             .ToListAsync();
 
-        return Ok(new { data, totalCount, page, pageSize });
+        return Ok(data);
     }
 
     [HttpGet("employees")]

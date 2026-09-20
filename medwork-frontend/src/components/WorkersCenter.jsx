@@ -95,12 +95,14 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         apiGet('/api/master-data/doctors').catch(() => []),
       ])
 
-      setEmployees(Array.isArray(employeesData) ? employeesData : [])
-      setVisits(Array.isArray(visitsData) ? visitsData : [])
-      setCompanies(Array.isArray(companiesData) ? companiesData : [])
-      setBranches(Array.isArray(branchesData) ? branchesData : [])
-      setJobRoles(Array.isArray(rolesData) ? rolesData : [])
-      setDoctors(Array.isArray(doctorsData) ? doctorsData : [])
+      const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+
+      setEmployees(unwrap(employeesData))
+      setVisits(unwrap(visitsData))
+      setCompanies(unwrap(companiesData))
+      setBranches(unwrap(branchesData))
+      setJobRoles(unwrap(rolesData))
+      setDoctors(unwrap(doctorsData))
     } catch (requestError) {
       setError(requestError.message || 'Errore nel caricamento dati lavoratori.')
     } finally {

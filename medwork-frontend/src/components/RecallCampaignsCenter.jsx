@@ -72,7 +72,7 @@ function RecallCampaignsCenter() {
 
   useEffect(() => {
     apiGet('/api/master-data/companies')
-      .then(data => setCompanies(Array.isArray(data) ? data : []))
+      .then(data => setCompanies(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])))
       .catch(() => setError('Impossibile caricare le aziende.'))
   }, [])
 

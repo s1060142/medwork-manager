@@ -51,10 +51,11 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
         apiGet('/api/master-data/medical-visits').catch(() => []),
         apiGet('/api/master-data/employees').catch(() => []),
       ])
-      setAlerts(Array.isArray(alertData) ? alertData : [])
-      setCompanies(Array.isArray(companyData) ? companyData : [])
-      setVisits(Array.isArray(visitData) ? visitData : [])
-      setEmployees(Array.isArray(employeeData) ? employeeData : [])
+      const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+      setAlerts(unwrap(alertData))
+      setCompanies(unwrap(companyData))
+      setVisits(unwrap(visitData))
+      setEmployees(unwrap(employeeData))
     } catch (err) {
       setError(err.message || 'Errore nel caricamento dei dati di compliance.')
     } finally {

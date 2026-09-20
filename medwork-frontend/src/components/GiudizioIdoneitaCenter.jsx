@@ -111,9 +111,10 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
         apiGet('/api/visit-judgments'),
         apiGet('/api/master-data/companies').catch(() => []),
       ])
-      const list = Array.isArray(visitsData) ? visitsData : []
+      const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+      const list = unwrap(visitsData)
       setVisits(list)
-      setCompanies(Array.isArray(companiesData) ? companiesData : [])
+      setCompanies(unwrap(companiesData))
 
       if (medicalVisitId) {
         const found = list.find((v) => Number(v.id) === Number(medicalVisitId))

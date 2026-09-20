@@ -236,8 +236,8 @@ export default function CompanyGroupsCenter() {
           apiGet('/api/master-data/companies').catch(() => []),
           apiGet('/api/master-data/doctors').catch(() => []),
         ])
-        setAvailableMasterCompanies(Array.isArray(masterCompanies) ? masterCompanies : [])
-        setAvailableMasterDoctors(Array.isArray(masterDoctors) ? masterDoctors : [])
+        setAvailableMasterCompanies(Array.isArray(masterCompanies) ? masterCompanies : (Array.isArray(masterCompanies?.data) ? masterCompanies.data : []))
+        setAvailableMasterDoctors(Array.isArray(masterDoctors) ? masterDoctors : (Array.isArray(masterDoctors?.data) ? masterDoctors.data : []))
       }
     } catch (err) {
       setError(err.message || 'Errore durante il caricamento dei dati del gruppo.')
