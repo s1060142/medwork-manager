@@ -13,9 +13,11 @@ async function loginAsAdmin(page: Page) {
 }
 
 async function openGroups(page: Page) {
-  await page.click('button:has-text("Gestione aziende")')
-  await page.click('button:has-text("Gruppi aziendali")')
-  await expect(page.locator('button:has-text("Nuovo Gruppo"), button:has-text("Crea il Tuo Primo Gruppo Aziendale")').first()).toBeVisible({ timeout: 10000 })
+  await page.waitForSelector('button:has-text("Gestione aziende")', { timeout: 15000 })
+  await page.locator('button:has-text("Gestione aziende")').first().click()
+  await page.waitForTimeout(400)
+  await page.locator('button:has-text("Gruppi aziendali"), button:has-text("Gruppi Aziendali")').first().click()
+  await expect(page.locator('button:has-text("Nuovo Gruppo"), button:has-text("Crea il Tuo Primo Gruppo Aziendale")').first()).toBeVisible({ timeout: 15000 })
 }
 
 

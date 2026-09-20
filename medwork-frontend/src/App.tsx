@@ -58,6 +58,7 @@ import PhraseTemplatesCenter from './components/PhraseTemplatesCenter'
 import QuestionnairesCenter from './components/QuestionnairesCenter'
 import DashboardMedico from './components/DashboardMedico'
 import AnalyticsCenter from './components/AnalyticsCenter'
+import MigrationCenter from './components/MigrationCenter'
 import CartellaSanitariaCenter from './components/CartellaSanitariaCenter'
 import GiudizioIdoneitaCenter from './components/GiudizioIdoneitaCenter'
 import FirmaGrafometricaCenter from './components/FirmaGrafometricaCenter'
@@ -148,6 +149,7 @@ const HEALTH_TABS = [
 
 const ADMIN_TABS = [
   { key: 'settings', label: 'Impostazioni', moduleKey: 'settings' },
+  { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
   { key: 'billing', label: 'Fatturazione', moduleKey: 'billing' },
   { key: 'tools', label: 'Strumenti', moduleKey: 'tools' },
   { key: 'audit', label: 'Audit', moduleKey: 'audit' },
@@ -199,15 +201,17 @@ const MODULE_ITEMS = [
   { key: 'firma-grafometrica', label: 'Firma Grafometrica', moduleKey: 'firma-grafometrica' },
   { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
   { key: 'alert-multicanale', label: 'Alert Multi-canale', moduleKey: 'alert-multicanale' },
+  { key: 'employer-portal', label: 'Portale RSPP/DdL', moduleKey: 'employer-portal' },
+  { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
 ]
 
 const AREA_MODULE_KEYS: Record<string, string[]> = {
-  'company-management': ['companies', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
+  'company-management': ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
   analysis: ['reporting', 'audit'],
   'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale'],
   schedule: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
-  administration: ['billing', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
+  administration: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
 }
 
 const AREA_DEFAULT_MODULE = {
@@ -225,7 +229,7 @@ const HIERARCHICAL_SIDE_NAV = [
     key: 'company-management',
     label: 'Gestione aziende',
     icon: BusinessIcon,
-    children: ['companies', 'company-groups', 'company-contacts', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
+    children: ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   },
   {
     key: 'workers-management',
@@ -255,7 +259,7 @@ const HIERARCHICAL_SIDE_NAV = [
     key: 'administration',
     label: 'Amministrazione',
     icon: SettingsApplicationsIcon,
-    children: ['billing', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
+    children: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
   },
 ]
 
@@ -730,6 +734,10 @@ const App = () => {
 
     if (moduleKey === 'tools') {
       return <ToolsCenter />
+    }
+
+    if (moduleKey === 'migration') {
+      return <MigrationCenter />
     }
 
     if (moduleKey === 'analytics') {

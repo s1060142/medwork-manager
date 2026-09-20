@@ -14,6 +14,33 @@ Cosa funziona oggi, organizzato per modulo.
 - TenantContextFilter per isolamento multi-tenant
 - BCrypt password hashing
 - SPID/CIE: stub HTTP client (non integrato)
+- AI charting: `AIChartingService.cs` implementato
+
+---
+
+## 🔄 Universal Migration Engine (Migrazione & Import)
+
+- **Multi-Format Ingestion**: Parser nativi per Winasped / WinAspi, CartSan, Zucchetti e CSV/Excel unificato.
+- **Dry-Run Validation Pipeline**: Validazione preventiva a due fasi (rilevamento KPI, conteggio aziende/lavoratori/visite, deduping codice fiscale, normalizzazione esiti di idoneità).
+- **Transactional Commit**: Inserimento atomico transazionale con isolamento per TenantId (`LegacyMigrationService.cs`, `MigrationController.cs`, `MigrationCenter.jsx`).
+
+---
+
+## 📬 PEC Delivery Hub (Notifiche Legali & Giudizi)
+
+- **Configurazione Server PEC**: Gestione parametri SMTP PEC (Host, Porta, SSL, credenziali cifrate con `IFieldEncryptionService`) per singolo tenant.
+- **Test Connessione Handshake**: Verifica istantanea autenticazione server PEC da `SettingsCenter.jsx`.
+- **Invio Singolo & Massivo con PDF Allegato**: Trasmissione automatica giudizi di idoneità via PEC con certificato PDF QuestPDF generato in-memory (`PecDeliveryService.cs`, `AlertsController.cs`, `GiudizioIdoneitaCenter.jsx`).
+- **Audit & Legal Logging**: Tracciamento di ogni tentativo di invio in `NotificationLogs` con stato e data/ora.
+
+---
+
+## 🏢 Portale Datore di Lavoro & RSPP
+
+- **Cruscotto di Conformità (D.Lgs. 81/08)**: Visualizzazione organico sorvegliato, idoneità attive, scadenze entro 60 giorni e scadenze superate (`EmployerPortalView.jsx`).
+- **Isolamento GDPR Dati Sanitari**: Accesso limitato alle sole conclusioni legali e prescrizioni operative, con blocco rigido di anamnesi e dati clinici.
+- **Download Massivo Archivio Giudizi (ZIP)**: Generazione archivio ZIP in-memory con tutti i certificati PDF più recenti dell'azienda (`DocumentsController.cs`).
+- **Segnalazione Nuove Assunzioni / Variazioni**: Modulo per il Datore di Lavoro per richiedere visite preventive o cambi mansione direttamente al Medico Competente.
 
 ---
 
@@ -45,11 +72,12 @@ Cosa funziona oggi, organizzato per modulo.
 
 - `MedicalVisitStepper` — flusso step-by-step (anamnesi → obiettivo → giudizio)
 - `MedicalVisitsController` — CRUD completo
+- `MedicalRecordsController` — CRUD completo cartelle sanitarie
 - `VisitJudgmentController` — Giudizi strutturati (OutcomeCode, Prescrizioni, Limitazioni, NextReviewDate)
 - Calcolo automatico prossima scadenza da protocollo
 - JobRole protocol fallback (se nessun PersonalProtocol, usa protocollo di mansione)
 - Age-based cadence reduction (>50 anni: -20%, floor 30gg)
-- `MedicalVisitAIController` — endpoint AI per supporto visita
+- `MedicalVisitAIController` — endpoint AI per supporto visita (implementato)
 - `VisitExamsController` — esami specifici per visita
 
 ---
@@ -143,7 +171,7 @@ Cosa funziona oggi, organizzato per modulo.
 - AlertMultiChannelService: TenantId iniettato dal contesto reale
 - Audit trail server-side immutabile
 - JWT secret: placeholder ancora presente (richiede Key Vault)
-- EPPlus 4.5.x license issue (richiede aggiornamento a 5+ o ClosedXML)
+- EPPlus 8.7.0 license issue (richiede aggiornamento a 5+ o ClosedXML)
 
 ---
 

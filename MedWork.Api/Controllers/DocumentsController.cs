@@ -4,13 +4,14 @@ using MedWork.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 using System.Security.Claims;
 
 namespace MedWork.Api.Controllers;
 
 [ApiController]
 [Route("api/documents")]
-[Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
+[Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin + "," + AppRole.Employer + "," + AppRole.RSPP)]
 public class DocumentsController : ControllerBase
 {
     private readonly IDocumentGenerationService _documentGenerationService;
@@ -30,7 +31,7 @@ public class DocumentsController : ControllerBase
         throw new UnauthorizedAccessException("Tenant non specificato");
     }
 
-    private async Task<IActionResult> ValidateVisitTenantAsync(int medicalVisitId)
+    private async Task<IActionResult?> ValidateVisitTenantAsync(int medicalVisitId)
     {
         var tenantId = GetTenantId();
         if (tenantId <= 0) return Unauthorized();
@@ -42,7 +43,7 @@ public class DocumentsController : ControllerBase
         return null;
     }
 
-    private async Task<IActionResult> ValidateCompanyTenantAsync(int companyId)
+    private async Task<IActionResult?> ValidateCompanyTenantAsync(int companyId)
     {
         var tenantId = GetTenantId();
         if (tenantId <= 0) return Unauthorized();
@@ -51,6 +52,16 @@ public class DocumentsController : ControllerBase
             .AnyAsync(c => c.Id == companyId && c.TenantId == tenantId);
 
         if (!belongsToTenant) return NotFound();
+
+        var userCompanyClaim = User.FindFirst("CompanyId")?.Value ?? User.FindFirst("company_id")?.Value;
+        if (int.TryParse(userCompanyClaim, out var userCompanyId) && userCompanyId > 0 && userCompanyId != companyId)
+        {
+            if (User.IsInRole(AppRole.Employer) || User.IsInRole(AppRole.RSPP))
+            {
+                return Forbid();
+            }
+        }
+
         return null;
     }
 
@@ -160,9 +171,11 @@ public class DocumentsController : ControllerBase
 
     /// <summary>
     /// Returns a PDF binary of the official Allegato 3A Cartella Sanitaria e di Rischio.
+    /// Strictly confidential: only accessible by Doctor and Admin (GDPR health data protection).
     /// </summary>
     [HttpGet("visits/{medicalVisitId:int}/allegato-3a-pdf")]
     [HttpPost("allegato-3a/{medicalVisitId:int}")]
+    [Authorize(Roles = AppRole.Doctor + "," + AppRole.Admin)]
     [Produces("application/pdf")]
     public async Task<IActionResult> DownloadAllegato3APdf(
         int medicalVisitId,
@@ -217,5 +230,69 @@ public class DocumentsController : ControllerBase
         {
             return NotFound($"Azienda {companyId} non trovata.");
         }
+    }
+
+    /// <summary>
+    /// Generates and downloads a ZIP archive containing the latest fitness judgment PDFs for all employees of the specified company.
+    /// </summary>
+    [HttpGet("companies/{companyId:int}/judgments-zip")]
+    [HttpGet("company/{companyId:int}/judgments-zip")]
+    [Produces("application/zip")]
+    public async Task<IActionResult> DownloadCompanyJudgmentsZip(
+        int companyId,
+        CancellationToken cancellationToken)
+    {
+        var tenantCheck = await ValidateCompanyTenantAsync(companyId);
+        if (tenantCheck != null) return tenantCheck;
+
+        var tenantId = GetTenantId();
+        var company = await _dbContext.Companies
+            .FirstOrDefaultAsync(c => c.Id == companyId && c.TenantId == tenantId, cancellationToken);
+
+        if (company == null) return NotFound("Azienda non trovata.");
+
+        var visits = await _dbContext.MedicalVisits
+            .Include(v => v.Employee)
+            .Where(v => v.TenantId == tenantId && v.Employee != null && v.Employee.CompanyId == companyId)
+            .OrderByDescending(v => v.VisitDate)
+            .ToListAsync(cancellationToken);
+
+        var latestVisits = visits
+            .GroupBy(v => v.EmployeeId)
+            .Select(g => g.First())
+            .ToList();
+
+        if (latestVisits.Count == 0)
+        {
+            return BadRequest(new { message = "Nessun giudizio di idoneità presente per l'azienda specificata." });
+        }
+
+        using var memoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var visit in latestVisits)
+            {
+                try
+                {
+                    var pdfBytes = await _documentGenerationService.GenerateFitnessJudgmentPdf(visit.Id, cancellationToken);
+                    var cleanLastName = (visit.Employee?.LastName ?? "Lavoratore").Replace(" ", "_");
+                    var cleanFirstName = (visit.Employee?.FirstName ?? "Dipendente").Replace(" ", "_");
+                    var fileName = $"Giudizio_{cleanLastName}_{cleanFirstName}_{visit.VisitDate:yyyyMMdd}.pdf";
+
+                    var entry = archive.CreateEntry(fileName, CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    await entryStream.WriteAsync(pdfBytes, 0, pdfBytes.Length, cancellationToken);
+                }
+                catch
+                {
+                    // Proceed with other documents in bulk export
+                }
+            }
+        }
+
+        memoryStream.Position = 0;
+        var zipBytes = memoryStream.ToArray();
+        var safeCompName = (company.Name ?? "Azienda").Replace(" ", "_").Replace("/", "_");
+        return File(zipBytes, "application/zip", $"Giudizi_Idoneita_{safeCompName}_{DateTime.UtcNow:yyyyMMdd}.zip");
     }
 }

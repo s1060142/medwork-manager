@@ -35,7 +35,7 @@ public class MedicalVisitAIController : ControllerBase
     [HttpPost("{visitId:int}/voice-transcribe")]
     public async Task<ActionResult<string>> TranscribeVoice(int visitId, [FromBody] VoiceNoteRequest request)
     {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
         if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
         {
             return Unauthorized();
@@ -62,7 +62,7 @@ public class MedicalVisitAIController : ControllerBase
     [HttpPost("{visitId:int}/ocr-extract")]
     public async Task<ActionResult<string>> ExtractOcr(int visitId, [FromBody] OcrRequest request)
     {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
         if (!int.TryParse(tenantClaim, out var tenantId) || tenantId < 1)
         {
             return Unauthorized();

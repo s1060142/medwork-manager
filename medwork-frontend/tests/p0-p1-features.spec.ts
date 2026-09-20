@@ -115,16 +115,14 @@ test.describe('P0 & P1 Competitive Feature Suite', () => {
     await loginAsAdmin(page)
 
     // Open Gestione aziende -> Portale RSPP/DdL tab
-    await page.locator('.legacy-side-item:has-text("Gestione aziende"), button:has-text("Gestione aziende")').first().click()
+    await page.click('button:has-text("Gestione aziende")')
     await page.waitForTimeout(600)
-    const portalTab = page.locator('.legacy-tab:has-text("Portale RSPP/DdL"), button:has-text("Portale RSPP/DdL")').first()
-    await expect(portalTab).toBeVisible({ timeout: 5000 })
-    await portalTab.click()
+    await page.click('button:has-text("Portale RSPP/DdL")')
 
     // Verify Employer Portal loaded
-    await expect(page.getByText('Portale di consultazione idoneità e conformità sanitaria')).toBeVisible({ timeout: 10000 })
-    await expect(page.getByText('Compliance Sorveglianza')).toBeVisible()
-    await expect(page.getByText('Registro Lavoratori & Giudizi di Idoneità')).toBeVisible()
+    await expect(page.getByText('Portale di consultazione idoneità e conformità sanitaria').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Compliance Sorveglianza').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Registro Lavoratori & Giudizi di Idoneità').first()).toBeVisible({ timeout: 10000 })
   })
 
   test('P1: No-Show formal notice action in Recall Campaigns Center', async ({ page }) => {

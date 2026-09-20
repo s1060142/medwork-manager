@@ -5,21 +5,20 @@
 
 ## Backend
 
-**ASP.NET Core 10** + **EF Core 8** + **SQL Server**
+**ASP.NET Core 10** + **EF Core 10** + **SQL Server**
 
 Monolite REST (no microservizi, no API gateway, no event bus).
 
-### Controllers (28+)
-`AdminCrudController`, `DoctorCrudController`, `MedicalVisitsController`, `MedicalRecordController`, `VisitJudgmentController`, `DocumentsController`, `SignatureController`, `AlertsController`, `CompanyGroupsController`, `MasterDataController`, `AuditController`, `PatientPortalController`, `MedicalVisitAIController`, `AppointmentsController`, `ActivityDeadlinesController`, `BillingController`, `CompanyNominationsController`, `ComplianceController`, `IntegrationController`, `AnalyticsController`, `PhraseTemplatesController`, `QuestionnairesController`, `VisitExamsController`, `AgendaController`, `AdminController`, `BaseController`, `AuthController`.
-
-### Services (20+)
-`DeadlineCalculationService`, `DocumentGenerationService`, `AlertMultiChannelService`, `PersonalProtocolAssignmentService`, `ScadenziarioPeriodicityService`, `QuestionnaireScoringService`, `AIChartingService` (stub), `ExternalAuthService` (SPID/CIE stub), `JwtTokenService`, `TenantService`, `FieldEncryptionService`, `MockNotificationService`.
-
+### Controllers (30)
+`AdminCrudController`, `DoctorCrudController`, `MedicalVisitsController`, `MedicalRecordController`, `MedicalRecordsController`, `VisitJudgmentController`, `DocumentsController`, `SignatureController`, `AlertsController`, `CompanyGroupsController`, `MasterDataController`, `AuditController`, `PatientPortalController`, `MedicalVisitAIController`, `AppointmentsController`, `ActivityDeadlinesController`, `BillingController`, `CompanyNominationsController`, `ComplianceController`, `IntegrationController`, `AnalyticsController`, `PhraseTemplatesController`, `QuestionnairesController`, `VisitExamsController`, `AgendaController`, `AdminController`, `AuthController`, `BaseController`, `DeadlineEngineController`, `MigrationController`.\n
+### Services (23)
+`DeadlineCalculationService`, `DocumentGenerationService`, `AlertMultiChannelService`, `PersonalProtocolAssignmentService`, `ScadenziarioPeriodicityService`, `QuestionnaireScoringService`, `AIChartingService`, `ExternalAuthService`, `JwtTokenService`, `TenantService`, `FieldEncryptionService`, `MockNotificationService`, `PecDeliveryService`, `LegacyMigrationService`, `DeadlineRuleEngine`, `QuestionnaireScoringService`, `ScadenziarioPeriodicityService`, `IPersonalProtocolAssignmentService`, `INotificationService`.\n
 ### Document Generation
 `FitnessJudgmentPdfDocument`, `Allegato3APdfDocument`, `AnnualHealthReportPdfDocument` — tutti via QuestPDF (server-side).
 
 ### Database
 EF Core Code First Migrations (`Fase0MultiTenantAndPhraseQuestionnaire`, `AlignPasswordsAndFixPending`). 32+ entity types. Multi-tenant con `TenantId` su ogni entity. `AppDbSeeder` con `MigrateAsync`.
+Stack: ASP.NET Core 10, EF Core 10.0.12, SQL Server LocalDB (dev) / SQL Server 2025 (Docker).
 
 ---
 
@@ -98,15 +97,15 @@ Ruoli: Admin, Doctor, RSPP
 | Layer | Tecnologia | Versione |
 |---|---|---|
 | Backend | ASP.NET Core | 10.0 |
-| ORM | Entity Framework Core | 8.x |
-| Database | SQL Server | LocalDB (dev) |
+| ORM | Entity Framework Core | 10.0.12 |
+| Database | SQL Server | LocalDB (dev) / 2025 (Docker) |
 | Frontend | React + Vite + MUI | React 19, MUI 7 |
 | PDF | QuestPDF | Community |
 | Testing BE | xUnit + WebApplicationFactory | — |
 | Testing FE | Vitest + Playwright | — |
 | Auth | JWT Bearer custom | + refresh token |
 | Password | BCrypt.Net | 4.x |
-| Excel | EPPlus | 4.5.x ⚠️ |
+| Excel | EPPlus | 8.7.0 |
 | Container | Docker | Dockerfile entrambi i layer |
 
 ---
@@ -115,11 +114,11 @@ Ruoli: Admin, Doctor, RSPP
 
 | Issue | Severity | Stato |
 |---|---|---|
-| EPPlus 4.5.x license | HIGH | ⚠️ Richiede upgrade |
+|| EPPlus license issue | HIGH | ⚠️ Richiede upgrade a 5+ o ClosedXML |
 | JWT secret placeholder | HIGH | ⚠️ Richiede Key Vault |
 | CORS localhost | MEDIUM | ⚠️ Richiede config ambiente |
 | Global exception handler | MEDIUM | ⚠️ Non implementato |
-| Structured logging | MEDIUM | ⚠️ Non implementato |
+| Missing global exception handler | MEDIUM | ⚠️ Non implementato |
 | Rate limiting | LOW | ⚠️ Non implementato |
 | No pagination su liste | MEDIUM | ⚠️ Parziale |
 

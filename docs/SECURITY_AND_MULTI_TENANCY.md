@@ -32,12 +32,16 @@
 |---|---|---|---|
 | JWT secret hardcoded | HIGH | `appsettings.json` ha placeholder | Usare Azure Key Vault / .NET User Secrets |
 | CORS per ambiente | HIGH | Configurato per localhost | Parametrizzare per ambiente |
-| EPPlus licenza | HIGH | 4.5.x LGPL | Aggiornare a 5+ o sostituire con ClosedXML |
+| EPPlus licenza | HIGH | 8.7.0 LGPL | Aggiornare a 5+ o ClosedXML |
 | DTOs mancanti | MEDIUM | EF entities passati direttamente | Introdurre Request/Response DTOs |
 | Global exception handler | MEDIUM | Nessun middleware | Aggiungere `UseExceptionHandler` |
 | Structured logging | LOW | Nessun `ILogger<T>` | Aggiungere Serilog |
 | Rate limiting | LOW | Assente | Aggiungere middleware rate limiting |
-| SQL Server RLS | LOW | Non implementata | Valutare migrazione a PostgreSQL |
+| SQL Server RLS | LOW | Non implementata | Valutare migrazione a PostgreSQL con RLS |
+
+---
+
+## Multi-Tenancy Implementation
 
 ---
 
@@ -286,7 +290,7 @@ Ruoli disponibili:
 
 | Vulnerability | Severity | Probabilità | Impatto | Mitigazione |
 |---|---|---|---|---|
-| EPPlus license issue | HIGH | Certa | Legale | Sostituire con ClosedXML |
+| EPPlus 8.7.0 license issue | HIGH | Certa | Legale | Sostituire con ClosedXML |
 | JWT secret placeholder | HIGH | Media | Token forgiabile | Key Vault + rotazione |
 | Missing global exception handler | MEDIUM | Media | Info leak | Aggiungere middleware |
 | Missing structured logging | MEDIUM | Alta | Diagnosi difficile | Serilog |

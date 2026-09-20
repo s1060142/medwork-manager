@@ -66,16 +66,17 @@ public class CompanyGroupsIntegrationTests : IClassFixture<MedWorkWebAppFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(body.TryGetProperty("companiesCount", out _));
-        Assert.True(body.TryGetProperty("branchesCount", out _));
-        Assert.True(body.TryGetProperty("employeesCount", out _));
-        Assert.True(body.TryGetProperty("activeProtocolsCount", out _));
-        Assert.True(body.TryGetProperty("visitsDue", out _));
-        Assert.True(body.TryGetProperty("visitsOverdue", out _));
-        Assert.True(body.TryGetProperty("siteVisitsDue", out _));
-        Assert.True(body.TryGetProperty("nominationsDue", out _));
-        Assert.True(body.TryGetProperty("vaccinationDeadlines", out _));
-        Assert.True(body.TryGetProperty("complianceAlerts", out _));
+        var kpis = body.GetProperty("kpis");
+        Assert.True(kpis.TryGetProperty("companiesCount", out _));
+        Assert.True(kpis.TryGetProperty("branchesCount", out _));
+        Assert.True(kpis.TryGetProperty("employeesCount", out _));
+        Assert.True(kpis.TryGetProperty("activeProtocolsCount", out _));
+        Assert.True(kpis.TryGetProperty("visitsDueCount", out _));
+        Assert.True(kpis.TryGetProperty("visitsOverdueCount", out _));
+        Assert.True(kpis.TryGetProperty("siteVisitsDueCount", out _));
+        Assert.True(kpis.TryGetProperty("nominationsDueCount", out _));
+        Assert.True(kpis.TryGetProperty("vaccinationsDueCount", out _));
+        Assert.True(kpis.TryGetProperty("complianceAlertsCount", out _));
         Assert.True(body.TryGetProperty("complianceScore", out _));
         Assert.True(body.TryGetProperty("companyBreakdown", out var breakdown));
         Assert.Equal(JsonValueKind.Array, breakdown.ValueKind);

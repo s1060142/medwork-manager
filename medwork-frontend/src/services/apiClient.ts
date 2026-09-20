@@ -300,6 +300,14 @@ export function getToken() {
   return localStorage.getItem('accessToken')
 }
 
+export function setToken(token: string) {
+  localStorage.setItem('accessToken', token)
+}
+
+export function removeToken() {
+  localStorage.removeItem('accessToken')
+}
+
 export function getRole() {
   return localStorage.getItem('role')
 }
@@ -317,6 +325,12 @@ export function getTenantSlug() {
 export function setTenantId(tenantId: string) {
   const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
   settings.tenantId = tenantId
+  localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
+}
+
+export function removeTenantId() {
+  const settings = JSON.parse(localStorage.getItem('medwork.runtime.settings') || '{}')
+  delete settings.tenantId
   localStorage.setItem('medwork.runtime.settings', JSON.stringify(settings))
 }
 

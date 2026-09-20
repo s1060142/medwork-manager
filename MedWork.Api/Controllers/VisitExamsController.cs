@@ -32,7 +32,7 @@ public class VisitExamsController : ControllerBase
 
     private int GetTenantId()
     {
-        var claim = User.FindFirst("TenantId")?.Value;
+        var claim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
         if (int.TryParse(claim, out var id) && id > 0)
             return id;
         throw new UnauthorizedAccessException("Tenant non specificato");

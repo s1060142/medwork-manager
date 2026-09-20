@@ -32,6 +32,7 @@ public class ActivityDeadlinesController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ActivityDeadline model)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         model.TenantId = GetTenantId();
         model.CreatedAt = DateTime.UtcNow;
         _dbContext.ActivityDeadlines.Add(model);

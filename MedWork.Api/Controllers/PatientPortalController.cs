@@ -31,7 +31,7 @@ public class PatientPortalController : ControllerBase
 
     private int GetTenantId()
     {
-        var tenantClaim = User.FindFirst("TenantId")?.Value;
+        var tenantClaim = User.FindFirst("TenantId")?.Value ?? User.FindFirst("tenant_id")?.Value;
         if (int.TryParse(tenantClaim, out int tenantId))
         {
             return tenantId;

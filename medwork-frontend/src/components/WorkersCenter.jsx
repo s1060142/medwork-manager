@@ -298,18 +298,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
   }, [employees, latestVisitByEmployee])
 
-  useEffect(() => {
-    if (companyContext === 'all') {
-      return
-    }
-  }, [companyContext])
-
-  useEffect(() => {
-    if (!activeCompanyId || activeCompanyId === 'all') {
-      return
-    }
-  }, [activeCompanyId, activeBranchId])
-
   const filteredCompanyRows = useMemo(() => {
     const needle = normalizeText(companySearch)
 

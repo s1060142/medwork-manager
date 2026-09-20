@@ -31,12 +31,12 @@ Ogni decisione è misurata in minuti risparmiati al medico competente. Il succes
 | UI moderna | ✅ | ❌ | ⚠️ | ✅ |
 | API aperte | ✅ | ❌ | ❌ | ❌ |
 | Mobile offline | ❌ (piano) | ❌ | ❌ | ❌ |
-| AI charting | ❌ (stub) | ❌ | ❌ | ❌ |
+| **AI charting** | ✅ (AIChartingService) | ❌ | ❌ | ❌ |
 | Prezzo | Freemium | Costoso | Competitivo | Costoso |
 
 **Differenziatori unici**: SaaS multi-tenant nativo, API aperte, pricing freemium, portale aziende self-service (nessun competitor lo ha).
 
-**Svantaggio**: nessun competitor ha mobile offline-first, AI charting, o OCR referti — ma MedWork neanche queste ancora.
+**Svantaggio**: nessun competitor ha mobile offline-first, AI charting, o OCR referti — ma MedWork neanche queste ancora (AI charting è implementato come AIChartingService, mobile e OCR sono pianificati).
 
 ---
 
@@ -55,8 +55,8 @@ Ogni decisione è misurata in minuti risparmiati al medico competente. Il succes
 
 **Fase**: BETA HARDENING
 
-- Backend: ASP.NET Core 10 + EF Core 8 + SQL Server
-- Frontend: React + Vite + Material UI (43 componenti)
+- Backend: ASP.NET Core 10 + EF Core 10 + SQL Server
+- Frontend: React + Vite + Material UI (47 componenti)
 - PDF: QuestPDF server-side (FitnessJudgment, Allegato3A, AnnualHealthReport)
 - Testing: xUnit (48+ integration tests) + Playwright (45+ test cases) + grid-sync (5/5 PASS)
 

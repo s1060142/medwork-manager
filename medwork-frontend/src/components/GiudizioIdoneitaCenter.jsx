@@ -33,6 +33,8 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import CloseIcon from '@mui/icons-material/Close'
 import HealingIcon from '@mui/icons-material/Healing'
 import DescriptionIcon from '@mui/icons-material/Description'
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead'
+import SendIcon from '@mui/icons-material/Send'
 
 import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -63,45 +65,39 @@ const PRESCRIPTION_PRESETS = [
 ]
 
 function getOutcomeInfo(code, label) {
-  const match = OUTCOMES.find((o) => o.code === code)
-  if (match) return match
-  const lbl = (label || '').toLowerCase()
-  if (lbl.includes('non idoneo') || lbl.includes('inidoneo')) {
-    return { code: 'NONIDONE0', label: label || 'Non idoneo', color: 'error' }
-  }
-  if (lbl.includes('prescriz') || lbl.includes('limitaz') || lbl.includes('parzial')) {
-    return { code: 'IDONE0P', label: label || 'Idoneo con prescrizioni/limitazioni', color: 'warning' }
-  }
-  if (lbl.includes('idone')) {
-    return { code: 'IDONE0', label: label || 'Idoneo alla mansione', color: 'success' }
-  }
-  return { code: 'INATTESA', label: label || 'In attesa di accertamenti', color: 'default' }
+  if (code === 'IDONE0') return OUTCOMES[0]
+  if (code === 'IDONE0P') return OUTCOMES[1]
+  if (code === 'IDONE0L') return OUTCOMES[2]
+  if (code === 'NONIDONE0') return OUTCOMES[3]
+  if (code === 'INATTESA') return OUTCOMES[4]
+  const found = OUTCOMES.find((o) => o.label === label)
+  if (found) return found
+  return { code: 'IDONE0', label: label || 'Idoneo', color: 'success' }
 }
 
-export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
+export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-
-  // Filters
   const [searchText, setSearchText] = useState('')
   const [selectedCompanyId, setSelectedCompanyId] = useState('all')
   const [selectedOutcomeCode, setSelectedOutcomeCode] = useState('all')
-
-  // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [activeVisit, setActiveVisit] = useState(null)
   const [judgmentForm, setJudgmentForm] = useState({
-    outcomeCode: '',
-    outcome: '',
+    outcomeCode: 'IDONE0',
+    outcome: 'Idoneo alla mansione',
     prescriptions: '',
     limitations: '',
     nextReviewDate: '',
   })
   const [saving, setSaving] = useState(false)
   const [downloadingId, setDownloadingId] = useState(null)
+  const [pecSendingId, setPecSendingId] = useState(null)
+  const [pecBulkLoading, setPecBulkLoading] = useState(false)
+  const [pecSentMap, setPecSentMap] = useState({})
 
   const loadData = async () => {
     try {
@@ -253,6 +249,47 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
     }
   }
 
+  const handleSendPec = async (visitId) => {
+    setPecSendingId(visitId)
+    setError('')
+    setSuccess('')
+    try {
+      const res = await apiSend('POST', '/api/alerts/send-judgment-pec', { visitId })
+      if (res.success) {
+        setPecSentMap((prev) => ({ ...prev, [visitId]: true }))
+        setSuccess(`✓ Giudizio di idoneità trasmesso via PEC (${res.recipientPec}) con certificato PDF allegato.`)
+      } else {
+        setError(res.errorMessage || 'Invio PEC fallito.')
+      }
+    } catch (err) {
+      setError(err.message || 'Errore durante la trasmissione PEC.')
+    } finally {
+      setPecSendingId(null)
+    }
+  }
+
+  const handleSendBulkPec = async () => {
+    const visitIds = filteredVisits.map((v) => v.id)
+    if (visitIds.length === 0) return
+    setPecBulkLoading(true)
+    setError('')
+    setSuccess('')
+    try {
+      const results = await apiSend('POST', '/api/alerts/send-bulk-judgments-pec', { visitIds })
+      const successful = results.filter((r) => r.success).length
+      const mapUpdate = {}
+      results.forEach((r) => {
+        if (r.success) mapUpdate[r.visitId] = true
+      })
+      setPecSentMap((prev) => ({ ...prev, ...mapUpdate }))
+      setSuccess(`✓ Trasmissione massiva completata: ${successful} su ${results.length} giudizi inviati via PEC.`)
+    } catch (err) {
+      setError(err.message || 'Errore durante la trasmissione massiva PEC.')
+    } finally {
+      setPecBulkLoading(false)
+    }
+  }
+
   // Filtered rows
   const filteredVisits = useMemo(() => {
     return visits.filter((v) => {
@@ -298,13 +335,25 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
   return (
     <Box sx={{ p: 2.5, maxWidth: 1500, mx: 'auto' }}>
       {/* Header */}
-      <Box sx={{ mb: 2.5 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
-          Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Gestione, consultazione, verbalizzazione e rilascio dei certificati legali di idoneità alla mansione specifica.
-        </Typography>
+      <Box sx={{ mb: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
+            Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Gestione, consultazione, verbalizzazione e rilascio dei certificati legali di idoneità alla mansione specifica con notifica PEC automatica.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={pecBulkLoading ? <CircularProgress size={18} color="inherit" /> : <MarkEmailReadIcon />}
+          disabled={pecBulkLoading || filteredVisits.length === 0}
+          onClick={handleSendBulkPec}
+          sx={{ fontWeight: 600 }}
+        >
+          {pecBulkLoading ? 'Invio PEC in corso...' : `Invia ${filteredVisits.length} Giudizi via PEC`}
+        </Button>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -420,6 +469,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
                 <TableCell sx={{ fontWeight: 700 }}>Esito Formale</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Prescrizioni / Limitazioni</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Scadenza</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 700 }}>PEC</TableCell>
                 <TableCell align="center" sx={{ fontWeight: 700 }}>Azioni</TableCell>
               </TableRow>
             </TableHead>
@@ -429,6 +479,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
                 const visitDateStr = row.visitDate ? new Date(row.visitDate).toLocaleDateString('it-IT') : '-'
                 const deadlineStr = row.nextDeadlineDate ? new Date(row.nextDeadlineDate).toLocaleDateString('it-IT') : '-'
                 const notes = [row.prescriptions, row.limitations].filter(Boolean).join(' • ') || '-'
+                const isPecSent = pecSentMap[row.id]
 
                 return (
                   <TableRow key={row.id} hover>
@@ -450,7 +501,24 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId }) {
                     </TableCell>
                     <TableCell>{deadlineStr}</TableCell>
                     <TableCell align="center">
-                      <Stack direction="row" spacing={1} justifyContent="center">
+                      {isPecSent ? (
+                        <Chip size="small" color="success" label="Inviata" icon={<MarkEmailReadIcon />} />
+                      ) : (
+                        <Chip size="small" variant="outlined" label="Da inviare" />
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={0.5} justifyContent="center">
+                        <Tooltip title="Invia Giudizio via PEC al Datore di Lavoro">
+                          <IconButton
+                            size="small"
+                            color={isPecSent ? 'success' : 'secondary'}
+                            disabled={pecSendingId === row.id}
+                            onClick={() => handleSendPec(row.id)}
+                          >
+                            {pecSendingId === row.id ? <CircularProgress size={18} /> : <SendIcon fontSize="small" />}
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Modifica Giudizio & Prescrizioni">
                           <IconButton size="small" color="primary" onClick={() => openEdit(row)}>
                             <EditIcon fontSize="small" />

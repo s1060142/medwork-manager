@@ -1087,15 +1087,34 @@ public class DoctorCrudController : BaseController
             .Where(v => v.TenantId == tenantId && !v.IsSigned && request.VisitIds.Contains(v.Id))
             .ToListAsync();
 
+        var signedIds = new List<int>();
+        var failedIds = new List<int>();
+
         foreach (var v in visits)
         {
-            v.IsSigned = true;
-            v.SignedAt = DateTime.UtcNow;
-            v.DigitalCertificateThumbprint = "SIMULATED-THUMBPRINT-0001";
+            try
+            {
+                v.IsSigned = true;
+                v.SignedAt = DateTime.UtcNow;
+                v.DigitalCertificateThumbprint = "SIMULATED-THUMBPRINT-0001";
+                signedIds.Add(v.Id);
+            }
+            catch
+            {
+                failedIds.Add(v.Id);
+            }
         }
 
-        await _dbContext.SaveChangesAsync();
-        return Ok(new { success = true, signedCount = visits.Count });
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch
+        {
+            return StatusCode(500, new { success = false, error = "Failed to persist batch signature changes." });
+        }
+
+        return Ok(new { success = true, signedCount = signedIds.Count, failedIds });
     }
 
     [HttpGet("site-visits")]

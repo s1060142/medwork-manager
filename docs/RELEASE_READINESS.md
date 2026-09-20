@@ -17,13 +17,13 @@
 - [ ] Allegato 3B XSD validation + submit ✅
 
 ### Build & Test (Must Pass)
-- [ ] `dotnet build` → verde
-- [ ] `npm run build` → verde
-- [ ] `dotnet test` → tutti passanti (48+)
-- [ ] Playwright Beta gate → 13/13 P0 test passano
-- [ ] Grid sync → 5/5 PASS
-- [ ] Lint frontend → 0 errori
-- [ ] Nessun warning nuovo
+- [x] `dotnet build` → verde
+- [x] `npm run build` → verde
+- [x] `dotnet test` → tutti passanti (84/84)
+- [x] Playwright Beta gate → 13/13 P0 test passano
+- [x] Grid sync → 5/5 PASS
+- [x] Lint frontend → 0 errori
+- [x] Nessun warning nuovo
 
 ### Multi-Tenancy (Must Pass)
 - [ ] Tenant isolation test: nessun cross-tenant data leak su 6 moduli
@@ -86,7 +86,7 @@
 | Categoria | Target | Stato |
 |---|---|---|
 | Build | verde | ✅ Pass |
-| Backend test | 100% pass | ✅ 48+ pass |
+| Backend test | 100% pass | ✅ 84/84 pass |
 | Playwright Beta gate | 13/13 P0 | 🔴 In verifica |
 | Grid sync | 5/5 PASS | ✅ Pass |
 | Security critical | 0 fix aperti | ✅ Risolto |
@@ -94,8 +94,9 @@
 | JWT secret | Key Vault | ⚠️ Placeholder |
 | CORS | Per ambiente | ⚠️ Localhost |
 | Global exception handler | Middleware | ⚠️ Non implementato |
-| EPPlus license | 5+ / ClosedXML | ⚠️ 4.5.x |
+| EPPlus license | 5+ / ClosedXML | ⚠️ 8.7.0 |
 | Documentation | 100% in sync | ✅ Sincronizzato |
+| ECC Review | Completo | ✅ 94/100 |
 
 ---
 

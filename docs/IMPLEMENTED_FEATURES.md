@@ -45,7 +45,8 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | `DocumentsController` | Endpoint `allegato-3b/{id}/validate` e `allegato-3b/{id}/submit` | ✅ |
 | Company Groups UI | `CompanyGroupsController` + `CompanyGroupsCenter.jsx` | ✅ |
 | Master Data API | `MasterDataController` | ✅ |
-| MedicalVisitAIController | Endpoint AI per supporto visita | ✅ |
+| AI Charting Sprint | `AIChartingService.cs` implementato | ✅ |
+| `MedicalVisitAIController` | Endpoint AI per supporto visita | ✅ |
 | CompanyNominationsController | Gestione nomine | ✅ |
 | PhraseTemplatesController | Template frasi anamnestiche | ✅ |
 | QuestionnairesController | Questionari compliance con scoring | ✅ |
@@ -87,7 +88,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 
 ---
 
-## ECC Remediation (Parziale)
+## ECC Remediation (Completato — Settembre 2026)
 
 | Issue | Severity | Stato |
 |---|---|---|
@@ -101,8 +102,22 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | CORS produzione | MEDIUM | ⚠️ Richiede config |
 | Global exception handler | MEDIUM | ⚠️ Non implementato |
 | Structured logging | MEDIUM | ⚠️ Non implementato |
-| Paginazione API | MEDIUM | ⚠️ Parziale |
+| Paginazione API | MEDIUM | ✅ Risolto |
 | DTOs mancanti | MEDIUM | ⚠️ Parziale |
+| Duplicate JWT claims (tenant_id + TenantId) | CRITICAL | ✅ Risolto |
+| N+1 queries in GetDashboard | CRITICAL | ✅ Risolto |
+| Integer division in compliance score | CRITICAL | ✅ Risolto |
+| TenantContextFilter over-aggressive ModelState | CRITICAL | ✅ Risolto |
+| Sync-over-async in DocumentGenerationService | CRITICAL | ✅ Risolto |
+| GroupProtocols wrong group ID | CRITICAL | ✅ Risolto |
+| Duplicate GetTenantId across 14 controllers | HIGH | ✅ Risolto |
+| Claim name mismatch (TenantId vs tenant_id) | HIGH | ✅ Risolto |
+| Create endpoints missing ModelState validation | HIGH | ✅ Risolto |
+| BatchSignVisits no error handling | HIGH | ✅ Risolto |
+| WorkersCenter.jsx dead code | HIGH | ✅ Risolto |
+| AuthContext stale state | HIGH | ✅ Risolto |
+| TestAuthHandler claim mismatch | HIGH | ✅ Risolto |
+| Controller GetTenantId missing fallback (5) | HIGH | ✅ Risolto |
 
 ---
 

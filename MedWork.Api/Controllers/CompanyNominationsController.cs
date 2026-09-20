@@ -33,6 +33,7 @@ public class CompanyNominationsController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CompanyNomination model)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         model.TenantId = GetTenantId();
         model.CreatedAt = DateTime.UtcNow;
         _dbContext.CompanyNominations.Add(model);

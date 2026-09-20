@@ -34,7 +34,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
             new Claim(ClaimTypes.NameIdentifier, "test-admin"),
             new Claim(ClaimTypes.Name, "test-admin"),
             new Claim(ClaimTypes.Role, effectiveRole),
-            new Claim("TenantId", "1"),
+            new Claim("tenant_id", "1"),
         };
 
         var identity = new ClaimsIdentity(claims, SchemeName);

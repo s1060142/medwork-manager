@@ -34,6 +34,7 @@ public class AppointmentsController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Appointment model)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         model.TenantId = GetTenantId();
         model.CreatedAt = DateTime.UtcNow;
         _dbContext.Appointments.Add(model);

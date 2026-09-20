@@ -163,7 +163,9 @@ public class MasterDataController : BaseController
         [FromQuery] bool includeArchived = false,
         [FromQuery] int? companyId = null,
         [FromQuery] int? doctorId = null,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
         var tenantId = GetTenantId();
         var query = _dbContext.Employees
@@ -187,9 +189,13 @@ public class MasterDataController : BaseController
             query = query.Where(x => x.FirstName.ToLower().Contains(s) || x.LastName.ToLower().Contains(s) || x.TaxCode.ToLower().Contains(s));
         }
 
+        var totalCount = await query.CountAsync();
+
         var data = await query
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(x => new
             {
                 x.Id,
