@@ -1,4 +1,4 @@
-﻿using MedWork.Api.Data;
+using MedWork.Api.Data;
 using MedWork.Api.Models;
 using MedWork.Api.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +10,7 @@ namespace MedWork.Api.Controllers;
 
 [ApiController]
 [Route("api/company-groups")]
-[Authorize]
+[Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
 public class CompanyGroupsController : BaseController
 {
     private readonly AppDbContext _db;

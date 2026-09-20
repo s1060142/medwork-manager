@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using MedWork.Api.Security;
+
 namespace MedWork.Api.Controllers;
 
 [ApiController]
 [Route("api/doctor-data/company-nominations")]
-[Authorize]
+[Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
 public class CompanyNominationsController : BaseController
 {
     private readonly AppDbContext _dbContext;

@@ -118,6 +118,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | AuthContext stale state | HIGH | ✅ Risolto |
 | TestAuthHandler claim mismatch | HIGH | ✅ Risolto |
 | Controller GetTenantId missing fallback (5) | HIGH | ✅ Risolto |
+| Employer/RSPP IDOR Object-Level Authorization | CRITICAL | ✅ Risolto |
 
 ---
 

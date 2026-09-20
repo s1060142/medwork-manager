@@ -36,10 +36,57 @@ public class DocumentsController : ControllerBase
         var tenantId = GetTenantId();
         if (tenantId <= 0) return Unauthorized();
 
-        var belongsToTenant = await _dbContext.MedicalVisits
-            .AnyAsync(v => v.Id == medicalVisitId && v.TenantId == tenantId);
+        var visit = await _dbContext.MedicalVisits
+            .Include(v => v.Employee)
+            .FirstOrDefaultAsync(v => v.Id == medicalVisitId && v.TenantId == tenantId);
 
-        if (!belongsToTenant) return NotFound();
+        if (visit == null) return NotFound();
+
+        if (User.IsInRole(AppRole.Employer) || User.IsInRole(AppRole.RSPP))
+        {
+            var userCompanyClaim = User.FindFirst("CompanyId")?.Value ?? User.FindFirst("company_id")?.Value;
+            if (int.TryParse(userCompanyClaim, out var userCompanyId) && userCompanyId > 0)
+            {
+                if (visit.Employee == null || visit.Employee.CompanyId != userCompanyId)
+                {
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<IActionResult?> ValidateEmployeeTenantAsync(int employeeId)
+    {
+        var tenantId = GetTenantId();
+        if (tenantId <= 0) return Unauthorized();
+
+        var employee = await _dbContext.Employees
+            .FirstOrDefaultAsync(e => e.Id == employeeId && e.TenantId == tenantId);
+
+        if (employee == null) return NotFound();
+
+        if (User.IsInRole(AppRole.Employer) || User.IsInRole(AppRole.RSPP))
+        {
+            var userCompanyClaim = User.FindFirst("CompanyId")?.Value ?? User.FindFirst("company_id")?.Value;
+            if (int.TryParse(userCompanyClaim, out var userCompanyId) && userCompanyId > 0)
+            {
+                if (employee.CompanyId != userCompanyId)
+                {
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
         return null;
     }
 
@@ -53,10 +100,17 @@ public class DocumentsController : ControllerBase
 
         if (!belongsToTenant) return NotFound();
 
-        var userCompanyClaim = User.FindFirst("CompanyId")?.Value ?? User.FindFirst("company_id")?.Value;
-        if (int.TryParse(userCompanyClaim, out var userCompanyId) && userCompanyId > 0 && userCompanyId != companyId)
+        if (User.IsInRole(AppRole.Employer) || User.IsInRole(AppRole.RSPP))
         {
-            if (User.IsInRole(AppRole.Employer) || User.IsInRole(AppRole.RSPP))
+            var userCompanyClaim = User.FindFirst("CompanyId")?.Value ?? User.FindFirst("company_id")?.Value;
+            if (int.TryParse(userCompanyClaim, out var userCompanyId) && userCompanyId > 0)
+            {
+                if (userCompanyId != companyId)
+                {
+                    return Forbid();
+                }
+            }
+            else
             {
                 return Forbid();
             }
@@ -68,13 +122,8 @@ public class DocumentsController : ControllerBase
     [HttpPost("sanitary-plan/{employeeId:int}")]
     public async Task<IActionResult> GenerateSanitaryPlan(int employeeId)
     {
-        var tenantId = GetTenantId();
-        if (tenantId <= 0) return Unauthorized();
-
-        var belongsToTenant = await _dbContext.Employees
-            .AnyAsync(e => e.Id == employeeId && e.TenantId == tenantId);
-
-        if (!belongsToTenant) return NotFound();
+        var tenantCheck = await ValidateEmployeeTenantAsync(employeeId);
+        if (tenantCheck != null) return tenantCheck;
 
         try
         {

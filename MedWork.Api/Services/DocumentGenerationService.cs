@@ -67,11 +67,11 @@ public class DocumentGenerationService : IDocumentGenerationService
             .CountAsync(cancellationToken);
 
         return new FitnessJudgmentData(
-            DoctorFullName: $"Dr. {visit.Doctor!.FirstName} {visit.Doctor.LastName}",
-            DoctorLicenseNumber: visit.Doctor.MedicalLicenseNumber,
-            DoctorSpecialty: visit.Doctor.Specialty,
-            DoctorEmail: visit.Doctor.Email,
-            DoctorPec: visit.Doctor.PEC,
+            DoctorFullName: visit.Doctor != null ? $"Dr. {visit.Doctor.FirstName} {visit.Doctor.LastName}" : "Dr. Medico Competente",
+            DoctorLicenseNumber: visit.Doctor?.MedicalLicenseNumber ?? "OMCeO 00000",
+            DoctorSpecialty: visit.Doctor?.Specialty ?? "Medicina del Lavoro",
+            DoctorEmail: visit.Doctor?.Email ?? "medico@medwork.it",
+            DoctorPec: visit.Doctor?.PEC ?? "medico@pec.it",
             EmployeeFullName: $"{visit.Employee!.FirstName} {visit.Employee.LastName}",
             EmployeeTaxCode: visit.Employee.TaxCode,
             EmployeeJobRole: visit.Employee.JobRole,
@@ -252,12 +252,15 @@ public class DocumentGenerationService : IDocumentGenerationService
             .AsNoTracking()
             .FirstOrDefaultAsync(d => d.TenantId == tenantId, cancellationToken);
 
-        var risks = await _db.EmployeeRisks
+        var rawRisks = await _db.EmployeeRisks
             .AsNoTracking()
             .Include(r => r.RiskFactor)
             .Where(r => employeeIds.Contains(r.EmployeeId) && r.TenantId == tenantId)
+            .ToListAsync(cancellationToken);
+
+        var risks = rawRisks
             .GroupBy(r => r.RiskFactor != null ? r.RiskFactor.Name : "Generico")
-            .ToDictionaryAsync(g => g.Key, g => g.Count(), cancellationToken);
+            .ToDictionary(g => g.Key, g => g.Count());
 
         var examsCount = await _db.ScheduledExams
             .AsNoTracking()

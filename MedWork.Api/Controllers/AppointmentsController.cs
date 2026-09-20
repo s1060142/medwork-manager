@@ -10,7 +10,7 @@ namespace MedWork.Api.Controllers;
 
 [ApiController]
 [Route("api/doctor-data/appointments")]
-[Authorize]
+[Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
 public class AppointmentsController : BaseController
 {
     private readonly AppDbContext _dbContext;

@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using MedWork.Api.Security;
+
 namespace MedWork.Api.Controllers;
 
 [ApiController]
 [Route("api/doctor-data/activity-deadlines")]
-[Authorize]
+[Authorize(Roles = AppRole.Admin + "," + AppRole.Doctor)]
 public class ActivityDeadlinesController : BaseController
 {
     private readonly AppDbContext _dbContext;
