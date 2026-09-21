@@ -15,20 +15,20 @@ set "FRONTEND_URL=http://localhost:5173"
 
 :: 1. Controllo / Avvio Backend .NET (Host con SQLite)
 echo [1/3] Controllo Backend .NET (Host)...
-netstat -ano | findstr ":5279.*LISTENING" >nul 2>&1
+netstat -ano | findstr ":5279" >nul 2>&1
 if !errorlevel! neq 0 (
-    echo       Avvio Backend in corso (profilo Development / SQLite: medwork.db)...
-    start "MedWork Backend" cmd /c "cd /d "%BACKEND_DIR%" && set ASPNETCORE_ENVIRONMENT=Development&& dotnet run --launch-profile Development"
+    echo       Avvio Backend in corso [profilo Development / SQLite: medwork.db]...
+    start "MedWork Backend" /D "%BACKEND_DIR%" cmd /k "set ASPNETCORE_ENVIRONMENT=Development && dotnet run --launch-profile Development"
 ) else (
     echo       Backend gia' attivo e in ascolto sulla porta 5279.
 )
 
 :: 2. Controllo / Avvio Frontend Vite (Host)
 echo [2/3] Controllo Frontend Vite (Host)...
-netstat -ano | findstr ":5173.*LISTENING" >nul 2>&1
+netstat -ano | findstr ":5173" >nul 2>&1
 if !errorlevel! neq 0 (
-    echo       Avvio Frontend in corso (Host - npm run dev)...
-    start "MedWork Frontend" cmd /c "cd /d "%FRONTEND_DIR%" && npm run dev"
+    echo       Avvio Frontend in corso [Host - npm run dev]...
+    start "MedWork Frontend" /D "%FRONTEND_DIR%" cmd /k "npm run dev"
 ) else (
     echo       Frontend gia' attivo e in ascolto sulla porta 5173.
 )
@@ -36,7 +36,7 @@ if !errorlevel! neq 0 (
 :: 3. Attesa inizializzazione Frontend
 echo [3/3] Attesa inizializzazione Frontend...
 for /L %%i in (1,1,15) do (
-    netstat -ano | findstr ":5173.*LISTENING" >nul 2>&1
+    netstat -ano | findstr ":5173" >nul 2>&1
     if !errorlevel!==0 goto :ready
     timeout /t 1 /nobreak >nul 2>&1
 )
