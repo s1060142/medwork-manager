@@ -106,6 +106,7 @@ builder.Services.AddScoped<IDeadlineRuleEngine, DeadlineRuleEngine>();
 builder.Services.AddScoped<ILegacyMigrationService, LegacyMigrationService>();
 builder.Services.AddScoped<IPecDeliveryService, PecDeliveryService>();
 
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=medwork.db";
     if (builder.Environment.IsEnvironment("Testing"))
     {
         var testDbName = Environment.GetEnvironmentVariable("TEST_DB_NAME") ?? $"MedWorkTestDb_{Guid.NewGuid():N}";
@@ -114,10 +115,19 @@ builder.Services.AddScoped<IPecDeliveryService, PecDeliveryService>();
                    .ConfigureWarnings(w => { })
         );
     }
+    else if (connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) && !connectionString.Contains("Server="))
+    {
+        var rawPath = connectionString.Substring("Data Source=".Length).Trim(';', ' ', '"', '\'');
+        var resolvedPath = Path.IsPathRooted(rawPath) ? rawPath : Path.Combine(builder.Environment.ContentRootPath, rawPath);
+        var sqliteConnStr = $"Data Source={resolvedPath}";
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlite(sqliteConnStr)
+        );
+    }
     else
     {
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+            options.UseSqlServer(connectionString)
                    .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
         );
     }
@@ -172,7 +182,11 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (dbContext.Database.IsRelational())
+    if (dbContext.Database.IsSqlite())
+    {
+        dbContext.Database.EnsureCreated();
+    }
+    else if (dbContext.Database.IsRelational())
     {
         dbContext.Database.Migrate();
     }

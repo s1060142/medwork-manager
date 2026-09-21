@@ -17,8 +17,8 @@ Monolite REST (no microservizi, no API gateway, no event bus).
 `FitnessJudgmentPdfDocument`, `Allegato3APdfDocument`, `AnnualHealthReportPdfDocument` — tutti via QuestPDF (server-side).
 
 ### Database
-EF Core Code First Migrations (`Fase0MultiTenantAndPhraseQuestionnaire`, `AlignPasswordsAndFixPending`). 32+ entity types. Multi-tenant con `TenantId` su ogni entity. `AppDbSeeder` con `MigrateAsync`.
-Stack: ASP.NET Core 10, EF Core 10.0.12, SQL Server LocalDB (dev) / SQL Server 2025 (Docker).
+EF Core Code First. 32+ entity types. Multi-tenant con `TenantId` su ogni entity. `AppDbSeeder` con auto-inizializzazione.
+Stack: ASP.NET Core 10, EF Core 10.0.12. SQLite (`medwork.db` locale) per sviluppo a zero dipendenze Docker / SQL Server per Produzione e Staging.
 
 ---
 

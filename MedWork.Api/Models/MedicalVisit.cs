@@ -41,8 +41,6 @@ public class MedicalVisit : IValidatableObject
     [StringLength(2000)]
     public string? Limitations { get; set; }
 
-    
-    [Column(TypeName = "nvarchar(max)")]
     public string? OcrData { get; set; }
 
      [StringLength(500)]

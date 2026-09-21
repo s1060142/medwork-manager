@@ -17,7 +17,9 @@ services:
       timeout: 5s
       retries: 10
 
+  # Container opzionali per deploy/testing containerizzato completo
   backend:
+    profiles: ["containers"]
     build:
       context: .
       dockerfile: MedWork.Api/Dockerfile
@@ -35,6 +37,7 @@ services:
       - medwork_dataprotection:/app/data-protection-keys
 
   frontend:
+    profiles: ["containers"]
     build:
       context: .
       dockerfile: medwork-frontend/Dockerfile

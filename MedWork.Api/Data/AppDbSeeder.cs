@@ -8,7 +8,11 @@ public static class AppDbSeeder
 {
     public static async Task SeedAsync(AppDbContext dbContext)
     {
-        if (dbContext.Database.IsRelational())
+        if (dbContext.Database.IsSqlite())
+        {
+            await dbContext.Database.EnsureCreatedAsync();
+        }
+        else if (dbContext.Database.IsRelational())
         {
             await dbContext.Database.MigrateAsync();
         }

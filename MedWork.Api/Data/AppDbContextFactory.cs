@@ -11,8 +11,16 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         var connectionString = Environment.GetEnvironmentVariable("DESIGN_TIME_CONNECTION_STRING")
-            ?? "Server=localhost,11433;Database=MedWorkDb;User ID=sa;Password=Sasa1234!;TrustServerCertificate=True;";
-        optionsBuilder.UseSqlServer(connectionString);
+            ?? "Data Source=medwork.db";
+
+        if (connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) && !connectionString.Contains("Server="))
+        {
+            optionsBuilder.UseSqlite(connectionString);
+        }
+        else
+        {
+            optionsBuilder.UseSqlServer(connectionString);
+        }
 
         var dataProtectionProvider = DataProtectionProvider.Create("MedWork.Api.DesignTime");
         var encryptionService = new FieldEncryptionService(dataProtectionProvider);

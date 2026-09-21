@@ -20,6 +20,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | **Portale Pre-Visita Anamnesi** | `PatientPortalController.cs` + `QuestionnairesController.cs` compilazione pre-visita | ✅ Conforme |
 | **Prefatturazione & Listini Prestazioni** | `BillingController.cs` endpoint `price-lists` e `pre-invoicing-summary` per centro medico | ✅ Conforme |
 | **No-Show Management & Diffide Formali** | `RecallCampaignsCenter.jsx` gestione mancata presentazione e invio sollecito formale ex Art. 20 D.Lgs. 81/08 | ✅ Conforme |
+| **Zero-Docker Native Host Dev & SQLite DB** | Backend e Frontend su Host nativo (`dotnet run` + `npm run dev`) con SQLite locale (`medwork.db`), auto-seeding e zero dipendenze da container | ✅ Conforme |
 
 ---
 
