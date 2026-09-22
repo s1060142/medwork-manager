@@ -4,6 +4,16 @@
 
 Storico delle feature consegnate, ordinate per fase e priorità.
 
+## Sprint 1 — Quick Wins UX & Navigation Refactoring (Settembre 2026)
+
+| Feature / Miglioria | Dettaglio Implementativo | Stato |
+|---|---|---|
+| **Navigation Consolidation** | `App.tsx`: Rimosso sottomenu Checklist da Aziende, spostata Cartella 3A sotto Sorveglianza Sanitaria, rimosse entry duplicate di visite/reporting, ridotta frammentazione tab orizzontali. | ✅ Conforme |
+| **Centro Giudizi & Firma Massiva Unificati** | `GiudizioIdoneitaCenter.jsx`: Unificata Firma Massiva nel Centro Giudizi; rimossa tab Batch Signature separata; aggiunta selezione bulk con checkbox, pulsante `Firma e Invia PEC Selezionati`, modal di conferma con PIN e auto-dispatch. | ✅ Conforme |
+| **Tunnel 1-Click "Avvia Visita" in Scadenze** | `DashboardScadenze.jsx` + `MedicalVisitsController.cs` + `ExpiringMedicalVisitDto.cs`: Azione diretta rapida per visite in scadenza/scadute con pre-selezione automatica di lavoratore, azienda e protocollo attivo. | ✅ Conforme |
+| **Worker Quick Add (Reverse CF Parsing)** | `taxCode.js` + `EmployeeProfileDialog.jsx`: Parsing automatico Codice Fiscale italiano con calcolo data di nascita, sesso, codice Belfiore e comune di nascita. | ✅ Conforme |
+| **Employer Portal 1-Click ZIP Download** | `EmployerPortalView.jsx`: Pulsante in evidenza nell'header "Scarica tutti i giudizi validi (ZIP)" con visual feedback e download immediato archivio certificati. | ✅ Conforme |
+
 ---
 
 ## P0 Commercial & P1 Enterprise Competitor Hardening (Settembre 2026)

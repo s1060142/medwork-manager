@@ -225,8 +225,12 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
     const list = scopedExpiringVisits
       .map((visit) => {
         const diff = daysDiffFromToday(visit.nextDeadlineDate)
+        const matchedEmp = scopedEmployees.find((e) => Number(e.id) === Number(visit.employeeId)) ||
+          scopedEmployees.find((e) => `${e.firstName} ${e.lastName}`.trim().toLowerCase() === String(visit.employeeFullName).toLowerCase())
         return {
           ...visit,
+          employeeId: visit.employeeId || matchedEmp?.id,
+          companyId: visit.companyId || matchedEmp?.companyId,
           diff,
           severity: alertSeverityLabel(diff),
         }
@@ -238,11 +242,11 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
     return list
       .filter((item) => {
         const text = `${item.employeeFullName} ${item.companyName}`.toLowerCase()
-          const taxCode = (scopedEmployees.find((e) => `${e.firstName} ${e.lastName}`.trim().toLowerCase() === String(item.employeeFullName).toLowerCase())?.taxCode || '').toLowerCase()
+        const taxCode = (scopedEmployees.find((e) => `${e.firstName} ${e.lastName}`.trim().toLowerCase() === String(item.employeeFullName).toLowerCase())?.taxCode || '').toLowerCase()
         return text.includes(needle) || taxCode.includes(needle)
       })
       .slice(0, 8)
-        }, [scopedExpiringVisits, search, scopedEmployees])
+  }, [scopedExpiringVisits, search, scopedEmployees])
 
   const recentAppointments = useMemo(() => {
     return scopedMedicalVisits
@@ -359,12 +363,33 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
               ) : (
                 <List disablePadding>
                   {criticalAlerts.map((item) => (
-                    <ListItem key={item.medicalVisitId} divider sx={{ px: 0 }}>
+                    <ListItem
+                      key={item.medicalVisitId}
+                      divider
+                      sx={{ px: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+                    >
                       <ListItemText
                         primary={`${item.employeeFullName} (${item.companyName})`}
                         secondary={`Scadenza: ${formatDate(item.nextDeadlineDate)} • ${item.outcome || 'Nessun esito'}`}
+                        sx={{ minWidth: 200, flex: 1 }}
                       />
-                      <Chip size="small" color={item.severity.color} label={item.severity.label} />
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Chip size="small" color={item.severity.color} label={item.severity.label} />
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="primary"
+                          startIcon={<MedicalServicesIcon fontSize="small" />}
+                          onClick={() => {
+                            if (onOpenMedicalVisitCreate) {
+                              onOpenMedicalVisitCreate(item.employeeId, item.companyId)
+                            }
+                          }}
+                          sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem', px: 1.5, py: 0.5, whiteSpace: 'nowrap' }}
+                        >
+                          Avvia Visita
+                        </Button>
+                      </Stack>
                     </ListItem>
                   ))}
                 </List>

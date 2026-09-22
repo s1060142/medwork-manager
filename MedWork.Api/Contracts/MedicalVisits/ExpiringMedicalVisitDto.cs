@@ -3,6 +3,8 @@ namespace MedWork.Api.Contracts.MedicalVisits;
 public class ExpiringMedicalVisitDto
 {
     public int MedicalVisitId { get; set; }
+    public int EmployeeId { get; set; }
+    public int CompanyId { get; set; }
     public string EmployeeFullName { get; set; } = string.Empty;
     public string CompanyName { get; set; } = string.Empty;
     public DateTime NextDeadlineDate { get; set; }

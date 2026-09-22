@@ -106,7 +106,6 @@ const SIDE_NAV_ITEMS = [
 const COMPANY_TABS = [
   { key: 'registry', label: 'Anagrafica' },
   { key: 'groups', label: 'Gruppi aziendali' },
-  { key: 'checklist', label: 'Checklist' },
   { key: 'activities', label: 'Attività' },
   { key: 'employer-portal', label: 'Portale RSPP/DdL' },
 ]
@@ -114,7 +113,6 @@ const COMPANY_TABS = [
 const COMPANY_TAB_TO_MODULE: Record<string, string> = {
   registry: 'companies',
   groups: 'company-groups',
-  checklist: 'protocols',
   activities: 'schedules',
   'employer-portal': 'employer-portal',
 }
@@ -130,22 +128,19 @@ const SCHEDULE_TABS = [
 ]
 
 const ANALYSIS_TABS = [
-  { key: 'visits', label: 'Elenco visite', moduleKey: 'reporting' },
-  { key: 'activities', label: 'Elenco attività', moduleKey: 'recall-campaigns' },
   { key: 'relations', label: 'Relazioni aziendali', moduleKey: 'reporting' },
+  { key: 'activities', label: 'Campagne Recall', moduleKey: 'recall-campaigns' },
   { key: 'charts', label: 'Grafici e analisi', moduleKey: 'analytics' },
 ]
 
 const HEALTH_TABS = [
   { key: 'medical-visit-stepper', label: 'Nuova Visita', moduleKey: 'medical-visit-stepper' },
-  { key: 'giudizio-idoneita', label: 'Centro Giudizi', moduleKey: 'giudizio-idoneita' },
-  { key: 'batch-signature', label: 'Firma Massiva', moduleKey: 'batch-signature' },
-  { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
+  { key: 'giudizio-idoneita', label: 'Centro Giudizi & Firma Massiva', moduleKey: 'giudizio-idoneita' },
   { key: 'cartella-sanitaria', label: 'Cartella 3A', moduleKey: 'cartella-sanitaria' },
-  { key: 'sopralluoghi', label: 'Sopralluoghi Art. 25', moduleKey: 'sopralluoghi' },
   { key: 'protocols', label: 'Protocolli & Rischi', moduleKey: 'protocols' },
+  { key: 'sopralluoghi', label: 'Sopralluoghi Art. 25', moduleKey: 'sopralluoghi' },
+  { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
   { key: 'compliance', label: 'Compliance Radar', moduleKey: 'compliance' },
-  { key: 'appointments-calendar', label: 'Calendario', moduleKey: 'appointments-calendar' },
 ]
 
 const ADMIN_TABS = [
@@ -208,11 +203,11 @@ const MODULE_ITEMS = [
 ]
 
 const AREA_MODULE_KEYS: Record<string, string[]> = {
-  'company-management': ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
-  'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
+  'company-management': ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'schedules', 'branches', 'departments', 'work-locations'],
+  'workers-management': ['employees', 'employee-risks'],
   analysis: ['reporting', 'audit'],
-  'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale', 'medical-staff-center'],
-  schedule: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
+  'health-surveillance': ['medical-visit-stepper', 'giudizio-idoneita', 'cartella-sanitaria', 'protocols', 'sopralluoghi', 'allegato-3b', 'compliance', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'analytics', 'firma-grafometrica', 'alert-multicanale', 'medical-staff-center'],
+  schedule: ['schedules', 'appointments-calendar', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
   administration: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols', 'medical-staff-center'],
 }
 
@@ -231,13 +226,13 @@ const HIERARCHICAL_SIDE_NAV = [
     key: 'company-management',
     label: 'Gestione aziende',
     icon: BusinessIcon,
-    children: ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
+    children: ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'schedules', 'branches', 'departments', 'work-locations'],
   },
   {
     key: 'workers-management',
     label: 'Gestione lavoratori',
     icon: BadgeIcon,
-    children: ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
+    children: ['employees', 'employee-risks'],
   },
   {
     key: 'analysis',
@@ -249,13 +244,13 @@ const HIERARCHICAL_SIDE_NAV = [
     key: 'health-surveillance',
     label: 'Sorveglianza sanitaria',
     icon: HealthAndSafetyIcon,
-    children: ['medical-visit-stepper', 'appointments-calendar', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale'],
+    children: ['medical-visit-stepper', 'giudizio-idoneita', 'cartella-sanitaria', 'protocols', 'sopralluoghi', 'allegato-3b', 'compliance', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'analytics', 'firma-grafometrica', 'alert-multicanale'],
   },
   {
     key: 'schedule',
     label: 'Scadenzario',
     icon: EventIcon,
-    children: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
+    children: ['schedules', 'appointments-calendar', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
   },
   {
     key: 'administration',
@@ -579,7 +574,14 @@ const App = () => {
       return (
         <DashboardScadenze
           activeCompanyId={activeCompanyId}
-          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+          onOpenMedicalVisitCreate={(employeeId?: number | string) => {
+            if (employeeId != null) {
+              setVisitInitialEmployeeId(Number(employeeId))
+            }
+            setSelectedArea('health-surveillance')
+            setSelectedHealthTab('medical-visit-stepper')
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
           onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
           onOpenReports={() => setSelectedModuleKey('reporting')} role={undefined} displayedCompanyName={undefined} />
       )
@@ -673,7 +675,14 @@ const App = () => {
               activeCompanyId={activeCompanyId}
               activeScheduleTab={selectedScheduleTab}
               onScheduleTabChange={setSelectedScheduleTab}
-              onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+              onOpenMedicalVisitCreate={(employeeId?: number | string) => {
+                if (employeeId != null) {
+                  setVisitInitialEmployeeId(Number(employeeId))
+                }
+                setSelectedArea('health-surveillance')
+                setSelectedHealthTab('medical-visit-stepper')
+                setSelectedModuleKey('medical-visit-stepper')
+              }}
             />
           )
         case 'activity-deadlines':
@@ -690,7 +699,14 @@ const App = () => {
               activeCompanyId={activeCompanyId}
               activeScheduleTab={selectedScheduleTab}
               onScheduleTabChange={setSelectedScheduleTab}
-              onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+              onOpenMedicalVisitCreate={(employeeId?: number | string) => {
+                if (employeeId != null) {
+                  setVisitInitialEmployeeId(Number(employeeId))
+                }
+                setSelectedArea('health-surveillance')
+                setSelectedHealthTab('medical-visit-stepper')
+                setSelectedModuleKey('medical-visit-stepper')
+              }}
             />
           )
       }
@@ -720,7 +736,7 @@ const App = () => {
     }
 
     if (moduleKey === 'batch-signature') {
-      return <BatchSignatureCenter />
+      return <GiudizioIdoneitaCenter />
     }
 
     if (moduleKey === 'recall-campaigns') {
@@ -777,7 +793,7 @@ const App = () => {
     }
 
 
-    if (moduleKey === 'cartella-sanitaria') {
+    if (moduleKey === 'cartella-sanitaria' || moduleKey === 'medical-records') {
       return <CartellaSanitariaCenter employeeId={cartellaSanitariaEmployeeId ?? undefined} />
     }
 

@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   CircularProgress,
   Dialog,
@@ -10,11 +11,13 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
   Paper,
   Stack,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -35,6 +38,9 @@ import HealingIcon from '@mui/icons-material/Healing'
 import DescriptionIcon from '@mui/icons-material/Description'
 import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead'
 import SendIcon from '@mui/icons-material/Send'
+import DrawIcon from '@mui/icons-material/Draw'
+import VerifiedIcon from '@mui/icons-material/Verified'
+import LockIcon from '@mui/icons-material/Lock'
 
 import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -98,6 +104,11 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
   const [pecSendingId, setPecSendingId] = useState(null)
   const [pecBulkLoading, setPecBulkLoading] = useState(false)
   const [pecSentMap, setPecSentMap] = useState({})
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [pinCode, setPinCode] = useState('1234')
+  const [autoDispatchPec, setAutoDispatchPec] = useState(true)
+  const [batchSigning, setBatchSigning] = useState(false)
 
   const loadData = async () => {
     try {
@@ -290,6 +301,76 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
     }
   }
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(new Set(filteredVisits.map((v) => v.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const handleSelectOne = (id) => {
+    const next = new Set(selectedIds)
+    if (next.has(id)) {
+      next.delete(id)
+    } else {
+      next.add(id)
+    }
+    setSelectedIds(next)
+  }
+
+  const handleOpenBatchSignConfirm = () => {
+    if (selectedIds.size === 0) {
+      if (filteredVisits.length > 0) {
+        setSelectedIds(new Set(filteredVisits.map((v) => v.id)))
+      } else {
+        return
+      }
+    }
+    setConfirmModalOpen(true)
+  }
+
+  const handleExecuteBatchSignAndPec = async () => {
+    const targetIds = Array.from(selectedIds)
+    if (targetIds.length === 0) return
+    setBatchSigning(true)
+    setError('')
+    setSuccess('')
+    try {
+      const signPayload = {
+        visitIds: targetIds,
+        pin: pinCode,
+        signatureType: 'CADES_PADES_DIGITAL',
+      }
+      const signRes = await apiSend('POST', '/api/doctor-data/batch-sign', signPayload)
+      const signedCount = signRes?.signedCount || targetIds.length
+
+      let pecCount = 0
+      if (autoDispatchPec) {
+        const pecRes = await apiSend('POST', '/api/alerts/send-bulk-judgments-pec', { visitIds: targetIds })
+        const pecResults = Array.isArray(pecRes) ? pecRes : []
+        pecCount = pecResults.filter((r) => r.success).length
+        const mapUpdate = {}
+        pecResults.forEach((r) => {
+          if (r.success) mapUpdate[r.visitId] = true
+        })
+        setPecSentMap((prev) => ({ ...prev, ...mapUpdate }))
+      }
+
+      setSuccess(
+        `✓ Firma Digitale Massiva completata con successo: ${signedCount} giudizi firmati digitalmente.` +
+          (autoDispatchPec ? ` Trasmessi via PEC a ${pecCount} datori di lavoro con certificato PDF allegato.` : '')
+      )
+      setConfirmModalOpen(false)
+      setSelectedIds(new Set())
+      loadData()
+    } catch (err) {
+      setError(err.message || 'Errore durante la firma massiva e trasmissione PEC.')
+    } finally {
+      setBatchSigning(false)
+    }
+  }
+
   // Filtered rows
   const filteredVisits = useMemo(() => {
     return visits.filter((v) => {
@@ -340,20 +421,57 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
             Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)
           </Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#00838f', mt: 0.5 }}>
+            Firma Digitale Massiva &amp; Auto-Dispatch Pipeline
+          </Typography>
           <Typography variant="body2" color="text.secondary">
-            Gestione, consultazione, verbalizzazione e rilascio dei certificati legali di idoneità alla mansione specifica con notifica PEC automatica.
+            Gestione, consultazione, verbalizzazione, firma digitale massiva PAdES e rilascio dei certificati legali di idoneità alla mansione specifica con notifica PEC automatica.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={pecBulkLoading ? <CircularProgress size={18} color="inherit" /> : <MarkEmailReadIcon />}
-          disabled={pecBulkLoading || filteredVisits.length === 0}
-          onClick={handleSendBulkPec}
-          sx={{ fontWeight: 600 }}
-        >
-          {pecBulkLoading ? 'Invio PEC in corso...' : `Invia ${filteredVisits.length} Giudizi via PEC`}
-        </Button>
+        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+          <Chip
+            icon={<VerifiedIcon />}
+            label="Auto-Dispatch Post-Firma"
+            color="success"
+            variant="outlined"
+            size="small"
+            sx={{ fontWeight: 600 }}
+          />
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={batchSigning ? <CircularProgress size={18} color="inherit" /> : <VerifiedIcon />}
+            disabled={batchSigning || filteredVisits.length === 0}
+            onClick={handleOpenBatchSignConfirm}
+            sx={{ fontWeight: 700 }}
+          >
+            {batchSigning
+              ? 'Firma & Invio in corso...'
+              : selectedIds.size > 0
+              ? `Firma e Invia PEC Selezionati (${selectedIds.size})`
+              : 'Firma e Invia PEC Selezionati'}
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<DrawIcon />}
+            onClick={handleOpenBatchSignConfirm}
+            disabled={filteredVisits.length === 0}
+            sx={{ fontWeight: 600 }}
+          >
+            Firma Massiva
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={pecBulkLoading ? <CircularProgress size={18} color="inherit" /> : <MarkEmailReadIcon />}
+            disabled={pecBulkLoading || filteredVisits.length === 0}
+            onClick={handleSendBulkPec}
+            sx={{ fontWeight: 600 }}
+          >
+            {pecBulkLoading ? 'Invio PEC in corso...' : `Invia ${filteredVisits.length} Giudizi via PEC`}
+          </Button>
+        </Stack>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -461,6 +579,13 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
           <Table size="small">
             <TableHead sx={{ bgcolor: '#f4f6f9' }}>
               <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={selectedIds.size > 0 && selectedIds.size < filteredVisits.length}
+                    checked={filteredVisits.length > 0 && selectedIds.size === filteredVisits.length}
+                    onChange={handleSelectAll}
+                  />
+                </TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Data Visita</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Lavoratore</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Codice Fiscale</TableCell>
@@ -480,9 +605,16 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
                 const deadlineStr = row.nextDeadlineDate ? new Date(row.nextDeadlineDate).toLocaleDateString('it-IT') : '-'
                 const notes = [row.prescriptions, row.limitations].filter(Boolean).join(' • ') || '-'
                 const isPecSent = pecSentMap[row.id]
+                const isSelected = selectedIds.has(row.id)
 
                 return (
-                  <TableRow key={row.id} hover>
+                  <TableRow key={row.id} hover selected={isSelected}>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={() => handleSelectOne(row.id)}
+                      />
+                    </TableCell>
                     <TableCell>{visitDateStr}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{row.employeeFullName || '-'}</TableCell>
                     <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>{row.employeeTaxCode || '-'}</TableCell>
@@ -667,6 +799,66 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
             sx={{ fontWeight: 600 }}
           >
             {saving ? 'Salvataggio...' : 'Salva Giudizio'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog Firma Digitale Massiva & Auto-Dispatch */}
+      <Dialog open={confirmModalOpen} onClose={() => !batchSigning && setConfirmModalOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, color: '#0f1f3d' }}>
+          Conferma Firma Digitale Massiva
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2.5}>
+            <Typography variant="body2" color="text.secondary">
+              Stai per applicare la Firma Digitale qualificata (CADES/PADES) a <strong>{selectedIds.size}</strong> giudizi di idoneità selezionati.
+            </Typography>
+            <TextField
+              fullWidth
+              size="small"
+              type="password"
+              label="PIN Firma Digitale / SmartCard"
+              value={pinCode}
+              onChange={(e) => setPinCode(e.target.value)}
+              InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: 'text.secondary' }} fontSize="small" /> }}
+              helperText="Inserisci il PIN del certificato crittografico o token CNS"
+            />
+            <Paper variant="outlined" sx={{ p: 1.5, borderRadius: 2, bgcolor: '#f8fafc' }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={autoDispatchPec}
+                    onChange={(e) => setAutoDispatchPec(e.target.checked)}
+                    color="success"
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>
+                      Auto-Dispatch PEC al Datore
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Invia contestualmente il certificato PDF alla PEC aziendale
+                    </Typography>
+                  </Box>
+                }
+              />
+            </Paper>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setConfirmModalOpen(false)} disabled={batchSigning}>
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={batchSigning ? <CircularProgress size={18} color="inherit" /> : <VerifiedIcon />}
+            onClick={handleExecuteBatchSignAndPec}
+            disabled={batchSigning || !pinCode}
+            sx={{ fontWeight: 700 }}
+          >
+            {batchSigning ? 'Firma in corso...' : 'Conferma Firma e Invio PEC'}
           </Button>
         </DialogActions>
       </Dialog>

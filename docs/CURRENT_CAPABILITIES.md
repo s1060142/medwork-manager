@@ -51,7 +51,7 @@ Cosa funziona oggi, organizzato per modulo.
 
 - **Cruscotto di Conformità (D.Lgs. 81/08)**: Visualizzazione organico sorvegliato, idoneità attive, scadenze entro 60 giorni e scadenze superate (`EmployerPortalView.jsx`).
 - **Isolamento GDPR Dati Sanitari**: Accesso limitato alle sole conclusioni legali e prescrizioni operative, con blocco rigido di anamnesi e dati clinici.
-- **Download Massivo Archivio Giudizi (ZIP)**: Generazione archivio ZIP in-memory con tutti i certificati PDF più recenti dell'azienda (`DocumentsController.cs`).
+- **Download Massivo Archivio Giudizi (ZIP)**: Azione primaria 1-click in evidenza nell'header per generare e scaricare immediatamente l'archivio ZIP con tutti i certificati PDF validi dell'azienda (`DocumentsController.cs`, `EmployerPortalView.jsx`).
 - **Segnalazione Nuove Assunzioni / Variazioni**: Modulo per il Datore di Lavoro per richiedere visite preventive o cambi mansione direttamente al Medico Competente.
 
 ---
@@ -59,6 +59,7 @@ Cosa funziona oggi, organizzato per modulo.
 ## 🏭 Gestione Aziende
 
 - CRUD completo aziende (nome, P.IVA, ATECO, PEC, SDI)
+- Navigazione pulita: rimosso sottomenu ridondante Checklist e rimossi tab orizzontali superflui
 - Gestione sedi/branche + figure aziendali
 - **Company Groups** (`CompanyGroupsController` + `CompanyGroupsCenter.jsx`) con flag `Archivio Documentale Unico`
 - Master Data (`MasterDataController`)
@@ -71,6 +72,7 @@ Cosa funziona oggi, organizzato per modulo.
 ## 👤 Gestione Lavoratori
 
 - CRUD dipendenti (23+ campi, migration applicata)
+- **Worker Quick Add (Reverse CF Parsing)**: Parsing automatico in tempo reale del Codice Fiscale (`taxCode.js`, `EmployeeProfileDialog.jsx`) con auto-popolamento immediato di Data di Nascita, Sesso, Comune di nascita e Codice Belfiore.
 - `EmployeeProfileDialog` con tab: Anagrafica, Sorveglianza, Fattori di rischio, Cartella sanitaria
 - Fattori di rischio assegnabili (`JobRoleRiskFactor`)
 - Stato archiviato server-side (non localStorage)
@@ -83,8 +85,9 @@ Cosa funziona oggi, organizzato per modulo.
 ## 🏥 Visite Mediche
 
 - `MedicalVisitStepper` — flusso step-by-step (anamnesi → obiettivo → giudizio)
+- **Tunnel 1-Click "Avvia Visita" da Scadenziario**: Avvio immediato visita pre-selezionando lavoratore, azienda e protocollo attivo
 - `MedicalVisitsController` — CRUD completo
-- `MedicalRecordsController` — CRUD completo cartelle sanitarie
+- `MedicalRecordsController` — CRUD completo cartelle sanitarie (Cartella 3A ricollocata sotto Sorveglianza Sanitaria)
 - `VisitJudgmentController` — Giudizi strutturati (OutcomeCode, Prescrizioni, Limitazioni, NextReviewDate)
 - Calcolo automatico prossima scadenza da protocollo
 - JobRole protocol fallback (se nessun PersonalProtocol, usa protocollo di mansione)
@@ -107,6 +110,7 @@ Cosa funziona oggi, organizzato per modulo.
 
 ## 📅 Scadenziario
 
+- **Dashboard Scadenze con Avvio Diretto Visita**: Azione `Avvia Visita` per avviare la procedura clinica senza passaggi intermedi
 - `DeadlineCalculationService` — calcolo automatico con JobRole fallback
 - `ScadenziarioPeriodicityService` — service puro, integrato nel flusso visite
 - `ActivityDeadlinesCenter.jsx`, `NominationsDeadlinesCenter.jsx`, `VaccinationDeadlinesCenter.jsx`, `SiteVisitDeadlinesCenter.jsx`
@@ -123,7 +127,7 @@ Cosa funziona oggi, organizzato per modulo.
 - `DocumentsController` — endpoint `allegato-3b/{id}/validate` e `allegato-3b/{id}/submit`
 - `Allegato3BCenter.jsx` + `Allegato3BPreview.jsx`
 - `SignatureController` + `ISignatureService` (RSA SHA-256)
-- `BatchSignatureCenter.jsx` — firma batch
+- **Centro Giudizi & Firma Massiva Unificato**: Tab unificato sotto Sorveglianza Sanitaria che accorpa consultazione giudizi, selezione multipla (bulk checkbox), apposizione Firma Digitale PAdES con PIN e pipeline `Firma e Invia PEC Selezionati` con auto-dispatch
 - `HealthPlanPreview.jsx` — antepiano piano sanitario
 
 ---

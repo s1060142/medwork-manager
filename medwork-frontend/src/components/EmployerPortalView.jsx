@@ -300,12 +300,21 @@ export default function EmployerPortalView({ companyId: propCompanyId = null }) 
             <Button
               variant="contained"
               color="primary"
-              startIcon={zipLoading ? <CircularProgress size={18} color="inherit" /> : <FolderZipIcon />}
+              size="medium"
+              startIcon={zipLoading ? <CircularProgress size={20} color="inherit" /> : <FolderZipIcon />}
               disabled={zipLoading || companyEmployees.length === 0}
               onClick={handleDownloadAllZip}
-              sx={{ fontWeight: 600 }}
+              sx={{
+                fontWeight: 700,
+                px: 2.5,
+                py: 1,
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.25)',
+                '&:hover': {
+                  boxShadow: '0 6px 16px rgba(25, 118, 210, 0.35)',
+                },
+              }}
             >
-              {zipLoading ? 'Generazione ZIP...' : 'Scarica Tutti i Giudizi (ZIP)'}
+              {zipLoading ? 'Generazione ZIP...' : 'Scarica tutti i giudizi validi (ZIP)'}
             </Button>
 
             <Button

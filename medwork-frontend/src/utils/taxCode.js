@@ -173,3 +173,91 @@ export function calculateItalianTaxCode({ firstName, lastName, birthDate, gender
   const controlChar = calculateControlChar(partial)
   return `${partial}${controlChar}`
 }
+
+const COMMON_BELFIORE_CITIES = {
+  H501: 'Roma',
+  F205: 'Milano',
+  L219: 'Torino',
+  F839: 'Napoli',
+  A662: 'Bari',
+  D612: 'Firenze',
+  A944: 'Bologna',
+  G273: 'Palermo',
+  C351: 'Catania',
+  D969: 'Genova',
+  L424: 'Trieste',
+  L736: 'Venezia',
+  I726: 'Siracusa',
+  B354: 'Cagliari',
+  E472: 'La Spezia',
+  H163: 'Ravenna',
+  G713: 'Piacenza',
+  G902: 'Pordenone',
+  I480: 'Sassari',
+  E625: 'Livorno',
+  E506: 'Latina',
+  H224: "Reggio nell'Emilia",
+  D403: 'Ferrara',
+  E783: 'Lucca',
+  C415: 'Catanzaro',
+  H534: 'Rimini',
+  M082: 'Verona',
+  C773: 'Como',
+  A794: 'Bergamo',
+  B157: 'Brescia',
+  F257: 'Modena',
+  G224: 'Padova',
+  F704: 'Monza',
+  H505: 'Cesena',
+  H223: 'Reggio di Calabria',
+  A271: 'Ancona',
+  G479: 'Perugia',
+  I829: 'Taranto',
+  F158: 'Messina',
+  G388: 'Pavia',
+  I438: 'Saronno',
+  L781: 'Vicenza',
+  L378: 'Trento',
+  A952: 'Bolzano',
+}
+
+export function parseItalianTaxCode(taxCode) {
+  if (!taxCode || typeof taxCode !== 'string') return null
+  const code = taxCode.trim().toUpperCase()
+  if (!/^[A-Z]{6}[0-9]{2}[A-EHLMPRST][0-9]{2}[A-Z][0-9]{3}[A-Z]$/.test(code)) {
+    return null
+  }
+
+  // 1. Year of birth
+  const yearDigits = parseInt(code.substring(6, 8), 10)
+  const currentYearLastTwo = new Date().getFullYear() % 100
+  const fullYear = yearDigits <= currentYearLastTwo ? 2000 + yearDigits : 1900 + yearDigits
+
+  // 2. Month of birth
+  const monthChar = code.charAt(8)
+  const MONTH_MAP = { A: 1, B: 2, C: 3, D: 4, E: 5, H: 6, L: 7, M: 8, P: 9, R: 10, S: 11, T: 12 }
+  const month = MONTH_MAP[monthChar]
+  if (!month) return null
+
+  // 3. Day of birth and Gender
+  const dayValue = parseInt(code.substring(9, 11), 10)
+  let gender = 'M'
+  let day = dayValue
+  if (dayValue > 40) {
+    gender = 'F'
+    day = dayValue - 40
+  }
+  if (day < 1 || day > 31) return null
+
+  const birthDate = `${fullYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const birthCityCode = code.substring(11, 15)
+  const birthCity = COMMON_BELFIORE_CITIES[birthCityCode] || birthCityCode
+
+  return {
+    birthDate,
+    gender,
+    birthCityCode,
+    birthCity,
+  }
+}
+

@@ -43,6 +43,8 @@ public class MedicalVisitsController : ControllerBase
             .Select(x => new ExpiringMedicalVisitDto
             {
                 MedicalVisitId = x.Id,
+                EmployeeId = x.EmployeeId,
+                CompanyId = x.Employee.CompanyId,
                 EmployeeFullName = x.Employee.FirstName + " " + x.Employee.LastName,
                 CompanyName = x.Employee.Company.Name,
                 NextDeadlineDate = x.NextDeadlineDate,

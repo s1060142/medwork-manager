@@ -38,6 +38,7 @@ import TimelineIcon from '@mui/icons-material/Timeline'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE, daysDiffFromToday, formatDate } from '../utils/datePicker'
+import { parseItalianTaxCode } from '../utils/taxCode'
 
 function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSaveEmployee, onOpenMedicalVisitCreate }) {
   const [tab, setTab] = useState(0)
@@ -234,9 +235,24 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
 
   const initials = `${employee?.firstName?.[0] || ''}${employee?.lastName?.[0] || ''}`.toUpperCase()
 
+  const [cfAutoParsed, setCfAutoParsed] = useState(false)
+
   const handleFieldChange = (field) => (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value
-    setFormData((current) => ({ ...current, [field]: value }))
+    setFormData((current) => {
+      const next = { ...current, [field]: value }
+      if (field === 'taxCode' && typeof value === 'string' && value.trim().length === 16) {
+        const parsed = parseItalianTaxCode(value)
+        if (parsed) {
+          if (parsed.birthDate) next.birthDate = parsed.birthDate
+          if (parsed.gender) next.gender = parsed.gender
+          if (parsed.birthCityCode) next.birthCityCode = parsed.birthCityCode
+          if (parsed.birthCity) next.birthCity = parsed.birthCity
+          setCfAutoParsed(true)
+        }
+      }
+      return next
+    })
     setDirty(true)
   }
 
@@ -353,7 +369,14 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                   <TextField size="small" label="Matricola" value={formData.matricola} onChange={handleFieldChange('matricola')} />
                   <TextField size="small" label="Città di nascita" value={formData.birthCity} onChange={handleFieldChange('birthCity')} />
                   <TextField size="small" label="Nazionalità" value={formData.nazionalita} onChange={handleFieldChange('nazionalita')} />
-                  <TextField size="small" label="Codice fiscale" value={formData.taxCode} onChange={handleFieldChange('taxCode')} />
+                  <TextField
+                    size="small"
+                    label="Codice fiscale"
+                    value={formData.taxCode}
+                    onChange={handleFieldChange('taxCode')}
+                    helperText={cfAutoParsed ? '✓ Data, sesso e comune/Belfiore estratti automaticamente' : undefined}
+                    FormHelperTextProps={{ sx: { color: 'success.main', fontWeight: 500 } }}
+                  />
                   <TextField size="small" label="Telefono" value={formData.phoneNumber} onChange={handleFieldChange('phoneNumber')} />
                   <TextField size="small" label="E-mail" type="email" value={formData.personalEmail} onChange={handleFieldChange('personalEmail')} />
                   <TextField size="small" label="Domicilio" value={formData.domicilio} onChange={handleFieldChange('domicilio')} />
