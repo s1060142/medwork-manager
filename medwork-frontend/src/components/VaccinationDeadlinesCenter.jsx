@@ -20,6 +20,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -54,12 +55,11 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
 
   const handleSaveCampaign = async () => {
     try {
-      // In a real app we'd POST to a batch endpoint
-      alert(`Campagna per ${campaignVaccine} pianificata il ${campaignDate}.`)
+      showNotification(`Campagna per ${campaignVaccine} pianificata il ${campaignDate}.`, 'success')
       setPlanningCampaign(false)
       fetchVaccinations()
     } catch (err) {
-      alert('Errore nella pianificazione.')
+      showNotification('Errore nella pianificazione della campagna vaccinale.', 'error')
     }
   }
 
@@ -77,13 +77,11 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
   const handleSaveRecord = async () => {
     if (!recordingVaccine) return
     try {
-      // In a real app we'd call a PUT endpoint:
-      // await apiSend('PUT', `/api/master-data/vaccinations/${recordingVaccine.id}/administer`, { adminDate: recordDate, lotNumber: recordLot, nextDueDate: recordNextDue })
-      alert('Somministrazione registrata correttamente.')
+      showNotification('Somministrazione registrata correttamente.', 'success')
       setRecordingVaccine(null)
       fetchVaccinations()
     } catch (err) {
-      alert('Errore durante la registrazione.')
+      showNotification('Errore durante la registrazione della somministrazione.', 'error')
     }
   }
 

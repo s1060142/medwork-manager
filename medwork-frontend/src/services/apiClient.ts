@@ -253,7 +253,7 @@ async function safeReadError(response) {
     }
 
     const contentType = response.headers.get('content-type') || ''
-    if (contentType.toLowerCase().includes('application/json')) {
+    if (contentType.toLowerCase().includes('json')) {
       try {
         const parsed = JSON.parse(text)
         if (typeof parsed === 'string') {
@@ -266,6 +266,9 @@ async function safeReadError(response) {
           if (details) {
             return `${parsed.title ? `${parsed.title}: ` : ''}${details}`
           }
+        }
+        if (parsed?.detail) {
+          return parsed.detail
         }
         if (parsed?.message) {
           return parsed.message

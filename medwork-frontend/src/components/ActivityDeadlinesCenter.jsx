@@ -19,6 +19,7 @@ import {
   TextField,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -47,10 +48,10 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
   const handleGenerateArt40 = async () => {
     try {
       await apiSend('POST', '/api/doctor-data/activity-deadlines/generate-art40')
-      alert('Bozze Art. 40 generate con successo!')
+      showNotification('Bozze Art. 40 generate con successo!', 'success')
       fetchActivities()
     } catch (err) {
-      alert('Errore nella generazione delle bozze.')
+      showNotification('Errore nella generazione delle bozze.', 'error')
     }
   }
 
@@ -64,11 +65,11 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
     try {
       // In a real app we'd call a PUT endpoint, e.g.:
       // await apiSend('PUT', `/api/doctor-data/activity-deadlines/${executingActivity.id}/execute`, { notes: executionNotes })
-      alert(`Attività "${executingActivity.activityType}" completata con successo.`)
+      showNotification(`Attività "${executingActivity.activityType}" completata con successo.`, 'success')
       setExecutingActivity(null)
       fetchActivities()
     } catch (err) {
-      alert('Errore durante l\'esecuzione dell\'attività.')
+      showNotification('Errore durante l\'esecuzione dell\'attività.', 'error')
     }
   }
 

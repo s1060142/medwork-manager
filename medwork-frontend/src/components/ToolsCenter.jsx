@@ -17,6 +17,7 @@ import {
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
+import { showNotification } from '../utils/notification'
 
 function ToolsCenter() {
   const [employees, setEmployees] = useState([])
@@ -110,8 +111,9 @@ function ToolsCenter() {
         : { id: `${Date.now()}`, signer: formData.signer, signedAt: new Date().toISOString(), employeeId: '', method: formData.method, note: formData.note }
       setSignatures((prev) => [saved, ...prev])
       appendAuditEvent({ module: 'Strumenti', action: 'Firma', detail: `${formData.method} - dipendente ${formData.employeeId}` })
+      showNotification('Firma acquisita e registrata con successo.', 'success')
     } catch (requestError) {
-      window.alert(requestError?.message || 'Errore durante la registrazione della firma.')
+      showNotification(requestError?.message || 'Errore durante la registrazione della firma.', 'error')
       return
     }
     setFormData((current) => ({ ...current, employeeId: '', signer: '', note: '' }))

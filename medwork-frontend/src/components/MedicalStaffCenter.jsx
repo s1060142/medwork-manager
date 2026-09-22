@@ -60,6 +60,7 @@ import {
   Timeline as TimelineIcon
 } from '@mui/icons-material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 const STAFF_ROLES = [
   { value: 'MedicoCompetente', label: 'Medico Competente (Art. 38)' },
@@ -104,6 +105,9 @@ export default function MedicalStaffCenter() {
   const [absenceDialogOpen, setAbsenceDialogOpen] = useState(false)
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false)
   const [absencesList, setAbsencesList] = useState([])
+  const [formError, setFormError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [saving, setSaving] = useState(false)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -175,6 +179,8 @@ export default function MedicalStaffCenter() {
 
   const handleOpenCreate = () => {
     setSelectedStaff(null)
+    setFormError('')
+    setFieldErrors({})
     setFormData({
       firstName: '',
       lastName: '',
@@ -195,6 +201,8 @@ export default function MedicalStaffCenter() {
 
   const handleOpenEdit = (staff) => {
     setSelectedStaff(staff)
+    setFormError('')
+    setFieldErrors({})
     setFormData({
       firstName: staff.firstName || '',
       lastName: staff.lastName || '',
@@ -214,16 +222,73 @@ export default function MedicalStaffCenter() {
   }
 
   const handleSaveStaff = async () => {
+    setFormError('')
+    const errors = {}
+
+    if (!formData.firstName?.trim() || formData.firstName.trim().length < 2) {
+      errors.firstName = 'Il Nome è obbligatorio (almeno 2 caratteri).'
+    }
+    if (!formData.lastName?.trim() || formData.lastName.trim().length < 2) {
+      errors.lastName = 'Il Cognome è obbligatorio (almeno 2 caratteri).'
+    }
+    if (!formData.medicalLicenseNumber?.trim() || formData.medicalLicenseNumber.trim().length < 4) {
+      errors.medicalLicenseNumber = 'Il N. Iscrizione Ordine / Albo è obbligatorio (almeno 4 caratteri, es. OMCeO 12345).'
+    }
+    if (formData.email?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email.trim())) {
+        errors.email = 'Inserire un indirizzo email valido.'
+      }
+    }
+    if (formData.pec?.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.pec.trim())) {
+        errors.pec = 'Inserire un indirizzo PEC valido.'
+      }
+    }
+    if (formData.taxCode?.trim() && formData.taxCode.trim().length !== 16) {
+      errors.taxCode = 'Il Codice Fiscale deve contenere esattamente 16 caratteri.'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setFormError('Compilare correttamente i campi obbligatori contrassegnati.')
+      return
+    }
+
+    setFieldErrors({})
+    setSaving(true)
+
+    // Sanitize payload: convert empty string to null to avoid backend validation failure
+    const payload = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      professionalRole: formData.professionalRole || 'MedicoCompetente',
+      taxCode: formData.taxCode?.trim() ? formData.taxCode.trim().toUpperCase() : null,
+      medicalLicenseNumber: formData.medicalLicenseNumber.trim(),
+      specialty: formData.specialty?.trim() || null,
+      licenseAuthority: formData.licenseAuthority?.trim() || null,
+      licenseProvince: formData.licenseProvince?.trim() || null,
+      email: formData.email?.trim() || null,
+      pec: formData.pec?.trim() || null,
+      phone: formData.phone?.trim() || null,
+      digitalCertificateThumbprint: formData.digitalCertificateThumbprint?.trim() || null,
+      createUserAccount: Boolean(formData.createUserAccount)
+    }
+
     try {
       if (selectedStaff) {
-        await apiSend('PUT', `/api/medical-staff/${selectedStaff.id}`, formData)
+        await apiSend('PUT', `/api/medical-staff/${selectedStaff.id}`, payload)
       } else {
-        await apiSend('POST', '/api/medical-staff', formData)
+        await apiSend('POST', '/api/medical-staff', payload)
       }
       setEditDialogOpen(false)
       fetchData()
     } catch (err) {
-      alert('Errore durante il salvataggio: ' + (err.message || 'Verificare i dati inseriti.'))
+      const msg = err.message || 'Verificare i dati inseriti.'
+      setFormError(msg)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -271,23 +336,24 @@ export default function MedicalStaffCenter() {
       const data = await apiGet(`/api/medical-staff/${selectedStaff.id}/absences`)
       setAbsencesList(data || [])
       setVacationImpact(null)
+      showNotification('Assenza registrata con successo.', 'success')
       fetchData()
     } catch (err) {
-      alert('Errore durante il salvataggio dell\'assenza.')
+      showNotification('Errore durante il salvataggio dell\'assenza.', 'error')
     }
   }
 
   const handleAutoSubstitute = async (absenceId) => {
     try {
       const res = await apiSend('POST', `/api/medical-staff/absences/${absenceId}/auto-substitute`, {})
-      alert(`Medico Sostituto assegnato automaticamente: ${res.substituteDoctorName}`)
+      showNotification(`Medico Sostituto assegnato automaticamente: ${res.substituteDoctorName}`, 'success')
       if (selectedStaff) {
         const data = await apiGet(`/api/medical-staff/${selectedStaff.id}/absences`)
         setAbsencesList(data || [])
       }
       fetchData()
     } catch (err) {
-      alert('Errore durante l\'auto-sostituzione: ' + (err.message || 'Nessun sostituto disponibile.'))
+      showNotification('Errore durante l\'auto-sostituzione: ' + (err.message || 'Nessun sostituto disponibile.'), 'error')
     }
   }
 
@@ -298,9 +364,11 @@ export default function MedicalStaffCenter() {
         const data = await apiGet(`/api/medical-staff/${selectedStaff.id}/absences`)
         setAbsencesList(data || [])
       }
+      showNotification('Assenza eliminata con successo.', 'success')
       fetchData()
     } catch (err) {
       console.error(err)
+      showNotification('Errore durante l\'eliminazione dell\'assenza.', 'error')
     }
   }
 
@@ -320,9 +388,10 @@ export default function MedicalStaffCenter() {
         isCoordinator: assignmentForm.isCoordinator
       })
       setAssignmentDialogOpen(false)
+      showNotification('Assegnazione aziendale registrata con successo.', 'success')
       fetchData()
     } catch (err) {
-      alert('Errore durante l\'assegnazione dell\'azienda.')
+      showNotification('Errore durante l\'assegnazione dell\'azienda.', 'error')
     }
   }
 
@@ -857,20 +926,35 @@ export default function MedicalStaffCenter() {
       )}
 
       {/* CREATE / EDIT STAFF DIALOG */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={editDialogOpen} onClose={() => !saving && setEditDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
           <MedicalServicesIcon color="primary" /> {selectedStaff ? 'Modifica Professionista Sanitario' : 'Nuovo Professionista Sanitario'}
         </DialogTitle>
         <DialogContent dividers>
+          {formError && (
+            <Alert severity="error" sx={{ mb: 2.5 }}>
+              {formError}
+            </Alert>
+          )}
+
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+            I campi contrassegnati con <strong>*</strong> sono obbligatori per legge ai fini dell'identificazione del professionista sanitario e per le notifiche legali.
+          </Typography>
+
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 required
                 size="small"
-                label="Nome"
+                label="Nome *"
                 value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, firstName: e.target.value })
+                  if (fieldErrors.firstName) setFieldErrors({ ...fieldErrors, firstName: null })
+                }}
+                error={Boolean(fieldErrors.firstName)}
+                helperText={fieldErrors.firstName || 'Obbligatorio (min. 2 caratteri)'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -878,9 +962,14 @@ export default function MedicalStaffCenter() {
                 fullWidth
                 required
                 size="small"
-                label="Cognome"
+                label="Cognome *"
                 value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, lastName: e.target.value })
+                  if (fieldErrors.lastName) setFieldErrors({ ...fieldErrors, lastName: null })
+                }}
+                error={Boolean(fieldErrors.lastName)}
+                helperText={fieldErrors.lastName || 'Obbligatorio (min. 2 caratteri)'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -889,9 +978,10 @@ export default function MedicalStaffCenter() {
                 fullWidth
                 required
                 size="small"
-                label="Ruolo Professionale"
+                label="Ruolo Professionale *"
                 value={formData.professionalRole}
                 onChange={(e) => setFormData({ ...formData, professionalRole: e.target.value })}
+                helperText="Seleziona la qualifica operativa"
               >
                 {STAFF_ROLES.map((r) => (
                   <MenuItem key={r.value} value={r.value}>
@@ -905,10 +995,15 @@ export default function MedicalStaffCenter() {
               <TextField
                 fullWidth
                 size="small"
-                label="Codice Fiscale"
+                label="Codice Fiscale (Opzionale)"
                 value={formData.taxCode}
-                onChange={(e) => setFormData({ ...formData, taxCode: e.target.value.toUpperCase() })}
+                onChange={(e) => {
+                  setFormData({ ...formData, taxCode: e.target.value.toUpperCase() })
+                  if (fieldErrors.taxCode) setFieldErrors({ ...fieldErrors, taxCode: null })
+                }}
                 inputProps={{ maxLength: 16 }}
+                error={Boolean(fieldErrors.taxCode)}
+                helperText={fieldErrors.taxCode || '16 caratteri alfanumerici'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -916,18 +1011,24 @@ export default function MedicalStaffCenter() {
                 fullWidth
                 required
                 size="small"
-                label="N. Iscrizione Ordine / Albo"
+                label="N. Iscrizione Ordine / Albo *"
                 value={formData.medicalLicenseNumber}
-                onChange={(e) => setFormData({ ...formData, medicalLicenseNumber: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, medicalLicenseNumber: e.target.value })
+                  if (fieldErrors.medicalLicenseNumber) setFieldErrors({ ...fieldErrors, medicalLicenseNumber: null })
+                }}
+                error={Boolean(fieldErrors.medicalLicenseNumber)}
+                helperText={fieldErrors.medicalLicenseNumber || 'Obbligatorio (min. 4 caratteri, es. OMCeO 12345)'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 size="small"
-                label="Provincia Ordine"
+                label="Provincia Ordine (Opzionale)"
                 value={formData.licenseProvince}
                 onChange={(e) => setFormData({ ...formData, licenseProvince: e.target.value })}
+                helperText="es. Milano, Roma, RM"
               />
             </Grid>
 
@@ -935,18 +1036,20 @@ export default function MedicalStaffCenter() {
               <TextField
                 fullWidth
                 size="small"
-                label="Specializzazione"
+                label="Specializzazione (Opzionale)"
                 value={formData.specialty}
                 onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                helperText="es. Medicina del Lavoro, Igiene e Medicina Preventiva"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 size="small"
-                label="Ente / Ordine di Riferimento"
+                label="Ente / Ordine di Riferimento (Opzionale)"
                 value={formData.licenseAuthority}
                 onChange={(e) => setFormData({ ...formData, licenseAuthority: e.target.value })}
+                helperText="es. Ordine dei Medici Chirurghi e Odontoiatri"
               />
             </Grid>
 
@@ -954,29 +1057,44 @@ export default function MedicalStaffCenter() {
               <TextField
                 fullWidth
                 size="small"
-                label="Email di Contatto"
+                label="Email di Contatto (Opzionale)"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value })
+                  if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null })
+                }}
+                error={Boolean(fieldErrors.email)}
+                helperText={fieldErrors.email || 'Email aziendale o personale'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 size="small"
-                label="PEC (Posta Elettronica Certificata)"
+                label="PEC (Opzionale)"
                 type="email"
                 value={formData.pec}
-                onChange={(e) => setFormData({ ...formData, pec: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, pec: e.target.value })
+                  if (fieldErrors.pec) setFieldErrors({ ...fieldErrors, pec: null })
+                }}
+                error={Boolean(fieldErrors.pec)}
+                helperText={fieldErrors.pec || 'Posta Elettronica Certificata (per invio giudizi)'}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
                 size="small"
-                label="Telefono / Cellulare"
+                label="Telefono / Cellulare (Opzionale)"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, phone: e.target.value })
+                  if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: null })
+                }}
+                error={Boolean(fieldErrors.phone)}
+                helperText={fieldErrors.phone || 'Recapito telefonico'}
               />
             </Grid>
 
@@ -991,10 +1109,11 @@ export default function MedicalStaffCenter() {
               <TextField
                 fullWidth
                 size="small"
-                label="Thumbprint Certificato Digitale / SmartCard"
+                label="Thumbprint Certificato Digitale / SmartCard (Opzionale)"
                 value={formData.digitalCertificateThumbprint}
                 onChange={(e) => setFormData({ ...formData, digitalCertificateThumbprint: e.target.value })}
                 placeholder="es. 4A8F91B200C..."
+                helperText="Impronta crittografica certificato PAdES/CAdES"
               />
             </Grid>
             {!selectedStaff && (
@@ -1014,9 +1133,16 @@ export default function MedicalStaffCenter() {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setEditDialogOpen(false)}>Annulla</Button>
-          <Button variant="contained" color="primary" onClick={handleSaveStaff} sx={{ fontWeight: 'bold' }}>
-            Salva Professionista
+          <Button onClick={() => setEditDialogOpen(false)} disabled={saving}>Annulla</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveStaff}
+            disabled={saving}
+            startIcon={saving ? <CircularProgress size={18} color="inherit" /> : null}
+            sx={{ fontWeight: 'bold' }}
+          >
+            {saving ? 'Salvataggio...' : 'Salva Professionista'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -274,7 +274,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<MedicalRecord>(entity =>
         {
-            entity.Property(x => x.MedicalHistory).HasMaxLength(4000).HasConversion(encryptedRequiredStringConverter).IsRequired();
+            entity.Property(x => x.MedicalHistory).HasMaxLength(4000).HasConversion(encryptedNullableStringConverter);
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.Property(x => x.CurrentTherapies).HasMaxLength(2000);
             entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();

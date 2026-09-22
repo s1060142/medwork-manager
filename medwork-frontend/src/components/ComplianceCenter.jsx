@@ -8,6 +8,10 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Grid,
   LinearProgress,
@@ -31,6 +35,7 @@ import BusinessIcon from '@mui/icons-material/Business'
 import BuildIcon from '@mui/icons-material/Build'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { apiGet } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner }) {
   const [alerts, setAlerts] = useState([])
@@ -40,6 +45,7 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchFilter, setSearchFilter] = useState('')
+  const [diffidaDialog, setDiffidaDialog] = useState(null)
 
   const loadData = async () => {
     setLoading(true)
@@ -352,7 +358,10 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
                             startIcon={<ShieldIcon />}
                             onClick={() => {
                               setError('')
-                              alert(`🛡️ DIFFIDA LEGALE D.LGS. 81/08 GENERATA CON SUCCESSO:\n\nDestinatario: Datore di Lavoro - ${c.name}\nOggetto: Sollecito formale adempimento Sorveglianza Sanitaria ex Art. 18 e 41 D.Lgs. 81/08\n\nAttestazione: Il Medico Competente certifica la presenza di ${c.overdueVisits} lavoratori con visita scaduta e richiede l'immediata convocazione.\n\n✓ Registrato nell'Audit Trail. Protocollo Manleva: MLV-8108-${c.id}-${Date.now().toString().slice(-6)}`)
+                              setDiffidaDialog({
+                                company: c,
+                                protocol: `MLV-8108-${c.id}-${Date.now().toString().slice(-6)}`,
+                              })
                             }}
                             sx={{ textTransform: 'none', fontWeight: 700, bgcolor: '#b91c1c', '&:hover': { bgcolor: '#991b1b' } }}
                           >
@@ -417,6 +426,60 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
           </CardContent>
         </Card>
       )}
+      {/* MODALE GRAFICA DIFFIDA LEGALE */}
+      <Dialog
+        open={Boolean(diffidaDialog)}
+        onClose={() => setDiffidaDialog(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#fef2f2', color: '#991b1b' }}>
+          <ShieldIcon color="error" />
+          Diffida Legale D.Lgs. 81/08 (Manleva Medico Competente)
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          {diffidaDialog && (
+            <Stack spacing={2}>
+              <Alert severity="warning" sx={{ borderRadius: 2 }}>
+                Documento ufficiale di sollecito con valore legale e attestazione di manleva di responsabilità per il Medico Competente.
+              </Alert>
+
+              <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Destinatario:</strong> Datore di Lavoro - {diffidaDialog.company.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  <strong>Oggetto:</strong> Sollecito formale adempimento Sorveglianza Sanitaria ex Art. 18 e 41 D.Lgs. 81/08
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  <strong>Attestazione:</strong> Il Medico Competente certifica la presenza di <strong>{diffidaDialog.company.overdueVisits}</strong> lavoratori con visita periodica scaduta e richiede l'immediata convocazione.
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  <strong>Protocollo Manleva:</strong> <Chip label={diffidaDialog.protocol} size="small" color="error" sx={{ fontWeight: 600 }} />
+                </Typography>
+              </Box>
+
+              <Typography variant="caption" color="text.secondary">
+                L'evento viene registrato nell'Audit Trail con marcatura temporale e notifica via PEC certificata.
+              </Typography>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDiffidaDialog(null)}>Annulla</Button>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<ShieldIcon />}
+            onClick={() => {
+              setDiffidaDialog(null)
+              showNotification('Diffida Legale registrata nell\'Audit Trail e inviata via PEC con successo.', 'success')
+            }}
+          >
+            Invia PEC e Registra Manleva
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

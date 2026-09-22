@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { downloadCsv } from '../utils/csv'
+import { showNotification } from '../utils/notification'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import AddIcon from '@mui/icons-material/Add'
@@ -204,7 +205,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           Number(item.id) === employeeId ? { ...item, isArchived: currentArchived } : item
         )
       )
-      window.alert(requestError?.message || "Errore durante l'aggiornamento dello stato del lavoratore.")
+      showNotification(requestError?.message || "Errore durante l'aggiornamento dello stato del lavoratore.", 'error')
     }
   }
 
@@ -217,8 +218,9 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     try {
       await apiSend('DELETE', `/api/admin-data/employees/${employeeId}`)
       setEmployees((previous) => previous.filter((item) => Number(item.id) !== employeeId))
+      showNotification('Lavoratore eliminato con successo.', 'success')
     } catch (requestError) {
-      window.alert(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.')
+      showNotification(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.', 'error')
     }
   }
 
@@ -251,7 +253,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
     const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.legalName || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.operationalCity || '')}</td><td>${esc(row.operationalProvince || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
     const win = window.open('', '_blank')
-    if (!win) { window.alert('Stampa non disponibile: consenti i popup del browser.'); return }
+    if (!win) { showNotification('Stampa non disponibile: consenti l\'apertura della nuova scheda nel browser.', 'warning'); return }
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Elenco Aziende</title>
       <style>body{font-family:sans-serif;padding:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px;text-align:left}</style>
       </head><body><h2>Elenco Aziende</h2>
@@ -497,7 +499,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                                 Number(item.id) === Number(row.id) ? { ...item, status: row.status } : item,
                               ),
                             )
-                            window.alert(requestError?.message || 'Errore durante l\'aggiornamento stato azienda.')
+                            showNotification(requestError?.message || 'Errore durante l\'aggiornamento stato azienda.', 'error')
                           }
                         }}
                       >📁</button>

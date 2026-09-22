@@ -13,6 +13,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | **Tunnel 1-Click "Avvia Visita" in Scadenze** | `DashboardScadenze.jsx` + `MedicalVisitsController.cs` + `ExpiringMedicalVisitDto.cs`: Azione diretta rapida per visite in scadenza/scadute con pre-selezione automatica di lavoratore, azienda e protocollo attivo. | ✅ Conforme |
 | **Worker Quick Add (Reverse CF Parsing)** | `taxCode.js` + `EmployeeProfileDialog.jsx`: Parsing automatico Codice Fiscale italiano con calcolo data di nascita, sesso, codice Belfiore e comune di nascita. | ✅ Conforme |
 | **Employer Portal 1-Click ZIP Download** | `EmployerPortalView.jsx`: Pulsante in evidenza nell'header "Scarica tutti i giudizi validi (ZIP)" con visual feedback e download immediato archivio certificati. | ✅ Conforme |
+| **Medical Staff Validation Hardening** | `MedicalStaffCenter.jsx` + `MedicalStaffController.cs` + `apiClient.ts`: Campi obbligatori espliciti (*), sanitizzazione stringhe vuote a `null` (evita falsi errori su PEC/Phone/Email opzionali), rimozione alert browser e introduzione alert inline Material-UI con validazione client-side e parsing RFC9110 problem+json. | ✅ Conforme |
 
 ---
 
@@ -131,6 +132,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | TestAuthHandler claim mismatch | HIGH | ✅ Risolto |
 | Controller GetTenantId missing fallback (5) | HIGH | ✅ Risolto |
 | Employer/RSPP IDOR Object-Level Authorization | CRITICAL | ✅ Risolto |
+| Eradication of native browser alerts (Global MUI Notification/Snackbar) | HIGH | ✅ Risolto |
 
 ---
 

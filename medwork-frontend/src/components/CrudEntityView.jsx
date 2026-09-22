@@ -39,6 +39,7 @@ import { calculateItalianTaxCode } from '../utils/taxCode'
 import { downloadCsv } from '../utils/csv'
 import { formDateValue } from '../utils/datePicker'
 import EmployeeProfileDialog from './EmployeeProfileDialog'
+import { showNotification } from '../utils/notification'
 
 function defaultFormData(fields) {
   return fields.reduce((accumulator, field) => {
@@ -897,8 +898,8 @@ function CrudEntityView({
           <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={() => downloadCsv('companies', configuredColumns, filteredRows)} className="legacy-btn-success">
             Esporta dati in excel
           </Button>
-          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary" onClick={() => window.alert('Operazioni massive non ancora disponibile')}>Operazioni massive</Button>
-          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary" onClick={() => window.alert('Importazione dati non ancora disponibile')}>Importa dati</Button>
+          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary" onClick={() => showNotification('Operazioni massive non ancora disponibili per questa tabella.', 'info')}>Operazioni massive</Button>
+          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary" onClick={() => showNotification('Importazione dati non ancora disponibile per questa tabella.', 'info')}>Importa dati</Button>
         </Stack>
       )}
 

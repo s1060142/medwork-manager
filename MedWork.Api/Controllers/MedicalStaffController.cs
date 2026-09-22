@@ -844,51 +844,96 @@ public class MedicalStaffController : BaseController
 
     public class CreateMedicalStaffRequest
     {
-        [Required]
-        [StringLength(120, MinimumLength = 2)]
+        [Required(ErrorMessage = "Il Nome è obbligatorio")]
+        [StringLength(120, MinimumLength = 2, ErrorMessage = "Il Nome deve contenere tra 2 e 120 caratteri")]
         public string FirstName { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(120, MinimumLength = 2)]
+        [Required(ErrorMessage = "Il Cognome è obbligatorio")]
+        [StringLength(120, MinimumLength = 2, ErrorMessage = "Il Cognome deve contenere tra 2 e 120 caratteri")]
         public string LastName { get; set; } = string.Empty;
 
         public MedicalStaffRole ProfessionalRole { get; set; } = MedicalStaffRole.MedicoCompetente;
 
-        [StringLength(16)]
-        public string? TaxCode { get; set; }
+        private string? _taxCode;
+        [StringLength(16, ErrorMessage = "Il Codice Fiscale non può superare i 16 caratteri")]
+        public string? TaxCode
+        {
+            get => _taxCode;
+            set => _taxCode = string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpper();
+        }
 
-        [Required]
-        [StringLength(50, MinimumLength = 4)]
+        [Required(ErrorMessage = "Il Numero di Iscrizione all'Ordine è obbligatorio")]
+        [StringLength(50, MinimumLength = 4, ErrorMessage = "Il Numero di Iscrizione all'Ordine deve contenere tra 4 e 50 caratteri (es. OMCeO 12345)")]
         public string MedicalLicenseNumber { get; set; } = string.Empty;
 
+        private string? _specialty;
         [StringLength(120)]
-        public string? Specialty { get; set; }
+        public string? Specialty
+        {
+            get => _specialty;
+            set => _specialty = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
+        private string? _licenseAuthority;
         [StringLength(100)]
-        public string? LicenseAuthority { get; set; }
+        public string? LicenseAuthority
+        {
+            get => _licenseAuthority;
+            set => _licenseAuthority = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
+        private string? _licenseProvince;
         [StringLength(100)]
-        public string? LicenseProvince { get; set; }
+        public string? LicenseProvince
+        {
+            get => _licenseProvince;
+            set => _licenseProvince = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
         public DateTime? LicenseExpiryDate { get; set; }
 
-        [EmailAddress]
+        private string? _email;
+        [EmailAddress(ErrorMessage = "L'indirizzo Email inserito non è valido")]
         [StringLength(150)]
-        public string? Email { get; set; }
+        public string? Email
+        {
+            get => _email;
+            set => _email = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
-        [EmailAddress]
+        private string? _pec;
+        [EmailAddress(ErrorMessage = "L'indirizzo PEC inserito non è un indirizzo email valido")]
         [StringLength(150)]
-        public string? PEC { get; set; }
+        public string? PEC
+        {
+            get => _pec;
+            set => _pec = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
-        [Phone]
+        private string? _phone;
+        [Phone(ErrorMessage = "Il numero di Telefono non è valido")]
         [StringLength(30)]
-        public string? Phone { get; set; }
+        public string? Phone
+        {
+            get => _phone;
+            set => _phone = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
+        private string? _signatureImageUrl;
         [StringLength(200)]
-        public string? SignatureImageUrl { get; set; }
+        public string? SignatureImageUrl
+        {
+            get => _signatureImageUrl;
+            set => _signatureImageUrl = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
+        private string? _digitalCertificateThumbprint;
         [StringLength(200)]
-        public string? DigitalCertificateThumbprint { get; set; }
+        public string? DigitalCertificateThumbprint
+        {
+            get => _digitalCertificateThumbprint;
+            set => _digitalCertificateThumbprint = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
         public DateTime? DigitalCertificateExpiry { get; set; }
 

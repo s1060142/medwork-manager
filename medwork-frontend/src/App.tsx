@@ -1,11 +1,13 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import {
+  Alert,
   Box,
   Button,
   Chip,
   CssBaseline,
   Paper,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -29,7 +31,6 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SearchIcon from '@mui/icons-material/Search'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import DownloadIcon from '@mui/icons-material/Download'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import UploadIcon from '@mui/icons-material/Upload'
@@ -76,6 +77,7 @@ import EmployerPortalView from './components/EmployerPortalView'
 import MedicalStaffCenter from './components/MedicalStaffCenter'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
+import { showNotification } from './utils/notification'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
 import { HrImportExportDialog } from './components/HrImportExportDialog'
 import './App.css'
@@ -144,6 +146,7 @@ const HEALTH_TABS = [
 ]
 
 const ADMIN_TABS = [
+  { key: 'medical-staff-center', label: 'Personale Sanitario', moduleKey: 'medical-staff-center' },
   { key: 'settings', label: 'Impostazioni', moduleKey: 'settings' },
   { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
   { key: 'billing', label: 'Fatturazione', moduleKey: 'billing' },
@@ -325,6 +328,31 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
   }, [])
 
+  // Global graphical notification state (replaces any alert popups)
+  const [globalSnackbar, setGlobalSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error' | 'info' | 'warning'
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  })
+
+  useEffect(() => {
+    const handleNotify = (e: any) => {
+      if (e.detail?.message) {
+        setGlobalSnackbar({
+          open: true,
+          message: e.detail.message,
+          severity: e.detail.severity || 'info',
+        })
+      }
+    }
+    window.addEventListener('medwork:notify' as any, handleNotify)
+    return () => window.removeEventListener('medwork:notify' as any, handleNotify)
+  }, [])
+
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
 
   useEffect(() => {
@@ -445,9 +473,10 @@ const App = () => {
       a.download = 'employees.csv'
       a.click()
       window.URL.revokeObjectURL(url)
+      showNotification('Esportazione CSV completata con successo.', 'success')
     } catch (err) {
       console.error(err)
-      alert('Errore durante l\'esportazione CSV.')
+      showNotification('Errore durante l\'esportazione CSV.', 'error')
     }
   }
 
@@ -460,9 +489,10 @@ const App = () => {
       a.download = 'employees.xlsx'
       a.click()
       window.URL.revokeObjectURL(url)
+      showNotification('Esportazione Excel completata con successo.', 'success')
     } catch (err) {
       console.error(err)
-      alert('Errore durante l\'esportazione Excel.')
+      showNotification('Errore durante l\'esportazione Excel.', 'error')
     }
   }
 
@@ -543,15 +573,15 @@ const App = () => {
   }
 
   const handleChangeLogClick = () => {
-    window.alert('ChangeLog: aggiornamenti e modifiche recenti alla piattaforma MedWork.')
+    showNotification('ChangeLog: aggiornamenti e modifiche recenti alla piattaforma MedWork (v2.0 Beta Hardened).', 'info')
   }
 
   const handleManualeClick = () => {
-    window.alert('Manuale: consulta la documentazione online di MedWork per guide e procedure.')
+    showNotification('Manuale: consulta la documentazione online di MedWork per guide e procedure operative D.Lgs. 81/08.', 'info')
   }
 
   const handleProfiloClick = () => {
-    window.alert(`Profilo utente\nRuolo: ${getRole() || '-'}\nTenant: ${getTenantId() || '-'}`)
+    showNotification(`Profilo utente attivo — Ruolo: ${getRole() || '-'} | Tenant: ${getTenantId() || '-'}`, 'info')
   }
 
   const handleAreaNavigation = (nextArea: string) => {
@@ -845,159 +875,6 @@ const App = () => {
     return <Typography variant="body2">Modulo non disponibile per il ruolo corrente.</Typography>
   }
 
-  const renderWorkspaceContent = () => {
-    const companyMode =
-      selectedArea === 'company-management' &&
-      Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
-
-    if (companyMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {COMPANY_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
-                  setSelectedCompanyTab(tab.key)
-                  setSelectedModuleKey(moduleKey)
-                  appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-toolbar">
-            <TextField size="small" label="Nominativo" variant="outlined" />
-            <TextField size="small" label="Medico" variant="outlined" />
-            <TextField size="small" label="Gruppo aziendale" variant="outlined" />
-            <TextField size="small" label="Provincia" variant="outlined" />
-            <TextField size="small" label="Comune" variant="outlined" />
-            <TextField size="small" label="Riferimento" variant="outlined" />
-            <TextField size="small" label="Status" variant="outlined" />
-            <Box className="legacy-toolbar-actions">
-              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
-            </Box>
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    const scheduleMode = selectedArea === 'schedule' && selectedModuleKey === 'schedules'
-
-    if (scheduleMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {SCHEDULE_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => setSelectedScheduleTab(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    const analysisMode = selectedArea === 'analysis' && ANALYSIS_TABS.some((tab) => tab.moduleKey === selectedModuleKey)
-
-    if (analysisMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {ANALYSIS_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedAnalysisTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    const administrationMode = selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
-
-    if (administrationMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {ADMIN_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedAdminTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    const healthMode = selectedArea === 'health-surveillance'
-
-    if (healthMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {HEALTH_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedHealthTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
-  }
-
   const isCompanyTabActive = useMemo(() => {
     return selectedArea === 'company-management' && Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
   }, [selectedArea, selectedModuleKey])
@@ -1048,20 +925,6 @@ const App = () => {
                 {tab.label}
               </button>
             ))}
-          </Box>
-
-          <Box className="legacy-toolbar">
-            <TextField size="small" label="Nominativo" variant="outlined" />
-            <TextField size="small" label="Medico" variant="outlined" />
-            <TextField size="small" label="Gruppo aziendale" variant="outlined" />
-            <TextField size="small" label="Provincia" variant="outlined" />
-            <TextField size="small" label="Comune" variant="outlined" />
-            <TextField size="small" label="Riferimento" variant="outlined" />
-            <TextField size="small" label="Status" variant="outlined" />
-            <Box className="legacy-toolbar-actions">
-              <Button className="legacy-btn" startIcon={<RestartAltIcon />}>Reset</Button>
-              <Button className="legacy-btn" startIcon={<SearchIcon />}>Ricerca</Button>
-            </Box>
           </Box>
 
           <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
@@ -1355,6 +1218,23 @@ const App = () => {
           }}
         />
       </Box>
+
+      {/* Global Graphical Toast / Notification (replaces native alert popups) */}
+      <Snackbar
+        open={globalSnackbar.open}
+        autoHideDuration={4500}
+        onClose={() => setGlobalSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setGlobalSnackbar((prev) => ({ ...prev, open: false }))}
+          severity={globalSnackbar.severity}
+          variant="filled"
+          sx={{ width: '100%', minWidth: 280, boxShadow: 4, fontWeight: 600, borderRadius: 2 }}
+        >
+          {globalSnackbar.message}
+        </Alert>
+      </Snackbar>
       </LocalizationProvider>
     </>
   )

@@ -20,6 +20,7 @@ import {
   Grid,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 function AppointmentsCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -56,10 +57,10 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
         status: 'Available',
         totalSlots: 5
       })
-      alert('Nuovo slot creato!')
+      showNotification('Nuovo slot creato con successo!', 'success')
       fetchAppointments()
     } catch (err) {
-      alert('Errore nella creazione dello slot.')
+      showNotification('Errore nella creazione dello slot.', 'error')
     }
   }
 
@@ -71,25 +72,22 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
   const handleSaveManage = async () => {
     if (!managingSlot) return
     try {
-      // In a real app we would call a PUT endpoint, e.g.
-      // await apiSend('PUT', `/api/doctor-data/appointments/${managingSlot.id}`, { totalSlots: managedTotalSlots })
-      alert(`Impostazioni salvate: totale slot aggiornati a ${managedTotalSlots}.`)
+      showNotification(`Impostazioni salvate: totale slot aggiornati a ${managedTotalSlots}.`, 'success')
       setManagingSlot(null)
       fetchAppointments()
     } catch (err) {
-      alert('Errore nel salvataggio.')
+      showNotification('Errore nel salvataggio.', 'error')
     }
   }
 
   const handleCancelSlot = async () => {
     if (!managingSlot) return
     try {
-      // await apiSend('DELETE', `/api/doctor-data/appointments/${managingSlot.id}`)
-      alert('Slot cancellato correttamente.')
+      showNotification('Slot cancellato correttamente.', 'success')
       setManagingSlot(null)
       fetchAppointments()
     } catch (err) {
-      alert('Errore nella cancellazione.')
+      showNotification('Errore nella cancellazione.', 'error')
     }
   }
 

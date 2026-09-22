@@ -379,46 +379,6 @@ body {
   font-weight: 700;
 }
 
-.legacy-toolbar {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(120px, 1fr)) auto;
-  gap: 12px;
-  padding: 12px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--legacy-border);
-}
-
-.legacy-toolbar .MuiOutlinedInput-root {
-  background: #f9fafb;
-  height: 38px;
-  font-size: 13px;
-  border-radius: 6px;
-}
-
-.legacy-toolbar .MuiOutlinedInput-root:hover {
-  background: #ffffff;
-}
-
-.legacy-toolbar .MuiOutlinedInput-root.Mui-focused {
-  border-color: var(--legacy-primary);
-  box-shadow: 0 0 0 3px rgba(17, 58, 123, 0.08);
-}
-
-.legacy-toolbar .MuiInputLabel-root {
-  color: var(--legacy-muted);
-  font-size: 13px;
-}
-
-.legacy-toolbar .MuiOutlinedInput-notchedOutline {
-  border-color: var(--legacy-border);
-}
-
-.legacy-toolbar-actions {
-  display: flex;
-  gap: 8px;
-  align-items: end;
-}
-
 .legacy-btn {
   background: var(--legacy-primary);
   color: #ffffff;
@@ -708,12 +668,6 @@ body {
 }
 
 @media (max-width: 1200px) {
-  .legacy-toolbar {
-    grid-template-columns: repeat(3, minmax(160px, 1fr));
-  }
-  .legacy-toolbar-actions {
-    grid-column: 1 / -1;
-  }
   .legacy-kpi-grid {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
@@ -751,9 +705,6 @@ body {
   .legacy-toolbar-link {
     font-size: 12px;
     padding: 6px 8px;
-  }
-  .legacy-toolbar {
-    grid-template-columns: 1fr;
   }
   .legacy-form-grid {
     grid-template-columns: 1fr;

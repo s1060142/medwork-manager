@@ -38,6 +38,7 @@ const QUICK_ACTIONS = [
   { id: 'act-deadlines', title: 'Scadenzario Sorveglianza Sanitaria', subtitle: 'Scadenze visite, nomine e sopralluoghi', moduleKey: 'visit-deadlines', icon: EventIcon, color: '#0288d1' },
   { id: 'act-3b', title: 'Flusso Allegato 3B INAIL', subtitle: 'Cruscotto statistico Art. 40 INAIL', moduleKey: 'allegato-3b', icon: AssessmentIcon, color: '#9c27b0' },
   { id: 'act-groups', title: 'Gruppi Aziendali & Holding', subtitle: 'Gestione aggregata holding e consorzi (D.Lgs. 81/08)', moduleKey: 'company-groups', icon: BusinessIcon, color: '#0d47a1' },
+  { id: 'act-medical-staff', title: 'Personale Sanitario & Medici Competenti', subtitle: 'Gestione Medici Competenti (Art. 38), sostituti e staff', moduleKey: 'medical-staff-center', icon: MedicalServicesIcon, color: '#1565c0' },
   { id: 'act-protocols', title: 'Protocolli Sanitari & Rischi', subtitle: 'Gestione piani di sorveglianza sanitaria', moduleKey: 'protocols', icon: AssignmentIcon, color: '#d32f2f' },
 ]
 

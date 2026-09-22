@@ -20,6 +20,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -51,9 +52,9 @@ function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
   const handleRequestUpdate = async () => {
     try {
       await apiSend('POST', '/api/doctor-data/company-nominations/request-update')
-      alert('Richiesta aggiornamento inviata con successo!')
+      showNotification('Richiesta aggiornamento inviata con successo!', 'success')
     } catch (err) {
-      alert('Errore nell\'invio della richiesta.')
+      showNotification('Errore nell\'invio della richiesta.', 'error')
     }
   }
 
@@ -66,13 +67,11 @@ function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
   const handleSaveEdit = async () => {
     if (!editingNomination) return
     try {
-      // In a real app we'd call a PUT endpoint, e.g.:
-      // await apiSend('PUT', `/api/doctor-data/company-nominations/${editingNomination.id}`, { roleName: editRole, certificationExpiry: editExpiry })
-      alert(`Nomina per ${editRole} aggiornata correttamente.`)
+      showNotification(`Nomina per ${editRole} aggiornata correttamente.`, 'success')
       setEditingNomination(null)
       fetchNominations()
     } catch (err) {
-      alert('Errore durante l\'aggiornamento della nomina.')
+      showNotification('Errore durante l\'aggiornamento della nomina.', 'error')
     }
   }
 

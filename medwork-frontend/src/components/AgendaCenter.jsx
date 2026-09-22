@@ -21,6 +21,7 @@ import {
   Divider,
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
+import { showNotification } from '../utils/notification'
 
 function toDate(value) {
   const date = new Date(value)
@@ -62,9 +63,9 @@ function AgendaCenter({ activeCompanyId = '', onOpenMedicalVisitCreate }) {
   const handleMorningDigest = async () => {
     try {
       await apiSend('POST', '/api/doctor-data/agenda/morning-digest')
-      alert('Morning Digest inviato con successo!')
+      showNotification('Morning Digest inviato con successo!', 'success')
     } catch (err) {
-      alert('Errore nell\'invio del Morning Digest.')
+      showNotification('Errore nell\'invio del Morning Digest.', 'error')
     }
   }
 

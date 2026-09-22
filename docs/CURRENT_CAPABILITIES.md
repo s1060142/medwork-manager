@@ -139,6 +139,7 @@ Cosa funziona oggi, organizzato per modulo.
 - `NotificationChannel` enum esteso (Pec/Push/WhatsApp)
 - Log notifiche con TenantId server-side corretto
 - `MockNotificationService` per retrocompatibilità
+- **Sistema Notifiche UI Globale**: `showNotification()` grafico via Material-UI `Snackbar` + `Alert` con interceptor automatico a livello `window.alert` (zero popup modali nativi del browser in tutte le entità e moduli)
 - ⚠️ Trasporti reali (PEC/Email) definiti come interface, non implementati
 
 ---
