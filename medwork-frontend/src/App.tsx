@@ -73,6 +73,7 @@ import SiteVisitDeadlinesCenter from './components/SiteVisitDeadlinesCenter'
 import NominationsDeadlinesCenter from './components/NominationsDeadlinesCenter'
 import VaccinationDeadlinesCenter from './components/VaccinationDeadlinesCenter'
 import EmployerPortalView from './components/EmployerPortalView'
+import MedicalStaffCenter from './components/MedicalStaffCenter'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
 import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
@@ -202,6 +203,7 @@ const MODULE_ITEMS = [
   { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
   { key: 'alert-multicanale', label: 'Alert Multi-canale', moduleKey: 'alert-multicanale' },
   { key: 'employer-portal', label: 'Portale RSPP/DdL', moduleKey: 'employer-portal' },
+  { key: 'medical-staff-center', label: 'Centro Personale Sanitario', moduleKey: 'medical-staff-center' },
   { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
 ]
 
@@ -209,9 +211,9 @@ const AREA_MODULE_KEYS: Record<string, string[]> = {
   'company-management': ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
   'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
   analysis: ['reporting', 'audit'],
-  'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale'],
+  'health-surveillance': ['medical-visit-stepper', 'appointments-calendar', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'compliance', 'analytics', 'cartella-sanitaria', 'giudizio-idoneita', 'firma-grafometrica', 'allegato-3b', 'alert-multicanale', 'medical-staff-center'],
   schedule: ['schedules', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
-  administration: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
+  administration: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols', 'medical-staff-center'],
 }
 
 const AREA_DEFAULT_MODULE = {
@@ -373,6 +375,7 @@ const App = () => {
       'scheduled-exams',
       'vaccinations',
       'doctor-availabilities',
+      'medical-staff-center',
       'notification-logs',
       'tools',
       'reporting',
@@ -768,6 +771,11 @@ const App = () => {
         />
       )
     }
+
+    if (moduleKey === 'medical-staff-center') {
+      return <MedicalStaffCenter />
+    }
+
 
     if (moduleKey === 'cartella-sanitaria') {
       return <CartellaSanitariaCenter employeeId={cartellaSanitariaEmployeeId ?? undefined} />

@@ -18,6 +18,18 @@ Cosa funziona oggi, organizzato per modulo.
 
 ---
 
+## 👨‍⚕️ Centro Gestione Personale Sanitario (Medical Staff Center)
+
+- **Gestione Multiruolo Team Sanitario**: Supporto completo per Medici Competenti (Art. 38), Medici Coordinati, Medici Sostituti, Infermieri Sanitari, Tecnici della Prevenzione e Segreteria Sanitaria (`MedicalStaffController.cs`, `MedicalStaffCenter.jsx`).
+- **Anagrafica & Iscrizione Ordine**: Tracciamento Codice Fiscale, Numero Iscrizione Ordine/Albo, Provincia di Iscrizione, Scadenza Iscrizione, Specializzazioni e Contatti.
+- **Firma Digitale & PEC**: Gestione parametri Firma Digitale (thumbprint certificato, scadenza certificato), PEC e collegamento automatico all'account `User` di login MedWork.
+- **Motore Assenze & Sostituzioni**: Registrazione ferie, malattie, congressi e permessi con designazione automatica del Medico Sostituto per la continuità operativa delle visite mediche.
+- **Assegnazione Aziende & Sedi**: Mappatura granulare professionisti su aziende e sedi (anche multilivello) con qualifica di Medico Coordinatore o Medico Competente Nominato.
+- **Dashboard Executive KPI**: Monitoraggio in tempo reale del personale attivo per ruolo, assenti oggi, scadenze imminenti di certificati e copertura % aziende.
+
+
+---
+
 ## 🔄 Universal Migration Engine (Migrazione & Import)
 
 - **Multi-Format Ingestion**: Parser nativi per Winasped / WinAspi, CartSan, Zucchetti e CSV/Excel unificato.

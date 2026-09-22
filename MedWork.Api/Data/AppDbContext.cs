@@ -67,6 +67,8 @@ public class AppDbContext : DbContext
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<ActivityDeadline> ActivityDeadlines => Set<ActivityDeadline>();
     public DbSet<CompanyNomination> CompanyNominations => Set<CompanyNomination>();
+    public DbSet<StaffAbsence> StaffAbsences => Set<StaffAbsence>();
+    public DbSet<StaffDocument> StaffDocuments => Set<StaffDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -156,11 +158,47 @@ public class AppDbContext : DbContext
         {
             entity.Property(x => x.FirstName).HasMaxLength(120).IsRequired();
             entity.Property(x => x.LastName).HasMaxLength(120).IsRequired();
+            entity.Property(x => x.ProfessionalRole).HasConversion<string>().HasMaxLength(40).IsRequired();
+            entity.Property(x => x.TaxCode).HasMaxLength(16);
             entity.Property(x => x.MedicalLicenseNumber).HasMaxLength(50).IsRequired();
             entity.Property(x => x.Specialty).HasMaxLength(120);
+            entity.Property(x => x.LicenseProvince).HasMaxLength(100);
             entity.Property(x => x.Email).HasMaxLength(150);
-            entity.HasIndex(x => x.MedicalLicenseNumber).IsUnique();
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
+
+        modelBuilder.Entity<StaffAbsence>(entity =>
+        {
+            entity.Property(x => x.Reason).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Notes).HasMaxLength(500);
+
+            entity.HasOne(x => x.Doctor)
+                .WithMany(x => x.Absences)
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.SubstituteDoctor)
+                .WithMany()
+                .HasForeignKey(x => x.SubstituteDoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StaffDocument>(entity =>
+        {
+            entity.Property(x => x.DocumentType).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(200).IsRequired();
+            entity.Property(x => x.FilePath).HasMaxLength(500);
+
+            entity.HasOne(x => x.Doctor)
+                .WithMany(x => x.Documents)
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         modelBuilder.Entity<RiskFactor>(entity =>
         {

@@ -12,6 +12,8 @@ public class CompanyDoctor
     [Range(1, int.MaxValue)]
     public int CompanyId { get; set; }
 
+    public int? BranchId { get; set; }
+
     [Range(1, int.MaxValue)]
     public int DoctorId { get; set; }
 
@@ -26,5 +28,6 @@ public class CompanyDoctor
     // Navigation properties
     public Tenant? Tenant { get; set; }
     public Company? Company { get; set; }
+    public Branch? Branch { get; set; }
     public Doctor? Doctor { get; set; }
 }

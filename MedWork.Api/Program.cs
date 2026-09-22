@@ -182,7 +182,8 @@ var app = builder.Build();
 {
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (dbContext.Database.IsSqlite())
+    var provider = dbContext.Database.ProviderName ?? string.Empty;
+    if (provider.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) || provider.Contains("InMemory", StringComparison.OrdinalIgnoreCase))
     {
         dbContext.Database.EnsureCreated();
     }

@@ -2,6 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MedWork.Api.Models;
 
+public enum MedicalStaffRole
+{
+    MedicoCompetente,
+    MedicoCoordinato,
+    MedicoSostituto,
+    Infermiere,
+    TecnicoPrevenzione,
+    SegreteriaSanitaria
+}
+
 public class Doctor
 {
     public int Id { get; set; }
@@ -17,6 +27,11 @@ public class Doctor
     [StringLength(120, MinimumLength = 2)]
     public string LastName { get; set; } = string.Empty;
 
+    public MedicalStaffRole ProfessionalRole { get; set; } = MedicalStaffRole.MedicoCompetente;
+
+    [StringLength(16)]
+    public string? TaxCode { get; set; }
+
     [Required]
     [StringLength(50, MinimumLength = 4)]
     public string MedicalLicenseNumber { get; set; } = string.Empty;
@@ -26,6 +41,11 @@ public class Doctor
 
     [StringLength(100)]
     public string? LicenseAuthority { get; set; }
+
+    [StringLength(100)]
+    public string? LicenseProvince { get; set; }
+
+    public DateTime? LicenseExpiryDate { get; set; }
 
     [EmailAddress]
     [StringLength(150)]
@@ -47,6 +67,8 @@ public class Doctor
 
     public DateTime? DigitalCertificateExpiry { get; set; }
 
+    public int? UserId { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -55,7 +77,10 @@ public class Doctor
 
     // Navigation properties
     public Tenant? Tenant { get; set; }
+    public User? User { get; set; }
     public ICollection<MedicalVisit> MedicalVisits { get; set; } = new List<MedicalVisit>();
     public ICollection<DoctorAvailability> Availabilities { get; set; } = new List<DoctorAvailability>();
     public ICollection<CompanyDoctor> CompanyDoctors { get; set; } = new List<CompanyDoctor>();
+    public ICollection<StaffAbsence> Absences { get; set; } = new List<StaffAbsence>();
+    public ICollection<StaffDocument> Documents { get; set; } = new List<StaffDocument>();
 }

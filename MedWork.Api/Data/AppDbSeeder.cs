@@ -207,9 +207,11 @@ public static class AppDbSeeder
 
         var doctorSeeds = new[]
         {
-            new Doctor { FirstName = "Laura", LastName = "Bianchi", MedicalLicenseNumber = "MED-LOM-98765", Specialty = "Medicina del Lavoro", Email = "laura.bianchi@medwork.it", TenantId = tid },
-            new Doctor { FirstName = "Paolo", LastName = "Verdi", MedicalLicenseNumber = "MED-PIE-44112", Specialty = "Medicina del Lavoro", Email = "paolo.verdi@medwork.it", TenantId = tid },
-            new Doctor { FirstName = "Giulia", LastName = "Neri", MedicalLicenseNumber = "MED-LOM-77231", Specialty = "Igiene industriale", Email = "giulia.neri@medwork.it", TenantId = tid },
+            new Doctor { FirstName = "Laura", LastName = "Bianchi", ProfessionalRole = MedicalStaffRole.MedicoCompetente, TaxCode = "BNCLRA78A41F205Z", MedicalLicenseNumber = "MED-LOM-98765", Specialty = "Medicina del Lavoro", LicenseProvince = "Milano", LicenseAuthority = "Ordine dei Medici di Milano", Email = "laura.bianchi@medwork.it", PEC = "laura.bianchi@pec.omceomi.it", Phone = "+39 02 5551234", DigitalCertificateExpiry = DateTime.UtcNow.AddMonths(14), TenantId = tid },
+            new Doctor { FirstName = "Paolo", LastName = "Verdi", ProfessionalRole = MedicalStaffRole.MedicoCoordinato, TaxCode = "VRDPLA82M15L219X", MedicalLicenseNumber = "MED-PIE-44112", Specialty = "Medicina del Lavoro", LicenseProvince = "Torino", LicenseAuthority = "Ordine dei Medici di Torino", Email = "paolo.verdi@medwork.it", PEC = "paolo.verdi@pec.omceoto.it", Phone = "+39 011 4445678", DigitalCertificateExpiry = DateTime.UtcNow.AddDays(25), TenantId = tid },
+            new Doctor { FirstName = "Giulia", LastName = "Neri", ProfessionalRole = MedicalStaffRole.MedicoSostituto, TaxCode = "NREGLI85H45H501Y", MedicalLicenseNumber = "MED-LOM-77231", Specialty = "Igiene Industriale", LicenseProvince = "Brescia", LicenseAuthority = "Ordine dei Medici di Brescia", Email = "giulia.neri@medwork.it", PEC = "giulia.neri@pec.omceobs.it", Phone = "+39 030 3339876", DigitalCertificateExpiry = DateTime.UtcNow.AddMonths(8), TenantId = tid },
+            new Doctor { FirstName = "Roberto", LastName = "Ferrari", ProfessionalRole = MedicalStaffRole.Infermiere, TaxCode = "FRRRBT90R12F205W", MedicalLicenseNumber = "INF-LOM-11223", Specialty = "Infermieristica del Lavoro", LicenseProvince = "Milano", LicenseAuthority = "OPI Milano", Email = "roberto.ferrari@medwork.it", Phone = "+39 02 5558899", TenantId = tid },
+            new Doctor { FirstName = "Elena", LastName = "Martini", ProfessionalRole = MedicalStaffRole.SegreteriaSanitaria, TaxCode = "MRTLNE92S50F205K", MedicalLicenseNumber = "SEG-LOM-00445", Specialty = "Amministrazione Sanitaria", LicenseProvince = "Milano", Email = "elena.martini@medwork.it", Phone = "+39 02 5559900", TenantId = tid }
         };
 
         var existingDoctors = (await dbContext.Doctors.Select(x => x.MedicalLicenseNumber).ToListAsync()).ToHashSet();
