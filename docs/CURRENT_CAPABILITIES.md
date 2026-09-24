@@ -5,6 +5,14 @@ Cosa funziona oggi, organizzato per modulo.
 
 ---
 
+## 🖥️ Interfaccia Utente & SaaS Navigation Shell
+- **Modern SaaS Shell**: Layout moderno con sidebar organizzata per flussi clinici/amministrativi, limitazione larghezza viewport (1600px max-width) anti-stretching su monitor ultrawide e breadcrumb bar dinamica.
+- **Doctor Cockpit Hub**: Landing automatica per Medico Competente con indicatori real-time di scadenze a 7 giorni, visite scadute, triage clinico e tunnel diretto *"⚡ Avvia Visita"*.
+- **Company Context Switcher**: Selettore rapido globale dell'azienda attiva integrato nell'header con persistenza in `localStorage`.
+- **MUI X Date Localization**: Integrazione a livello root di `LocalizationProvider` con `AdapterDateFns` e locale italiano (`it`).
+
+---
+
 ## 🔐 Autenticazione
 
 - Login email/password con tenant slug

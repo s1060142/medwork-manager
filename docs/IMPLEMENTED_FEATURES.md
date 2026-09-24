@@ -4,6 +4,17 @@
 
 Storico delle feature consegnate, ordinate per fase e priorità.
 
+## Sprint 2 — Frontend UX Modernization & SaaS Shell Refactoring (Settembre 2026)
+
+| Feature / Miglioria | Dettaglio Implementativo | Stato |
+|---|---|---|
+| **LocalizationProvider Integration** | `main.jsx`: Configurato `LocalizationProvider` root con `AdapterDateFns` e locale `it`, risolvendo i crash di data picker in Sorveglianza Sanitaria e Reportistica. | ✅ Conforme |
+| **Doctor Cockpit Hub & Landing** | `App.tsx` + `DashboardMedico.jsx`: Default automatico per ruolo Medico su `DashboardMedico` con triage clinico, scadenze a 7 giorni e pulsanti diretti *"⚡ Avvia Visita"*. | ✅ Conforme |
+| **SaaS Navigation Shell & Context Header** | `App.tsx` + `App.css`: Sostituito topbar/sidebar legacy con layout SaaS moderno; inserito Company Context Switcher rapido nell'header, rimosso il form legacy a 7 campi orizzontali, aggiunta breadcrumb bar e limitazione viewport a 1600px max-width per monitor ultrawide. | ✅ Conforme |
+| **Clean Build & JSX Audit** | `WorkersCenter.jsx` + `ReportsCenter.jsx` + `CrudEntityView.jsx`: Eliminati attributi JSX duplicati e warning di build, assicurando bundle di produzione a zero errori. | ✅ Conforme |
+
+---
+
 ## Sprint 1 — Quick Wins UX & Navigation Refactoring (Settembre 2026)
 
 | Feature / Miglioria | Dettaglio Implementativo | Stato |

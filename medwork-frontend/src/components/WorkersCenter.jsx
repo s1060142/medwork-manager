@@ -59,7 +59,7 @@ function classifyFitness(outcome, outcomeCode) {
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
 }
 
-function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate,  onOpenEmployeeProfile }) {
+function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate,  onOpenEmployeeProfile, onDeleteConfirm }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
@@ -219,6 +219,9 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       await apiSend('DELETE', `/api/admin-data/employees/${employeeId}`)
       setEmployees((previous) => previous.filter((item) => Number(item.id) !== employeeId))
       showNotification('Lavoratore eliminato con successo.', 'success')
+      if (onDeleteConfirm) {
+        onDeleteConfirm(row)
+      }
     } catch (requestError) {
       showNotification(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.', 'error')
     }
@@ -381,12 +384,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
             </Typography>
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button type="button" variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate} className="legacy-btn">Aggiungi</Button>
+            <Button type="button" variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate}>Aggiungi</Button>
           </Stack>
         </Box>
 
-        <Box className="legacy-table-toolbar">
-          <Box className="legacy-table-toolbar-filters">
+        <Box sx={{ mb: 2 }}>
+          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
             <TextField
               size="small"
               label="Nominativo"
@@ -420,12 +423,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
               <MenuItem value="archived">Archiviate</MenuItem>
             </TextField>
           </Box>
-          <Box className="legacy-table-toolbar-filters">
-            <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Button type="button" variant="contained" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
           </Box>
         </Box>
 
-        <Box className="legacy-data-table">
+        <Box sx={{ borderRadius: 8, overflow: "hidden" }}>
           <Table size="small" sx={{ minWidth: 980 }}>
             <TableHead>
               <TableRow>
@@ -480,7 +483,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     <Box className="row-actions">
                       <button
                         type="button"
-                        className="legacy-icon-btn-sm"
+                        sx={{ width: 30, height: 30, borderRadius: 6 }}
                         aria-label="Archivio"
                         title={row.status === 'Archiviata' ? 'Ripristina azienda' : 'Archivia azienda'}
                         onClick={async (event) => {
@@ -518,7 +521,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           </Table>
         </Box>
 
-        <Box className="legacy-table-footer">
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
           <Stack direction="row" spacing={1}>
             <Button type="button" variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
             <Button type="button" variant="outlined" onClick={handlePrint}>Stampa</Button>
@@ -542,8 +545,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           <Typography variant="subtitle1">Lavoratori</Typography>
         </Box>
 
-        <Box className="legacy-table-toolbar">
-          <Box className="legacy-table-toolbar-filters">
+        <Box sx={{ mb: 2 }}>
+          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
             <TextField
               size="small"
               label="Cognome"
@@ -582,12 +585,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
               ))}
             </TextField>
           </Box>
-          <Box className="legacy-table-toolbar-filters">
-            <Button type="button" className="legacy-btn" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
+          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Button type="button" variant="contained" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
           </Box>
         </Box>
 
-        <Box className="legacy-data-table">
+        <Box sx={{ borderRadius: 8, overflow: "hidden" }}>
           <Table size="small" sx={{ minWidth: 1100 }}>
             <TableHead>
               <TableRow>
@@ -662,14 +665,14 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                         <Box className="row-actions">
                           <button
                             type="button"
-                            className="legacy-icon-btn-sm"
+                            sx={{ width: 30, height: 30, borderRadius: 6 }}
                             aria-label="Lista"
                             title="Apri cartella lavoratore"
                             onClick={() => onOpenEmployeeProfile?.(row)}
                           >📋</button>
                           <button
                             type="button"
-                            className="legacy-icon-btn-sm"
+                            sx={{ width: 30, height: 30, borderRadius: 6 }}
                             aria-label="Cessazione"
                             title="Cessazione rapporto & Consegna Cartella (Art. 25 D.Lgs. 81/08)"
                             onClick={() => {
@@ -678,14 +681,14 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                           >📦</button>
                           <button
                             type="button"
-                            className="legacy-icon-btn-sm"
+                            sx={{ width: 30, height: 30, borderRadius: 6 }}
                             aria-label="Archivio"
                             title={row.isArchived ? 'Ripristina' : 'Archivia'}
                             onClick={() => handleToggleArchive(row)}
                           >📁</button>
                           <button
                             type="button"
-                            className="legacy-icon-btn-sm"
+                            sx={{ width: 30, height: 30, borderRadius: 6 }}
                             aria-label="Elimina"
                             title="Elimina lavoratore"
                             onClick={() => handleDeleteEmployee(row)}
@@ -707,7 +710,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           </Table>
         </Box>
 
-        <Box className="legacy-table-footer">
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
           <Box />
           <Typography variant="caption" color="text.secondary">
             {filteredWorkerRows.length

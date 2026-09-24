@@ -227,6 +227,7 @@ function CrudEntityView({
   onOpenEmployeeProfile,
   hiddenUI = false,
   onCreated,
+  onDeleteConfirm,
 }) {
   const [rows, setRows] = useState([])
   const [contextEmployees, setContextEmployees] = useState([])
@@ -597,8 +598,12 @@ function CrudEntityView({
         await apiSend('DELETE', config.deleteEndpoint)
       }
 
+      const deletedRow = confirmDelete
       setRows((current) => current.filter((row) => row !== confirmDelete))
       setSuccessMessage('Elemento eliminato correttamente.')
+      if (onDeleteConfirm) {
+        onDeleteConfirm(deletedRow)
+      }
     } catch (requestError) {
       setError(requestError.message)
     } finally {
@@ -791,8 +796,8 @@ function CrudEntityView({
     <Stack spacing={2}>
       <Box sx={{ display: hiddenUI ? 'none' : 'block' }}>
       {config.key !== 'companies' && (
-        <Box className="legacy-table-toolbar">
-          <Box className="legacy-table-toolbar-filters">
+        <Stack spacing={2} sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
             <TextField
               size="small"
               label="Cerca"
@@ -806,10 +811,11 @@ function CrudEntityView({
                   </InputAdornment>
                 ),
               }}
+              sx={{ minWidth: 250 }}
             />
             <Button variant="outlined" onClick={loadRows}>Aggiorna</Button>
             {canEdit && <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>}
-          </Box>
+          </Stack>
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" onClick={() => downloadCsv(`${config.key}.csv`, configuredColumns, filteredRows)}>
               Esporta CSV
@@ -818,7 +824,7 @@ function CrudEntityView({
               Filtro avanzato
             </Button>
           </Stack>
-        </Box>
+        </Stack>
       )}
 
       {!!error && <Alert severity="error">{error}</Alert>}
@@ -826,11 +832,11 @@ function CrudEntityView({
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
         <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small" sx={{ minWidth: 980 }}>
+          <Table size="small" sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox" />
-                {configuredColumns.map((column) => (
+                {defaultColumns.map((column) => (
                   <TableCell key={column}>{fieldLabels[column] || keyToLabel(column)}</TableCell>
                 ))}
                 {canEdit && <TableCell align="right">Azione</TableCell>}
@@ -850,14 +856,14 @@ function CrudEntityView({
                   }}
                 >
                   <TableCell padding="checkbox" />
-                  {configuredColumns.map((column) => (
+                  {defaultColumns.map((column) => (
                     <TableCell key={column}>{displayValue(row[column])}</TableCell>
                   ))}
                   {canEdit && (
                     <TableCell align="right">
                       <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Button size="small" onClick={() => openEdit(row)}>Modifica</Button>
-                        <Button size="small" color="error" onClick={() => handleDelete(row)}>Elimina</Button>
+                        <Button size="small" onClick={() => openEdit(row)} sx={{ fontSize: 12, px: 1.5 }}>Modifica</Button>
+                        <Button size="small" color="error" onClick={() => handleDelete(row)} sx={{ fontSize: 12, px: 1.5 }}>Elimina</Button>
                         <Button
                           size="small"
                           onClick={() => {
@@ -877,7 +883,7 @@ function CrudEntityView({
               ))}
               {pagedRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={canEdit ? configuredColumns.length + 2 : configuredColumns.length + 1}>
+                  <TableCell colSpan={canEdit ? defaultColumns.length + 2 : defaultColumns.length + 1}>
                     <Typography variant="body2" color="text.secondary">Nessun elemento disponibile.</Typography>
                   </TableCell>
                 </TableRow>
@@ -890,20 +896,20 @@ function CrudEntityView({
       {config.key === 'companies' && (
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {canEdit && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} className="legacy-btn">
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} >
               Nuova azienda
             </Button>
           )}
-          <Button variant="outlined" startIcon={<PrintIcon />} className="legacy-btn-secondary" onClick={() => window.print()}>Stampa</Button>
-          <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={() => downloadCsv('companies', configuredColumns, filteredRows)} className="legacy-btn-success">
+          <Button variant="outlined" startIcon={<PrintIcon />} onClick={() => window.print()}>Stampa</Button>
+          <Button variant="contained" startIcon={<FileDownloadIcon />} onClick={() => downloadCsv('companies', configuredColumns, filteredRows)}>
             Esporta dati in excel
           </Button>
-          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} className="legacy-btn-secondary" onClick={() => showNotification('Operazioni massive non ancora disponibili per questa tabella.', 'info')}>Operazioni massive</Button>
-          <Button variant="outlined" startIcon={<UploadFileIcon />} className="legacy-btn-secondary" onClick={() => showNotification('Importazione dati non ancora disponibile per questa tabella.', 'info')}>Importa dati</Button>
+          <Button variant="outlined" startIcon={<PlaylistAddCheckIcon />} onClick={() => showNotification('Operazioni massive non ancora disponibili per questa tabella.', 'info')}>Operazioni massive</Button>
+          <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={() => showNotification('Importazione dati non ancora disponibile per questa tabella.', 'info')}>Importa dati</Button>
         </Stack>
       )}
 
-      <Box className="legacy-table-footer">
+      <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Typography variant="caption" color="text.secondary">
           {filteredRows.length} elementi
         </Typography>
@@ -934,15 +940,13 @@ function CrudEntityView({
       </Box>
 
       <Dialog open={Boolean(confirmDelete)} onClose={() => setConfirmDelete(null)} maxWidth="xs" fullWidth>
-        <DialogTitle>Conferma eliminazione</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Conferma eliminazione</DialogTitle>
         <DialogContent>
-          <Typography variant="body2">L'elemento selezionato verrà rimosso in modo definitivo. Procedere?</Typography>
+          <Typography variant="body2">Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDelete(null)}>Annulla</Button>
-          <Button color="error" onClick={confirmDeleteRow} disabled={saving}>
-            Elimina
-          </Button>
+          <Button onClick={() => setConfirmDelete(null)} sx={{ textTransform: 'none' }}>Annulla</Button>
+          <Button color="error" onClick={confirmDeleteRow} disabled={saving} sx={{ textTransform: 'none', borderRadius: 2 }}>Elimina</Button>
         </DialogActions>
       </Dialog>
 

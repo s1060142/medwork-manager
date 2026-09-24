@@ -760,8 +760,8 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
         </Stack>
       </Stack>
 
-      <Box className="legacy-table-toolbar">
-        <Box className="legacy-table-toolbar-filters">
+      <Box sx={{ mb: 2 }}>
+        <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
           <TextField
             select
             size="small"
@@ -791,15 +791,15 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
           </TextField>
           <Button variant="outlined" onClick={() => showNotification('Filtro elementi archiviati non ancora disponibile.', 'info')}>Mostra archiviate</Button>
           <TextField size="small" label="Nominativo" variant="outlined" value="" onChange={() => {}} />
-          <Button className="legacy-btn" onClick={() => showNotification('Ricerca avanzata non ancora disponibile.', 'info')}>Ricerca avanzata</Button>
-          <Button className="legacy-btn" startIcon={<RefreshIcon />} onClick={() => showNotification('Ricarica elenco completata.', 'info')}>Ricarica elenco</Button>
+          <Button variant="outlined" onClick={() => showNotification('Ricerca avanzata non ancora disponibile.', 'info')}>Ricerca avanzata</Button>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => showNotification('Ricarica elenco completata.', 'info')}>Ricarica elenco</Button>
         </Box>
       </Box>
 
       {activeAnalysisTab === 'visits' && (
         <Box sx={{ mt: 2 }}>
-          <Box className="legacy-table-toolbar">
-            <Box className="legacy-table-toolbar-filters">
+          <Box sx={{ mb: 2 }}>
+            <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
               <DesktopDatePicker
                 size="small"
                 label="Data Da*"
@@ -830,10 +830,10 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                 <MenuItem value="all">Tutte</MenuItem>
               </TextField>
             </Box>
-            <Box className="legacy-table-toolbar-filters">
-              <Button className="legacy-btn" variant="outlined" onClick={() => showNotification('Filtri avanzati non ancora disponibili.', 'info')}>Altri filtri</Button>
-              <Button className="legacy-btn" startIcon={<RestartAltIcon />} onClick={() => showNotification('Filtri reimpostati.', 'info')}>Reset</Button>
-              <Button className="legacy-btn" startIcon={<SearchIcon />} onClick={() => showNotification('Ricerca completata.', 'info')}>Ricerca</Button>
+            <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Button variant="outlined" onClick={() => showNotification('Filtri avanzati non ancora disponibili.', 'info')}>Altri filtri</Button>
+              <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={() => showNotification('Filtri reimpostati.', 'info')}>Reset</Button>
+              <Button variant="outlined" startIcon={<SearchIcon />} onClick={() => showNotification('Ricerca completata.', 'info')}>Ricerca</Button>
             </Box>
           </Box>
 
@@ -908,7 +908,7 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
                   <MenuItem value="">Seleziona</MenuItem>
                 </TextField>
               </Box>
-              <Button className="legacy-btn" sx={{ mt: 1.5 }} startIcon={<SearchIcon />} onClick={() => showNotification('Caricamento analisi in corso...', 'info')}>Vedi analisi</Button>
+              <Button variant="outlined" sx={{ mt: 1.5 }} startIcon={<SearchIcon />} onClick={() => showNotification('Caricamento analisi in corso...', 'info')}>Vedi analisi</Button>
             </Paper>
 
             <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff', border: '1px solid #c7d8f0', boxShadow: '0 2px 10px rgba(15,76,129,0.05)' }}>

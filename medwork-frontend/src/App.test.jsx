@@ -32,26 +32,25 @@ beforeEach(() => {
   localStorage.setItem('medwork.runtime.settings', JSON.stringify({ activeCompanyId: '1', activeBranchId: '1' }))
 })
 
-describe('App legacy shell', () => {
+describe('App shell and navigation', () => {
   test('renders the main navigation areas after login', async () => {
     render(<App />)
 
     // The left sidebar should expose the primary areas defined in SIDE_NAV_ITEMS
-    expect(await screen.findByRole('button', { name: /Gestione aziende/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Scadenzario/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Sorveglianza sanitaria/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Gestione Aziende/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Scadenzario & Visite/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Sorveglianza Sanitaria/i })).toBeInTheDocument()
   })
 
-  test('shows schedule tabs after switching to the schedule area', async () => {
+  test('shows visit planning center after switching to schedule area', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    const scheduleButton = await screen.findByRole('button', { name: /Scadenzario/i })
+    const scheduleButton = await screen.findByRole('button', { name: /Scadenzario & Visite/i })
     await user.click(scheduleButton)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /Scadenzario Visite/i }).length).toBeGreaterThan(0)
+      expect(screen.getByText(/Pianificazione Visite/i)).toBeInTheDocument()
     })
-    expect(screen.getAllByText(/Agenda/i).length).toBeGreaterThan(0)
   })
 })

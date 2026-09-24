@@ -1,25 +1,20 @@
-
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert,
+  Avatar,
   Box,
   Button,
   Chip,
   CssBaseline,
+  Divider,
+  FormControl,
+  IconButton,
+  MenuItem,
   Paper,
-  Snackbar,
+  Select,
   Stack,
-  TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { it as itLocale } from 'date-fns/locale'
-import MenuIcon from '@mui/icons-material/Menu'
-import HomeIcon from '@mui/icons-material/Home'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import BusinessIcon from '@mui/icons-material/Business'
 import BadgeIcon from '@mui/icons-material/Badge'
 import AssessmentIcon from '@mui/icons-material/Assessment'
@@ -28,20 +23,14 @@ import EventIcon from '@mui/icons-material/Event'
 import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications'
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import LogoutIcon from '@mui/icons-material/Logout'
-import SearchIcon from '@mui/icons-material/Search'
-import DownloadIcon from '@mui/icons-material/Download'
-import FileDownloadIcon from '@mui/icons-material/FileDownload'
-import UploadIcon from '@mui/icons-material/Upload'
-import Autocomplete from '@mui/material/Autocomplete'
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
+import PersonIcon from '@mui/icons-material/Person'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import FlashOnIcon from '@mui/icons-material/FlashOn'
 import DashboardScadenze from './components/DashboardScadenze'
-import Dashboard from './components/Dashboard'
-import RecallCampaignsCenter from './components/RecallCampaignsCenter'
-import BatchSignatureCenter from './components/BatchSignatureCenter'
-import ComplianceCenter from './components/ComplianceCenter'
+import DashboardMedico from './components/DashboardMedico'
 import CrudEntityView from './components/CrudEntityView'
-import CompanyGroupsCenter from './components/CompanyGroupsCenter'
 import LoginCard from './components/LoginCard'
 import ReportsCenter from './components/ReportsCenter'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
@@ -53,33 +42,9 @@ import SettingsCenter from './components/SettingsCenter'
 import VisitPlanningCenter from './components/VisitPlanningCenter'
 import MedicalVisitStepper from './components/MedicalVisitStepper'
 import WorkersCenter from './components/WorkersCenter'
-import EmployeeProfileDialog from './components/EmployeeProfileDialog'
-import CompanyProfileDialog from './components/CompanyProfileDialog'
-import PhraseTemplatesCenter from './components/PhraseTemplatesCenter'
-import QuestionnairesCenter from './components/QuestionnairesCenter'
-import DashboardMedico from './components/DashboardMedico'
-import AnalyticsCenter from './components/AnalyticsCenter'
-import MigrationCenter from './components/MigrationCenter'
-import CartellaSanitariaCenter from './components/CartellaSanitariaCenter'
-import GiudizioIdoneitaCenter from './components/GiudizioIdoneitaCenter'
-import FirmaGrafometricaCenter from './components/FirmaGrafometricaCenter'
-import GlobalSearchModal from './components/GlobalSearchModal'
-import Allegato3BCenter from './components/Allegato3BCenter'
-import AlertMulticanaleCenter from './components/AlertMulticanaleCenter'
-import PatientAnamnesisForm from './components/PatientAnamnesisForm'
-import AgendaCenter from './components/AgendaCenter'
-import AppointmentsCenter from './components/AppointmentsCenter'
-import ActivityDeadlinesCenter from './components/ActivityDeadlinesCenter'
-import SiteVisitDeadlinesCenter from './components/SiteVisitDeadlinesCenter'
-import NominationsDeadlinesCenter from './components/NominationsDeadlinesCenter'
-import VaccinationDeadlinesCenter from './components/VaccinationDeadlinesCenter'
-import EmployerPortalView from './components/EmployerPortalView'
-import MedicalStaffCenter from './components/MedicalStaffCenter'
 import { ENTITY_CONFIGS } from './constants/entityConfigs'
 import { appendAuditEvent } from './utils/auditTrail'
-import { showNotification } from './utils/notification'
-import { apiGet, apiSend, getHeaders, getTenantId, getToken, getRole, hrExportExcel, hrExportCsv, authLogout } from './services/apiClient'
-import { HrImportExportDialog } from './components/HrImportExportDialog'
+import { apiGet } from './services/apiClient'
 import './App.css'
 
 const SETTINGS_STORAGE_KEY = 'medwork.runtime.settings'
@@ -96,284 +61,113 @@ function readActiveCompanyFromSettings() {
 const ENTITY_BY_KEY = Object.fromEntries(ENTITY_CONFIGS.map((item) => [item.key, item]))
 
 const SIDE_NAV_ITEMS = [
-  { key: 'home', label: 'Il Mio Giorno', icon: DashboardIcon },
-  { key: 'company-management', label: 'Gestione aziende', icon: BusinessIcon },
-  { key: 'workers-management', label: 'Gestione lavoratori', icon: BadgeIcon },
-  { key: 'analysis', label: 'Analisi e relazioni', icon: AssessmentIcon },
-  { key: 'health-surveillance', label: 'Sorveglianza sanitaria', icon: HealthAndSafetyIcon },
-  { key: 'schedule', label: 'Scadenzario', icon: EventIcon },
+  { key: 'health-surveillance', label: 'Sorveglianza Sanitaria', icon: HealthAndSafetyIcon },
+  { key: 'company-management', label: 'Gestione Aziende', icon: BusinessIcon },
+  { key: 'workers-management', label: 'Gestione Lavoratori', icon: BadgeIcon },
+  { key: 'schedule', label: 'Scadenzario & Visite', icon: EventIcon },
+  { key: 'analysis', label: 'Analisi & Relazioni', icon: AssessmentIcon },
   { key: 'administration', label: 'Amministrazione', icon: SettingsApplicationsIcon },
 ]
 
 const COMPANY_TABS = [
-  { key: 'registry', label: 'Anagrafica' },
-  { key: 'groups', label: 'Gruppi aziendali' },
-  { key: 'activities', label: 'Attività' },
-  { key: 'employer-portal', label: 'Portale RSPP/DdL' },
+  { key: 'groups', label: 'Gruppi Aziendali' },
+  { key: 'registry', label: 'Anagrafica Lavoratori' },
+  { key: 'checklist', label: 'Protocolli Sanitari' },
+  { key: 'activities', label: 'Pianificazione Visite' },
 ]
 
-const COMPANY_TAB_TO_MODULE: Record<string, string> = {
-  registry: 'companies',
-  groups: 'company-groups',
+const COMPANY_TAB_TO_MODULE = {
+  groups: 'companies',
+  registry: 'employees',
+  checklist: 'protocols',
   activities: 'schedules',
-  'employer-portal': 'employer-portal',
 }
 
-const SCHEDULE_TABS = [
-  { key: 'agenda', label: 'Agenda' },
-  { key: 'appointments', label: 'Prenotazioni' },
-  { key: 'visit-deadlines', label: 'Scadenzario Visite' },
-  { key: 'activity-deadlines', label: 'Scadenzario Attività' },
-  { key: 'site-visit-deadlines', label: 'Scadenzario Sopralluoghi' },
-  { key: 'nominations', label: 'Scadenzario Nomine' },
-  { key: 'vaccination-deadlines', label: 'Scadenzario Vaccinazioni' },
-]
-
-const ANALYSIS_TABS = [
-  { key: 'relations', label: 'Relazioni aziendali', moduleKey: 'reporting' },
-  { key: 'activities', label: 'Campagne Recall', moduleKey: 'recall-campaigns' },
-  { key: 'charts', label: 'Grafici e analisi', moduleKey: 'analytics' },
-]
-
-const HEALTH_TABS = [
-  { key: 'medical-visit-stepper', label: 'Nuova Visita', moduleKey: 'medical-visit-stepper' },
-  { key: 'giudizio-idoneita', label: 'Centro Giudizi & Firma Massiva', moduleKey: 'giudizio-idoneita' },
-  { key: 'cartella-sanitaria', label: 'Cartella 3A', moduleKey: 'cartella-sanitaria' },
-  { key: 'protocols', label: 'Protocolli & Rischi', moduleKey: 'protocols' },
-  { key: 'sopralluoghi', label: 'Sopralluoghi Art. 25', moduleKey: 'sopralluoghi' },
-  { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
-  { key: 'compliance', label: 'Compliance Radar', moduleKey: 'compliance' },
-]
-
-const ADMIN_TABS = [
-  { key: 'medical-staff-center', label: 'Personale Sanitario', moduleKey: 'medical-staff-center' },
-  { key: 'settings', label: 'Impostazioni', moduleKey: 'settings' },
-  { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
-  { key: 'billing', label: 'Fatturazione', moduleKey: 'billing' },
-  { key: 'tools', label: 'Strumenti', moduleKey: 'tools' },
-  { key: 'audit', label: 'Audit', moduleKey: 'audit' },
-]
-
 const MODULE_ITEMS = [
-  { key: 'home', label: 'Home' },
-  { key: 'dashboard', label: 'Il Mio Giorno', moduleKey: 'dashboard' },
+  { key: 'medical-dashboard', label: 'Dashboard Medico' },
+  { key: 'home', label: 'Dashboard Scadenze' },
   { key: 'companies', label: 'Aziende', entityKey: 'companies' },
   { key: 'company-groups', label: 'Gruppi Aziendali', entityKey: 'company-groups' },
   { key: 'company-contacts', label: 'Figure Aziendali', entityKey: 'company-contacts' },
   { key: 'employees', label: 'Lavoratori' },
+  { key: 'employees-crud', label: 'Lavoratori (CRUD)', entityKey: 'employees' },
   { key: 'protocols', label: 'Protocolli' },
-  { key: 'protocols-registry', label: 'Registro protocolli', entityKey: 'protocols-registry' },
-  { key: 'personal-protocols', label: 'Protocolli personali', entityKey: 'personal-protocols' },
-  { key: 'schedules', label: 'Scadenze e agende' },
-  { key: 'medical-visit-stepper', label: 'Nuova visita (step)' },
-  { key: 'appointments-calendar', label: 'Calendario visite' },
+  { key: 'protocols-registry', label: 'Registro Protocolli', entityKey: 'protocols-registry' },
+  { key: 'personal-protocols', label: 'Protocolli Personali', entityKey: 'personal-protocols' },
+  { key: 'schedules', label: 'Scadenze & Agende' },
+  { key: 'medical-visit-stepper', label: 'Nuova Visita (Step)' },
+  { key: 'appointments-calendar', label: 'Calendario Visite' },
   { key: 'billing', label: 'Fatturazione' },
-  { key: 'audit', label: 'Audit' },
-  { key: 'exam-types', label: 'Cataloghi', entityKey: 'exam-types' },
+  { key: 'audit', label: 'Audit Trail' },
+  { key: 'exam-types', label: 'Cataloghi Esami', entityKey: 'exam-types' },
   { key: 'job-roles', label: 'Mansioni', entityKey: 'job-roles' },
   { key: 'tools', label: 'Strumenti' },
   { key: 'settings', label: 'Impostazioni' },
-  { key: 'reporting', label: 'Reportistica' },
+  { key: 'reporting', label: 'Reportistica & All. 3B' },
   { key: 'branches', label: 'Sedi', entityKey: 'branches' },
   { key: 'departments', label: 'Reparti', entityKey: 'departments' },
   { key: 'work-locations', label: 'Luoghi di Lavoro', entityKey: 'work-locations' },
-  { key: 'risk-factors', label: 'Fattori di rischio', entityKey: 'risk-factors' },
-  { key: 'employee-risks', label: 'Rischi dipendente', entityKey: 'employee-risks' },
-  { key: 'medical-records', label: 'Cartelle sanitarie', entityKey: 'medical-records' },
-  { key: 'medical-visits', label: 'Visite mediche', entityKey: 'medical-visits' },
-  { key: 'anamneses', label: 'Anamnesi guidata', entityKey: 'anamneses' },
-  { key: 'visit-exams', label: 'Esami visita', entityKey: 'visit-exams' },
-  { key: 'scheduled-exams', label: 'Accertamenti', entityKey: 'scheduled-exams' },
-  { key: 'site-visits', label: 'Sopralluoghi', entityKey: 'site-visits' },
+  { key: 'risk-factors', label: 'Fattori di Rischio', entityKey: 'risk-factors' },
+  { key: 'employee-risks', label: 'Rischi Dipendente', entityKey: 'employee-risks' },
+  { key: 'medical-records', label: 'Cartelle Sanitarie (All. 3A)', entityKey: 'medical-records' },
+  { key: 'medical-visits', label: 'Registro Visite Mediche', entityKey: 'medical-visits' },
+  { key: 'anamneses', label: 'Anamnesi Guidata', entityKey: 'anamneses' },
+  { key: 'visit-exams', label: 'Esami Visita', entityKey: 'visit-exams' },
+  { key: 'scheduled-exams', label: 'Accertamenti Strumentali', entityKey: 'scheduled-exams' },
+  { key: 'site-visits', label: 'Sopralluoghi Ambienti', entityKey: 'site-visits' },
   { key: 'vaccinations', label: 'Vaccinazioni', entityKey: 'vaccinations' },
-  { key: 'doctor-availabilities', label: 'Disponibilita medici', entityKey: 'doctor-availabilities' },
-  { key: 'notification-logs', label: 'Log notifiche', entityKey: 'notification-logs' },
-  { key: 'recall-campaigns', label: 'Convocazioni (Recall)', moduleKey: 'recall-campaigns' },
-  { key: 'batch-signature', label: 'Firma Multipla', moduleKey: 'batch-signature' },
-  { key: 'phrase-templates', label: 'Frasi tipo', moduleKey: 'phrase-templates' },
-  { key: 'questionnaires', label: 'Questionari', moduleKey: 'questionnaires' },
-  { key: 'doctor-dashboard', label: 'Dashboard Medico', moduleKey: 'doctor-dashboard' },
-  { key: 'compliance', label: 'Compliance', moduleKey: 'compliance' },
-  { key: 'analytics', label: 'Analytics', moduleKey: 'analytics' },
-  { key: 'cartella-sanitaria', label: 'Cartella Sanitaria 3A', moduleKey: 'cartella-sanitaria' },
-  { key: 'giudizio-idoneita', label: 'Giudizio Idoneità', moduleKey: 'giudizio-idoneita' },
-  { key: 'firma-grafometrica', label: 'Firma Grafometrica', moduleKey: 'firma-grafometrica' },
-  { key: 'allegato-3b', label: 'Allegato 3B INAIL', moduleKey: 'allegato-3b' },
-  { key: 'alert-multicanale', label: 'Alert Multi-canale', moduleKey: 'alert-multicanale' },
-  { key: 'employer-portal', label: 'Portale RSPP/DdL', moduleKey: 'employer-portal' },
-  { key: 'medical-staff-center', label: 'Centro Personale Sanitario', moduleKey: 'medical-staff-center' },
-  { key: 'migration', label: 'Migrazione & Import', moduleKey: 'migration' },
+  { key: 'doctor-availabilities', label: 'Disponibilità Medici', entityKey: 'doctor-availabilities' },
+  { key: 'notification-logs', label: 'Log Notifiche', entityKey: 'notification-logs' },
 ]
 
-const AREA_MODULE_KEYS: Record<string, string[]> = {
-  'company-management': ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'schedules', 'branches', 'departments', 'work-locations'],
-  'workers-management': ['employees', 'employee-risks'],
+const AREA_MODULE_KEYS = {
+  'health-surveillance': ['medical-dashboard', 'medical-visit-stepper', 'appointments-calendar', 'medical-records', 'medical-visits', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits'],
+  'company-management': ['companies', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
+  'workers-management': ['employees', 'employees-crud', 'employee-risks', 'medical-records', 'medical-visits'],
+  schedule: ['schedules', 'home', 'appointments-calendar', 'doctor-availabilities', 'notification-logs'],
   analysis: ['reporting', 'audit'],
-  'health-surveillance': ['medical-visit-stepper', 'giudizio-idoneita', 'cartella-sanitaria', 'protocols', 'sopralluoghi', 'allegato-3b', 'compliance', 'batch-signature', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'analytics', 'firma-grafometrica', 'alert-multicanale', 'medical-staff-center'],
-  schedule: ['schedules', 'appointments-calendar', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
-  administration: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols', 'medical-staff-center'],
+  administration: ['billing', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
 }
 
 const AREA_DEFAULT_MODULE = {
-  home: 'dashboard',
+  'health-surveillance': 'medical-dashboard',
   'company-management': 'companies',
   'workers-management': 'employees',
-  analysis: 'reporting',
-  'health-surveillance': 'medical-visit-stepper',
   schedule: 'schedules',
+  analysis: 'reporting',
   administration: 'settings',
 }
 
-const HIERARCHICAL_SIDE_NAV = [
-  {
-    key: 'company-management',
-    label: 'Gestione aziende',
-    icon: BusinessIcon,
-    children: ['companies', 'company-groups', 'employer-portal', 'company-contacts', 'schedules', 'branches', 'departments', 'work-locations'],
-  },
-  {
-    key: 'workers-management',
-    label: 'Gestione lavoratori',
-    icon: BadgeIcon,
-    children: ['employees', 'employee-risks'],
-  },
-  {
-    key: 'analysis',
-    label: 'Analisi e relazioni',
-    icon: AssessmentIcon,
-    children: ['reporting', 'audit'],
-  },
-  {
-    key: 'health-surveillance',
-    label: 'Sorveglianza sanitaria',
-    icon: HealthAndSafetyIcon,
-    children: ['medical-visit-stepper', 'giudizio-idoneita', 'cartella-sanitaria', 'protocols', 'sopralluoghi', 'allegato-3b', 'compliance', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'doctor-dashboard', 'phrase-templates', 'questionnaires', 'analytics', 'firma-grafometrica', 'alert-multicanale'],
-  },
-  {
-    key: 'schedule',
-    label: 'Scadenzario',
-    icon: EventIcon,
-    children: ['schedules', 'appointments-calendar', 'recall-campaigns', 'doctor-availabilities', 'notification-logs'],
-  },
-  {
-    key: 'administration',
-    label: 'Amministrazione',
-    icon: SettingsApplicationsIcon,
-    children: ['billing', 'migration', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
-  },
-]
-
-const App = () => {
-  // State declarations
+function App() {
   const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
   const [role, setRole] = useState(() => localStorage.getItem('role') || '')
-  const [activeCompanyId, setActiveCompanyIdLocal] = useState(() => readActiveCompanyFromSettings())
-  const [profileEmployee, setProfileEmployee] = useState(null)
-  const [profileCompany, setProfileCompany] = useState(null)
-  const [companyRefreshToken, setCompanyRefreshToken] = useState(0)
-  const [externalAuthProvider, setExternalAuthProvider] = useState<string | null>(null)
-  const [isExternalAuth, setIsExternalAuth] = useState(false)
+  const [selectedArea, setSelectedArea] = useState(() => (role === 'Doctor' ? 'health-surveillance' : 'company-management'))
+  const [selectedCompanyTab, setSelectedCompanyTab] = useState('groups')
+  const [selectedModuleKey, setSelectedModuleKey] = useState(() => (role === 'Doctor' ? 'medical-dashboard' : 'companies'))
+  const [quickCreateRequest, setQuickCreateRequest] = useState(null)
+  const [selectedEmployeeIdForVisit, setSelectedEmployeeIdForVisit] = useState(null)
+  const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
+  const [companiesList, setCompaniesList] = useState([])
 
-  // Multi-tenant support
-  const [tenantId, setTenantIdLocal] = useState<string | null>(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-      return parsed.tenantId || null
-    } catch {
-      return null
-    }
-  })
-  const [selectedTenantSlug, setSelectedTenantSlug] = useState<string | null>(() => {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-      return parsed.tenantSlug || null
-    } catch {
-      return null
-    }
-  })
-  const [selectedCompanyTab, setSelectedCompanyTab] = useState<string>('registry')
-  const [selectedScheduleTab, setSelectedScheduleTab] = useState<string>('visit-deadlines')
-  const [selectedAnalysisTab, setSelectedAnalysisTab] = useState<string>('visits')
-  const [selectedHealthTab, setSelectedHealthTab] = useState<string>('protocols')
-  const [selectedAdminTab, setSelectedAdminTab] = useState<string>('settings')
-
-  // Area / module navigation state
-  const [selectedArea, setSelectedArea] = useState<string>('company-management')
-  const [selectedModuleKey, setSelectedModuleKey] = useState<string>('companies')
-
-  // When opening a new visit from an employee profile, preselect that employee in the stepper
-  const [visitInitialEmployeeId, setVisitInitialEmployeeId] = useState<number | null>(null)
-
-  // When opening cartella sanitaria from an employee row, preselect that employee
-  const [cartellaSanitariaEmployeeId, setCartellaSanitariaEmployeeId] = useState<number | null>(null)
-
-  // Quick create state
-  const [quickCreateRequest, setQuickCreateRequest] = useState<{ entityKey: string; token: number } | null>(null)
-
-  const [hrImportExportOpen, setHrImportExportOpen] = useState(false)
-  const [hrImportExportType, setHrImportExportType] = useState<'import' | 'export' | null>(null)
-
-  // Global search modal state (Ctrl+K / Cmd+K)
-  const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
-  const [searchOptions, setSearchOptions] = useState<any[]>([])
-
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-        e.preventDefault()
-        setGlobalSearchOpen((prev) => !prev)
-      }
-    }
-    window.addEventListener('keydown', handleGlobalKeyDown)
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [])
-
-  // Global graphical notification state (replaces any alert popups)
-  const [globalSnackbar, setGlobalSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error' | 'info' | 'warning'
-  }>({
-    open: false,
-    message: '',
-    severity: 'info',
-  })
-
-  useEffect(() => {
-    const handleNotify = (e: any) => {
-      if (e.detail?.message) {
-        setGlobalSnackbar({
-          open: true,
-          message: e.detail.message,
-          severity: e.detail.severity || 'info',
-        })
-      }
-    }
-    window.addEventListener('medwork:notify' as any, handleNotify)
-    return () => window.removeEventListener('medwork:notify' as any, handleNotify)
-  }, [])
-
-  const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role, tenantId])
+  const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role])
 
   useEffect(() => {
     if (!isAuthenticated) return
 
-    apiGet('/api/master-data/companies').catch((error) => {
-      if (error?.status === 401) {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('role')
-        setToken('')
-        setRole('')
-        setActiveCompanyIdLocal('')
-        setTenantIdLocal(null)
-        setSelectedTenantSlug(null)
-        setSelectedArea('company-management')
-        setSelectedModuleKey('companies')
-        setExternalAuthProvider(null)
-        setIsExternalAuth(false)
-        window.location.reload()
-      }
-    })
+    apiGet('/api/master-data/companies')
+      .then((data) => {
+        if (Array.isArray(data)) setCompaniesList(data)
+      })
+      .catch((error) => {
+        if (error?.status === 401) {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('role')
+          setToken('')
+          setRole('')
+          setSelectedArea('company-management')
+          setSelectedModuleKey('companies')
+        }
+      })
   }, [isAuthenticated])
 
   const roleAwareSideMenu = useMemo(() => {
@@ -385,28 +179,25 @@ const App = () => {
     if (role === 'Admin') return MODULE_ITEMS
 
     const doctorAllowed = new Set([
+      'medical-dashboard',
       'home',
       'employees',
+      'employees-crud',
       'protocols',
       'protocols-registry',
       'personal-protocols',
-      'company-groups',
       'schedules',
       'medical-visit-stepper',
       'appointments-calendar',
       'anamneses',
       'scheduled-exams',
       'vaccinations',
-      'doctor-availabilities',
-      'medical-staff-center',
-      'notification-logs',
       'tools',
       'reporting',
       'medical-records',
       'medical-visits',
       'visit-exams',
       'exam-types',
-      'job-roles',
     ])
 
     return MODULE_ITEMS.filter((item) => doctorAllowed.has(item.key))
@@ -418,202 +209,79 @@ const App = () => {
     return roleAwareModules.filter((item) => allowed.has(item.key))
   }, [roleAwareModules, selectedArea])
 
-  const handleLoginSuccess = (accessToken: string, userRole: string, tenantId?: number, tenantSlug?: string) => {
+  const handleLoginSuccess = (accessToken, userRole) => {
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('role', userRole)
     setToken(accessToken)
     setRole(userRole)
-    if (tenantId != null) {
-      const settings = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-      settings.tenantId = tenantId.toString()
-      if (tenantSlug) settings.tenantSlug = tenantSlug
-      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
-      setTenantIdLocal(tenantId.toString())
-      setSelectedTenantSlug(tenantSlug ?? null)
+    if (userRole === 'Doctor') {
+      setSelectedArea('health-surveillance')
+      setSelectedModuleKey('medical-dashboard')
+    } else {
+      setSelectedArea('company-management')
+      setSelectedModuleKey('companies')
     }
     appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
 
-  const handleLogout = async () => {
-    await authLogout()
+  const handleLogout = () => {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('role')
-    localStorage.removeItem(SETTINGS_STORAGE_KEY)
     setToken('')
     setRole('')
-    setTenantIdLocal(null)
-    setSelectedTenantSlug(null)
-    setActiveCompanyIdLocal('')
-    setExternalAuthProvider(null)
-    setIsExternalAuth(false)
     setSelectedArea('company-management')
     setSelectedCompanyTab('groups')
-    setSelectedScheduleTab('visit-deadlines')
-    setSelectedAnalysisTab('visits')
-    setSelectedHealthTab('protocols')
-    setSelectedAdminTab('settings')
-    setSelectedModuleKey('company-groups')
+    setSelectedModuleKey('companies')
     setQuickCreateRequest(null)
-    setProfileEmployee(null)
-    setProfileCompany(null)
+    setSelectedEmployeeIdForVisit(null)
     appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
   }
-
-  const handleHRImport = async () => {
-    setHrImportExportOpen(true)
-    setHrImportExportType('import')
-  }
-
-  const handleHRExportCsv = async () => {
-    try {
-      const blob = await hrExportCsv()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'employees.csv'
-      a.click()
-      window.URL.revokeObjectURL(url)
-      showNotification('Esportazione CSV completata con successo.', 'success')
-    } catch (err) {
-      console.error(err)
-      showNotification('Errore durante l\'esportazione CSV.', 'error')
-    }
-  }
-
-  const handleHRExportExcel = async () => {
-    try {
-      const blob = await hrExportExcel()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'employees.xlsx'
-      a.click()
-      window.URL.revokeObjectURL(url)
-      showNotification('Esportazione Excel completata con successo.', 'success')
-    } catch (err) {
-      console.error(err)
-      showNotification('Errore durante l\'esportazione Excel.', 'error')
-    }
-  }
-
-  // Add HR import/export dialog to the return statement
-  const renderHRButtons = () => (
-    <Box className="legacy-topbar-right">
-      <Button
-        variant="outlined"
-        startIcon={<DownloadIcon fontSize="small" />}
-        onClick={handleHRExportCsv}
-        sx={{ ml: 1 }}
-      >
-        Esporta CSV
-      </Button>
-      <Button
-        variant="outlined"
-        startIcon={<FileDownloadIcon fontSize="small" />}
-        onClick={handleHRExportExcel}
-        sx={{ ml: 1 }}
-      >
-        Esporta Excel
-      </Button>
-      <Button
-        variant="outlined"
-        startIcon={<UploadIcon fontSize="small" />}
-        onClick={handleHRImport}
-        sx={{ ml: 1 }}
-      >
-        Importa HR
-      </Button>
-    </Box>
-  )
 
   const handleQuickCreateConsumed = () => {
     setQuickCreateRequest(null)
   }
 
-  const handleOpenEmployeeProfile = (employee: any) => {
-    setProfileEmployee(employee)
-  }
-
-
-  const handleOpenCompanyProfile = (company: any) => {
-    setProfileCompany(company)
-  }
-
-  // Global search handlers (F7)
-  const handleSearchInputChange = async (_event: unknown, value: string) => {
-    if (!value || value.length < 2) {
-      setSearchOptions([])
-      return
-    }
-    try {
-      const data = await apiGet(`/api/master-data/employees/search?q=${encodeURIComponent(value)}`)
-      setSearchOptions(Array.isArray(data) ? data : [])
-    } catch {
-      setSearchOptions([])
-    }
-  }
-
-  const handleSearchSelect = (_event: unknown, selected: any) => {
-    if (selected && typeof selected === 'object' && selected.id !== undefined) {
-      handleOpenEmployeeProfile({
-        id: selected.id,
-        firstName: selected.firstName,
-        lastName: selected.lastName,
-        taxCode: selected.taxCode,
-        companyName: selected.companyName,
-      })
-    }
-  }
-
-  // Topbar button handlers (F8)
-  const handleNotificheClick = () => {
-    setSelectedArea('health-surveillance')
-    setSelectedModuleKey('alert-multicanale')
-    appendAuditEvent({ module: 'Navigation', action: 'Open', detail: 'alert-multicanale' })
-  }
-
-  const handleChangeLogClick = () => {
-    showNotification('ChangeLog: aggiornamenti e modifiche recenti alla piattaforma MedWork (v2.0 Beta Hardened).', 'info')
-  }
-
-  const handleManualeClick = () => {
-    showNotification('Manuale: consulta la documentazione online di MedWork per guide e procedure operative D.Lgs. 81/08.', 'info')
-  }
-
-  const handleProfiloClick = () => {
-    showNotification(`Profilo utente attivo — Ruolo: ${getRole() || '-'} | Tenant: ${getTenantId() || '-'}`, 'info')
-  }
-
-  const handleAreaNavigation = (nextArea: string) => {
+  const handleAreaNavigation = (nextArea) => {
     setSelectedArea(nextArea)
+    setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
     if (nextArea === 'company-management') {
-      setSelectedCompanyTab('registry')
-      setSelectedModuleKey('companies')
-    } else {
-      setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
+      setSelectedCompanyTab('groups')
     }
     appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
   }
 
-  const handleSettingsChange = (nextSettings: any) => {
-    setActiveCompanyIdLocal(nextSettings?.activeCompanyId || '')
+  const handleSettingsChange = (nextSettings) => {
+    setActiveCompanyId(nextSettings?.activeCompanyId || '')
   }
 
-  const renderModuleContent = (moduleKey: string) => {
+  const handleCompanyContextSwitch = (newCompanyId) => {
+    setActiveCompanyId(newCompanyId)
+    try {
+      const existing = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...existing, activeCompanyId: newCompanyId }))
+    } catch {}
+  }
+
+  const renderModuleContent = (moduleKey) => {
+    if (moduleKey === 'medical-dashboard') {
+      return (
+        <DashboardMedico
+          onNewVisit={(employeeId) => {
+            setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
+        />
+      )
+    }
+
     if (moduleKey === 'home') {
       return (
         <DashboardScadenze
           activeCompanyId={activeCompanyId}
-          onOpenMedicalVisitCreate={(employeeId?: number | string) => {
-            if (employeeId != null) {
-              setVisitInitialEmployeeId(Number(employeeId))
-            }
-            setSelectedArea('health-surveillance')
-            setSelectedHealthTab('medical-visit-stepper')
-            setSelectedModuleKey('medical-visit-stepper')
-          }}
-          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-          onOpenReports={() => setSelectedModuleKey('reporting')} role={undefined} displayedCompanyName={undefined} />
+          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+          onOpenEmployeeCreate={() => setSelectedModuleKey('employees-crud')}
+          onOpenReports={() => setSelectedModuleKey('reporting')}
+        />
       )
     }
 
@@ -623,131 +291,45 @@ const App = () => {
           config={ENTITY_BY_KEY.companies}
           currentRole={role}
           externalCreateToken={0}
-          refreshToken={companyRefreshToken}
           onExternalCreateConsumed={handleQuickCreateConsumed}
-          onOpenCompanyProfile={handleOpenCompanyProfile}
         />
       )
     }
 
     if (moduleKey === 'employees') {
       return (
-        <>
-          <WorkersCenter
-            activeCompanyId={activeCompanyId}
-            onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-            onOpenEmployeeProfile={handleOpenEmployeeProfile}
-          />
-          <CrudEntityView
-            config={ENTITY_BY_KEY.employees}
-            currentRole={role}
-            hiddenUI
-            activeCompanyId={activeCompanyId}
-            externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
-            onExternalCreateConsumed={handleQuickCreateConsumed}
-            onCreated={() => {
-              // Notifica i listener (es. WorkersCenter) per ricaricare la lista
-              window.dispatchEvent(new CustomEvent('medwork:employee-created'))
-            }}
-          />
-        </>
-      )
-    }
-
-    if (moduleKey === 'dashboard' || moduleKey === 'home') {
-      return (
-        <Dashboard
-          onOpenMedicalVisitCreate={(employeeId) => {
-            if (employeeId) setVisitInitialEmployeeId(Number(employeeId))
-            setSelectedModuleKey('medical-visit-stepper')
-            setSelectedArea('health-surveillance')
-          }}
-          onNavigateModule={(mod) => {
-            setSelectedModuleKey(mod)
-            for (const [areaKey, modKeys] of Object.entries(AREA_MODULE_KEYS)) {
-              if (modKeys.includes(mod)) {
-                setSelectedArea(areaKey)
-                break
-              }
-            }
-          }}
+        <WorkersCenter
+          activeCompanyId={activeCompanyId}
+          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
         />
       )
     }
 
-        if (moduleKey === 'company-groups') {
-          return <CompanyGroupsCenter />
-        }
-
-        if (moduleKey === 'employees-crud') {
+    if (moduleKey === 'employees-crud') {
       return (
         <CrudEntityView
           config={ENTITY_BY_KEY.employees}
           currentRole={role}
           externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
-          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} onOpenEmployeeProfile={handleOpenEmployeeProfile} />
+          onExternalCreateConsumed={handleQuickCreateConsumed}
+        />
       )
     }
 
     if (moduleKey === 'protocols') {
-      return <ProtocolsCenter activeTab={selectedHealthTab} onTabChange={setSelectedHealthTab} />
+      return <ProtocolsCenter />
     }
 
     if (moduleKey === 'schedules') {
-      switch (selectedScheduleTab) {
-        case 'agenda':
-          return <AgendaCenter activeCompanyId={activeCompanyId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
-        case 'appointments':
-          return <AppointmentsCenter activeCompanyId={activeCompanyId} />
-        case 'visit-deadlines':
-          return (
-            <VisitPlanningCenter
-              activeCompanyId={activeCompanyId}
-              activeScheduleTab={selectedScheduleTab}
-              onScheduleTabChange={setSelectedScheduleTab}
-              onOpenMedicalVisitCreate={(employeeId?: number | string) => {
-                if (employeeId != null) {
-                  setVisitInitialEmployeeId(Number(employeeId))
-                }
-                setSelectedArea('health-surveillance')
-                setSelectedHealthTab('medical-visit-stepper')
-                setSelectedModuleKey('medical-visit-stepper')
-              }}
-            />
-          )
-        case 'activity-deadlines':
-          return <ActivityDeadlinesCenter activeCompanyId={activeCompanyId} />
-        case 'site-visit-deadlines':
-          return <SiteVisitDeadlinesCenter activeCompanyId={activeCompanyId} />
-        case 'nominations':
-          return <NominationsDeadlinesCenter activeCompanyId={activeCompanyId} />
-        case 'vaccination-deadlines':
-          return <VaccinationDeadlinesCenter activeCompanyId={activeCompanyId} />
-        default:
-          return (
-            <VisitPlanningCenter
-              activeCompanyId={activeCompanyId}
-              activeScheduleTab={selectedScheduleTab}
-              onScheduleTabChange={setSelectedScheduleTab}
-              onOpenMedicalVisitCreate={(employeeId?: number | string) => {
-                if (employeeId != null) {
-                  setVisitInitialEmployeeId(Number(employeeId))
-                }
-                setSelectedArea('health-surveillance')
-                setSelectedHealthTab('medical-visit-stepper')
-                setSelectedModuleKey('medical-visit-stepper')
-              }}
-            />
-          )
-      }
+      return <VisitPlanningCenter activeCompanyId={activeCompanyId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
     }
 
     if (moduleKey === 'medical-visit-stepper') {
       return (
         <MedicalVisitStepper
-          initialEmployeeId={visitInitialEmployeeId}
+          initialEmployeeId={selectedEmployeeIdForVisit}
           onCreated={() => {
-            setVisitInitialEmployeeId(null)
+            setSelectedEmployeeIdForVisit(null)
             setSelectedModuleKey('medical-visits')
           }}
         />
@@ -755,22 +337,7 @@ const App = () => {
     }
 
     if (moduleKey === 'appointments-calendar') {
-      return <AppointmentsCalendar onCreateAppointment={() => {
-        setSelectedModuleKey('medical-visits')
-        setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })
-      }} />
-    }
-
-    if (moduleKey === 'compliance') {
-      return <ComplianceCenter />
-    }
-
-    if (moduleKey === 'batch-signature') {
-      return <GiudizioIdoneitaCenter />
-    }
-
-    if (moduleKey === 'recall-campaigns') {
-      return <RecallCampaignsCenter />
+      return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
     }
 
     if (moduleKey === 'billing') {
@@ -785,78 +352,12 @@ const App = () => {
       return <ToolsCenter />
     }
 
-    if (moduleKey === 'migration') {
-      return <MigrationCenter />
-    }
-
-    if (moduleKey === 'analytics') {
-      return <AnalyticsCenter />
-    }
-
     if (moduleKey === 'settings') {
       return <SettingsCenter activeCompanyId={activeCompanyId} onSettingsChange={handleSettingsChange} />
     }
 
     if (moduleKey === 'reporting') {
-      return (
-        <ReportsCenter
-          activeCompanyId={activeCompanyId}
-          activeAnalysisTab={selectedAnalysisTab}
-          onAnalysisTabChange={setSelectedAnalysisTab}
-        />
-      )
-    }
-
-    if (moduleKey === 'doctor-dashboard') {
-      return (
-        <DashboardMedico
-          onNewVisit={() => {
-            setSelectedArea('health-surveillance')
-            setSelectedModuleKey('medical-visit-stepper')
-          }}
-        />
-      )
-    }
-
-    if (moduleKey === 'medical-staff-center') {
-      return <MedicalStaffCenter />
-    }
-
-
-    if (moduleKey === 'cartella-sanitaria' || moduleKey === 'medical-records') {
-      return <CartellaSanitariaCenter employeeId={cartellaSanitariaEmployeeId ?? undefined} />
-    }
-
-    if (moduleKey === 'giudizio-idoneita') {
-      return <GiudizioIdoneitaCenter />
-    }
-
-    if (moduleKey === 'employer-portal') {
-      return <EmployerPortalView companyId={activeCompanyId} />
-    }
-
-    if (moduleKey === 'firma-grafometrica') {
-      return <FirmaGrafometricaCenter />
-    }
-
-    if (moduleKey === 'allegato-3b') {
-      return <Allegato3BCenter />
-    }
-
-    if (moduleKey === 'sopralluoghi' || moduleKey === 'site-visits' || moduleKey === 'site-visit-deadlines') {
-      return <SiteVisitDeadlinesCenter activeCompanyId={activeCompanyId} />
-    }
-
-    if (moduleKey === 'alert-multicanale') {
-      return <AlertMulticanaleCenter />
-    }
-
-    if (moduleKey === 'phrase-templates') {
-      return <PhraseTemplatesCenter />
-    }
-
-    if (moduleKey === 'questionnaires') {
-      return <QuestionnairesCenter />
+      return <ReportsCenter />
     }
 
     const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
@@ -868,45 +369,20 @@ const App = () => {
           config={currentEntityConfig}
           currentRole={role}
           externalCreateToken={quickCreateRequest?.entityKey === currentEntityConfig?.key ? quickCreateRequest.token : 0}
-          onExternalCreateConsumed={handleQuickCreateConsumed} onOpenCompanyProfile={undefined} />
+          onExternalCreateConsumed={handleQuickCreateConsumed}
+        />
       )
     }
 
     return <Typography variant="body2">Modulo non disponibile per il ruolo corrente.</Typography>
   }
 
-  const isCompanyTabActive = useMemo(() => {
-    return selectedArea === 'company-management' && Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
-  }, [selectedArea, selectedModuleKey])
+  const renderWorkspaceContent = () => {
+    const companyMode =
+      selectedArea === 'company-management' &&
+      Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
 
-  const isScheduleTabActive = useMemo(() => {
-    return selectedArea === 'schedule' && selectedModuleKey === 'schedules'
-  }, [selectedArea, selectedModuleKey])
-
-  const isAnalysisTabActive = useMemo(() => {
-    return selectedArea === 'analysis' && ANALYSIS_TABS.some((tab) => tab.moduleKey === selectedModuleKey)
-  }, [selectedArea, selectedModuleKey])
-
-  const isAdministrationTabActive = useMemo(() => {
-    return selectedArea === 'administration' && ADMIN_TABS.some((t) => t.moduleKey === selectedModuleKey)
-  }, [selectedArea, selectedModuleKey])
-
-  const isHealthTabActive = useMemo(() => {
-    return selectedArea === 'health-surveillance'
-  }, [selectedArea])
-
-  const isHealthTabMatch = useMemo(() => {
-    if (!selectedHealthTab) return false
-    const tab = HEALTH_TABS.find((t) => t.key === selectedHealthTab)
-    return tab && tab.moduleKey === selectedModuleKey
-  }, [selectedHealthTab, selectedModuleKey])
-
-  const isSettingsTabActive = useMemo(() => {
-    return selectedArea === 'administration' && selectedModuleKey === 'settings'
-  }, [selectedArea, selectedModuleKey])
-
-  const renderContent = () => {
-    if (isCompanyTabActive) {
+    if (companyMode) {
       return (
         <Box className="legacy-workspace-card">
           <Box className="legacy-tab-row">
@@ -926,136 +402,34 @@ const App = () => {
               </button>
             ))}
           </Box>
-
           <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
         </Box>
       )
     }
 
-    if (isScheduleTabActive) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {SCHEDULE_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedScheduleTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => setSelectedScheduleTab(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    if (isAnalysisTabActive) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {ANALYSIS_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedAnalysisTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedAnalysisTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    if (isAdministrationTabActive) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {ADMIN_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedAdminTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedAdminTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    if (isHealthTabActive) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {HEALTH_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedHealthTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  setSelectedHealthTab(tab.key)
-                  setSelectedModuleKey(tab.moduleKey)
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
-    return (
-      <Box className="legacy-workspace-card">
-        <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-      </Box>
-    )
+    return renderModuleContent(selectedModuleKey)
   }
 
-  if (window.location.pathname === '/patient-portal') {
-    const params = new URLSearchParams(window.location.search)
-    const portalToken = params.get('token')
-    return (
-      <>
-        <CssBaseline />
-        <PatientAnamnesisForm token={portalToken} />
-      </>
-    )
-  }
+  const currentAreaLabel = SIDE_NAV_ITEMS.find((i) => i.key === selectedArea)?.label || selectedArea
+  const currentModuleLabel = MODULE_ITEMS.find((i) => i.key === selectedModuleKey)?.label || selectedModuleKey
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={itLocale}>
-        <CssBaseline />
-        <Box className="legacy-shell">
+      <CssBaseline />
+      <Box className="legacy-shell">
         {!isAuthenticated ? (
           <Box className="legacy-login-wrap">
             <Paper className="legacy-login-card" elevation={0}>
-              <Typography variant="h4" component="h1" sx={{ mb: 1 }}>
-                Gestionale Medicina del Lavoro
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2.2, color: '#5f6472' }}>
-                Accesso alla piattaforma amministrativa e sanitaria.
+              <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 1.5 }}>
+                <Avatar sx={{ bgcolor: '#113a7b', width: 44, height: 44 }}>
+                  <LocalHospitalIcon />
+                </Avatar>
+                <Typography variant="h5" component="h1" fontWeight={700} color="#0f1f3d">
+                  MedWork Manager
+                </Typography>
+              </Stack>
+              <Typography variant="body2" sx={{ mb: 2.5, color: '#5f6472', textAlign: 'center' }}>
+                Piattaforma Professionale di Medicina del Lavoro (D.Lgs. 81/08)
               </Typography>
               <LoginCard onLoginSuccess={handleLoginSuccess} />
             </Paper>
@@ -1063,68 +437,83 @@ const App = () => {
         ) : (
           <Box className="legacy-layout">
             <header className="legacy-topbar">
-              <Box className="legacy-topbar-left" sx={{ display: 'flex', alignItems: 'center' }}>
-                <button type="button" className="legacy-icon-btn" aria-label="Menu" onClick={() => {}}>
-                   <MenuIcon fontSize="small" />
-                 </button>
+              <Box className="legacy-topbar-left">
+                <Stack direction="row" spacing={1.2} alignItems="center">
+                  <Avatar sx={{ bgcolor: '#3b82f6', width: 32, height: 32 }}>
+                    <LocalHospitalIcon sx={{ fontSize: 18 }} />
+                  </Avatar>
+                  <Typography variant="subtitle1" fontWeight={700} color="#ffffff" sx={{ letterSpacing: -0.2 }}>
+                    MedWork
+                  </Typography>
+                  <Chip
+                    label="D.Lgs. 81/08"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.12)',
+                      color: '#93c5fd',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      height: 20,
+                    }}
+                  />
+                </Stack>
+              </Box>
 
-                <Button
-                   variant="outlined"
-                   size="small"
-                   startIcon={<SearchIcon fontSize="small" />}
-                   onClick={() => setGlobalSearchOpen(true)}
-                   sx={{
-                     ml: 2,
-                     bgcolor: 'white',
-                     color: 'text.primary',
-                     borderColor: '#d0d7de',
-                     borderRadius: 2,
-                     height: 36,
-                     px: 2,
-                     textTransform: 'none',
-                     display: 'flex',
-                     justifyContent: 'space-between',
-                     minWidth: 280,
-                     '&:hover': { bgcolor: '#f6f8fa', borderColor: '#1976d2' }
-                   }}
-                 >
-                   <span>Cerca lavoratore, azienda...</span>
-                   <Chip label="Ctrl+K" size="small" sx={{ height: 20, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#f0f2f5', ml: 1.5 }} />
-                 </Button>
-               </Box>
-               <Box className="legacy-topbar-right">
-                 <button type="button" className="legacy-toolbar-link" aria-label="Notifiche" onClick={handleNotificheClick}>
-                   <NotificationsNoneIcon fontSize="small" />
-                 </button>
-                 <span className="legacy-divider" />
-                 <span className="legacy-language">(it)</span>
-                 <span className="legacy-divider" />
-                 <button type="button" className="legacy-toolbar-link" onClick={handleChangeLogClick}>ChangeLog</button>
-                 <button type="button" className="legacy-toolbar-link" onClick={handleManualeClick}>Manuale</button>
-                 <button type="button" className="legacy-toolbar-link" onClick={handleProfiloClick}>
-                   <ManageAccountsIcon fontSize="small" />
-                   Profilo
-                 </button>
-                <button type="button" className="legacy-toolbar-link" onClick={handleLogout}>
+              {/* CENTER CONTEXT SELECTOR */}
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  Azienda Attiva:
+                </Typography>
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <Select
+                    value={activeCompanyId || ''}
+                    onChange={(e) => handleCompanyContextSwitch(e.target.value)}
+                    displayEmpty
+                    sx={{
+                      height: 30,
+                      color: '#ffffff',
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      fontSize: '12px',
+                      borderRadius: 1.5,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#93c5fd' },
+                      '& .MuiSvgIcon-root': { color: '#ffffff' },
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>🌐 Tutte le Aziende (Globale)</em>
+                    </MenuItem>
+                    {companiesList.map((c) => (
+                      <MenuItem key={c.id} value={String(c.id)}>
+                        {c.name || c.ragioneSociale || `Azienda #${c.id}`}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box className="legacy-topbar-right">
+                <Chip
+                  icon={<PersonIcon sx={{ fontSize: 14, color: '#ffffff !important' }} />}
+                  label={role === 'Doctor' ? 'Medico Competente' : 'Amministratore / Segreteria'}
+                  size="small"
+                  sx={{
+                    bgcolor: role === 'Doctor' ? '#059669' : '#2563eb',
+                    color: '#ffffff',
+                    fontWeight: 600,
+                    fontSize: '11px',
+                  }}
+                />
+                <span className="legacy-divider" />
+                <Tooltip title="Notifiche">
+                  <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+                    <NotificationsNoneIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <button type="button" className="legacy-toolbar-link" onClick={handleLogout} title="Disconnetti sessione">
                   <LogoutIcon fontSize="small" />
-                  Logout
+                  Esci
                 </button>
-                <Button
-                  variant="outlined"
-                  startIcon={<DownloadIcon fontSize="small" />}
-                  onClick={handleHRExportCsv}
-                  sx={{ ml: 1 }}
-                >
-                  Esporta CSV
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<FileDownloadIcon fontSize="small" />}
-                  onClick={handleHRExportExcel}
-                  sx={{ ml: 1 }}
-                >
-                  Esporta Excel
-                </Button>
               </Box>
             </header>
 
@@ -1149,95 +538,70 @@ const App = () => {
               </aside>
 
               <main className="legacy-main-content">
-                {renderContent()}
+                <Box className="legacy-content-wrapper">
+                  {/* BREADCRUMB & CONTEXT LINE */}
+                  <Box className="legacy-context-line">
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        {currentAreaLabel}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        /
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
+                        {currentModuleLabel}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="caption" color="text.secondary">
+                        Sessione: {role}
+                      </Typography>
+                      {activeCompanyId && (
+                        <Chip
+                          size="small"
+                          label={`Azienda: #${activeCompanyId}`}
+                          color="info"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '11px' }}
+                        />
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {/* MODULE CHIP STRIP */}
+                  {!!areaModuleItems.length && areaModuleItems.length > 1 && (
+                    <Box className="legacy-module-strip has-modules">
+                      {areaModuleItems.map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className={`legacy-module-chip ${selectedModuleKey === item.key ? 'is-active' : ''}`}
+                          onClick={() => {
+                            setSelectedModuleKey(item.key)
+                            const matchingTab = Object.entries(COMPANY_TAB_TO_MODULE).find(([, value]) => value === item.key)?.[0]
+                            if (matchingTab) {
+                              setSelectedCompanyTab(matchingTab)
+                            }
+                            appendAuditEvent({ module: 'Navigation', action: 'Open', detail: item.key })
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* WORKSPACE AREA */}
+                  {renderWorkspaceContent()}
+                </Box>
               </main>
             </Box>
           </Box>
         )}
-        <EmployeeProfileDialog
-          open={Boolean(profileEmployee)}
-          onClose={() => setProfileEmployee(null)}
-          employee={profileEmployee}
-          onSaveEmployee={(updated: any) => {
-            setProfileEmployee((current: any) => current ? { ...current, ...updated } : current
-            )
-          }}
-          onOpenMedicalVisitCreate={(employeeId: any) => {
-            setProfileEmployee(null)
-            setVisitInitialEmployeeId(employeeId != null ? Number(employeeId) : null)
-            setSelectedModuleKey('medical-visit-stepper')
-          }} onEditEmployee={undefined} />
-        <CompanyProfileDialog
-          open={Boolean(profileCompany)}
-          onClose={() => setProfileCompany(null)}
-          company={profileCompany}
-          onSaveCompany={(updated: any) => {
-            setProfileCompany((curr: any) => (curr ? { ...curr, ...updated } : null))
-            setCompanyRefreshToken((prev) => prev + 1)
-          }}
-        />
-        <HrImportExportDialog
-          open={hrImportExportOpen}
-          onClose={() => setHrImportExportOpen(false)}
-          onImportSuccess={() => {
-            setHrImportExportOpen(false)
-            setHrImportExportType(null)
-          }}
-          onExportSuccess={() => {
-            setHrImportExportOpen(false)
-            setHrImportExportType(null)
-          }}
-        />
-        <GlobalSearchModal
-          open={globalSearchOpen}
-          onClose={() => setGlobalSearchOpen(false)}
-          onSelectWorker={(emp: any) => handleOpenEmployeeProfile(emp)}
-          onStartVisit={(emp: any) => {
-            setSelectedArea('health-surveillance')
-            setSelectedHealthTab('medical-visit-stepper')
-            setSelectedModuleKey('medical-visit-stepper')
-          }}
-          onSelectCompany={(comp: any) => handleOpenCompanyProfile(comp)}
-          onNavigateModule={(mod: string) => {
-            setSelectedModuleKey(mod)
-            // find parent area if applicable
-            for (const [areaKey, modKeys] of Object.entries(AREA_MODULE_KEYS)) {
-              if (modKeys.includes(mod)) {
-                setSelectedArea(areaKey)
-                if (areaKey === 'health-surveillance') {
-                  setSelectedHealthTab(mod)
-                } else if (areaKey === 'analysis') {
-                  const tab = ANALYSIS_TABS.find(t => t.moduleKey === mod)
-                  if (tab) setSelectedAnalysisTab(tab.key)
-                } else if (areaKey === 'schedule') {
-                  setSelectedScheduleTab(mod)
-                }
-                break
-              }
-            }
-          }}
-        />
       </Box>
-
-      {/* Global Graphical Toast / Notification (replaces native alert popups) */}
-      <Snackbar
-        open={globalSnackbar.open}
-        autoHideDuration={4500}
-        onClose={() => setGlobalSnackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setGlobalSnackbar((prev) => ({ ...prev, open: false }))}
-          severity={globalSnackbar.severity}
-          variant="filled"
-          sx={{ width: '100%', minWidth: 280, boxShadow: 4, fontWeight: 600, borderRadius: 2 }}
-        >
-          {globalSnackbar.message}
-        </Alert>
-      </Snackbar>
-      </LocalizationProvider>
     </>
   )
 }
 
 export default App
+

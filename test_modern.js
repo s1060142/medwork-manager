@@ -1,0 +1,21 @@
+const { chromium } = require('playwright')
+;(async () => {
+  const browser = await chromium.launch({ headless: true, timeout: 15000 })
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
+  await page.goto('http://localhost:5173/', { waitUntil: 'networkidle', timeout: 10000 })
+  console.log('Title:', await page.title())
+  await page.screenshot({ path: '/tmp/modern_frontend.png', fullPage: false })
+  console.log('Screenshot saved to /tmp/modern_frontend.png')
+  // Fill login
+  await page.fill('input[name="username"], input[placeholder*="Username"], input[type="text"]', 'doctor')
+  await page.fill('input[name="password"], input[type="password"]', 'Doctor123!')
+  await page.click('button[type="submit"], button:has-text("Accedi")')
+  await page.waitForTimeout(3000)
+  console.log('After login - URL:', page.url())
+  await page.screenshot({ path: '/tmp/after_login.png', fullPage: true })
+  console.log('After login screenshot saved')
+  // Navigate to a module
+  const navLink = await page.locator('nav a, nav button, [aria-label*="sidebar"] button, .MuiButtonBase-root').first()
+  console.log('Nav elements found:', await navLink.count())
+  await browser.close()
+})()
