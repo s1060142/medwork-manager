@@ -1,0 +1,1596 @@
+npm notice run medwork-frontend@0.0.0 dev
+npm notice run vite
+[2m17:38:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m17:38:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[39m   }
+ [90m 216 |[39m
+[31m[1m>[22m[39m[90m 217 |[39m   [36mconst[39m [deleteConfirm[33m,[39m setDeleteConfirm] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m employeeId[33m?[39m[33m:[39m number[33m;[39m label[33m?[39m[33m:[39m string }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m employeeId[33m:[39m undefined[33m,[39m label[33m:[39m [32m''[39m })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 218 |[39m
+ [90m 219 |[39m   [36mconst[39m handleDeleteEmployee [33m=[39m [36masync[39m (row) [33m=>[39m {
+ [90m 220 |[39m     [36mconst[39m employeeId [33m=[39m [33mNumber[39m(row[33m.[39mid)[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+[2m17:38:40[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:38:40[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:41:13[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m17:41:13[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[39m   }
+ [90m 216 |[39m
+[31m[1m>[22m[39m[90m 217 |[39m   [36mconst[39m [deleteConfirm[33m,[39m setDeleteConfirm] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m employeeId[33m?[39m[33m:[39m number[33m;[39m label[33m?[39m[33m:[39m string }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m employeeId[33m:[39m undefined[33m,[39m label[33m:[39m [32m''[39m })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 218 |[39m
+ [90m 219 |[39m   [36mconst[39m handleDeleteEmployee [33m=[39m [36masync[39m (row) [33m=>[39m {
+ [90m 220 |[39m     [36mconst[39m employeeId [33m=[39m [33mNumber[39m(row[33m.[39mid)[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+[2m17:41:13[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:41:13[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:41:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[39m   }
+ [90m 216 |[39m
+[31m[1m>[22m[39m[90m 217 |[39m   [36mconst[39m [deleteConfirm[33m,[39m setDeleteConfirm] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m employeeId[33m?[39m[33m:[39m number[33m;[39m label[33m?[39m[33m:[39m string }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m employeeId[33m:[39m undefined[33m,[39m label[33m:[39m [32m''[39m })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 218 |[39m
+ [90m 219 |[39m   [36mconst[39m handleDeleteEmployee [33m=[39m [36masync[39m (row) [33m=>[39m {
+ [90m 220 |[39m     [36mconst[39m employeeId [33m=[39m [33mNumber[39m(row[33m.[39mid)[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+[2m17:41:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m17:41:16[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:41:16[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:05[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[39m   }
+ [90m 216 |[39m
+[31m[1m>[22m[39m[90m 217 |[39m   [36mconst[39m [deleteConfirm[33m,[39m setDeleteConfirm] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m employeeId[33m?[39m[33m:[39m number[33m;[39m label[33m?[39m[33m:[39m string }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m employeeId[33m:[39m undefined[33m,[39m label[33m:[39m [32m''[39m })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 218 |[39m
+ [90m 219 |[39m   [36mconst[39m handleDeleteEmployee [33m=[39m [36masync[39m (row) [33m=>[39m {
+ [90m 220 |[39m     [36mconst[39m employeeId [33m=[39m [33mNumber[39m(row[33m.[39mid)[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+[2m17:43:05[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m17:43:05[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:05[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:38[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m17:43:38[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[39m   }
+ [90m 216 |[39m
+[31m[1m>[22m[39m[90m 217 |[39m   [36mconst[39m [deleteConfirm[33m,[39m setDeleteConfirm] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m employeeId[33m?[39m[33m:[39m number[33m;[39m label[33m?[39m[33m:[39m string }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m employeeId[33m:[39m undefined[33m,[39m label[33m:[39m [32m''[39m })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 218 |[39m
+ [90m 219 |[39m   [36mconst[39m handleDeleteEmployee [33m=[39m [36masync[39m (row) [33m=>[39m {
+ [90m 220 |[39m     [36mconst[39m employeeId [33m=[39m [33mNumber[39m(row[33m.[39mid)[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+[2m17:43:38[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:38[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:53[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m17:43:53[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:04:01[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:04:01[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\WorkersCenter.jsx: Unexpected token, expected "," (217:68)
+
+[0m [90m 215 |[31m   }
+ [90m 216 |[31m
+[31m[1m>[22m[31m[90m 217 |[31m   [36mconst[31m [deleteConfirm[33m,[31m setDeleteConfirm] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m employeeId[33m?[31m[33m:[31m number[33m;[31m label[33m?[31m[33m:[31m string }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m employeeId[33m:[31m undefined[33m,[31m label[33m:[31m [32m''[31m })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 218 |[31m
+ [90m 219 |[31m   [36mconst[31m handleDeleteEmployee [33m=[31m [36masync[31m (row) [33m=>[31m {
+ [90m 220 |[31m     [36mconst[31m employeeId [33m=[31m [33mNumber[31m(row[33m.[31mid)[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/WorkersCenter.jsx[39m:217:68
+[33m  219 |    const handleDeleteEmployee = async (row) => {
+  220 |      const employeeId = Number(row.id)
+  221 |      const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
+      |                                       ^
+  222 |      setDeleteConfirm({ open: true, employeeId, label })
+  223 |    }[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:04:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[39m   }
+ [90m 558 |[39m
+[31m[1m>[22m[39m[90m 559 |[39m   [36mconst[39m [unsavedDialog[33m,[39m setUnsavedDialog] [33m=[39m useState[33m<[39m{ open[33m:[39m boolean[33m;[39m onConfirm[33m:[39m () [33m=>[39m [36mvoid[39m }[33m>[39m({ open[33m:[39m [36mfalse[39m[33m,[39m onConfirm[33m:[39m () [33m=>[39m {} })
+ [90m     |[39m                                                                     [31m[1m^[22m[39m
+ [90m 560 |[39m
+ [90m 561 |[39m   [36mconst[39m confirmClose [33m=[39m () [33m=>[39m {
+ [90m 562 |[39m     [36mif[39m ([33m![39mdirty) [36mreturn[39m closeForm()[0m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+[2m18:04:28[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:04:52[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:05:51[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:06:45[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:07:14[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:09:44[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)
+[2m18:09:55[22m [31m[1m[vite][22m[39m [31mInternal server error: C:\github\medwork-manager\medwork-frontend\src\components\CrudEntityView.jsx: Unexpected token, expected "," (559:68)
+
+[0m [90m 557 |[31m   }
+ [90m 558 |[31m
+[31m[1m>[22m[31m[90m 559 |[31m   [36mconst[31m [unsavedDialog[33m,[31m setUnsavedDialog] [33m=[31m useState[33m<[31m{ open[33m:[31m boolean[33m;[31m onConfirm[33m:[31m () [33m=>[31m [36mvoid[31m }[33m>[31m({ open[33m:[31m [36mfalse[31m[33m,[31m onConfirm[33m:[31m () [33m=>[31m {} })
+ [90m     |[31m                                                                     [31m[1m^[22m[31m
+ [90m 560 |[31m
+ [90m 561 |[31m   [36mconst[31m confirmClose [33m=[31m () [33m=>[31m {
+ [90m 562 |[31m     [36mif[31m ([33m![31mdirty) [36mreturn[31m closeForm()[0m[39m
+  Plugin: [35mvite:react-babel[39m
+  File: [36mC:/github/medwork-manager/medwork-frontend/src/components/CrudEntityView.jsx[39m:559:68
+[33m  578 |  
+  579 |    const confirmDeleteRow = async () => {
+  580 |      if (!confirmDelete || !config.deleteEndpoint) return
+      |                                ^
+  581 |  
+  582 |      try {[39m
+      at constructor (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:369:19)
+      at JSXParserMixin.raise (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6620:19)
+      at JSXParserMixin.unexpected (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6640:16)
+      at JSXParserMixin.expect (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:6920:12)
+      at JSXParserMixin.parseObjectLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11851:14)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11365:23)
+      at JSXParserMixin.parseExprAtom (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:4780:20)
+      at JSXParserMixin.parseExprSubscripts (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11102:23)
+      at JSXParserMixin.parseUpdate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11087:21)
+      at JSXParserMixin.parseMaybeUnary (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11067:23)
+      at JSXParserMixin.parseMaybeUnaryOrPrivate (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10920:61)
+      at JSXParserMixin.parseExprOpBaseRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11007:34)
+      at JSXParserMixin.parseExprOpRightExpr (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:11002:21)
+      at JSXParserMixin.parseExprOp (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10968:27)
+      at JSXParserMixin.parseExprOps (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10929:17)
+      at JSXParserMixin.parseMaybeConditional (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10902:23)
+      at JSXParserMixin.parseMaybeAssign (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10852:21)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:39
+      at JSXParserMixin.allowInAnd (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12450:16)
+      at JSXParserMixin.parseMaybeAssignAllowIn (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:10821:17)
+      at JSXParserMixin.parseVar (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13413:91)
+      at JSXParserMixin.parseVarStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13259:10)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12880:23)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseStatementListItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12776:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:61)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseBlock (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13326:10)
+      at JSXParserMixin.parseFunctionBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12129:24)
+      at JSXParserMixin.parseFunctionBodyAndFinish (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12115:10)
+      at C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13474:12
+      at JSXParserMixin.withSmartMixTopicForbiddingContext (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12432:14)
+      at JSXParserMixin.parseFunction (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13473:10)
+      at JSXParserMixin.parseFunctionStatement (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13154:17)
+      at JSXParserMixin.parseStatementContent (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12820:21)
+      at JSXParserMixin.parseStatementLike (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12796:17)
+      at JSXParserMixin.parseModuleItem (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12773:17)
+      at JSXParserMixin.parseBlockOrModuleBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13345:36)
+      at JSXParserMixin.parseBlockBody (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:13338:10)
+      at JSXParserMixin.parseProgram (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12651:10)
+      at JSXParserMixin.parseTopLevel (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:12641:25)
+      at JSXParserMixin.parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14517:25)
+      at parse (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\parser\lib\index.js:14551:38)
+      at parser (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\parser\index.js:41:34)
+      at parser.next (<anonymous>)
+      at normalizeFile (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\normalize-file.js:51:37)
+      at normalizeFile.next (<anonymous>)
+      at run (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transformation\index.js:22:50)
+      at run.next (<anonymous>)
+      at transform (C:\github\medwork-manager\medwork-frontend\node_modules\@babel\core\lib\transform.js:22:33)

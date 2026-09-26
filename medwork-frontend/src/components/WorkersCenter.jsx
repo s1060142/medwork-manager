@@ -4,6 +4,11 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControlLabel,
   MenuItem,
   Paper,
@@ -209,18 +214,24 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     }
   }
 
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, employeeId: undefined, label: '' })
+
   const handleDeleteEmployee = async (row) => {
     const employeeId = Number(row.id)
     const label = `${row.lastName || ''} ${row.firstName || ''}`.trim() || `ID ${employeeId}`
-    if (!window.confirm(`Sei sicuro di voler eliminare il lavoratore "${label}"? L'operazione non è reversibile.`)) {
-      return
-    }
+    setDeleteConfirm({ open: true, employeeId, label })
+  }
+
+  const handleDeleteConfirm = async () => {
+    const { employeeId, label } = deleteConfirm
+    setDeleteConfirm({ open: false, employeeId: undefined, label: '' })
+    if (!employeeId) return
     try {
       await apiSend('DELETE', `/api/admin-data/employees/${employeeId}`)
       setEmployees((previous) => previous.filter((item) => Number(item.id) !== employeeId))
       showNotification('Lavoratore eliminato con successo.', 'success')
       if (onDeleteConfirm) {
-        onDeleteConfirm(row)
+        onDeleteConfirm(deleteConfirm)
       }
     } catch (requestError) {
       showNotification(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.', 'error')
@@ -722,6 +733,19 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
       {!!error && <Alert severity="error">{error}</Alert>}
       {loading && <Alert severity="info">Caricamento dati in corso...</Alert>}
+      {/* DELETE CONFIRMATION DIALOG */}
+      <Dialog open={deleteConfirm.open} onClose={() => setDeleteConfirm({ open: false, employeeId: undefined, label: '' })}>
+        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Conferma eliminazione</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontSize: 14, color: '#4b5563', mt: 1 }}>
+            Sei sicuro di voler eliminare il lavoratore <strong>{deleteConfirm.label}</strong>? L'operazione non è reversibile.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="outlined" onClick={() => setDeleteConfirm({ open: false, employeeId: undefined, label: '' })}>Annulla</Button>
+          <Button variant="contained" color="error" onClick={handleDeleteConfirm}>Elimina</Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

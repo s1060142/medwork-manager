@@ -30,7 +30,7 @@ test('navigation sidebar opens areas and modules', async ({ page }) => {
 
   // Sorveglianza Sanitaria -> Nuova Visita sub-tab becomes available
   await page.click('button:has-text("Sorveglianza sanitaria")')
-  await expect(page.locator('button:has-text("Nuova Visita")')).toBeVisible({ timeout: 10000 })
+  await expect(page.locator('button:has-text("Nuova Visita")').first()).toBeVisible({ timeout: 10000 })
 })
 
 test('company context selection updates dashboard greeting', async ({ page }) => {

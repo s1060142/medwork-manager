@@ -6,10 +6,12 @@ Cosa funziona oggi, organizzato per modulo.
 ---
 
 ## 🖥️ Interfaccia Utente & SaaS Navigation Shell
-- **Modern SaaS Shell**: Layout moderno con sidebar organizzata per flussi clinici/amministrativi, limitazione larghezza viewport (1600px max-width) anti-stretching su monitor ultrawide e breadcrumb bar dinamica.
-- **Doctor Cockpit Hub**: Landing automatica per Medico Competente con indicatori real-time di scadenze a 7 giorni, visite scadute, triage clinico e tunnel diretto *"⚡ Avvia Visita"*.
+- **Modern SaaS Shell**: Layout moderno con sidebar organizzata per flussi clinici/amministrativi, limitazione larghezza viewport (1600px max-width) anti-stretching su monitor ultrawide e breadcrumb bar dinamica. I moduli dell'area attiva sono selezionabili dalla strip di chip sotto la breadcrumb.
+- **Cockpit "Il Mio Giorno"**: Landing per Medico Competente (e accessibile anche all'Admin) con KPI *Visite in programma oggi / Giudizi da firmare / Scadenze visite 7 gg / Compliance D.Lgs. 81/08*, agenda pazienti del giorno con **Avvia Visita** in 1 clic, Morning Digest e shortcut (Batch Visit Planner, Recall, Smart Protocol Generator). I drill-down delle KPI vengono risolti su moduli esistenti (`handleModuleNavigation`).
+- **Doctor Cockpit Hub**: `DashboardMedico` disponibile come secondo modulo dell'area *Sorveglianza Sanitaria*, con indicatori real-time di scadenze a 7 giorni, visite scadute, triage clinico e tunnel diretto *"⚡ Avvia Visita"*.
 - **Company Context Switcher**: Selettore rapido globale dell'azienda attiva integrato nell'header con persistenza in `localStorage`.
 - **MUI X Date Localization**: Integrazione a livello root di `LocalizationProvider` con `AdapterDateFns` e locale italiano (`it`).
+- **Full Module Integration & Reachability**: Tutti i 27 componenti e centri specialistici del frontend sono integrati e accessibili nelle rispettive macro-aree di `App.tsx` (Firma Massiva/Giudizio Idoneità, Cartelle 3A, Scadenzari specialistici, Recall & Convocazioni, Import HR, Ricerca Globale `Ctrl+K`, Allegato 3B Center, Analytics, Migration, Employer Portal).
 
 ---
 

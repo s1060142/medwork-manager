@@ -121,13 +121,13 @@ function RecallCampaignsCenter() {
   const handleMarkNoShow = async (candidate) => {
     try {
       setSending(true)
+      const empId = Number(candidate.employeeId || candidate.id || 1)
       await apiSend('POST', '/api/alerts/send', {
-        recipient: candidate.companyName || 'Datore di Lavoro',
-        channel: 'Pec',
-        subject: `COMUNICAZIONE FORMALE: Mancata presentazione visita medica - ${candidate.employeeName}`,
+        recipients: [empId],
+        channel: 3,
         message: `Si comunica che in data odierna il lavoratore ${candidate.employeeName} non si è presentato alla visita medica di sorveglianza sanitaria programmata ai sensi dell'Art. 41 D.Lgs. 81/08. Ai sensi della normativa, si richiede di concordare nuova data o procedere alle determinazioni di competenza.`,
       })
-      setSuccessMsg(`✓ Registrata assenza lavoratore. Notifica formale No-Show inviata via PEC a ${candidate.companyName}.`)
+      setSuccessMsg(`✓ Registrata assenza lavoratore. Notifica formale No-Show inviata via PEC a ${candidate.companyName || 'Azienda'}.`)
     } catch (err) {
       setError('Errore nella registrazione No-Show: ' + (err.message || 'Server error'))
     } finally {

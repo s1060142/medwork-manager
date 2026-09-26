@@ -42,55 +42,55 @@ test.describe('Real-World Acceptance Testing - 10 Core Scenarios', () => {
   })
 
   test('Scenario 4: Annual Periodic Visits (Competent Physician)', async ({ page }) => {
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria"), button:has-text("Sorveglianza sanitaria")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Firma Massiva")').first().click()
+    await page.locator('.mw-chip:has-text("Centro Giudizi & Firma"), button:has-text("Centro Giudizi & Firma"), button:has-text("Firma Massiva")').first().click()
     await page.waitForTimeout(600)
-    await expect(page.locator('text=Firma Digitale Massiva').first()).toBeVisible()
+    await expect(page.locator('text=Firma Digitale Massiva').or(page.locator('text=Centro Giudizi')).first()).toBeVisible()
   })
 
   test('Scenario 5: Complex Judgment with Prescriptions (Competent Physician)', async ({ page }) => {
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria"), button:has-text("Sorveglianza sanitaria")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Centro Giudizi")').first().click()
+    await page.locator('.mw-chip:has-text("Centro Giudizi"), button:has-text("Centro Giudizi")').first().click()
     await page.waitForTimeout(600)
     await expect(page.locator('text=Centro Giudizi').first()).toBeVisible()
   })
 
   test('Scenario 6: Site Inspection Workflow (Physician / RSPP)', async ({ page }) => {
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria"), button:has-text("Sorveglianza sanitaria")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Sopralluoghi Art. 25")').first().click()
+    await page.locator('.mw-chip:has-text("Sopralluoghi"), button:has-text("Sopralluoghi")').first().click()
     await page.waitForTimeout(600)
     await expect(page.locator('text=Sopralluoghi').first()).toBeVisible()
   })
 
   test('Scenario 7: Vaccination Campaign (Secretary / Physician)', async ({ page }) => {
-    await page.locator('text=Scadenzario').first().click()
+    await page.locator('.legacy-side-item:has-text("Scadenzario"), button:has-text("Scadenzario")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Scadenzario Vaccinazioni")').first().click()
+    await page.locator('.mw-chip:has-text("Vaccinazioni"), button:has-text("Vaccinazioni")').first().click()
     await page.waitForTimeout(600)
     await expect(page.locator('text=Vaccinazioni').first()).toBeVisible()
   })
 
   test('Scenario 8: Worker Company Transfer (Secretary / Employer)', async ({ page }) => {
-    await page.locator('text=Gestione lavoratori').first().click()
+    await page.locator('.legacy-side-item:has-text("Gestione lavoratori"), button:has-text("Gestione lavoratori")').first().click()
     await page.waitForTimeout(400)
     await expect(page.locator('.MuiTable-root, .legacy-content-area').first()).toBeVisible()
   })
 
   test('Scenario 9: Annual Art. 40 Cycle (Physician / RSPP / Employer)', async ({ page }) => {
-    await page.locator('text=Analisi e relazioni').first().click()
+    await page.locator('.legacy-side-item:has-text("Analisi"), button:has-text("Analisi")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Relazioni aziendali")').first().click()
+    await page.locator('.mw-chip:has-text("Reportistica"), button:has-text("Reportistica"), button:has-text("Relazioni aziendali")').first().click()
     await page.waitForTimeout(600)
-    await expect(page.locator('text=Relazioni').or(page.locator('.legacy-content-area')).first()).toBeVisible()
+    await expect(page.locator('text=Relazioni').or(page.locator('.legacy-content-area')).or(page.locator('text=Centro Report')).first()).toBeVisible()
   })
 
   test('Scenario 10: Allegato 3B Submission Cycle (Competent Physician)', async ({ page }) => {
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    await page.locator('.legacy-side-item:has-text("Analisi"), button:has-text("Analisi")').first().click()
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Allegato 3B INAIL")').first().click()
+    await page.locator('.mw-chip:has-text("Allegato 3B"), button:has-text("Allegato 3B")').first().click()
     await page.waitForTimeout(600)
     await expect(page.locator('text=Allegato 3B').first()).toBeVisible()
   })

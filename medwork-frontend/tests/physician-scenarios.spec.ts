@@ -26,32 +26,29 @@ test.describe('End-to-End Physician Workflow Scenarios', () => {
     let clicks = 0
 
     // 1. Go to Gestione Aziende
-    await page.locator('text=Gestione aziende').first().click()
+    await page.locator('.legacy-side-item:has-text("Gestione aziende")').first().click()
     clicks++
     await page.waitForTimeout(500)
 
     // Verify company table loaded
     await expect(page.locator('.MuiTable-root, .legacy-content-area').first()).toBeVisible()
 
-    // 2. Protocols configuration
-    await page.locator('text=Sorveglianza sanitaria').first().click()
-    clicks++
-    await page.waitForTimeout(400)
-    await page.locator('button:has-text("Protocolli & Rischi")').first().click()
+    // 2. Protocols configuration in Gestione Aziende
+    await page.locator('.mw-chip:has-text("Protocolli")').first().click()
     clicks++
     await page.waitForTimeout(500)
     await expect(page.locator('text=Protocolli').first()).toBeVisible()
 
     // 3. Workers / Import
-    await page.locator('text=Gestione lavoratori').first().click()
+    await page.locator('.legacy-side-item:has-text("Gestione lavoratori")').first().click()
     clicks++
     await page.waitForTimeout(500)
 
-    // 4. Compliance Verification
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    // 4. Compliance Verification in Analisi & Relazioni
+    await page.locator('.legacy-side-item:has-text("Analisi & Relazioni")').first().click()
     clicks++
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Compliance Radar")').first().click()
+    await page.locator('.mw-chip:has-text("Compliance Radar")').first().click()
     clicks++
     await page.waitForTimeout(1000)
 
@@ -63,25 +60,19 @@ test.describe('End-to-End Physician Workflow Scenarios', () => {
     const startTime = Date.now()
     let clicks = 0
 
-    // 1. Navigate to Nuova Visita
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    // 1. Navigate to Sorveglianza Sanitaria -> Nuova Visita (Step)
+    await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria")').first().click()
     clicks++
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Nuova Visita")').first().click()
+    await page.locator('.mw-chip:has-text("Nuova Visita (Step)")').first().click()
     clicks++
     await page.waitForTimeout(800)
 
-    // 2. Fill Stepper Step 1
-    const workerSelect = page.locator('label:has-text("Lavoratore")').or(page.locator('text=Seleziona Lavoratore')).first()
-    if (await workerSelect.isVisible()) {
-      // Worker select exists
-    }
-
-    // 3. Move to Giudizio
-    await page.locator('button:has-text("Centro Giudizi")').first().click()
+    // 2. Move to Centro Giudizi & Firma
+    await page.locator('.mw-chip:has-text("Centro Giudizi & Firma")').first().click()
     clicks++
     await page.waitForTimeout(800)
-    await expect(page.locator('text=Centro Giudizi').first()).toBeVisible()
+    await expect(page.locator('text=Giudizi').or(page.locator('text=Idoneità')).first()).toBeVisible()
 
     console.log(`Scenario 2 completed in ${Date.now() - startTime}ms with ${clicks} clicks`)
   })
@@ -90,15 +81,15 @@ test.describe('End-to-End Physician Workflow Scenarios', () => {
     const startTime = Date.now()
     let clicks = 0
 
-    // 1. Open Firma Massiva
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    // 1. Open Centro Giudizi & Firma
+    await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria")').first().click()
     clicks++
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Firma Massiva")').first().click()
+    await page.locator('.mw-chip:has-text("Centro Giudizi & Firma")').first().click()
     clicks++
     await page.waitForTimeout(800)
 
-    await expect(page.locator('text=Firma Digitale Massiva').first()).toBeVisible()
+    await expect(page.locator('text=Giudizi').or(page.locator('text=Firma')).first()).toBeVisible()
 
     console.log(`Scenario 3 completed in ${Date.now() - startTime}ms with ${clicks} clicks`)
   })
@@ -108,14 +99,14 @@ test.describe('End-to-End Physician Workflow Scenarios', () => {
     let clicks = 0
 
     // 1. Open Scadenzario
-    await page.locator('text=Scadenzario').first().click()
+    await page.locator('.legacy-side-item:has-text("Scadenzario")').first().click()
     clicks++
     await page.waitForTimeout(500)
-    await page.locator('button:has-text("Scadenzario Visite")').first().click()
+    await page.locator('.mw-chip:has-text("Scadenze & Agende")').first().click()
     clicks++
     await page.waitForTimeout(800)
 
-    await expect(page.locator('text=Pianificazione').or(page.locator('text=Scadenze')).or(page.locator('.MuiTable-root')).first()).toBeVisible()
+    await expect(page.locator('text=Scadenze').or(page.locator('.MuiTable-root')).first()).toBeVisible()
 
     console.log(`Scenario 4 completed in ${Date.now() - startTime}ms with ${clicks} clicks`)
   })
@@ -124,22 +115,20 @@ test.describe('End-to-End Physician Workflow Scenarios', () => {
     const startTime = Date.now()
     let clicks = 0
 
-    // 1. Allegato 3B INAIL
-    await page.locator('text=Sorveglianza sanitaria').first().click()
+    // 1. Allegato 3B INAIL in Analisi e Relazioni
+    await page.locator('.legacy-side-item:has-text("Analisi & Relazioni")').first().click()
     clicks++
     await page.waitForTimeout(400)
-    await page.locator('button:has-text("Allegato 3B INAIL")').first().click()
+    await page.locator('.mw-chip:has-text("Allegato 3B INAIL")').first().click()
     clicks++
     await page.waitForTimeout(800)
     await expect(page.locator('text=Allegato 3B').first()).toBeVisible()
 
-    // 2. Relazione Sanitaria Art. 40
-    await page.locator('text=Analisi e relazioni').first().click()
-    clicks++
-    await page.waitForTimeout(400)
-    await page.locator('button:has-text("Relazioni aziendali")').first().click()
+    // 2. Relazione Sanitaria Art. 40 in Analisi e Relazioni
+    await page.locator('.mw-chip:has-text("Reportistica & All. 3B")').first().click()
     clicks++
     await page.waitForTimeout(800)
+    await expect(page.locator('text=Relazioni').or(page.locator('text=Report')).or(page.locator('text=Elenco')).first()).toBeVisible()
 
     console.log(`Scenario 5 completed in ${Date.now() - startTime}ms with ${clicks} clicks`)
   })

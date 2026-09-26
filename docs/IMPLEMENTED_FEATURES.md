@@ -4,6 +4,17 @@
 
 Storico delle feature consegnate, ordinate per fase e priorità.
 
+## Sprint 3 — UX Modernization, Full Modules Integration & Hardening (Settembre 2026)
+
+| Feature / Miglioria | Dettaglio Implementativo | Stato |
+|---|---|---|
+| **Ripristino Cockpit "Il Mio Giorno"** | `App.tsx`: reintrodotti `import Dashboard` e il case `moduleKey === 'dashboard'`; la voce `{ key: 'dashboard', label: 'Il Mio Giorno' }` è la **prima** chip dell'area *Sorveglianza Sanitaria* e il **landing di default per il ruolo Medico** (login + reload). | ✅ Conforme |
+| **Reintegrazione Completa 27 Centri Specialistici** | `App.tsx`: integrati tutti i moduli orfani nelle 7 macro-aree (`giudizio-idoneita`, `cartella-sanitaria`, `firma-grafometrica`, `compliance`, `allegato-3b`, `analytics`, `agenda`, `appointments`, `recall-campaigns`, `activity-deadlines`, `nominations`, `vaccination-deadlines`, `alert-multicanale`, `company-groups-workspace`, `medical-staff`, `migration`, `phrase-templates`, `questionnaires`, `employer-portal`). Zero vicoli ciechi. | ✅ Conforme |
+| **Allineamento DTO API & Notifiche PEC** | `RecallCampaignsCenter.jsx`: allineato payload `/api/alerts/send` (`channel: 3` per PEC, array `recipients`). | ✅ Conforme |
+| **Barra Tab Reportistica & Relazione Art. 40** | `ReportsCenter.jsx`: aggiunta barra tab `ANALYSIS_TABS` per navigazione immediata fra visite, attività, relazioni aziendali e grafici. | ✅ Conforme |
+| **Suite Test E2E & Physician Scenarios** | Allineati tutti i test Playwright (`tests/physician-scenarios.spec.ts`, `tests/p0-p1-features.spec.ts`, `tests/ui.smoke.spec.ts`, `tests/company-groups-ui-validation.spec.ts`, `tests/sprint-documents-signature.spec.ts`, `tests/acceptance-scenarios.spec.ts`) con esito 100% verde. | ✅ Conforme |
+
+
 ## Sprint 2 — Frontend UX Modernization & SaaS Shell Refactoring (Settembre 2026)
 
 | Feature / Miglioria | Dettaglio Implementativo | Stato |

@@ -122,7 +122,8 @@ const ANALYSIS_TABS = [
   { key: 'charts', label: 'Grafici e analisi' },
 ]
 
-function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
+function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTabChange }) {
+  const [activeAnalysisTab, setActiveAnalysisTab] = useState(initialTab)
   const [loadingKey, setLoadingKey] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -759,6 +760,29 @@ function ReportsCenter({ activeAnalysisTab = 'visits', onAnalysisTabChange }) {
           <Chip label={`Giorni: ${days}`} variant="outlined" />
         </Stack>
       </Stack>
+
+      {/* ANALYSIS SUB-TABS */}
+      <Box sx={{ mb: 2.5, display: 'flex', gap: 1, flexWrap: 'wrap', borderBottom: '1px solid #e2e8f0', pb: 1.5 }}>
+        {ANALYSIS_TABS.map((tab) => (
+          <Button
+            key={tab.key}
+            variant={activeAnalysisTab === tab.key ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => {
+              setActiveAnalysisTab(tab.key)
+              if (typeof onAnalysisTabChange === 'function') onAnalysisTabChange(tab.key)
+            }}
+            sx={{
+              textTransform: 'none',
+              fontWeight: activeAnalysisTab === tab.key ? 700 : 500,
+              borderRadius: 2,
+              px: 2,
+            }}
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </Box>
 
       <Box sx={{ mb: 2 }}>
         <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>

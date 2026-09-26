@@ -1,0 +1,10 @@
+[
+  {
+    "status": 500,
+    "url": "http://localhost:5279/api/master-data/doctor-availabilities"
+  },
+  {
+    "status": 500,
+    "url": "http://localhost:5279/api/master-data/doctor-availabilities"
+  }
+]

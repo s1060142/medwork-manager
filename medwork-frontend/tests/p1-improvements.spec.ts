@@ -16,17 +16,24 @@ async function loginAsAdmin(page: any) {
   await page.waitForSelector('.legacy-topbar', { timeout: 15000 })
 }
 
+async function openMyDay(page: any) {
+  // "Il Mio Giorno" lives in the Sorveglianza Sanitaria workspace as its first module
+  const area = page.locator('.legacy-side-item:has-text("Sorveglianza Sanitaria")')
+  await area.first().click()
+  await page.waitForTimeout(400)
+  const myDay = page.locator('.mw-chip:has-text("Il Mio Giorno"), button:has-text("Il Mio Giorno")')
+  await expect(myDay.first()).toBeVisible({ timeout: 5000 })
+  await myDay.first().click()
+  await page.waitForTimeout(1200)
+}
+
 test.describe('P1 Product Improvements Suite', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page)
   })
 
   test('1. Dashboard "Il Mio Giorno" & One-Click Appointment → Visit', async ({ page }) => {
-    // Navigate to Il Mio Giorno
-    const dashBtn = page.locator('.legacy-side-item:has-text("Il Mio Giorno")')
-    await expect(dashBtn.first()).toBeVisible({ timeout: 5000 })
-    await dashBtn.first().click()
-    await page.waitForTimeout(500)
+    await openMyDay(page)
 
     // Verify KPI Cards
     await expect(page.locator('text=VISITE IN PROGRAMMA OGGI')).toBeVisible({ timeout: 5000 })
@@ -56,9 +63,7 @@ test.describe('P1 Product Improvements Suite', () => {
     await page.keyboard.press('Escape')
 
     // Navigate to Il Mio Giorno and click Compliance Radar card
-    const dashBtn = page.locator('.legacy-side-item:has-text("Il Mio Giorno")')
-    await dashBtn.first().click()
-    await page.waitForTimeout(400)
+    await openMyDay(page)
 
     const compCard = page.locator('text=COMPLIANCE D.LGS. 81/08')
     await compCard.click()
@@ -106,9 +111,9 @@ test.describe('P1 Product Improvements Suite', () => {
     await schedSide.click()
     await page.waitForTimeout(400)
 
-    const visitPlanTab = page.locator('.legacy-tab:has-text("Scadenzario Visite")')
-    if (await visitPlanTab.isVisible()) {
-      await visitPlanTab.click()
+    const visitPlanTab = page.locator('.mw-chip:has-text("Scadenze & Agende"), button:has-text("Scadenze & Agende")')
+    if (await visitPlanTab.first().isVisible()) {
+      await visitPlanTab.first().click()
       await page.waitForTimeout(500)
     }
 
@@ -134,9 +139,7 @@ test.describe('P1 Product Improvements Suite', () => {
 
   test('5. Auto Recall Campaigns & Morning Digest', async ({ page }) => {
     // Navigate to Dashboard and click Convocazioni & Recall card
-    const dashBtn = page.locator('.legacy-side-item:has-text("Il Mio Giorno")')
-    await dashBtn.first().click()
-    await page.waitForTimeout(400)
+    await openMyDay(page)
 
     const recallCard = page.locator('text=Convocazioni & Recall Automatici')
     await recallCard.click()

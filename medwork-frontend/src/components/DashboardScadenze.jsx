@@ -302,21 +302,22 @@ function DashboardScadenze({ activeCompanyId = '', activeBranchId = '', onOpenMe
       <Box
         sx={{
           position: 'relative',
-            borderRadius: 3,
-            overflow: 'hidden',
-            color: 'common.white',
-            px: { xs: 3, md: 5 },
-            py: { xs: 4, md: 5 },
-            background: `linear-gradient(135deg, var(--banner-from), var(--banner-to))`,
-            boxShadow: 'var(--shadow-md)',
-          }}
+          borderRadius: 3,
+          overflow: 'hidden',
+          color: '#ffffff',
+          px: { xs: 3, md: 5 },
+          py: { xs: 3.5, md: 4.5 },
+          background: 'linear-gradient(135deg, #0b1e3b 0%, #113a7b 50%, #1d4ed8 100%)',
+          boxShadow: '0 10px 25px -5px rgba(17, 58, 123, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
       >
         <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Benvenuto in Medwork
+          <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: -0.3 }}>
+            Benvenuto in MedWork Manager
           </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.6 }}>
-            {role || 'Utente'} • {displayedCompanyName || 'Contesto non impostato'}
+          <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.8, color: '#bfdbfe', fontWeight: 500 }}>
+            {role ? (role === 'Doctor' ? 'Medico Competente' : 'Amministrazione / Segreteria') : 'Utente'} • {displayedCompanyName || 'Tutte le aziende (Panoramica Globale)'}
           </Typography>
         </Box>
       </Box>

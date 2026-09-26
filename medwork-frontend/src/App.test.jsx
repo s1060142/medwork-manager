@@ -42,12 +42,19 @@ describe('App shell and navigation', () => {
     expect(screen.getByRole('button', { name: /Sorveglianza Sanitaria/i })).toBeInTheDocument()
   })
 
-  test('shows visit planning center after switching to schedule area', async () => {
+  test('shows schedule area dashboard or allows switching to visit planning', async () => {
     const user = userEvent.setup()
     render(<App />)
 
     const scheduleButton = await screen.findByRole('button', { name: /Scadenzario & Visite/i })
     await user.click(scheduleButton)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Visite in Scadenza/i)).toBeInTheDocument()
+    })
+
+    const visitPlanningButton = screen.getByRole('button', { name: /Scadenze & Agende/i })
+    await user.click(visitPlanningButton)
 
     await waitFor(() => {
       expect(screen.getByText(/Pianificazione Visite/i)).toBeInTheDocument()

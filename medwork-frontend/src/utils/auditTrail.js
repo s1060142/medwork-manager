@@ -29,7 +29,9 @@ export function appendAuditEvent(event) {
   // Fire-and-forget to server-side immutable audit log
   const token = typeof localStorage !== 'undefined' ? localStorage.getItem('accessToken') : null
   if (token) {
-    fetch('/api/audit/events', {
+    const apiBase = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:5279'
+    const targetUrl = typeof window !== 'undefined' && window.location?.origin ? '/api/audit/events' : `${apiBase}/api/audit/events`
+    fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +43,7 @@ export function appendAuditEvent(event) {
         detail: event.detail,
       }),
     }).catch((err) => {
-      console.warn('Audit event delivery failed:', err)
+      // Non-blocking background log
     })
   }
 

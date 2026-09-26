@@ -1,0 +1,2003 @@
+{
+  "entry": "main.jsx",
+  "reachableCount": 30,
+  "inventory": [
+    {
+      "file": "App.before-gestionale.jsx",
+      "component": "App",
+      "props": "",
+      "lines": 482,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Gestionale Medicina del Lavoro"
+      ],
+      "endpoints": [
+        "/api/master-data/companies"
+      ]
+    },
+    {
+      "file": "App.test.jsx",
+      "component": "(none)",
+      "props": "",
+      "lines": 57,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "App.tsx",
+      "component": "App",
+      "props": "",
+      "lines": 644,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.test.jsx",
+        "App.tsx",
+        "main.jsx"
+      ],
+      "reachableImporters": [
+        "App.tsx",
+        "main.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "MedWork Manager",
+        "MedWork"
+      ],
+      "endpoints": [
+        "/api/master-data/companies"
+      ]
+    },
+    {
+      "file": "components/ActivityDeadlinesCenter.jsx",
+      "component": "ActivityDeadlinesCenter",
+      "props": "",
+      "lines": 183,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Attività Amministrative"
+      ],
+      "endpoints": [
+        "/api/doctor-data/activity-deadlines",
+        "/api/doctor-data/activity-deadlines/generate-art40",
+        "PUT"
+      ]
+    },
+    {
+      "file": "components/AgendaCenter.jsx",
+      "component": "AgendaCenter",
+      "props": "",
+      "lines": 191,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Agenda Giornaliera",
+        ""
+      ],
+      "endpoints": [
+        "/api/doctor-data/agenda/morning-digest"
+      ]
+    },
+    {
+      "file": "components/AlertMulticanaleCenter.jsx",
+      "component": "AlertMulticanaleCenter",
+      "props": "",
+      "lines": 108,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Alert multi-canale (PEC / SMS / Push / WhatsApp)"
+      ],
+      "endpoints": [
+        "/api/alerts/send-bulk"
+      ]
+    },
+    {
+      "file": "components/Allegato3BCenter.jsx",
+      "component": "Allegato3BCenter",
+      "props": "",
+      "lines": 446,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Allegato 3B INAIL — Flusso Telematico Ufficiale (Art. 40 D.Lgs. 81/08)",
+        "",
+        "Riepilogo Giudizi di Idoneità (Art. 41 c.6)",
+        "Esposizione Fattori di Rischio Allegato 3B"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/doctor-data/companies",
+        "POST"
+      ]
+    },
+    {
+      "file": "components/Allegato3BPreview.jsx",
+      "component": "Allegato3BPreview",
+      "props": "",
+      "lines": 169,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [
+        "Allegato 3B - Generazione Automatica",
+        "ALLEGATO 3B",
+        "Informazioni relative ai dati aggregati sanitari e di rischio dei lavoratori sot",
+        "Esiti Giudizi di Idoneità"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/AnalyticsCenter.jsx",
+      "component": "AnalyticsCenter",
+      "props": "",
+      "lines": 85,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Analytics (FASE 4)",
+        "No-Show Prediction",
+        "Slot / Route Optimization"
+      ],
+      "endpoints": [
+        "/api/analytics/no-show",
+        "/api/analytics/optimize-routes"
+      ]
+    },
+    {
+      "file": "components/AppointmentsCalendar.jsx",
+      "component": "AppointmentsCalendar",
+      "props": "",
+      "lines": 378,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "",
+        "Today&apos;s Agenda"
+      ],
+      "endpoints": [
+        "/api/doctor-data/anamnesis-magic-link"
+      ]
+    },
+    {
+      "file": "components/AppointmentsCenter.jsx",
+      "component": "AppointmentsCenter",
+      "props": "",
+      "lines": 209,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Gestione Prenotazioni"
+      ],
+      "endpoints": [
+        "/api/doctor-data/appointments"
+      ]
+    },
+    {
+      "file": "components/AuditCenter.jsx",
+      "component": "AuditCenter",
+      "props": "",
+      "lines": 138,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Audit"
+      ],
+      "endpoints": [
+        "/api/audit/events"
+      ]
+    },
+    {
+      "file": "components/BatchSignatureCenter.jsx",
+      "component": "BatchSignatureCenter",
+      "props": "",
+      "lines": 296,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Firma Digitale Massiva & Auto-Dispatch Pipeline (D.Lgs. 81/08)",
+        "Giudizi di Idoneità Pronti per Firma Massiva (",
+        "Conferma Firma Digitale Massiva & Auto-Dispatch"
+      ],
+      "endpoints": [
+        "/api/doctor-data/unsigned-visits",
+        "/api/doctor-data/batch-sign"
+      ]
+    },
+    {
+      "file": "components/BillingCenter.jsx",
+      "component": "BillingCenter",
+      "props": "",
+      "lines": 220,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Fatturazione, parcelle e preventivi"
+      ],
+      "endpoints": [
+        "/api/billing/documents",
+        "/api/master-data/companies"
+      ]
+    },
+    {
+      "file": "components/CartellaSanitariaCenter.jsx",
+      "component": "CartellaSanitariaCenter",
+      "props": "{ employeeId: employeeIdProp }",
+      "lines": 388,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Cartella Sanitaria e di Rischio"
+      ],
+      "endpoints": [
+        "/api/master-data/employees",
+        "PATCH",
+        "PUT",
+        "POST"
+      ]
+    },
+    {
+      "file": "components/CompanyGroupsCenter.jsx",
+      "component": "CompanyGroupsCenter",
+      "props": "",
+      "lines": 2193,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Caricamento Workspace Gruppi Aziendali...",
+        "",
+        "Nessun Gruppo Aziendale Configurato",
+        "0 ? kpi.color : 'text.primary' }}>"
+      ],
+      "endpoints": [
+        "/api/company-groups",
+        "/api/master-data/companies",
+        "/api/master-data/doctors",
+        "POST",
+        "DELETE",
+        "PUT"
+      ]
+    },
+    {
+      "file": "components/CompanyProfileDialog.jsx",
+      "component": "CompanyProfileDialog",
+      "props": "",
+      "lines": 765,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Modifica azienda"
+      ],
+      "endpoints": [
+        "/api/master-data/doctors",
+        "/api/master-data/company-groups",
+        "PUT",
+        "/api/admin-data/company-doctors",
+        "DELETE",
+        "/api/admin-data/company-contacts"
+      ]
+    },
+    {
+      "file": "components/ComplianceCenter.jsx",
+      "component": "ComplianceCenter",
+      "props": "{ onNavigateModule, onOpenBatchPlanner }",
+      "lines": 487,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "D.LGS. 81/08 • AUDIT CONTINUO & RISK MANAGEMENT",
+        "Compliance Radar & Heatmap Aziendale",
+        "= 90 ? '#27AE60' : complianceStats.globalScore >= 75 ? '#F39C12' : '#C0392B'}>",
+        "Dimensioni di Conformità D.Lgs. 81/08"
+      ],
+      "endpoints": [
+        "/api/doctor-data/compliance-alerts",
+        "/api/master-data/companies",
+        "/api/master-data/medical-visits",
+        "/api/master-data/employees"
+      ]
+    },
+    {
+      "file": "components/CrudEntityView.jsx",
+      "component": "CrudEntityView",
+      "props": "",
+      "lines": 1015,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        ""
+      ],
+      "endpoints": [
+        "/api/master-data/employees",
+        "/api/master-data/branches",
+        "DELETE",
+        "PUT",
+        "POST"
+      ]
+    },
+    {
+      "file": "components/Dashboard.jsx",
+      "component": "Dashboard",
+      "props": "{ onOpenMedicalVisitCreate, onNavigateModule }",
+      "lines": 464,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "COCKPIT OPERATIVO MEDICO COMPETENTE (D.LGS. 81/08)",
+        "Il Mio Giorno",
+        "",
+        "📅 Agenda Pazienti & Visite del Giorno"
+      ],
+      "endpoints": [
+        "/api/doctor-data/dashboard",
+        "/api/doctor-data/agenda/morning-digest"
+      ]
+    },
+    {
+      "file": "components/DashboardMedico.jsx",
+      "component": "DashboardMedico",
+      "props": "{ onNewVisit }",
+      "lines": 266,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Dashboard Medico",
+        "Visite con scadenza nei prossimi 7 giorni & Triage Clinico"
+      ],
+      "endpoints": [
+        "/api/master-data/medical-visits",
+        "/api/master-data/medical-records"
+      ]
+    },
+    {
+      "file": "components/DashboardScadenze.jsx",
+      "component": "DashboardScadenze",
+      "props": "",
+      "lines": 474,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Benvenuto in Medwork",
+        "Alert Critici & Scadenze",
+        "Quick Actions",
+        "Compliance Globale"
+      ],
+      "endpoints": [
+        "/api/master-data/medical-visits",
+        "/api/master-data/employees",
+        "/api/master-data/visit-exams",
+        "/api/master-data/employee-risks"
+      ]
+    },
+    {
+      "file": "components/DatePicker.jsx",
+      "component": "DatePicker",
+      "props": "",
+      "lines": 30,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/EmployeeProfileDialog.jsx"
+      ],
+      "reachableImporters": [
+        "components/EmployeeProfileDialog.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/EmployeeProfileDialog.jsx",
+      "component": "EmployeeProfileDialog",
+      "props": "",
+      "lines": 682,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/CrudEntityView.jsx"
+      ],
+      "reachableImporters": [
+        "components/CrudEntityView.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "",
+        "Trend Parametri Vitali & Quadro Biometrico",
+        "Classe 0",
+        "Timeline Storica Sorveglianza Sanitaria (Allegato 3A)"
+      ],
+      "endpoints": [
+        "/api/master-data/medical-visits",
+        "/api/master-data/visit-exams",
+        "/api/master-data/employee-risks",
+        "/api/master-data/risk-factors",
+        "PUT"
+      ]
+    },
+    {
+      "file": "components/EmployerPortalView.jsx",
+      "component": "EmployerPortalView",
+      "props": "{ companyId: propCompanyId = null }",
+      "lines": 627,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Portale Datore di Lavoro & RSPP (D.Lgs. 81/08)",
+        "",
+        "Registro Lavoratori & Giudizi di Idoneità (Copia Datore di Lavoro)",
+        "Segnalazione Lavoratore / Assunzione / Cambio Mansione"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/master-data/employees",
+        "/api/visit-judgments"
+      ]
+    },
+    {
+      "file": "components/EnterpriseAnalyticsDashboard.jsx",
+      "component": "EnterpriseAnalyticsDashboard",
+      "props": "",
+      "lines": 133,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/EntityDataView.jsx",
+      "component": "EntityDataView",
+      "props": "",
+      "lines": 138,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        ""
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/FirmaGrafometricaCenter.jsx",
+      "component": "FirmaGrafometricaCenter",
+      "props": "",
+      "lines": 99,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Firma grafometrica — verifica integrità documento"
+      ],
+      "endpoints": [
+        "/api/signatures/verify",
+        "/api/signatures/hash-sample"
+      ]
+    },
+    {
+      "file": "components/GiudizioIdoneitaCenter.jsx",
+      "component": "GiudizioIdoneitaCenter",
+      "props": "{ medicalVisitId = null }",
+      "lines": 868,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)",
+        "Firma Digitale Massiva &amp; Auto-Dispatch Pipeline",
+        "Verbalizzazione Giudizio di Idoneità (Art. 41 D.Lgs. 81/08)"
+      ],
+      "endpoints": [
+        "/api/visit-judgments",
+        "/api/master-data/companies",
+        "PUT",
+        "/api/alerts/send-judgment-pec",
+        "/api/alerts/send-bulk-judgments-pec",
+        "/api/doctor-data/batch-sign"
+      ]
+    },
+    {
+      "file": "components/GlobalSearchModal.jsx",
+      "component": "GlobalSearchModal",
+      "props": "{ open, onClose, onSelectWorker, onSelectCompany, onNavigateModule }",
+      "lines": 479,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": [
+        "/api/master-data/employees",
+        "/api/master-data/companies",
+        "/api/master-data/protocols"
+      ]
+    },
+    {
+      "file": "components/HealthPlanPreview.jsx",
+      "component": "HealthPlanPreview",
+      "props": "",
+      "lines": 123,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/HomeCapabilities.jsx",
+      "component": "HomeCapabilities",
+      "props": "",
+      "lines": 112,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Copertura funzionale piattaforma",
+        ""
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/HrImportExportDialog.tsx",
+      "component": "HrImportExportDialog",
+      "props": "",
+      "lines": 227,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/JobRoleRiskMatrix.jsx",
+      "component": "JobRoleRiskMatrix",
+      "props": "{ companyId, companyName }",
+      "lines": 258,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [
+        "Smart Mansiogramma & Matrice Rischi (D.Lgs. 81/08)"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/LoginCard.jsx",
+      "component": "LoginCard",
+      "props": "",
+      "lines": 153,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Accesso piattaforma"
+      ],
+      "endpoints": [
+        "/api/auth/tenants"
+      ]
+    },
+    {
+      "file": "components/MedicalStaffCenter.jsx",
+      "component": "MedicalStaffCenter",
+      "props": "",
+      "lines": 1368,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "",
+        "0 ? 'warning.main' : 'text.primary'} sx=",
+        "0 ? 'error.main' : 'text.primary'} sx="
+      ],
+      "endpoints": [
+        "/api/medical-staff/dashboard",
+        "/api/master-data/companies",
+        "/api/medical-staff/workload-balancing",
+        "/api/medical-staff/productivity-metrics",
+        "/api/medical-staff/capacity-planning",
+        "/api/medical-staff/coverage-gaps"
+      ]
+    },
+    {
+      "file": "components/MedicalVisitStepper.jsx",
+      "component": "MedicalVisitStepper",
+      "props": "",
+      "lines": 1385,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Nuova Visita Medica & Sorveglianza Sanitaria",
+        "Dossier Clinico Lavoratore"
+      ],
+      "endpoints": [
+        "/api/master-data/employees",
+        "/api/master-data/doctors",
+        "/api/master-data/phrase-templates",
+        "/api/doctor-data/medical-visits",
+        "/api/doctor-data/anamneses"
+      ]
+    },
+    {
+      "file": "components/MigrationCenter.jsx",
+      "component": "MigrationCenter",
+      "props": "",
+      "lines": 504,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Universal Migration Engine",
+        "1. Seleziona il formato del gestionale sorgente",
+        "",
+        "2. Carica il file esportato ("
+      ],
+      "endpoints": [
+        "/api/migration/parse-csv",
+        "/api/migration/dry-run",
+        "/api/migration/execute"
+      ]
+    },
+    {
+      "file": "components/NominationsDeadlinesCenter.jsx",
+      "component": "NominationsDeadlinesCenter",
+      "props": "",
+      "lines": 188,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Nomine e Formazione"
+      ],
+      "endpoints": [
+        "/api/doctor-data/company-nominations",
+        "/api/doctor-data/company-nominations/request-update"
+      ]
+    },
+    {
+      "file": "components/PatientAnamnesisForm.jsx",
+      "component": "PatientAnamnesisForm",
+      "props": "",
+      "lines": 206,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "MedWork - Questionario Anamnestico"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/PhraseTemplatesCenter.jsx",
+      "component": "PhraseTemplatesCenter",
+      "props": "",
+      "lines": 208,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Libreria frasi tipo"
+      ],
+      "endpoints": [
+        "PUT",
+        "/api/phrase-templates",
+        "DELETE"
+      ]
+    },
+    {
+      "file": "components/ProtocolsCenter.jsx",
+      "component": "ProtocolsCenter",
+      "props": "",
+      "lines": 435,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Protocolli Sanitari & Piani di Sorveglianza",
+        ""
+      ],
+      "endpoints": [
+        "/api/doctor-data/protocols",
+        "PATCH"
+      ]
+    },
+    {
+      "file": "components/QuestionnairesCenter.jsx",
+      "component": "QuestionnairesCenter",
+      "props": "",
+      "lines": 156,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Questionari integrati"
+      ],
+      "endpoints": [
+        "/api/questionnaires",
+        "/api/questionnaires/responses"
+      ]
+    },
+    {
+      "file": "components/RecallCampaignsCenter.jsx",
+      "component": "RecallCampaignsCenter",
+      "props": "",
+      "lines": 354,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Convocazioni Automatiche & Recall (D.Lgs. 81/08)",
+        "Lavoratori Candidati al Recall ("
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/doctor-data/recall-campaign",
+        "/api/alerts/send",
+        "/api/doctor-data/agenda/morning-digest"
+      ]
+    },
+    {
+      "file": "components/ReportsCenter.jsx",
+      "component": "ReportsCenter",
+      "props": "",
+      "lines": 1154,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Centro Report",
+        "Relazione Sanitaria Annuale (Art. 40 D.Lgs. 81/08)",
+        "🧠 Generatore Sintesi Epidemiologica e Clinica (Art. 35 Riunione Periodica)",
+        "Report Scadenze Visite"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/master-data/branches",
+        "/api/master-data/medical-visits",
+        "/api/master-data/employees",
+        "/api/master-data/employee-risks",
+        "/api/master-data/risk-factors"
+      ]
+    },
+    {
+      "file": "components/SettingsCenter.jsx",
+      "component": "SettingsCenter",
+      "props": "",
+      "lines": 357,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Gestione multitenente e multidominio",
+        "Configurazione PEC & Delivery Hub Notifiche"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/master-data/branches",
+        "/api/alerts/pec-settings",
+        "/api/alerts/test-pec-connection"
+      ]
+    },
+    {
+      "file": "components/SignaturePadModal.jsx",
+      "component": "SignaturePadModal",
+      "props": "{ open, onClose, onSignatureCaptured, documentTitle = 'Giudizio di Idoneità / Cartella Sanitaria' }",
+      "lines": 190,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/MedicalVisitStepper.jsx"
+      ],
+      "reachableImporters": [
+        "components/MedicalVisitStepper.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Firma Elettronica Avanzata (FEA)"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/SiteVisitDeadlinesCenter.jsx",
+      "component": "SiteVisitDeadlinesCenter",
+      "props": "",
+      "lines": 519,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Sopralluoghi Ambienti di Lavoro (Art. 25 c.1 lett. l D.Lgs. 81/08)"
+      ],
+      "endpoints": [
+        "/api/doctor-data/site-visits",
+        "/api/master-data/companies",
+        "PUT",
+        "DELETE"
+      ]
+    },
+    {
+      "file": "components/ToolsCenter.jsx",
+      "component": "ToolsCenter",
+      "props": "",
+      "lines": 232,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Strumenti diagnostici e firma digitale",
+        "Acquisizione firma"
+      ],
+      "endpoints": [
+        "/api/master-data/employees",
+        "/api/master-data/exam-types",
+        "/api/master-data/medical-visits",
+        "/api/signatures"
+      ]
+    },
+    {
+      "file": "components/VaccinationDeadlinesCenter.jsx",
+      "component": "VaccinationDeadlinesCenter",
+      "props": "",
+      "lines": 243,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Vaccinazioni"
+      ],
+      "endpoints": [
+        "/api/master-data/vaccinations"
+      ]
+    },
+    {
+      "file": "components/VisitPlanningCenter.jsx",
+      "component": "VisitPlanningCenter",
+      "props": "",
+      "lines": 490,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Pianificazione Visite & Batch Session Planner"
+      ],
+      "endpoints": [
+        "/api/master-data/medical-visits",
+        "/api/master-data/employees",
+        "/api/master-data/doctors",
+        "/api/doctor-data/batch-plan-visits",
+        "/api/doctor-data/convocations"
+      ]
+    },
+    {
+      "file": "components/WorkersCenter.jsx",
+      "component": "WorkersCenter",
+      "props": "",
+      "lines": 730,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [
+        "Aziende / Lavoratori",
+        "Lavoratori"
+      ],
+      "endpoints": [
+        "/api/master-data/employees?includeArchived=true",
+        "/api/master-data/medical-visits",
+        "/api/master-data/companies",
+        "/api/master-data/branches",
+        "/api/master-data/job-roles",
+        "/api/master-data/doctors"
+      ]
+    },
+    {
+      "file": "constants/entityConfigs.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 582,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "contexts/AuthContext.tsx",
+      "component": "(none)",
+      "props": "",
+      "lines": 46,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/HrImportExportDialog.tsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "hooks/useTextExpander.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 78,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/MedicalVisitStepper.jsx"
+      ],
+      "reachableImporters": [
+        "components/MedicalVisitStepper.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "main.jsx",
+      "component": "(none)",
+      "props": "",
+      "lines": 35,
+      "reachableFromEntry": true,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "services/apiClient.ts",
+      "component": "(none)",
+      "props": "",
+      "lines": 349,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx",
+        "components/ActivityDeadlinesCenter.jsx",
+        "components/AgendaCenter.jsx",
+        "components/AlertMulticanaleCenter.jsx",
+        "components/Allegato3BCenter.jsx",
+        "components/Allegato3BPreview.jsx",
+        "components/AnalyticsCenter.jsx",
+        "components/AppointmentsCalendar.jsx",
+        "components/AppointmentsCenter.jsx",
+        "components/AuditCenter.jsx",
+        "components/BatchSignatureCenter.jsx",
+        "components/BillingCenter.jsx",
+        "components/CartellaSanitariaCenter.jsx",
+        "components/CompanyGroupsCenter.jsx",
+        "components/CompanyProfileDialog.jsx",
+        "components/ComplianceCenter.jsx",
+        "components/CrudEntityView.jsx",
+        "components/Dashboard.jsx",
+        "components/DashboardMedico.jsx",
+        "components/DashboardScadenze.jsx",
+        "components/EmployeeProfileDialog.jsx",
+        "components/EmployerPortalView.jsx",
+        "components/EnterpriseAnalyticsDashboard.jsx",
+        "components/FirmaGrafometricaCenter.jsx",
+        "components/GiudizioIdoneitaCenter.jsx",
+        "components/GlobalSearchModal.jsx",
+        "components/HealthPlanPreview.jsx",
+        "components/HrImportExportDialog.tsx",
+        "components/JobRoleRiskMatrix.jsx",
+        "components/LoginCard.jsx",
+        "components/MedicalStaffCenter.jsx",
+        "components/MedicalVisitStepper.jsx",
+        "components/MigrationCenter.jsx",
+        "components/NominationsDeadlinesCenter.jsx",
+        "components/PhraseTemplatesCenter.jsx",
+        "components/ProtocolsCenter.jsx",
+        "components/QuestionnairesCenter.jsx",
+        "components/RecallCampaignsCenter.jsx",
+        "components/ReportsCenter.jsx",
+        "components/SettingsCenter.jsx",
+        "components/SiteVisitDeadlinesCenter.jsx",
+        "components/ToolsCenter.jsx",
+        "components/VaccinationDeadlinesCenter.jsx",
+        "components/VisitPlanningCenter.jsx",
+        "components/WorkersCenter.jsx",
+        "contexts/AuthContext.tsx"
+      ],
+      "reachableImporters": [
+        "App.tsx",
+        "components/AppointmentsCalendar.jsx",
+        "components/AuditCenter.jsx",
+        "components/BillingCenter.jsx",
+        "components/CrudEntityView.jsx",
+        "components/Dashboard.jsx",
+        "components/DashboardMedico.jsx",
+        "components/DashboardScadenze.jsx",
+        "components/EmployeeProfileDialog.jsx",
+        "components/LoginCard.jsx",
+        "components/MedicalVisitStepper.jsx",
+        "components/ProtocolsCenter.jsx",
+        "components/ReportsCenter.jsx",
+        "components/SettingsCenter.jsx",
+        "components/ToolsCenter.jsx",
+        "components/VisitPlanningCenter.jsx",
+        "components/WorkersCenter.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "services/municipalityService.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 43,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/CrudEntityView.jsx"
+      ],
+      "reachableImporters": [
+        "components/CrudEntityView.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "test/setupTests.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 8,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "theme.ts",
+      "component": "theme",
+      "props": "",
+      "lines": 512,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "main.jsx"
+      ],
+      "reachableImporters": [
+        "main.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "utils/auditTrail.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 54,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "App.before-gestionale.jsx",
+        "App.tsx",
+        "components/BillingCenter.jsx",
+        "components/PhraseTemplatesCenter.jsx",
+        "components/QuestionnairesCenter.jsx",
+        "components/SettingsCenter.jsx",
+        "components/ToolsCenter.jsx"
+      ],
+      "reachableImporters": [
+        "App.tsx",
+        "components/BillingCenter.jsx",
+        "components/SettingsCenter.jsx",
+        "components/ToolsCenter.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": [
+        "/api/audit/events"
+      ]
+    },
+    {
+      "file": "utils/csv.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 40,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/CrudEntityView.jsx",
+        "components/DashboardScadenze.jsx",
+        "components/ProtocolsCenter.jsx",
+        "components/WorkersCenter.jsx"
+      ],
+      "reachableImporters": [
+        "components/CrudEntityView.jsx",
+        "components/DashboardScadenze.jsx",
+        "components/ProtocolsCenter.jsx",
+        "components/WorkersCenter.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "utils/datePicker.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 56,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/BillingCenter.jsx",
+        "components/CompanyProfileDialog.jsx",
+        "components/CrudEntityView.jsx",
+        "components/DatePicker.jsx",
+        "components/EmployeeProfileDialog.jsx",
+        "components/GiudizioIdoneitaCenter.jsx",
+        "components/MedicalVisitStepper.jsx",
+        "components/ReportsCenter.jsx"
+      ],
+      "reachableImporters": [
+        "components/BillingCenter.jsx",
+        "components/CrudEntityView.jsx",
+        "components/DatePicker.jsx",
+        "components/EmployeeProfileDialog.jsx",
+        "components/MedicalVisitStepper.jsx",
+        "components/ReportsCenter.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "utils/notification.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 50,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/ActivityDeadlinesCenter.jsx",
+        "components/AgendaCenter.jsx",
+        "components/AppointmentsCenter.jsx",
+        "components/ComplianceCenter.jsx",
+        "components/CrudEntityView.jsx",
+        "components/MedicalStaffCenter.jsx",
+        "components/NominationsDeadlinesCenter.jsx",
+        "components/ReportsCenter.jsx",
+        "components/ToolsCenter.jsx",
+        "components/VaccinationDeadlinesCenter.jsx",
+        "components/WorkersCenter.jsx"
+      ],
+      "reachableImporters": [
+        "components/CrudEntityView.jsx",
+        "components/ReportsCenter.jsx",
+        "components/ToolsCenter.jsx",
+        "components/WorkersCenter.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "utils/taxCode.js",
+      "component": "(none)",
+      "props": "",
+      "lines": 264,
+      "reachableFromEntry": true,
+      "importedBy": [
+        "components/CrudEntityView.jsx",
+        "components/EmployeeProfileDialog.jsx"
+      ],
+      "reachableImporters": [
+        "components/CrudEntityView.jsx",
+        "components/EmployeeProfileDialog.jsx"
+      ],
+      "transitivelyHidden": false,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    }
+  ],
+  "orphans": [
+    {
+      "file": "components/ActivityDeadlinesCenter.jsx",
+      "component": "ActivityDeadlinesCenter",
+      "props": "",
+      "lines": 183,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Attività Amministrative"
+      ],
+      "endpoints": [
+        "/api/doctor-data/activity-deadlines",
+        "/api/doctor-data/activity-deadlines/generate-art40",
+        "PUT"
+      ]
+    },
+    {
+      "file": "components/AgendaCenter.jsx",
+      "component": "AgendaCenter",
+      "props": "",
+      "lines": 191,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Agenda Giornaliera",
+        ""
+      ],
+      "endpoints": [
+        "/api/doctor-data/agenda/morning-digest"
+      ]
+    },
+    {
+      "file": "components/AlertMulticanaleCenter.jsx",
+      "component": "AlertMulticanaleCenter",
+      "props": "",
+      "lines": 108,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Alert multi-canale (PEC / SMS / Push / WhatsApp)"
+      ],
+      "endpoints": [
+        "/api/alerts/send-bulk"
+      ]
+    },
+    {
+      "file": "components/Allegato3BCenter.jsx",
+      "component": "Allegato3BCenter",
+      "props": "",
+      "lines": 446,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Allegato 3B INAIL — Flusso Telematico Ufficiale (Art. 40 D.Lgs. 81/08)",
+        "",
+        "Riepilogo Giudizi di Idoneità (Art. 41 c.6)",
+        "Esposizione Fattori di Rischio Allegato 3B"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/doctor-data/companies",
+        "POST"
+      ]
+    },
+    {
+      "file": "components/Allegato3BPreview.jsx",
+      "component": "Allegato3BPreview",
+      "props": "",
+      "lines": 169,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [
+        "Allegato 3B - Generazione Automatica",
+        "ALLEGATO 3B",
+        "Informazioni relative ai dati aggregati sanitari e di rischio dei lavoratori sot",
+        "Esiti Giudizi di Idoneità"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/AnalyticsCenter.jsx",
+      "component": "AnalyticsCenter",
+      "props": "",
+      "lines": 85,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Analytics (FASE 4)",
+        "No-Show Prediction",
+        "Slot / Route Optimization"
+      ],
+      "endpoints": [
+        "/api/analytics/no-show",
+        "/api/analytics/optimize-routes"
+      ]
+    },
+    {
+      "file": "components/AppointmentsCenter.jsx",
+      "component": "AppointmentsCenter",
+      "props": "",
+      "lines": 209,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Gestione Prenotazioni"
+      ],
+      "endpoints": [
+        "/api/doctor-data/appointments"
+      ]
+    },
+    {
+      "file": "components/BatchSignatureCenter.jsx",
+      "component": "BatchSignatureCenter",
+      "props": "",
+      "lines": 296,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Firma Digitale Massiva & Auto-Dispatch Pipeline (D.Lgs. 81/08)",
+        "Giudizi di Idoneità Pronti per Firma Massiva (",
+        "Conferma Firma Digitale Massiva & Auto-Dispatch"
+      ],
+      "endpoints": [
+        "/api/doctor-data/unsigned-visits",
+        "/api/doctor-data/batch-sign"
+      ]
+    },
+    {
+      "file": "components/CartellaSanitariaCenter.jsx",
+      "component": "CartellaSanitariaCenter",
+      "props": "{ employeeId: employeeIdProp }",
+      "lines": 388,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Cartella Sanitaria e di Rischio"
+      ],
+      "endpoints": [
+        "/api/master-data/employees",
+        "PATCH",
+        "PUT",
+        "POST"
+      ]
+    },
+    {
+      "file": "components/CompanyGroupsCenter.jsx",
+      "component": "CompanyGroupsCenter",
+      "props": "",
+      "lines": 2193,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Caricamento Workspace Gruppi Aziendali...",
+        "",
+        "Nessun Gruppo Aziendale Configurato",
+        "0 ? kpi.color : 'text.primary' }}>"
+      ],
+      "endpoints": [
+        "/api/company-groups",
+        "/api/master-data/companies",
+        "/api/master-data/doctors",
+        "POST",
+        "DELETE",
+        "PUT"
+      ]
+    },
+    {
+      "file": "components/CompanyProfileDialog.jsx",
+      "component": "CompanyProfileDialog",
+      "props": "",
+      "lines": 765,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Modifica azienda"
+      ],
+      "endpoints": [
+        "/api/master-data/doctors",
+        "/api/master-data/company-groups",
+        "PUT",
+        "/api/admin-data/company-doctors",
+        "DELETE",
+        "/api/admin-data/company-contacts"
+      ]
+    },
+    {
+      "file": "components/ComplianceCenter.jsx",
+      "component": "ComplianceCenter",
+      "props": "{ onNavigateModule, onOpenBatchPlanner }",
+      "lines": 487,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "D.LGS. 81/08 • AUDIT CONTINUO & RISK MANAGEMENT",
+        "Compliance Radar & Heatmap Aziendale",
+        "= 90 ? '#27AE60' : complianceStats.globalScore >= 75 ? '#F39C12' : '#C0392B'}>",
+        "Dimensioni di Conformità D.Lgs. 81/08"
+      ],
+      "endpoints": [
+        "/api/doctor-data/compliance-alerts",
+        "/api/master-data/companies",
+        "/api/master-data/medical-visits",
+        "/api/master-data/employees"
+      ]
+    },
+    {
+      "file": "components/EmployerPortalView.jsx",
+      "component": "EmployerPortalView",
+      "props": "{ companyId: propCompanyId = null }",
+      "lines": 627,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Portale Datore di Lavoro & RSPP (D.Lgs. 81/08)",
+        "",
+        "Registro Lavoratori & Giudizi di Idoneità (Copia Datore di Lavoro)",
+        "Segnalazione Lavoratore / Assunzione / Cambio Mansione"
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/master-data/employees",
+        "/api/visit-judgments"
+      ]
+    },
+    {
+      "file": "components/EnterpriseAnalyticsDashboard.jsx",
+      "component": "EnterpriseAnalyticsDashboard",
+      "props": "",
+      "lines": 133,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/EntityDataView.jsx",
+      "component": "EntityDataView",
+      "props": "",
+      "lines": 138,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        ""
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/FirmaGrafometricaCenter.jsx",
+      "component": "FirmaGrafometricaCenter",
+      "props": "",
+      "lines": 99,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Firma grafometrica — verifica integrità documento"
+      ],
+      "endpoints": [
+        "/api/signatures/verify",
+        "/api/signatures/hash-sample"
+      ]
+    },
+    {
+      "file": "components/GiudizioIdoneitaCenter.jsx",
+      "component": "GiudizioIdoneitaCenter",
+      "props": "{ medicalVisitId = null }",
+      "lines": 868,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Centro Giudizi di Idoneità (Art. 41 D.Lgs. 81/08)",
+        "Firma Digitale Massiva &amp; Auto-Dispatch Pipeline",
+        "Verbalizzazione Giudizio di Idoneità (Art. 41 D.Lgs. 81/08)"
+      ],
+      "endpoints": [
+        "/api/visit-judgments",
+        "/api/master-data/companies",
+        "PUT",
+        "/api/alerts/send-judgment-pec",
+        "/api/alerts/send-bulk-judgments-pec",
+        "/api/doctor-data/batch-sign"
+      ]
+    },
+    {
+      "file": "components/GlobalSearchModal.jsx",
+      "component": "GlobalSearchModal",
+      "props": "{ open, onClose, onSelectWorker, onSelectCompany, onNavigateModule }",
+      "lines": 479,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": [
+        "/api/master-data/employees",
+        "/api/master-data/companies",
+        "/api/master-data/protocols"
+      ]
+    },
+    {
+      "file": "components/HealthPlanPreview.jsx",
+      "component": "HealthPlanPreview",
+      "props": "",
+      "lines": 123,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/HomeCapabilities.jsx",
+      "component": "HomeCapabilities",
+      "props": "",
+      "lines": 112,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Copertura funzionale piattaforma",
+        ""
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/HrImportExportDialog.tsx",
+      "component": "HrImportExportDialog",
+      "props": "",
+      "lines": 227,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [],
+      "endpoints": []
+    },
+    {
+      "file": "components/JobRoleRiskMatrix.jsx",
+      "component": "JobRoleRiskMatrix",
+      "props": "{ companyId, companyName }",
+      "lines": 258,
+      "reachableFromEntry": false,
+      "importedBy": [
+        "components/CompanyProfileDialog.jsx"
+      ],
+      "reachableImporters": [],
+      "transitivelyHidden": true,
+      "neverImported": false,
+      "headings": [
+        "Smart Mansiogramma & Matrice Rischi (D.Lgs. 81/08)"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/MedicalStaffCenter.jsx",
+      "component": "MedicalStaffCenter",
+      "props": "",
+      "lines": 1368,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "",
+        "0 ? 'warning.main' : 'text.primary'} sx=",
+        "0 ? 'error.main' : 'text.primary'} sx="
+      ],
+      "endpoints": [
+        "/api/medical-staff/dashboard",
+        "/api/master-data/companies",
+        "/api/medical-staff/workload-balancing",
+        "/api/medical-staff/productivity-metrics",
+        "/api/medical-staff/capacity-planning",
+        "/api/medical-staff/coverage-gaps"
+      ]
+    },
+    {
+      "file": "components/MigrationCenter.jsx",
+      "component": "MigrationCenter",
+      "props": "",
+      "lines": 504,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Universal Migration Engine",
+        "1. Seleziona il formato del gestionale sorgente",
+        "",
+        "2. Carica il file esportato ("
+      ],
+      "endpoints": [
+        "/api/migration/parse-csv",
+        "/api/migration/dry-run",
+        "/api/migration/execute"
+      ]
+    },
+    {
+      "file": "components/NominationsDeadlinesCenter.jsx",
+      "component": "NominationsDeadlinesCenter",
+      "props": "",
+      "lines": 188,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Nomine e Formazione"
+      ],
+      "endpoints": [
+        "/api/doctor-data/company-nominations",
+        "/api/doctor-data/company-nominations/request-update"
+      ]
+    },
+    {
+      "file": "components/PatientAnamnesisForm.jsx",
+      "component": "PatientAnamnesisForm",
+      "props": "",
+      "lines": 206,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "MedWork - Questionario Anamnestico"
+      ],
+      "endpoints": []
+    },
+    {
+      "file": "components/PhraseTemplatesCenter.jsx",
+      "component": "PhraseTemplatesCenter",
+      "props": "",
+      "lines": 208,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Libreria frasi tipo"
+      ],
+      "endpoints": [
+        "PUT",
+        "/api/phrase-templates",
+        "DELETE"
+      ]
+    },
+    {
+      "file": "components/QuestionnairesCenter.jsx",
+      "component": "QuestionnairesCenter",
+      "props": "",
+      "lines": 156,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Questionari integrati"
+      ],
+      "endpoints": [
+        "/api/questionnaires",
+        "/api/questionnaires/responses"
+      ]
+    },
+    {
+      "file": "components/RecallCampaignsCenter.jsx",
+      "component": "RecallCampaignsCenter",
+      "props": "",
+      "lines": 354,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Convocazioni Automatiche & Recall (D.Lgs. 81/08)",
+        "Lavoratori Candidati al Recall ("
+      ],
+      "endpoints": [
+        "/api/master-data/companies",
+        "/api/doctor-data/recall-campaign",
+        "/api/alerts/send",
+        "/api/doctor-data/agenda/morning-digest"
+      ]
+    },
+    {
+      "file": "components/SiteVisitDeadlinesCenter.jsx",
+      "component": "SiteVisitDeadlinesCenter",
+      "props": "",
+      "lines": 519,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Sopralluoghi Ambienti di Lavoro (Art. 25 c.1 lett. l D.Lgs. 81/08)"
+      ],
+      "endpoints": [
+        "/api/doctor-data/site-visits",
+        "/api/master-data/companies",
+        "PUT",
+        "DELETE"
+      ]
+    },
+    {
+      "file": "components/VaccinationDeadlinesCenter.jsx",
+      "component": "VaccinationDeadlinesCenter",
+      "props": "",
+      "lines": 243,
+      "reachableFromEntry": false,
+      "importedBy": [],
+      "reachableImporters": [],
+      "transitivelyHidden": false,
+      "neverImported": true,
+      "headings": [
+        "Scadenzario Vaccinazioni"
+      ],
+      "endpoints": [
+        "/api/master-data/vaccinations"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1630 @@
+{
+  "generatedAt": "2026-09-26T13:21:27.070Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "console": {
+    "errors": [
+      "React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. useFlexGap useflexgap",
+      "Each child in a list should have a unique \"key\" prop.%s%s See https://react.dev/link/warning-keys for more information. \n\nCheck the render method of `tbody`.  It was passed a child from CrudEntityView.",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "warnings": [
+      "MUI Grid: The `item` prop has been removed and is no longer necessary. You can safely remove it.\n",
+      "MUI Grid: The `xs` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n",
+      "MUI Grid: The `sm` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n",
+      "MUI Grid: The `md` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n",
+      "MUI Grid: The `item` prop has been removed and is no longer necessary. You can safely remove it.\n",
+      "MUI Grid: The `xs` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n",
+      "MUI Grid: The `sm` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n",
+      "MUI Grid: The `md` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.\n"
+    ]
+  },
+  "login": {
+    "screen": {
+      "headings": [
+        "MedWork Manager",
+        "Accesso piattaforma"
+      ],
+      "labels": [
+        "Tenant (Organizzazione) *",
+        "Username *",
+        "Password *",
+        "Ricordami (30 giorni)"
+      ],
+      "buttons": [
+        "Accedi"
+      ],
+      "links": [
+        "Password dimenticata?"
+      ],
+      "helpText": "MedWork Manager\n\nPiattaforma Professionale di Medicina del Lavoro (D.Lgs. 81/08)\n\nAccesso piattaforma\n\nInserisci le credenziali fornite dal tuo studio medico.\n\nPassword dimenticata?\n\nTenant (Organizzazione) *\nDefault Tenant (default)\nTenant (Organizzazione) *\nUsername *\nUsername *\nPassword *\nPassword *\nRicordami (30 giorni)\nAccedi"
+    },
+    "adminLanding": {
+      "sidebar": [
+        "Sorveglianza Sanitaria",
+        "Gestione Aziende",
+        "Gestione Lavoratori",
+        "Scadenzario & Visite",
+        "Analisi & Relazioni",
+        "Amministrazione"
+      ],
+      "breadcrumb": "Gestione Aziende\n/\n\nAziende\n\nSessione: Admin"
+    },
+    "doctorLanding": {
+      "sidebar": [
+        "Sorveglianza Sanitaria",
+        "Gestione Aziende",
+        "Gestione Lavoratori",
+        "Scadenzario & Visite",
+        "Analisi & Relazioni"
+      ],
+      "breadcrumb": "Sorveglianza Sanitaria\n/\n\nDashboard Medico\n\nSessione: Doctor",
+      "headings": [
+        "MedWork",
+        "Dashboard Medico",
+        "0",
+        "0",
+        "5",
+        "0",
+        "Visite con scadenza nei prossimi 7 giorni & Triage Clinico",
+        "Visite scadute (0)"
+      ],
+      "buttons": [
+        "Esci",
+        "Sorveglianza Sanitaria",
+        "Gestione Aziende",
+        "Gestione Lavoratori",
+        "Scadenzario & Visite",
+        "Analisi & Relazioni",
+        "Dashboard Medico",
+        "Nuova Visita (Step)",
+        "Calendario Visite",
+        "Cartelle Sanitarie (All. 3A)",
+        "Registro Visite Mediche",
+        "Anamnesi Guidata",
+        "Esami Visita",
+        "Accertamenti Strumentali",
+        "Vaccinazioni",
+        "Nuova visita"
+      ],
+      "bodyText": "Sorveglianza Sanitaria\n/\n\nDashboard Medico\n\nSessione: Doctor\nDashboard Medico\nNuova Visita (Step)\nCalendario Visite\nCartelle Sanitarie (All. 3A)\nRegistro Visite Mediche\nAnamnesi Guidata\nEsami Visita\nAccertamenti Strumentali\nVaccinazioni\nDashboard Medico\n\nSintesi real-time: scadenze, firme e anomalie dei protocolli.\n\nNuova visita\nProssime 7 giorni\n0\nvisite in scadenza\nScaduti\n0\noltre la data\nDa firmare\n5\nentro 7 gg\nAnomalie protocolli\n0\nda rivedere\nVisite con scadenza nei prossimi 7 giorni & Triage Clinico\nTriage & Readiness Attivo\nLavoratore\tAzienda\tScadenza\tReadiness / Triage\tStato Firma\tAzione Clinica\n\n\nNessuna visita in scadenza nei prossimi 7 giorni.\n\nVisite scadute (0)\nLavoratore\tAzienda\tScaduta il\tGiudizio\n\n\n✓ Nessuna visita scaduta."
+    }
+  },
+  "areas": [
+    {
+      "area": "Sorveglianza Sanitaria",
+      "modules": [
+        {
+          "chip": "Dashboard Medico",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nDashboard Medico\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Dashboard Medico",
+            "0",
+            "0",
+            "5",
+            "0"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Nuova visita"
+          ],
+          "buttonCount": 18,
+          "tableRows": 2,
+          "inputs": 1,
+          "hScroll": false
+        },
+        {
+          "chip": "Nuova Visita (Step)",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nNuova Visita (Step)\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Nuova Visita Medica & Sorveglianza Sanitaria",
+            "Frasi Rapide & Template Anamnestici",
+            "Dossier Clinico Lavoratore"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Copia da ultima visita",
+            "Indietro",
+            "Avanti"
+          ],
+          "buttonCount": 20,
+          "tableRows": 0,
+          "inputs": 6,
+          "hScroll": false
+        },
+        {
+          "chip": "Calendario Visite",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nCalendario Visite\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "settembre 2026",
+            "Today's Agenda",
+            "0 Visits"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Today",
+            "Record New Appointment"
+          ],
+          "buttonCount": 19,
+          "tableRows": 0,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Cartelle Sanitarie (All. 3A)",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nCartelle Sanitarie (All. 3A)\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 36,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Registro Visite Mediche",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nRegistro Visite Mediche\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 36,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Anamnesi Guidata",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nAnamnesi Guidata\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 36,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Esami Visita",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nEsami Visita\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 51,
+          "tableRows": 10,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Accertamenti Strumentali",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nAccertamenti Strumentali\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 36,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Sopralluoghi Ambienti",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nSopralluoghi Ambienti\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 27,
+          "tableRows": 2,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Vaccinazioni",
+          "breadcrumb": "Sorveglianza Sanitaria\n/\n\nVaccinazioni\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Medico",
+            "Nuova Visita (Step)",
+            "Calendario Visite",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Anamnesi Guidata",
+            "Esami Visita",
+            "Accertamenti Strumentali",
+            "Sopralluoghi Ambienti",
+            "Vaccinazioni",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica"
+          ],
+          "buttonCount": 36,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        }
+      ],
+      "landing": "Sorveglianza Sanitaria\n/\n\nDashboard Medico\n\nSessione: Admin",
+      "chips": [
+        "Dashboard Medico",
+        "Nuova Visita (Step)",
+        "Calendario Visite",
+        "Cartelle Sanitarie (All. 3A)",
+        "Registro Visite Mediche",
+        "Anamnesi Guidata",
+        "Esami Visita",
+        "Accertamenti Strumentali",
+        "Sopralluoghi Ambienti",
+        "Vaccinazioni"
+      ]
+    },
+    {
+      "area": "Gestione Aziende",
+      "modules": [
+        {
+          "chip": "Aziende",
+          "breadcrumb": "Gestione Aziende\n/\n\nAziende\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Gruppi Aziendali",
+            "Anagrafica Lavoratori",
+            "Protocolli Sanitari",
+            "Pianificazione Visite",
+            "Modifica",
+            "Elimina"
+          ],
+          "buttonCount": 34,
+          "tableRows": 3,
+          "inputs": 2,
+          "hScroll": false
+        },
+        {
+          "chip": "Gruppi Aziendali",
+          "breadcrumb": "Gestione Aziende\n/\n\nGruppi Aziendali\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina"
+          ],
+          "buttonCount": 23,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Figure Aziendali",
+          "breadcrumb": "Gestione Aziende\n/\n\nFigure Aziendali\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato"
+          ],
+          "buttonCount": 20,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Lavoratori",
+          "breadcrumb": "Gestione Aziende\n/\n\nLavoratori\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Aziende / Lavoratori",
+            "Lavoratori"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Gruppi Aziendali",
+            "Anagrafica Lavoratori",
+            "Protocolli Sanitari",
+            "Pianificazione Visite",
+            "Aggiungi",
+            "Reset"
+          ],
+          "buttonCount": 49,
+          "tableRows": 8,
+          "inputs": 11,
+          "hScroll": false
+        },
+        {
+          "chip": "Protocolli",
+          "breadcrumb": "Gestione Aziende\n/\n\nProtocolli\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Protocolli Sanitari & Piani di Sorveglianza"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Gruppi Aziendali",
+            "Anagrafica Lavoratori",
+            "Protocolli Sanitari",
+            "Pianificazione Visite",
+            "✨ Smart Protocol Generator",
+            "+ Nuovo Protocollo"
+          ],
+          "buttonCount": 28,
+          "tableRows": 5,
+          "inputs": 2,
+          "hScroll": false
+        },
+        {
+          "chip": "Scadenze & Agende",
+          "breadcrumb": "Gestione Aziende\n/\n\nScadenze & Agende\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Pianificazione Visite & Batch Session Planner"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Gruppi Aziendali",
+            "Anagrafica Lavoratori",
+            "Protocolli Sanitari",
+            "Pianificazione Visite",
+            "⚡ Pianifica Sessione Massiva (0)",
+            "Aggiorna"
+          ],
+          "buttonCount": 33,
+          "tableRows": 5,
+          "inputs": 8,
+          "hScroll": false
+        },
+        {
+          "chip": "Sedi",
+          "breadcrumb": "Gestione Aziende\n/\n\nSedi\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina"
+          ],
+          "buttonCount": 32,
+          "tableRows": 4,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Reparti",
+          "breadcrumb": "Gestione Aziende\n/\n\nReparti\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato"
+          ],
+          "buttonCount": 20,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Luoghi di Lavoro",
+          "breadcrumb": "Gestione Aziende\n/\n\nLuoghi di Lavoro\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Aziende",
+            "Gruppi Aziendali",
+            "Figure Aziendali",
+            "Lavoratori",
+            "Protocolli",
+            "Scadenze & Agende",
+            "Sedi",
+            "Reparti",
+            "Luoghi di Lavoro",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato"
+          ],
+          "buttonCount": 20,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        }
+      ],
+      "landing": "Gestione Aziende\n/\n\nAziende\n\nSessione: Admin",
+      "chips": [
+        "Aziende",
+        "Gruppi Aziendali",
+        "Figure Aziendali",
+        "Lavoratori",
+        "Protocolli",
+        "Scadenze & Agende",
+        "Sedi",
+        "Reparti",
+        "Luoghi di Lavoro"
+      ]
+    },
+    {
+      "area": "Gestione Lavoratori",
+      "modules": [
+        {
+          "chip": "Lavoratori",
+          "breadcrumb": "Gestione Lavoratori\n/\n\nLavoratori\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Aziende / Lavoratori",
+            "Lavoratori"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Lavoratori",
+            "Lavoratori (CRUD)",
+            "Rischi Dipendente",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Aggiungi",
+            "Reset",
+            "📁",
+            "📁",
+            "📁",
+            "+ Nuovo lavoratore",
+            "Stampa",
+            "Esporta dati in excel",
+            "Reset",
+            "📋"
+          ],
+          "buttonCount": 41,
+          "tableRows": 8,
+          "inputs": 11,
+          "hScroll": false
+        },
+        {
+          "chip": "Lavoratori (CRUD)",
+          "breadcrumb": "Gestione Lavoratori\n/\n\nLavoratori (CRUD)\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Lavoratori",
+            "Lavoratori (CRUD)",
+            "Rischi Dipendente",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 31,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Rischi Dipendente",
+          "breadcrumb": "Gestione Lavoratori\n/\n\nRischi Dipendente\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Lavoratori",
+            "Lavoratori (CRUD)",
+            "Rischi Dipendente",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 34,
+          "tableRows": 6,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Cartelle Sanitarie (All. 3A)",
+          "breadcrumb": "Gestione Lavoratori\n/\n\nCartelle Sanitarie (All. 3A)\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Lavoratori",
+            "Lavoratori (CRUD)",
+            "Rischi Dipendente",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 31,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Registro Visite Mediche",
+          "breadcrumb": "Gestione Lavoratori\n/\n\nRegistro Visite Mediche\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Lavoratori",
+            "Lavoratori (CRUD)",
+            "Rischi Dipendente",
+            "Cartelle Sanitarie (All. 3A)",
+            "Registro Visite Mediche",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 31,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        }
+      ],
+      "landing": "Gestione Lavoratori\n/\n\nLavoratori\n\nSessione: Admin",
+      "chips": [
+        "Lavoratori",
+        "Lavoratori (CRUD)",
+        "Rischi Dipendente",
+        "Cartelle Sanitarie (All. 3A)",
+        "Registro Visite Mediche"
+      ]
+    },
+    {
+      "area": "Scadenzario & Visite",
+      "modules": [
+        {
+          "chip": "Dashboard Scadenze",
+          "breadcrumb": "Scadenzario & Visite\n/\n\nDashboard Scadenze\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Benvenuto in Medwork",
+            "00",
+            "00",
+            "10",
+            "02"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Scadenze",
+            "Scadenze & Agende",
+            "Calendario Visite",
+            "Disponibilità Medici",
+            "Log Notifiche",
+            "Esporta Report",
+            "Avvia Visita",
+            "Avvia Visita",
+            "Nuova Visita Medica",
+            "Nuovo Lavoratore",
+            "Ricarica dati",
+            "Vedi Calendario Completo"
+          ],
+          "buttonCount": 19,
+          "tableRows": 5,
+          "inputs": 1,
+          "hScroll": false
+        },
+        {
+          "chip": "Scadenze & Agende",
+          "breadcrumb": "Scadenzario & Visite\n/\n\nScadenze & Agende\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Pianificazione Visite & Batch Session Planner"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Scadenze",
+            "Scadenze & Agende",
+            "Calendario Visite",
+            "Disponibilità Medici",
+            "Log Notifiche",
+            "⚡ Pianifica Sessione Massiva (0)",
+            "Aggiorna",
+            "+ Nuova Visita Singola",
+            "Visita",
+            "Convoca",
+            "Visita",
+            "Convoca",
+            "Visita",
+            "Convoca",
+            "Visita"
+          ],
+          "buttonCount": 25,
+          "tableRows": 5,
+          "inputs": 8,
+          "hScroll": false
+        },
+        {
+          "chip": "Calendario Visite",
+          "breadcrumb": "Scadenzario & Visite\n/\n\nCalendario Visite\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "settembre 2026",
+            "Today's Agenda",
+            "0 Visits"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Scadenze",
+            "Scadenze & Agende",
+            "Calendario Visite",
+            "Disponibilità Medici",
+            "Log Notifiche",
+            "Today",
+            "Record New Appointment"
+          ],
+          "buttonCount": 14,
+          "tableRows": 0,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Disponibilità Medici",
+          "breadcrumb": "Scadenzario & Visite\n/\n\nDisponibilità Medici\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Scadenze",
+            "Scadenze & Agende",
+            "Calendario Visite",
+            "Disponibilità Medici",
+            "Log Notifiche",
+            "Aggiorna",
+            "Esporta CSV",
+            "Filtro avanzato"
+          ],
+          "buttonCount": 15,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Log Notifiche",
+          "breadcrumb": "Scadenzario & Visite\n/\n\nLog Notifiche\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Dashboard Scadenze",
+            "Scadenze & Agende",
+            "Calendario Visite",
+            "Disponibilità Medici",
+            "Log Notifiche",
+            "Aggiorna",
+            "Esporta CSV",
+            "Filtro avanzato"
+          ],
+          "buttonCount": 15,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        }
+      ],
+      "landing": "Scadenzario & Visite\n/\n\nScadenze & Agende\n\nSessione: Admin",
+      "chips": [
+        "Dashboard Scadenze",
+        "Scadenze & Agende",
+        "Calendario Visite",
+        "Disponibilità Medici",
+        "Log Notifiche"
+      ]
+    },
+    {
+      "area": "Analisi & Relazioni",
+      "modules": [
+        {
+          "chip": "Audit Trail",
+          "breadcrumb": "Analisi & Relazioni\n/\n\nAudit Trail\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Audit"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Audit Trail",
+            "Reportistica & All. 3B",
+            "Aggiorna"
+          ],
+          "buttonCount": 10,
+          "tableRows": 436,
+          "inputs": 2,
+          "hScroll": false
+        },
+        {
+          "chip": "Reportistica & All. 3B",
+          "breadcrumb": "Analisi & Relazioni\n/\n\nReportistica & All. 3B\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Centro Report",
+            "Report Scadenze Visite",
+            "Report Idoneità",
+            "Report Rischi per Azienda",
+            "Allegato 3B e Relazione Sanitaria"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Audit Trail",
+            "Reportistica & All. 3B",
+            "Mostra archiviate",
+            "Ricerca avanzata",
+            "Ricarica elenco",
+            "Altri filtri",
+            "Reset",
+            "Ricerca",
+            "Esporta dati in excel",
+            "Salva giudizi",
+            "Salva visite",
+            "Invia",
+            "Stampa",
+            "Genera PDF",
+            "Genera PDF"
+          ],
+          "buttonCount": 24,
+          "tableRows": 1,
+          "inputs": 10,
+          "hScroll": false
+        }
+      ],
+      "landing": "Analisi & Relazioni\n/\n\nReportistica & All. 3B\n\nSessione: Admin",
+      "chips": [
+        "Audit Trail",
+        "Reportistica & All. 3B"
+      ]
+    },
+    {
+      "area": "Amministrazione",
+      "modules": [
+        {
+          "chip": "Registro Protocolli",
+          "breadcrumb": "Amministrazione\n/\n\nRegistro Protocolli\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 34,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Protocolli Personali",
+          "breadcrumb": "Amministrazione\n/\n\nProtocolli Personali\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 37,
+          "tableRows": 6,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Fatturazione",
+          "breadcrumb": "Amministrazione\n/\n\nFatturazione\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Fatturazione, parcelle e preventivi",
+            "€ 0.00",
+            "€ 0.00",
+            "€ 0.00"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Genera fatture"
+          ],
+          "buttonCount": 16,
+          "tableRows": 1,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Cataloghi Esami",
+          "breadcrumb": "Amministrazione\n/\n\nCataloghi Esami\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 34,
+          "tableRows": 5,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Mansioni",
+          "breadcrumb": "Amministrazione\n/\n\nMansioni\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 31,
+          "tableRows": 4,
+          "inputs": 3,
+          "hScroll": false
+        },
+        {
+          "chip": "Strumenti",
+          "breadcrumb": "Amministrazione\n/\n\nStrumenti\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Strumenti diagnostici e firma digitale",
+            "5",
+            "5",
+            "2",
+            "Online"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Registra firma"
+          ],
+          "buttonCount": 16,
+          "tableRows": 1,
+          "inputs": 5,
+          "hScroll": false
+        },
+        {
+          "chip": "Impostazioni",
+          "breadcrumb": "Amministrazione\n/\n\nImpostazioni\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork",
+            "Gestione multitenente e multidominio",
+            "Configurazione PEC & Delivery Hub Notifiche",
+            "Contesto attivo"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Test Connessione PEC",
+            "Salva Parametri PEC"
+          ],
+          "buttonCount": 17,
+          "tableRows": 0,
+          "inputs": 11,
+          "hScroll": false
+        },
+        {
+          "chip": "Fattori di Rischio",
+          "breadcrumb": "Amministrazione\n/\n\nFattori di Rischio\n\nSessione: Admin",
+          "unavailableRoute": false,
+          "headings": [
+            "MedWork"
+          ],
+          "visibleButtons": [
+            "Esci",
+            "Sorveglianza Sanitaria",
+            "Gestione Aziende",
+            "Gestione Lavoratori",
+            "Scadenzario & Visite",
+            "Analisi & Relazioni",
+            "Amministrazione",
+            "Registro Protocolli",
+            "Protocolli Personali",
+            "Fatturazione",
+            "Cataloghi Esami",
+            "Mansioni",
+            "Strumenti",
+            "Impostazioni",
+            "Fattori di Rischio",
+            "Aggiorna",
+            "Nuovo",
+            "Esporta CSV",
+            "Filtro avanzato",
+            "Modifica",
+            "Elimina",
+            "Profilo"
+          ],
+          "buttonCount": 31,
+          "tableRows": 4,
+          "inputs": 3,
+          "hScroll": false
+        }
+      ],
+      "landing": "Amministrazione\n/\n\nImpostazioni\n\nSessione: Admin",
+      "chips": [
+        "Registro Protocolli",
+        "Protocolli Personali",
+        "Fatturazione",
+        "Cataloghi Esami",
+        "Mansioni",
+        "Strumenti",
+        "Impostazioni",
+        "Fattori di Rischio"
+      ]
+    }
+  ],
+  "mobile": {
+    "horizontalScroll": true,
+    "scrollWidth": 532,
+    "clientWidth": 390,
+    "sidebarVisible": true,
+    "sidebarBox": {
+      "x": 0,
+      "y": 50,
+      "width": 532.40625,
+      "height": 127.828125
+    },
+    "bodyText": "MedWork\nD.Lgs. 81/08\nAmministratore / Segreteria\nEsci\nSorveglianza Sanitaria\nGestione Aziende\nGestione Lavoratori\nScadenzario & Visite\nAnalisi & Relazioni\nAmministrazione\nAmministrazione\n/\n\nFattori di Rischio\n\nSessione: Admin\nRegistro Protocolli\nProtocolli Personali\nFatturazione\nCataloghi Esami\nMansioni\nStrumenti\nImpostazioni\nFattori di Rischio\nCerca\n​\nCerca\nAggiorna\nNuovo\nEsporta CSV\nFiltro avanz"
+  },
+  "clickAudit": {
+    "stepper": {
+      "headings": [
+        "MedWork",
+        "Nuova Visita Medica & Sorveglianza Sanitaria",
+        "Frasi Rapide & Template Anamnestici",
+        "Dossier Clinico Lavoratore"
+      ],
+      "steps": [
+        "Anamnesi & Dati Clinici",
+        "Esame Obiettivo & Parametri Vitali",
+        "Giudizio di Idoneità"
+      ],
+      "buttonCount": 18,
+      "buttons": [
+        "Esci",
+        "Sorveglianza Sanitaria",
+        "Gestione Aziende",
+        "Gestione Lavoratori",
+        "Scadenzario & Visite",
+        "Analisi & Relazioni",
+        "Dashboard Medico",
+        "Nuova Visita (Step)",
+        "Calendario Visite",
+        "Cartelle Sanitarie (All. 3A)",
+        "Registro Visite Mediche",
+        "Anamnesi Guidata",
+        "Esami Visita",
+        "Accertamenti Strumentali",
+        "Vaccinazioni",
+        "Copia da ultima visita",
+        "Indietro",
+        "Avanti"
+      ],
+      "inputs": 6,
+      "selects": 5,
+      "bodySample": "Sorveglianza Sanitaria\n/\n\nNuova Visita (Step)\n\nSessione: Doctor\nDashboard Medico\nNuova Visita (Step)\nCalendario Visite\nCartelle Sanitarie (All. 3A)\nRegistro Visite Mediche\nAnamnesi Guidata\nEsami Visita\nAccertamenti Strumentali\nVaccinazioni\nNuova Visita Medica & Sorveglianza Sanitaria\n\nInserimento rapido conforme D.Lgs. 81/08 (Allegato 3A) con precompilazione intelligente.\n\nStandard SIML Conforme\n1\nAnamnesi & Dati Clinici\n2\nEsame Obiettivo & Parametri Vitali\n3\nGiudizio di Idoneità\nLavoratore in Visita *\n​\nLavoratore in Visita *\nCopia da ultima visita\nMedico Competente *\n​\nMedico Competente *\nData Visita *\nData Visita *\nTipo Visita Medica *\nPeriodica (Art. 41 c.2 lett. b)\nTipo Visita Medica *\nFrasi Rapide & Template Anamnestici\nInserisci template anamnestico rapido...\n​\nInserisci template anamnestico rapido...\nAnamnesi Lavorativa (Esposizioni pregresse, mansioni, anzianità)\nAnamnesi Lavorativa (Esposizioni pregresse, mansioni, anzianità)\n\nMacro: .norm, .vdt, .mmc, .rum, .guida, .notte + Spazio\n\nAnamnesi Personale (Abitudini di vita, fumo, alcol, attività fisica)\nAnamnesi Personale (Abitudini di vita, fumo, alcol, attività fisica)\n\nMacro: .norm, .vdt + Spazio\n\nAnamnesi Familiare (Ereditarietà patologie cardiovascolari, metaboliche, oncologiche)\nAnamnesi Familiare (Ereditarietà patologie cardiovascolari, metaboliche, oncologiche)\nPatologie Remote & Recenti (Interventi, ricoveri, allergie)\nPatologie Remote & Recenti (Interventi, ricoveri, allergie)\nIndietro\nAvanti\nDossier Clinico "
+    },
+    "clicksLandingToNewVisitForm": 2
+  },
+  "ctrlK": {
+    "dialogsOpen": 0,
+    "visibleText": "MedWork\nD.Lgs. 81/08\nAzienda Attiva:\n🌐 Tutte le Aziende (Globale)\n​\nAmministratore / Segreteria\nEsci\nSorveglianza Sanitaria\nGestione Aziende\nGestione Lavoratori\nScadenzario & Visite\nAnalisi & Relazioni\nAmministrazione\nAmministrazione\n/\n\nFattori di Rischio\n\nSessione: Admin\nRegistro Protocolli\nProtoc"
+  },
+  "topbar": {
+    "items": [
+      "D.Lgs. 81/08",
+      "Amministratore / Segreteria",
+      "Esci"
+    ],
+    "iconButtons": 1,
+    "companySelector": 1,
+    "titles": [
+      "Disconnetti sessione"
+    ]
+  }
+}

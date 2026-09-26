@@ -56,6 +56,8 @@ test.describe('P0 & P1 Competitive Feature Suite', () => {
     // Navigate to Sorveglianza Sanitaria -> Nuova Visita
     await page.locator('.legacy-side-item:has-text("Sorveglianza sanitaria"), button:has-text("Sorveglianza sanitaria")').first().click()
     await page.waitForTimeout(600)
+    await page.locator('.mw-chip:has-text("Nuova Visita"), button:has-text("Nuova Visita")').first().click()
+    await page.waitForTimeout(800)
 
     // Verify stepper rendered
     await expect(page.locator('text=Compilazione Visita Medica').or(page.locator('text=Anamnesi')).first()).toBeVisible({ timeout: 15000 })
@@ -114,10 +116,9 @@ test.describe('P0 & P1 Competitive Feature Suite', () => {
   test('P1: Portale RSPP/DdL is accessible and displays compliance KPI and certificates', async ({ page }) => {
     await loginAsAdmin(page)
 
-    // Open Gestione aziende -> Portale RSPP/DdL tab
-    await page.click('button:has-text("Gestione aziende")')
+    // Open Portale RSPP/DdL from sidebar
+    await page.locator('.legacy-side-item:has-text("Portale RSPP/DdL"), button:has-text("Portale RSPP/DdL")').first().click()
     await page.waitForTimeout(600)
-    await page.click('button:has-text("Portale RSPP/DdL")')
 
     // Verify Employer Portal loaded
     await expect(page.getByText('Portale di consultazione idoneità e conformità sanitaria').first()).toBeVisible({ timeout: 10000 })
@@ -131,7 +132,7 @@ test.describe('P0 & P1 Competitive Feature Suite', () => {
     // Open Scadenzario -> Convocazioni (Recall)
     await page.locator('.legacy-side-item:has-text("Scadenzario"), button:has-text("Scadenzario")').first().click()
     await page.waitForTimeout(600)
-    const recallTab = page.locator('.legacy-tab:has-text("Convocazioni (Recall)"), button:has-text("Convocazioni (Recall)")').first()
+    const recallTab = page.locator('.mw-chip:has-text("Convocazioni"), button:has-text("Convocazioni")').first()
     if (await recallTab.count() > 0) {
       await recallTab.click()
       await page.waitForSelector('text=Convocazioni Automatiche & Recall', { timeout: 10000 })

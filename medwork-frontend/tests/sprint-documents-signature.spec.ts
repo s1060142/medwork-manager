@@ -70,17 +70,15 @@ test.describe('Sprint Objectives: Official Documents, Allegato 3A/3B & Batch Sig
   })
 
   test('3. Annual Health Report (Art. 40 D.Lgs. 81/08)', async ({ page }) => {
-    // Navigate to Analisi e relazioni
-    const reportSide = page.locator('.legacy-side-item:has-text("Analisi e relazioni")')
-    await reportSide.click()
+    // Navigate to Analisi & Relazioni
+    const reportSide = page.locator('.legacy-side-item:has-text("Analisi"), button:has-text("Analisi")')
+    await reportSide.first().click()
     await page.waitForTimeout(400)
 
-    // Click Relazioni aziendali tab
-    const relTab = page.locator('.legacy-tab:has-text("Relazioni aziendali")')
-    if (await relTab.isVisible()) {
-      await relTab.click()
-      await page.waitForTimeout(400)
-    }
+    // Click Relazioni aziendali tab inside ReportsCenter
+    const relTab = page.locator('button:has-text("Relazioni aziendali")')
+    await relTab.first().click()
+    await page.waitForTimeout(400)
 
     // Verify Relazione Sanitaria Art. 40 card & download button
     const art40Section = page.locator('text=Relazione Sanitaria Annuale (Art. 40 D.Lgs. 81/08)')

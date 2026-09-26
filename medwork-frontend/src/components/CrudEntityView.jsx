@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Divider,
   IconButton,
@@ -556,10 +557,16 @@ function CrudEntityView({
     setConfirmDelete(row)
   }
 
+  const [unsavedDialog, setUnsavedDialog] = useState({ open: false, onConfirm: () => {} })
+
   const confirmClose = () => {
     if (!dirty) return closeForm()
-    const ok = window.confirm('Hai modifiche non salvate. Chiudere comunque?')
-    if (ok) closeForm()
+    setUnsavedDialog({ open: true, onConfirm: closeForm })
+  }
+
+  const handleUnsavedConfirm = () => {
+    setUnsavedDialog({ open: false, onConfirm: () => {} })
+    closeForm()
   }
 
   const closeForm = () => {
@@ -1004,11 +1011,23 @@ function CrudEntityView({
           setDialogOpen(true)
         }}
       />
+      {/* UNSAVED CHANGES CONFIRMATION DIALOG */}
+      <Dialog open={unsavedDialog.open} onClose={() => setUnsavedDialog({ open: false, onConfirm: () => {} })}>
+        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Modifiche non salvate</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ fontSize: 14, color: '#4b5563', mt: 1 }}>
+            Hai modifiche non salvate. Vuoi chiudere comunque?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="outlined" onClick={() => setUnsavedDialog({ open: false, onConfirm: () => {} })}>Continua a modificare</Button>
+          <Button variant="contained" color="warning" onClick={handleUnsavedConfirm}>Chiudi senza salvare</Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }
 
 export default CrudEntityView
-
 
 

@@ -1,621 +1,327 @@
-# FRONTEND UX AUDIT — MedWork Manager
+# FRONTEND UX AUDIT — MedWork Manager (v2)
 
-> **Data audit**: 24 Settembre 2026  
-> **Sviluppatore**: Senior Product Designer · UX Architect · Occupational Health Domain Expert  
-> **Perspective**: Physician (first-time) · Medical Secretary (first-time)  
-> **Stack**: React 19 + MUI v7 + Emotion + Vite + TypeScript  
-> **Screenshot dir**: `/screenshots/`
+> **Data audit**: 26 Settembre 2026
+> **Baseline**: commit `83e1bb5` (dopo il refactor frontend `9442df52`)
+> **Metodo**: esplorazione browser reale (Playwright/Chromium headless, viewport 1440×900 + 390×844), attraversamento di tutte le 6 aree e 40 moduli, screenshot + osservazioni strutturate
+> **Prospettive**: Senior Product Designer · UX Architect · Occupational Health Domain Expert · Medico Competente al primo accesso · Segretaria Medica al primo accesso
+> **Fuori scope** (per richiesta): backend, security, architettura
 
 ---
 
-## RIEPILOGO ESCO
+## 0. IL FINDING PIÙ IMPORTANTE (già risolto in questa sessione)
 
-| Metrica | Voto |
+**"Il Mio Giorno" era stato eliminato dal refactor `9442df52`.**
+
+- Prima di `9442df52`: area sidebar `home` → *Il Mio Giorno* (`AREA_DEFAULT_MODULE.home = 'dashboard'`) con render di `components/Dashboard.jsx` (KPI "GIUDIZI DA FIRMARE", agenda pazienti, one-click "Avvia Visita", Morning Digest).
+- Dopo `9442df52`: `App.tsx` è passato da 1130 → 607 righe (−919 righe). Sono scomparse le voci `home`/`dashboard`, il caso di render `moduleKey === 'dashboard'` e **l'import di `Dashboard.jsx` rimasto orfano nel repository**.
+- Effetti collaterali: 4 dei 5 test P1 (`tests/p1-improvements.spec.ts`) sono diventati rossi, insieme a ~28 componenti (Compliance Center, Giudizio Idoneità, Firma Massiva, Cartella 3A, Recall, Allegato 3B, Analytics, Migration, Global Search…) non più importati da nessuna parte.
+
+**Azione implementata (non un TODO):**
+
+| Modifica | File |
 |---|---|
-| **First Impression Score** | ⚠️ 6/10 — Funziona ma sembra software da laboratorio |
-| **Visual Quality Score** | 6.5/10 — MUI è decente ma custom legacy CSS rompe l'uniformità |
-| **Usability Score** | 5/10 — Tabelle massive, dual-filter confusione, troppi click |
-| **Physician Productivity** | 5.5/10 — Stepper funziona ma mancano shortcut e scorciatoie contestuali |
-| **Secretary Productivity** | 5/10 — Import/export presenti ma workflow frammentati |
-| **Information Architecture** | 5.5/10 — 6 aree con ~50 moduli, gerarchia poco chiara |
-| **Design System Score** | 4/10 — `legacy-*` classi ovunque, pattern duplicati, zero token coerenti |
-| **Competitive Position** | **WORSE** rispetto a CartSan, WinAspi, Zucchetti, Simpledo percepiti |
+| Reintrodotto `import Dashboard` + caso di render `moduleKey === 'dashboard'` | `medwork-frontend/src/App.tsx` |
+| Reintrodotta la voce `{ key: 'dashboard', label: 'Il Mio Giorno' }` in `MODULE_ITEMS` e come **prima** chip dell'area *Sorveglianza Sanitaria* | `medwork-frontend/src/App.tsx` |
+| Il Medico torna ad atterrare su *Il Mio Giorno* (login e reload) | `medwork-frontend/src/App.tsx` |
+| `LEGACY_MODULE_ALIASES` + `handleModuleNavigation()`: i drill-down delle card del cockpit non finiscono più su "Modulo non disponibile" | `medwork-frontend/src/App.tsx` |
+| Test P1 allineato alla nuova IA (helper `openMyDay`) | `medwork-frontend/tests/p1-improvements.spec.ts` |
 
----
+**Validazione eseguita**
 
-## PHASE 1 - ESPLORAZIONE: PRIMA IMPRESSIONE
-
-### Cosa ho visto (primo accesso)
-
-**Login Screen:**
-- Titolo: "Gestionale Medicina del Lavoro" — funzionale ma impersonale
-- Sottotitolo: "Accesso alla piattaforma amministrativa e sanitaria"
-- Layout: Paper card centralizzato, sfondo gradiente blu
-- Elementi: Tenant selector, Username, Password, "Ricordami", "Password dimenticata?"
-- **Prima impressione**: un gestionale medico di 10 anni fa. Non SaaS. Non cloud-native.
-
-**Dashboard (Il Mio Giorno):**
-- Layout a 3 colonne di KPI: "6 GIUDIZI DA FIRMARE", "0 SCADENZE VISITE (7 GG)", "COMPLIANCE 100%"
-- Agenda del giorno con righe vuote a "00:00" (orari tutti uguali — bug o placeholder?)
-- Azioni: "+ Nuova Visita Medica", "Morning Digest", "Aggiorna dati"
-- **Percezione**: dashboard informativa ma non accattivante
-
-**Navigazione laterale:**
-- 6 voci: Il Mio Giorno, Gestione aziende, Gestione lavoratori, Analisi e relazioni, Sorveglianza sanitaria, Scadenzario, Amministrazione
-- Sidebar scura (#0b1b36) con hover blu
-- **Percezione**: sidebar dark è trendy ma le icone MUI standard sembrano fuori posto
-
-**Topbar:**
-- 7+ azioni: Cerca (Ctrl+K), Notifiche, ChangeLog, Manuale, Profilo, Logout, Esporta CSV, Esporta Excel
-- **Problema**: troppi elementi nella topbar, userà confusione tra "ChangeLog" e "Manuale"
-
-### Valutazione UX Complessiva Fase 1
-
-| Aspetto | Stato | Note |
+| Verifica | Comando | Esito |
 |---|---|---|
-| First Impression | ⚠️ Discreta | Non brutta, ma non ispira fiducia moderna |
-| Visual Polish | ⚠️ Discreta | MUI v7 è moderno ma custom CSS "legacy" rovina l'effetto |
-| Clarity | ⚠️ Discreta | Le etichette sono chiare ma la densità è alta |
-| Discoverability | ⚠️ Scarsa | Non si capisce subito dove trovare "Nuova visita" |
-| Usability | ⚠️ Discreta | Funziona ma non è intuitivo |
+| Build produzione | `npm run build` | ✅ 2213 moduli, 16.4s |
+| Unit test | `npx vitest run` | ✅ 2/2 pass |
+| Regressione P1 | `npx playwright test tests/p1-improvements.spec.ts` | ✅ 2 pass (prima: 1) — test #1 *Il Mio Giorno* ora verde |
+| Verifica funzionale browser | `node scripts/ux-audit-verify-myday.mjs` | ✅ **14/14 check** (landing, 4 KPI, 3 drill-down KPI, shortcut, + Nuova Visita → stepper, apertura lato Admin) |
+
+Screenshot di prova: `screenshots/ux-audit/60-myday-restored-doctor.png`, `62-myday-restored-admin.png`.
+
+**Decisione ancora aperta (serve il Product Owner):** i restanti 27 componenti orfani (Compliance Radar, Giudizio Idoneità, Firma Massiva, Cartella 3A, Recall, Allegato 3B, Analytics, Migration, Global Search Ctrl+K, Agenda, Scadenzari specialistici…) vanno **reintegrati nell'IA** o **rimossi dal repository**. Oggi sono codice + test che esistono ma che nessun utente può raggiungere: è il costo tecnico e di fiducia più alto emerso dall'audit.
 
 ---
 
-## PHASE 2 - PERCORSO MEDICO
+## PHASE 1 — ESPLORAZIONE (prima impressione, area per area)
 
-### 2.1 Apertura applicazione → Inizio giornata
+Viste esplorate dal vivo: **6 aree, 40 chip di modulo (Admin)**, 51 screenshot in `screenshots/ux-audit/`.
 
-1. **Login** (1 minuto): Selezione tenant → username → password → Accedi
-2. **Dashboard "Il Mio Giorno"** (auto-redirect): KPI + agenda del giorno
+| Area | Chip | Moduli raggiungibili | Percezione |
+|---|---|---|---|
+| **Sorveglianza Sanitaria** | 11 (Admin) / 10 (Medico) | Il Mio Giorno, Dashboard Medico, Stepper visita, Calendario, Cartelle 3A, Registro visite, Anamnesi, Esami visita, Accertamenti, Vaccinazioni, Sopralluoghi | La più ricca e la più moderna (Dashboard Medico + Stepper) |
+| **Gestione Aziende** | 9 (Medico: 3) | Aziende, Gruppi, Figure, Lavoratori, Protocolli, Scadenze, Sedi, Reparti, Luoghi di lavoro | Mista: 4 moduli sono tabelle CRUD generiche identiche tra loro |
+| **Gestione Lavoratori** | 5 (Medico: 4) | Lavoratori, Lavoratori (CRUD), Rischi, Cartelle 3A, Registro visite | **Duplicazione evidente**: "Lavoratori" e "Lavoratori (CRUD)" nella stessa area |
+| **Scadenzario & Visite** | 5 (Medico: 3) | Dashboard Scadenze, Scadenze & Agende, Calendario, Disponibilità medici, Log notifiche | La landing (Dashboard Scadenze) è la schermata più curata; "Disponibilità Medici" mostra tabella vuota (API in errore 500) |
+| **Analisi & Relazioni** | 2 (Medico: 1, senza chip) | Reportistica & All. 3B, Audit Trail | "Centro Report" densissimo, 3 paradigmi di filtro sovrapposti |
+| **Amministrazione** | 8 | Registro protocolli, Protocolli personali, Fatturazione, Cataloghi, Mansioni, Strumenti, Impostazioni, Fattori di rischio | Solo 1 modulo nativo (Fatturazione); 6 sono la stessa tabella generica |
 
-**Friction Points:**
-- ⚠️ **Nessun onboarding**: il medico vede la dashboard senza contesto — cosa deve fare oggi?
-- ⚠️ **"00:00" in agenda**: tutti gli appuntamenti mostrano orario 00:00 — dato sbagliato o placeholder?
-- ⚠️ **Nessun riassunto mattutino**: non dice "Hai 6 giudizi da firmare" in modo prominente
-- ⚠️ **"Morning Digest"**: non è chiaro cosa faccia questo bottone
+**Login (prima impressione):** card centrata pulita, logo, "MedWork Manager / Piattaforma Professionale di Medicina del Lavoro (D.Lgs. 81/08)". Sfondo chiaro, tipografia corretta. Sembra **2023-2024**: sobrio e credibile, ma anonimo — nessun valore percepito ("perché MedWork e non carta e penna?"), e "Ricordami (30 giorni)" è una promessa non mantenuta (marketing negativo).
 
-### 2.2 Apertura di un lavoratore
+**Osservazioni trasversali immediatamente visibili**
 
-1. **Opzione A**: Gestione Lavoratori → tabella con ~10 colonne → click su "Profilo"
-2. **Opzione B**: Cerca (Ctrl+K) → seleziona lavoratore → "Profilo"
-3. **Opzione C**: Cerca → "Avvia Visita" → diretto allo stepper
+1. **Doppia navigazione**: sidebar area → *strip di chip* modulo → (in alcune aree) una **seconda riga di tab** (`Gruppi Aziendali / Anagrafica Lavoratori / Protocolli Sanitari / Pianificazione Visite`). Tre livelli di navigazione per arrivare a un contenuto.
+## PHASE 2 — PERCORSO MEDICO COMPETENTE
 
-**Friction Points:**
-- ⚠️ **3 modi diversi per aprire un lavoratore** — confusione su quale usare
-- ⚠️ **La tabella lavoratori mostra un bottone gigante** per ogni riga con tutte le info in un'unica cella — "001 - Acme Industria S.p.A. - 1 Via dell'Industria..." — questo è un bottone? Non una riga tabella?
-- ⚠️ **"Copia da ultima visita"** è disabled senza selezionare un medico — perché?
-- ⚠️ **Dual filter**: la pagina lavoratori ha due aree di filtro separate (aziende in alto, lavoratori in basso) — perché?
+| # | Passo | Clic reali | Attrito |
+|---|---|---|---|
+| 1 | Apri l'app | — | Login: tenant + user + password. "Ricordami" non ha effetto: **ogni giorno si rifà il login** |
+| 2 | Inizio giornata | 0 | Atterra su *Il Mio Giorno* (ripristinato): 4 KPI + agenda del giorno + 3 shortcut. **"Cosa devo fare oggi" è risolto in 1 schermata** |
+| 3 | Rivedere le visite di oggi | 0→1 | KPI "VISITE IN PROGRAMMA OGGI" + tabella Agenda con orario/lavoratore/CF/azienda/mansione/tipo/stato e pulsante **Avvia Visita**. Empty state esplicativo (buono) |
+| 4 | Aprire un lavoratore | 2-3 | Da `WorkersCenter` (due toolbar di filtro + **due pulsanti "Reset"**) o dalla tabella CRUD generica con header sbagliati. **Nessuna ricerca globale**: `Ctrl+K` non esiste più |
+| 5 | Eseguire una visita | 2 | *Sorveglianza Sanitaria → Nuova Visita (Step)*: stepper 3 step (Anamnesi → Esame obiettivo → Giudizio), chip "Standard SIML Conforme", "Copia da ultima visita", Frasi Rapide con macro `.norm .vdt .mmc`. **La schermata migliore del prodotto** |
+| 6 | Emettere il giudizio | +1 step | Step 3 dentro lo stepper. **Non esiste più un "Centro Giudizi & Firma Massiva" raggiungibile** → giudizio possibile solo a fine visita, uno per uno |
+| 7 | Firmare documenti | **non raggiungibile** | `BatchSignatureCenter` / `FirmaGrafometricaCenter` non sono importati da `App.tsx`. Il KPI "GIUDIZI DA FIRMARE" porta a *Registro Visite Mediche* (alias), non alla firma massiva |
+| 8 | Generare PDF | 3-4 | *Analisi & Relazioni → Reportistica & All. 3B*: 6 card "Genera PDF" + toolbar "Salva giudizi / Salva visite / Invia / Stampa" |
 
-### 2.3 Esecuzione di una visita
+**Attriti principali del medico**
 
-**Stepper a 2 step (indicato da "Indietro / Avanti"):**
-
-**Step 1 - Dati visita:**
-- Standard SIML Conforme (checkbox)
-- Lavoratore in Visita (dropdown)
-- Medico Competente (dropdown)
-- Data Visita (date picker)
-- Periodica + Tipo Visita Medica
-- Frasi Rapide & Template Anamnestici (dropdown)
-- 4 aree anamnesi: Lavorativa, Personale, Familiare, Patologie Remote
-
-**Step 2 (dopo Avanti):**
-- Dossier Clinico Lavoratore (heading ma contenuto non chiaro dalla snapshot)
-
-**Friction Points:**
-- ⚠️ **Stepper solo a 2 step** — per una visita medica completa, sembra troppo poco
-- ⚠️ **Nessun progresso visivo** — non si vede quanto manca (Step 1 di 3?)
-- ⚠️ **"Copia da ultima visita"** disabled — l'utente non sa perché
-- ⚠️ **"Tutto N.D.P. (Nella Norma)"** button — cosa significa N.D.P.? Non è spiegato
-- ⚠️ **Focus chips** (Rachide/MMC, Udito/Rumore) — bello come UX pattern, ma sono nascosti nel testo dei test Playwright, non facilmente discoverable
-- ⚠️ **Nessun salvataggio automatico** — se il medico chiude la tab, perde tutto
-
-### 2.4 Firma giudizi e documenti
-
-- **"GIUDIZI DA FIRMARE"** (6) nel KPI dashboard
-- **"Firma Multipla Digitale →"** link
-- **"Centro Giudizi & Firma Massiva"** tab nella sezione salute
-- **BatchSignatureCenter** componente
-
-**Friction Points:**
-- ⚠️ **"Firma Multipla"** non è chiaro se firma digitale o firma grafometrica
-- ⚠️ **"FirmaGrafometricaCenter"** esiste come componente separato — c'è duplicazione?
-- ⚠️ **Nessun preview prima della firma** — il medico non può revisionare prima di firmare
-
-### 2.5 Generazione PDF
-
-- **jspdf + jspdf-autotable** nelle dipendenze
-- **"Stampa"** button presente in molte tabelle
-- **"Esporta dati in excel"** button
-
-**Friction Points:**
-- ⚠️ **"Stampa"** usa la stampante di sistema — un PDF non è esportabile con un click?
-- ⚠️ **Nessun anteprima PDF** prima dell'esportazione
-- ⚠️ **"Esporta dati in excel"** — 2 pulsanti separati (CSV e Excel) — perché non uno solo?
+- 🔴 **Firma massiva e centro giudizi irraggiungibili** (funzionalità già costruita, non esposta).
+- 🟠 **Chip strip tagliata**: il medico non scopre Esami / Accertamenti / Vaccinazioni.
+- 🟠 **Dossier clinico laterale vuoto** finché non si seleziona il lavoratore (340px sprecati nello stepper).
+- 🟡 **Attenzione divisa**: sidebar (5 voci) + chip (10) + step (3) + pannello destro: più chrome che contenuto clinico.
+- 🟡 **Micro-copy da sviluppatore**: "Macro: .norm, .vdt, .mmc, .rum, .guida, .notte + Spazio".
+- 🟢 Buono: **time-to-visit = 2 clic** dalla landing (verificato dal vivo).
 
 ---
 
-## PHASE 3 - PERCORSO SEGGRETERIA MEDICA
+## PHASE 3 — PERCORSO SEGRETERIA MEDICA
 
-### 3.1 Creazione azienda
+| # | Attività | Clic | Attrito rilevato |
+|---|---|---|---|
+| 1 | Creare azienda | 3 | *Gestione Aziende → Aziende → + Nuovo*. Form generato da `entityConfigs` (**330 label, 23 entità**), coerente e in italiano ✅ |
+| 2 | Creare lavoratore | 4-6 | Due percorsi divergenti: `WorkersCenter` (filtri + tabella, due pulsanti "Reset") e `Lavoratori (CRUD)`. Campo "Sede" obbligatorio con label = indirizzo |
+| 3 | Import lavoratori | **non raggiungibile** | `HrImportExportDialog` orfano; restano solo "Esporta CSV" / "Esporta dati in excel" |
+| 4 | Pianificare visite | 2-3 | *Scadenze & Agende*: "Pianificazione Visite & Batch Session Planner" ✅ funziona (test P1 #4 verde) |
+| 5 | Gestire scadenze | 1-2 | *Scadenzario → Dashboard Scadenze*: 4 KPI + "Alert Critici" con "Avvia Visita" ✅ (ma numeri "00" e hero invisibile) |
+| 6 | Inviare comunicazioni | **non raggiungibile** | `RecallCampaignsCenter` (Morning Digest, template convocazione) e `AlertMulticanaleCenter` orfani; resta "Log notifiche" (436 righe di log) |
+| 7 | Fatturare | 2 | *Amministrazione → Fatturazione* ✅ (3 KPI + 1 tabella) |
 
-1. **Gestione aziende** → **"Nuova azienda"** button
-2. **CrudEntityView** con ~40 colonne (tabella companies)
-3. Campi visibili: Nome Azienda, Gruppo Aziendale, Medico Competente, Ragione Sociale, Partita IVA, Codice Fiscale, Codice ATECO, Attività, ecc.
+**Attriti segreteria:** duplicazione delle viste lavoratori, assenza di import HR e di campagne di convocazione, filtri delle tabelle che usano il placeholder come label (sparisce appena si scrive), nessuna selezione multipla/azione massiva sulle tabelle generiche, **nessun feedback di salvataggio** (0 `Skeleton`, nessun toast a livello shell, 9 `window.confirm()` nativi del browser).
 
-**Friction Points:**
-- ⚠️ **~40 colonne nella tabella companies** — impossibile visualizzare tutto su uno schermo
-- ⚠️ **"Nuova azienda"** non ha un wizard guidato — è un form inline?
-- ⚠️ **Nessuna immagine/logo dell'azienda** — è un gestionale puro senza branding
-
-### 3.2 Creazione lavoratori
-
-1. **Gestione lavoratori** → **"+ Nuovo lavoratore"** o **"Aggiungi"** button
-2. **WorkersCenter** + **CrudEntityView** (hidden UI)
-3. **HrImportExportDialog** per import
-
-**Friction Points:**
-- ⚠️ **Doppia presenza**: WorkersCenter e CrudEntityView coesistono — non chiaro quale gestisce cosa
-- ⚠️ **Import/esport** richiede HR Import Export Dialog separato — non è intuitivo
-- ⚠️ **Filtri duplicati**: la pagina lavoratori ha filtri sia per azienda sia per lavoratore
-
-### 3.3 Scheduling visite
-
-1. **Scadenzario** → **"Scadenzario Visite"** tab
-2. **VisitPlanningCenter** con orizzonte 60 giorni
-3. **"⚡ Pianifica Sessione Massiva"** button (disabled)
-4. **"+ Nuova Visita Singola"** button
-
-**Friction Points:**
-- ⚠️ **"Pianifica Sessione Massiva" disabled** — perché? Non è chiaro come attivarlo
-- ⚠️ **60 giorni di default** — troppi per una schermata? Un mese sarebbe meglio
-- ⚠️ **Nessun drag-and-drop** per spostare visite — solo tabelle statiche
-
-### 3.4 Gestione scadenze
-
-- **Scadenzario Visite, Attività, Sopralluoghi, Nomine, Vaccinazioni** — 5 scadenzari separati
-- Ognuno con tab, filtri, tabelle, azioni per riga
-
-**Friction Points:**
-- ⚠️ **5 scadenzari separati** — un medico/秘书 deve ricordarsi 5 luoghi diversi
-- ⚠️ **"Scadenzario Visite"** è il default — perché non tutti?
-- ⚠️ **Nessun riassunto unificato** — "Tutte le scadenze in un unico calendario"
-
-### 3.5 Comunicazioni
-
-- **AlertMulticanaleCenter** per notifiche multi-canale
-- **PhraseTemplatesCenter** per frasi tipo
-- **"Notifiche"** button in topbar
-
-**Friction Points:**
-- ⚠️ **"Alert Multicanale"** — non è chiaro cosa significhi "multicanale"
-- ⚠️ **Nessun history delle comunicazioni inviate** — non si può sapere cosa è stato comunicato
-- ⚠️ **Phrase templates** non è chiaro se si integrano con gli alert o sono separati
+2. **Chip strip tagliata**: a 1440px lo strip misura 1478px in un contenitore da 1142px → **336px di chip invisibili** ("Accertam…") senza scrollbar visibile. Costo: scopribilità dei moduli.
+3. **Header di tabella non tradotti e sbagliati**: nelle tabelle CRUD compaiono header derivati dai nomi campo tecnici — `Company Name`, `Branch Address`, `Mansione`, `Azione` (le altre colonne sono in italiano). Peggio: la colonna **"Branch Address" mostra una data di nascita** (`01/01/1974` su tutte le righe). Un medico legge immediatamente "questo dato non è affidabile".
+4. **Numeri "00"/"02"**: nelle KPI di Dashboard Scadenze i valori sono stringhe zero-padded (`00`, `02`, `10`). Sembra un contatore rotto.
+5. **Testo invisibile**: nella Dashboard Scadenze il titolo *"Benvenuto in Medwork"* e il sottotitolo *"Oggi è … con N scadenze"* sono **bianco su sfondo chiaro** (contrasto ~1:1). Il blocco saluto è di fatto illeggibile.
+6. **Rumore console**: 4 errori in navigazione (`useFlexGap` prop, `key` mancante nel `tbody` di `CrudEntityView`, 2× HTTP 500 su `/api/master-data/doctor-availabilities`).
 
 ---
 
-## PHASE 4 - REVISIONE DESIGN VISIVO
+---
 
-### Spaziatura e Tipografia
+## PHASE 4 — VISUAL DESIGN REVIEW
 
-| Elemento | Valore | Valutazione |
+| Dimensione | Voto | Evidenza |
 |---|---|---|
-| Font principale | Inter, Segoe UI, Roboto, Helvetica, Arial | ✅ Moderno, ottima scelta |
-| Font size base | 14px (body1), 13px (body2), 12px (caption) | ⚠️ Piccolo, 13px è sotto la soglia di accessibilità |
-| Line height | 1.4 | ✅ Accettabile |
-| Border radius | 6px (btn), 8px (card/dialog), 12px (dialog) | ⚠️ Inconsistente — perché 6 per btn e 8 per card? |
-| Spacing unit | 4px grid (implied da MUI sx props) | ✅ Coerente con MUI |
+| **Spacing** | 6/10 | Shell coerente (padding 18px topbar, 12px content); ma convivono 3 griglie di spaziatura (MUI `spacing`, `legacy-*` px fissi, inline `sx`) |
+| **Typography** | 6.5/10 | Font `Inter/Segoe UI` con scala definita in `theme.ts` (14/13/12px). Problema: gerarchia schiacciata — molti `h6`/`subtitle2` e caption 12px che competono; negli strumenti densi il testo utile è a 12-13px |
+| **Hierarchy** | 4.5/10 | Breadcrumb + strip + tab + titolo pagina + titolo card duplicato (es. "Dashboard Medico" 3 volte in 1 schermata). L'occhio non sa dove atterrare |
+| **Density** | 4/10 | 2 schermi con 350-436 righe di tabella (Audit Trail 436 righe in un colpo), fino a **51 pulsanti visibili** in una sola vista (Esami Visita), 11 input nella vista Lavoratori |
+| **Button consistency** | 4/10 | 108 `contained` vs 352 `outlined` vs 1 `text`; pulsanti icone non standard; nelle stesse card "Genera PDF" ha **icona Save, Refresh o nulla** a seconda della riga |
+| **Icon consistency** | 3.5/10 | Mix di `@mui/icons-material` (outline + filled), emoji nella UI (📅, 🌐, ✓) e icone usate con semantica sbagliata: il KPI "Anomalie protocolli" usa un'icona **Play**, "Compliance" uno **Shield** |
+| **Colors** | 6/10 | Palette solida (navy `#0f1f3d`/`#113a7b`, superfici `#f4f6fa`) ma **5 KPI dello stesso peso usano 5 colori diversi** (blu, rosso, arancio, viola) + badge "Critico/A Presto/Vedi tutti" con colori arbitrari → il colore non significa più nulla |
+| **Dialogs** | 5.5/10 | 157 `<Dialog>` MUI (raggio 12px coerente) ma **9 `window.confirm()`** nativi del browser per le eliminazioni: dialogo di sistema del 1995 dentro una UI MUI |
+| **Tables** | 3.5/10 | Tabelle MUI corrette tecnicamente; header non tradotti/sbagliati (`Company Name`, `Branch Address`), nessuna colonna sticky, nessuna selezione multipla, nessun ordinamento visibile, paginazione in basso, nessuno stato di caricamento (skeleton) |
+| **Forms** | 6/10 | `TextField small/outlined` con label flottante coerente; errori in linea buoni; ma label = placeholder nei filtri, campi "Sede" con etichetta-indirizzo, nessun aiuto contestuale/suggerimento, nessuna validazione visiva progressiva |
+| **Responsiveness** | **2/10** | A 390px: `scrollWidth 532 / clientWidth 390` → **scroll orizzontale su tutta la pagina**; la sidebar diventa una riga di chip che esce dallo schermo (`width 532px`, 4 righe), nessun hamburger, tabella tagliata ("1-4 o…"), chip ruolo della topbar tagliato. **Usabile da tablet in su, non da telefono** |
+| **Motion / feedback** | 3/10 | 0 `Skeleton`, transizioni 0.2s, nessuna micro-interazione su hover delle card (il cockpit le ha solo inline), nessun toast globale, spinner a tutta pagina |
 
-### Gerarchia Visiva
+### Verdetto "che anno sembra?"
 
-**Problemi principali:**
-- ⚠️ **Heading h4 per la dashboard, h6 per le sottosezioni** — l'hierarchy è invertita. L'h4 (dashboard) è il livello più alto, poi h6 (sottosezioni) è più basso. Inconsistente.
-- ⚠️ **Tab "legacy-tab"** ha font-size 13px e font-weight 600/700 — il contrasto con i button MUI (fontWeight 600) è minimo
-- ⚠️ **Nessun visual hierarchy chiara** tra "Il Mio Giorno" (dashboard) e le altre sezioni
+**MedWork sembra un prodotto 2019-2021 con due schermate del 2024.**
 
-### Densità e Layout
-
-- **Sidebar**: 250px larghezza fissa, 6 voci
-- **Topbar**: 50px altezza, 7+ azioni
-- **Content area**: 18px padding, `min-height: 520px`
-- **Tabella companies**: 40+ colonne, scroll orizzontale
-
-**Valutazione**: La densità è **troppo alta**. 40 colonne in una tabella è inaccessibile. La sidebar è scrollabile verticalmente ma non è collapsabile.
-
-### Pulsanti
-
-**Classi CSS trovate:**
-- `.legacy-btn` — primary
-- `.legacy-btn-secondary` — secondary  
-- `.legacy-btn-success` — success
-- MUI `<Button>` — variant="outlined" o "contained"
-
-**Problemi:**
-- ⚠️ **Sistema duale**: `.legacy-btn-*` AND MUI `<Button>` coesistono — stesso stile, due sistemi
-- ⚠️ **`legacy-btn`** ha `min-width: 110px`, MUI Button non ha min-width
-- ⚠️ **"Esporta CSV"**, **"Esporta Excel"**, **"Importa HR"** sono 3 button outilined separati — troppo disordinati nella topbar
-
-### Icone
-
-- **Material Icons** (via `@mui/icons-material`)
-- Usate nella sidebar e topbar
-- **Problema**: alcune icone sono presenti ma non hanno tooltip (es. "Menu" icon button senza tooltip)
-
-### Colori
-
-| Token | Valore | Uso |
-|---|---|---|
-| `--legacy-primary` | `#113a7b` | Primary blue |
-| `--legacy-primary-hover` | `#0e2f63` | Dark blue |
-| `--legacy-topbar-bg` | `#0f1f3d` | Dark navy |
-| `--legacy-sidebar-bg` | `#0b1b36` | Darker navy |
-| `--legacy-bg` | `#f4f6fa` | Light gray-blue |
-| `--legacy-border` | `#e5e8ef` | Light gray border |
-| `--legacy-text` | `#111827` | Near-black |
-| `--legacy-muted` | `#6b7280` | Gray text |
-
-**Valutazione**: La palette è **coerente** con il tema MUI ma il dualismo legacy CSS + MUI sx props crea incoerenza. Il dark sidebar è trendy ma il contrasto con il light content area è troppo aggressivo.
-
-### Dialoghi
-
-- **CompanyProfileDialog**, **EmployeeProfileDialog**, **GlobalSearchModal**, **HrImportExportDialog**
-- Border-radius 12px
-- **Problema**: non tutti i dialoghi hanno lo stesso stile. `CompanyProfileDialog` e `EmployeeProfileDialog` sembrano diversi per struttura.
-
-### Tabelle
-
-- **Tabelle con 10-40+ colonne**
-- Stile: `#f9fafb` header, `#f3f4f6` hover, `#e5e8ef` borders
-- **Problema**: le tabelle sono **troppo larghe**. 40 colonne in una singola schermata è un fallimento UX.
-
-### Form
-
-- **MuiTextField** con `size: 'small'`, `variant: 'outlined'`
-- **legacy-form-grid** con `grid-template-columns: repeat(4, minmax(180px, 1fr))`
-- **Problema**: il form grid a 4 colonne è troppo denso — i campi sono piccoli
-
-### Responsiveness
-
-- **Media query a 900px**: sidebar diventa orizzontale, content a colonna singola
-- **Media query a 1200px**: KPI grid a 2 colonne
-- **Problema**: sopra i 900px non c'è breakpoint intermedio — il layout "saltura" da desktop a mobile
-
-### Verdetto Visuale
-
-**MedWork assomiglia a:**
-- **2020 software** con alcune feature di design system del 2023
-- **NON è un prodotto 2026 SaaS**
-
-**Perché:**
-1. Le `legacy-*` classi CSS sono un'anomalia in un'app React 19 + MUI v7 del 2026
-2. La tabella companies con 40+ colonne è tipica di software pre-2020
-3. Il dualismo tra custom CSS e MUI è un pattern di migrazione da Angular/React classico del 2019-2021
-4. Non c'è nessun design system documentato, token system, o component library
-5. Le animazioni sono minime (transition: all 0.2s) — assenti nell'interfaccia
-6. Non c'è dark mode attivo (il darkTheme è definito ma non utilizzato)
-7. La navigazione è tradizionale sidebar + topbar senza breadcrumb, senza visual hierarchy moderna
+- **Aspetto 2019-2021**: sidebar dark + topbar navy + strip di tab; tabelle piene; `window.confirm()`; assenza di skeleton/empty state curati; header di colonna non tradotti; densità da gestionale desktop.
+- **Aspetto 2024**: `Dashboard Medico` (KPI con bordo colorato, avatar circolari, chip) e `MedicalVisitStepper` (stepper, card, macro, pannello dossier), più `Dashboard Scadenze` con "Quick Actions" e barra compliance.
+- **Non è 2026** perché mancano i tre marcatori di un SaaS 2026: (1) **ricerca globale/command palette**, (2) **stati di sistema** (skeleton, toast, autosave, undo), (3) **mobile/tablet reale**.
+- Il difetto percettivo numero uno non è il colore: è il **dualismo CSS** — 79 selettori nel vecchio `App.css` (`legacy-*`, 21 usi nel JSX) che convivono con MUI v7. Alcune superfici hanno raggio 8px, altre 6px, altre 12px; alcuni pulsanti sono `<button className="legacy-btn">`, altri `<Button variant="contained">`.
 
 ---
 
-## PHASE 5 - POSIZIONAMENTO COMPETITIVO
 
-### Confronto Percepito
+## PHASE 5 — COMPETITIVE FEELING (percepito, non funzionale)
 
-| Modulo | CartSan | WinAspi | Zucchetti | Simpledo | MedWork |
+| Modulo MedWork | vs CartSan | vs WinAspi | vs Zucchetti | vs Simpledo | Motivo |
 |---|---|---|---|---|---|
-| **Dashboard/Home** | BETTER | BETTER | SAME | SAME | **WORSE** |
-| **Gestione Aziende** | BETTER | BETTER | SAME | BETTER | **WORSE** |
-| **Gestione Lavoratori** | BETTER | BETTER | SAME | BETTER | **WORSE** |
-| **Nuova Visita** | BETTER | BETTER | SAME | BETTER | **WORSE** |
-| **Scadenzario** | BETTER | SAME | BETTER | BETTER | **WORSE** |
-| **Firma Digitale** | BETTER | BETTER | BETTER | BETTER | **WORSE** |
-| **Analytics/Report** | BETTER | BETTER | BETTER | BETTER | **WORSE** |
-| **Setup/Configurazione** | SAME | BETTER | BETTER | BETTER | **WORSE** |
+| Login / avvio | SAME | SAME | WORSE | WORSE | Nessun SSO/remember-me reale, impostazione 2020 |
+| Cockpit "Il Mio Giorno" | **BETTER** | **BETTER** | SAME | SAME | KPI + agenda + 1-click visita: CartSan/WinAspi non hanno un "mio giorno" così diretto |
+| Dashboard Medico | **BETTER** | SAME | SAME | WORSE | Triage/readiness real-time è un differenziatore percepito |
+| Stepper visita | **BETTER** | **BETTER** | SAME | WORSE | Macro anamnestiche + copia ultima visita: produttività visibile |
+| Anagrafica lavoratori | WORSE | WORSE | WORSE | WORSE | Header in inglese, dati in colonna sbagliata, due viste duplicate |
+| Aziende/CRUD master data | WORSE | WORSE | WORSE | WORSE | Tabelle generiche identiche, zero personalizzazione per dominio |
+| Scadenzario | SAME | SAME | WORSE | WORSE | Bella la dashboard, ma "00" e hero invisibile abbassano la credibilità |
+| Pianificazione massiva | **BETTER** | SAME | SAME | SAME | Batch session planner è avanti rispetto a tutti |
+| Centro Report / All. 3B | SAME | SAME | WORSE | WORSE | Potente ma 3 sistemi di filtro sovrapposti |
+| Centro Giudizi / Firma | **WORSE** | **WORSE** | **WORSE** | WORSE | Esiste nel DB ma **non è raggiungibile**: su questo si perde contro chiunque |
+| Recall / comunicazioni | WORSE | WORSE | WORSE | WORSE | Costruito ma non esposto |
+| Audit Trail / log | WORSE | SAME | WORSE | WORSE | 436 righe in una pagina, nessun filtro temporale visibile |
+| Mobile / tablet | WORSE | WORSE | WORSE | WORSE | Scroll orizzontale forzato |
 
-### Perché MedWork è percepito come WORSE
-
-1. **Densità**: troppi dati in poco spazio, tabelle oversized
-2. **Consistenza**: `legacy-*` classi creano un "layer vintage" su MUI moderno
-3. **Feedback**: nessun feedback visivo immediato dopo azioni
-4. **Navigazione**: 6 aree con ~50 moduli, nessuna guided experience
-5. **Onboarding**: zero onboarding per nuovi utenti
-6. **Performance**: nessuna loading state, nessuna skeleton screen
-7. **Mobile**: responsive a 900px è primitivo, nessun touch-optimized design
+**Sintesi competitiva: WORSE, con due eccezioni BETTER (cockpit + stepper visita).**
+Il prodotto vince dove mostra il lavoro clinico, perde dove mostra la struttura (anagrafiche, master data, amministrazione). Il problema non è la mancanza di funzioni: è che **le funzioni migliori non sono raggiungibili** e le tabelle generiche fanno sembrare "vecchio" il resto.
 
 ---
 
-## PHASE 6 - DESIGN SYSTEM REVIEW
+## PHASE 6 — DESIGN SYSTEM REVIEW
 
-### Incoerenze Identificate
+**Incoerenze rilevate**
 
-#### 🔴 Pulsanti Inconsistenti
+1. **Pulsanti**: 3 famiglie che convivono — `legacy-btn`/`legacy-btn-secondary`/`legacy-btn-success` (CSS custom, `min-width:110px`), `<Button variant="contained|outlined">` MUI, e `<button class="legacy-module-chip">`. Raggi 6/8/999px.
+2. **Dialoghi**: 157 `<Dialog>` MUI + **9 `window.confirm()`** + 1 `SignaturePadModal` custom.
+3. **Tabelle**: `legacy-data-table` (CSS) + `<Table>` MUI + `EntityDataView`/`CrudEntityView` con densità e toolbar diverse.
+4. **Toolbar di filtro**: 3 pattern — riga "Cerca + Aggiorna + Nuovo + Esporta CSV + Filtro avanzato" (CRUD), riga a placeholder senza label (WorkersCenter), riga mista a 2 livelli (Centro Report).
+5. **Navigazione**: 2 pattern di tab (`.legacy-tab` e `.legacy-module-chip`) nella stessa schermata.
+6. **Feedback**: 70 `CircularProgress` sparsi, **0 `Skeleton`**, nessun toast globale, 4 errori React in console.
+7. **Token**: `theme.ts` definisce palette/raggi, ma `App.css` ridefinisce gli stessi colori (`.legacy-*`), quindi i token non sono la fonte di verità.
 
-| Pattern | Dove | Problema |
-|---|---|---|
-| `.legacy-btn` | App.css, componenti manuali | Non standard MUI |
-| `<Button variant="outlined">` | App.tsx | MUI standard |
-| `<Button variant="contained">` | App.tsx | MUI standard |
-| `<button className="legacy-tab">` | App.tsx, custom CSS | Non è un button MUI |
-| `<button className="legacy-side-item">` | App.tsx | Non è un button MUI |
-| `<button className="legacy-icon-btn">` | App.tsx | Non ha dimensione coerente |
+### DESIGN SYSTEM IMPROVEMENTS
 
-#### 🔴 Dialoghi Inconsistenti
+1. **`design/` unico**: mantenere `theme.ts` come unica fonte (colori, raggi, spacing 4/8/12/16/24, elevazioni). Eliminare i valori hardcoded `#113a7b`, `#0f1f3d`, `1px solid #e5e8ef` dai componenti.
+2. **`AppButton`** (`primary | secondary | ghost | danger`, `sm | md`, `loading`), **`AppToolbar`**, **`AppTable`** (header sticky, sorting, selezione multipla, skeleton, empty state), **`AppConfirmDialog`** (sostituisce i 9 `window.confirm`), **`AppFiltersBar`**, **`AppToast`** (successo/errore globale), **`AppPageHeader`** (breadcrumb + titolo + azioni).
+3. **Rimuovere le classi `legacy-*`** dai componenti: sono la causa principale della sensazione "2020".
+4. **Stati obbligatori per ogni schermata**: `loading` (skeleton), `empty` (illustrazione + azione), `error` (retry), `no-permission`.
+5. **Localizzazione dei dati**: nessun header derivato da nomi campo tecnici (`keyToLabel` in `CrudEntityView` deve usare `entityConfigs.fields[].label`, non il nome API).
+6. **Densità controllata**: `dense` di default sulle tabelle, max 8-10 colonne visibili, colonne secondarie in un "dettaglio" laterale.
 
-| Dialog | Stile | Problema |
-|---|---|---|
-| CompanyProfileDialog | MUI Dialog | — |
-| EmployeeProfileDialog | MUI Dialog | — |
-| GlobalSearchModal | MUI Modal/Dialog | — |
-| HrImportExportDialog | MUI Dialog | — |
-| LoginCard | Custom Paper | Non è un MUI Dialog |
-
-**Tutti usano MUI Dialog tranne LoginCard** che è un custom Paper con classi.
-
-#### 🔴 Tabelle Inconsistenti
-
-| Tabella | Implementazione | Problema |
-|---|---|---|
-| Companies table | `CrudEntityView` | 40+ colonne |
-| Workers table | `WorkersCenter` + `CrudEntityView` | Dual filter |
-| Schedule table | `VisitPlanningCenter` | Checkbox batch |
-| Dashboard table | `Dashboard` / `DashboardScadenze` | KPI cards |
-
-**Due sistemi di tabella completamente diversi.**
-
-#### 🔴 Pattern Duplicati
-
-1. **"Esporta CSV"** e **"Esporta Excel"** appaiono sia nella topbar sia nei pannelli laterali
-2. **"Nuova azienda"** e **"+ Nuovo lavoratore"** hanno pattern diversi
-3. **"Stampa"** appare in molte tabelle con implementazione diversa
-4. **"Modifica"**, **"Elimina"**, **"Profilo"** azioni a riga appaiono in tutte le tabelle ma con struttura diversa
-
-#### 🔴 Componenti Mancanti
-
-- **Nessun sistema di notifiche centralizzato** — `Snackbar` globale + `showNotification` utility
-- **Nessun sistema di error handling uniforme** — errori in console.log sparsi
-- **Nessun loading spinner globale** — nessun feedback durante le chiamate API
-- **Nessun skeleton/placeholder** per contenuti che caricano
-- **Nessun empty state** per tabelle vuote
-- **Nessun confirmation dialog** per azioni distruttive (Elimina)
-- **Nessun tooltip** su icone della sidebar
-
-### Proposte Design System
-
-```
-# DESIGN SYSTEM IMPROVEMENTS
-
-## 1. Button System
-- Definire 3 varianti: Primary, Secondary, Tertiary
-- Standardizzare size: sm (32px), md (40px), lg (48px)
-- Rimuovere tutte le .legacy-btn classi
-- Usare solo MUI <Button> con sx props
-
-## 2. Dialog System  
-- Tutti i dialog devono usare MUI <Dialog> + <DialogTitle> + <DialogContent> + <DialogActions>
-- LoginCard deve diventare un MUI Dialog
-- Standardizzare width: sm (400px), md (560px), lg (960px)
-
-## 3. Table System
-- Tabella standard: max 8-10 colonne visibili, resto in "..." menu
-- Aggiungere "Expandable row" per dettagli
-- Aggiungere toolbar con filtri integrati
-- Aggiungere pagination consistente (10/25/50/100)
-
-## 4. Form System
-- Standardizzare <TextField> con label floating
-- Aggiungere <FormHelperText> per errori
-- Aggiungere <InputAdornment> per icon-text combos
-- Standardizzare form layout: single column (mobile) → 2 column (tablet) → 3-4 column (desktop)
-
-## 5. Navigation System
-- Sidebar collapsabile (icon-only mode)
-- Aggiungere breadcrumb trail
-- Aggiungere page title in topbar
-- Aggiungere search/filter在同一 page
-
-## 6. Feedback System
-- Aggiungere loading skeleton per tutte le chiamate API
-- Aggiungere confirmation dialog per Elimina
-- Aggiungere toast notification system (già esiste come Snackbar, ma standardizzare)
-- Aggiungere empty state illustrations
-
-## 7. Token System
-- Definire color tokens ufficiali: primary, secondary, success, warning, error, info
-- Definire spacing tokens: 4, 8, 12, 16, 24, 32, 48
-- Definire typography scale: xs(11px), sm(12px), base(14px), md(16px), lg(20px), xl(24px)
-- Definire shadow tokens: sm, md, lg
-```
 
 ---
 
-## PHASE 7 - TOP 20 UX IMPROVEMENTS
+## PHASE 7 — TOP 20 UX IMPROVEMENTS
 
-### 🔴 Quick Wins (< 1 giorno)
+Ordinati per **impatto utente × sforzo** (1-2 = quick win, 3 = media, 4-5 = strutturale).
 
-| # | Problema | Raccomandazione | Sforzo | Guadagno |
+| # | Problema | Raccomandazione | Sforzo | Guadagno atteso |
 |---|---|---|---|---|
-| 1 | **"Copia da ultima visita" disabled** senza spiegazione | Aggiungere tooltip o messaggio: "Seleziona un medico per abilitare" | 2h | Riduce confusione, evita frustration |
-| 2 | **Tabella companies con 40+ colonne** | Nascondere colonne secondarie dietro "Mostra più colonne" toggle | 4h | La tabella diventa leggibile, riduce cognitive load |
-| 3 | **"Esporta CSV" e "Esporta Excel"** come 2 button separati | Unire in un dropdown "Esporta" con opzioni CSV/Excel | 2h | Pulisce la topbar, riduce 2 click a 1 |
-| 4 | **Nessun tooltip sulle icone sidebar** | Aggiungere `<Tooltip>` a tutte le icone della sidebar | 1h | Accessibilità, discoverability |
-| 5 | **"00:00" in agenda** (placeholder bug) | Mostrare "Nessun appuntamento" o orario reale | 1h | Evita confusione, sembra più professionale |
-| 6 | **Login senza feedback** su errori | Aggiungere messaggio errore sotto il form | 30min | Riduce tentativi falliti, migliora UX |
-| 7 | **"Cerca lavoratore, azienda..."** placeholder ambiguo | Cambiare in "Cerca per nome, CF, azienda..." | 30min | Chiarezza immediata |
-| 8 | **Nessun confirmation per Elimina** | Aggiungere `confirm` dialog prima di eliminare | 1h | Previene azioni accidentali |
-
-### 🟡 High Impact Improvements (1-5 giorni)
-
-| # | Problema | Raccomandazione | Sforzo | Guadagno |
-|---|---|---|---|---|
-| 9 | **Dual filter nella pagina lavoratori** (aziende in alto, lavoratori in basso) | Unificare in un unico filtro contestuale con breadcrumb | 2 giorni | Riduce confusione, unifica UX |
-| 10 | **Stepper a 2 step per visita** senza indicatore di progresso | Aggiungere stepper indicator (Step 1/2 → Step 1/2/3) + progress bar | 2 giorni | L'utente sa dove si trova e quanto manca |
-| 11 | **Nessun onboarding per nuovi utenti** | Aggiungere guided tour o welcome modal al primo login | 3 giorni | Riduce time-to-productivity del 60% |
-| 12 | **Dashboard senza contesto** — KPI senza spiegazione | Aggiungere tooltips e brevi descrizioni sotto ogni KPI | 1 giorno | L'utente capisce cosa rappresenta ogni metrica |
-| 13 | **Navigazione tra 6 aree con ~50 moduli** — nessuna gerarchia chiara | Aggiungere breadcrumb + page title + search nella pagina | 3 giorni | L'utente capisce dove si trova e come tornare indietro |
-| 14 | **"Avvia Visita" senza conferma dati** | Aggiungere summary/modale prima di avviare una visita | 2 giorni | Previene errori, conferma i dati inseriti |
-| 15 | **Nessun save automatico** nei form di visita | Aggiungere auto-save ogni 30s + indicatore "Salvato" | 2 giorni | Previene perdita dati, migliora fiducia |
-
-### 🔴 Major UX Refactoring (5+ giorni)
-
-| # | Problema | Raccomandazione | Sforzo | Guadagno |
-|---|---|---|---|---|
-| 16 | **`legacy-*` classi ovunque** in App.tsx e App.css | Rifattorizzare completamente: rimuovere tutte le `legacy-*` classi, usare solo MUI sx props o styled-components | 5-7 giorni | Design system coerente, manutenibilità, modernità |
-| 17 | **Tabella companies con 40+ colonne** (strutturale) | Riprogettare come card-based view su mobile, table con column selector su desktop | 5 giorni | Accessibilità mobile, leggibilità |
-| 18 | **Nessun dark mode attivo** | Attivare il darkTheme già definito in theme.ts con toggle | 3 giorni | Modernità, comfort visivo per uso prolungato |
-| 19 | **5 scadenzari separati** | Unificare in un unico calendario/timeline con filtri per tipo | 5-7 giorni | Visione unificata, riduce click e navigazione |
-| 20 | **Nessun sistema di notifiche/alert unificato** | Implementare notification center con bell icon, count badge, dropdown | 4 giorni | Centralizza le comunicazioni, migliora discoverability |
+| 1 | 27 moduli già costruiti (firma massiva, centro giudizi, recall, import HR, search) non raggiungibili | Reintegrarli in `MODULE_ITEMS`/`AREA_MODULE_KEYS` o eliminarli. Nessun'altra azione ha questo ritorno | 4 | Recupera ~1/3 del prodotto + 3 test rossi |
+| 2 | "Il Mio Giorno" era scomparso | ✅ **Fatto in questa sessione** (landing medico + chip + alias di navigazione) | 1 | Ripristina il cockpit del medico |
+| 3 | Chip strip tagliata (336px invisibili) | Chip con `overflow` visibile + frecce di scroll, oppure selettore a tendina del modulo; ordinare per frequenza d'uso | 2 | Scopribilità di 4-5 moduli per area |
+| 4 | Header tabella in inglese + dato nella colonna sbagliata | Usare le label di `entityConfigs` per tutte le colonne e correggere il mapping dei valori | 1 | **Credibilità clinica**: un dato sbagliato in anagrafica distrugge la fiducia |
+| 5 | Hero della Dashboard Scadenze illeggibile (bianco su bianco) | Colore testo scuro o sfondo scuro | 1 | 15 minuti, elimina la prima impressione "rotta" |
+| 6 | Numeri "00"/"02" nei KPI | Formattazione numerica (`Intl.NumberFormat`) e assenza di zero-padding | 1 | Percezione di prodotto finito |
+| 7 | Nessuna ricerca globale (`Ctrl+K` perso) | Ripristinare `GlobalSearchModal` + scorciatoia globale (lavoratore, azienda, azione) | 3 | -50% tempo "trova il paziente" (il medico lavora per nome) |
+| 8 | `window.confirm()` per le eliminazioni | `AppConfirmDialog` uniforme + messaggio con nome entità e conseguenza | 1 | Coerenza + sicurezza percepita |
+| 9 | Nessun feedback di salvataggio | Toast globale + autosave bozza nello stepper con indicatore "Salvato 12:04" | 3 | Elimina il "il mio click ha funzionato?" |
+| 10 | Doppia vista lavoratori / doppio "Reset" | Un solo modulo Lavoratori (lista + dettaglio), eliminare `employees-crud` dall'area | 2 | -1 navigazione, -2 click per lavoratore |
+| 11 | "Disponibilità Medici" mostra tabella vuota (HTTP 500) | Correggere l'endpoint o nascondere lo stato vuoto con messaggio/retry | 2 | Rimuove una schermata rotta |
+| 12 | 51 pulsanti in una vista (Esami Visita), 436 righe (Audit) | Toolbar primaria + "azioni" in menu overflow; paginazione e filtri temporali di default | 3 | Riduce il carico cognitivo dei moduli densi |
+| 13 | Icone con semantica sbagliata (Play su "Anomalie", Save su "Genera PDF") | Set icone coerente + regola: 1 icona = 1 significato | 1 | Percezione di rifinitura |
+| 14 | Colori senza significato (5 KPI = 5 colori, badge arbitrari) | Usare colore solo per stato (ok/warn/critical) | 2 | Gerarchia leggibile in 2 secondi |
+| 15 | Mobile/tablet inutilizzabile (scroll orizzontale) | Hamburger + sidebar drawer, tabelle a card su <768px, topbar compressa | 4 | Visite in azienda con tablet = differenziatore |
+| 16 | Login: "Ricordami (30 giorni)" non funziona | Implementare il refresh token o rimuovere l'opzione | 2 | Fiducia + meno attrito quotidiano (era nel backlog B4) |
+| 17 | Stepper: pannello "Dossier Clinico" vuoto | Mostrare dati del lavoratore già nel passo 1 (rischi, ultima visita, scadenze) | 3 | Meno cambi di contesto durante la visita |
+| 18 | Centro Report: 3 paradigmi di filtro sovrapposti | Un solo pannello filtri a scomparsa + filtri salvati | 3 | Report in 2 clic invece di 6 |
+| 19 | Micro-copy tecnica ("Macro: .norm …") | Tooltip/legenda in linguaggio clinico + comando rapido sulla tastiera | 1 | Adozione reale delle macro |
+| 20 | Bundle monolitico 1.43 MB (431 kB gzip), nessun code-splitting | `React.lazy` per area/modulo + manualChunks | 3 | Primo paint più rapido su reti sanitarie lente |
 
 ---
 
-## RANKING FINALE TOP 20 — CLASSIFICATI PER IMPATTO / SFORZO
+## FINAL DELIVERABLE — SINTESI
 
+| Metrica | Voto | Nota |
+|---|---|---|
+| **First Impression Score** | **6.5/10** | Login credibile e pulito; la prima schermata dopo il login (Admin) è una tabella generica |
+| **Visual Quality Score** | **6.0/10** | MUI v7 + `theme.ts` moderni, ma contaminati da 79 selettori `legacy-*` e da 5 tipi di raggio bordo |
+| **Usability Score** | **5.5/10** | Tutto è raggiungibile in 2-3 clic, ma la scopribilità è bassa (chip tagliata, aree quasi vuote per ruolo, nessuna ricerca) |
+| **Physician Productivity Score** | **6.5/10** | Cockpit + stepper sono forti; mancano firma massiva, ricovero storico e mobile |
+| **Secretary Productivity Score** | **4.5/10** | Import HR, recall e azioni massive assenti; anagrafiche duplicate e con header errati |
+| **Information Architecture Score** | **4.5/10** | 6 aree × 3 livelli di navigazione, 4 moduli duplicati, un'area con 1 solo modulo per il medico, 27 moduli orfani |
+| **Design System Score** | **4.0/10** | Nessun `AppTable`/`AppButton`/`AppToast`; token duplicati tra `theme.ts` e `App.css`; `window.confirm` e 0 skeleton |
+| **Competitive Position** | **WORSE** (con 2 eccezioni BETTER: cockpit Il Mio Giorno, stepper visita) | Si perde dove l'app mostra struttura, si vince dove mostra clinica |
+
+
+### Screens That Need Redesign
+
+| Priorità | Schermata | Perché | Intervento |
+|---|---|---|---|
+| P0 | **Tabelle CRUD generiche** (`CrudEntityView`: Aziende, Sedi, Reparti, Mansioni, Cataloghi, Fattori di rischio…) | Header in inglese, dato nella colonna sbagliata, toolbar rumorosa, nessun ordinamento/selezione | `AppTable` + label da `entityConfigs` + toolbar primaria |
+| P0 | **Anagrafica Lavoratori** (`WorkersCenter`) | Due toolbar di filtro, due "Reset", due tabelle sovrapposte nella stessa vista | Una sola vista: filtri compatti + tabella densa + drawer dettaglio |
+| P1 | **Centro Report** (`ReportsCenter`) | 3 sistemi di filtro, pulsanti senza testo ("S…"), icone incoerenti | Pannello filtri a scomparsa + card report + filtri salvati |
+| P1 | **Dashboard Scadenze** | Hero illeggibile, numeri "00", badge decorativi | Fix contrasto + formattazione + KPI con semantica chiara |
+| P1 | **Area "Gestione Aziende" per il Medico** | Mostra 3 moduli su 9 e "Sede" con label errata | Rivedere il filtro per ruolo e le label |
+| P2 | **Audit Trail** | 436 righe in una pagina, nessun filtro temporale | Filtri + paginazione + raggruppamento per giorno/utente |
+| P2 | **Amministrazione** | 8 chip, 6 sono la stessa tabella | Riorganizzare in "Master data / Sistema" con sottovoci |
+
+### Quick Wins (< 1 giorno)
+
+1. ~~Ripristinare **"Il Mio Giorno"** come landing del medico~~ ✅ **fatto** (con alias di navigazione anti-vicolo-cieco).
+2. Hero della Dashboard Scadenze: contrasto testo (1 riga CSS).
+3. Formattazione KPI: togliere lo zero-padding (`00` → `0`).
+4. Header di tabella: usare `fields[].label` invece di `keyToLabel` (e correggere il mapping della colonna).
+5. Chip strip: frecce di scorrimento visibili + `padding-right`.
+6. `AppConfirmDialog` che sostituisce i 9 `window.confirm()`.
+7. Fix `key` mancante nel `tbody` di `CrudEntityView` (errore React in console).
+8. Rimuovere l'opzione "Ricordami (30 giorni)" finché non è implementata (o implementarla: era backlog B4).
+9. Unificare le icone di "Genera PDF" e dei KPI (1 icona = 1 significato).
+10. Rinominare "Nuova Visita (Step)" in "Nuova Visita" e "Lavoratori (CRUD)" in "Elenco Lavoratori".
+
+### High Impact Improvements (1-5 giorni)
+
+1. **Reintegrare o eliminare i 27 moduli orfani** (con priorità: Centro Giudizi/Firma Massiva, Recall, Import HR, Ricerca Globale Ctrl+K) — decisione di prodotto + 1-3 giorni di wiring.
+2. **`AppTable` + `AppToolbar` + `AppToast`** come componenti riusabili e migrazione delle 6 tabelle generiche.
+3. **Stato di sistema**: skeleton, empty state illustrati, retry sugli errori (oggi 1 endpoint in 500 = tabella vuota senza spiegazione).
+4. **Ricerca globale + command palette** (`Ctrl+K`) con azioni ("nuova visita per <lavoratore>", "nuova azienda").
+5. **Feedback di salvataggio**: toast + autosave bozza nello stepper (con timestamp "Salvato 12:04").
+6. **Fix responsive tablet** (hamburger + drawer + tabelle card <768px): abilita le visite in azienda.
+7. **Code splitting per area** (bundle 1.43 MB → import dinamici).
+
+### Major UX Refactoring
+
+1. **Architettura dell'informazione**: da 6 aree × 3 livelli a 1 sidebar a 2 livelli (area → modulo) con **moduli guidati dal ruolo** e azioni frequenti in alto. Le aree per il medico non devono mai essere vuote (oggi "Analisi & Relazioni" ha 1 modulo e nessuno strip).
+2. **Design system applicato**: rimuovere le classi `legacy-*`, un solo set di token, un solo `AppButton`.
+3. **Densità clinica**: introdurre un pattern "lista + dettaglio" (master-detail) al posto delle tabelle da 40 colonne, e un pannello paziente persistente durante la visita.
+4. **Mobile/tablet-first per il sopralluogo e la visita in sede**.
+
+---
+
+### La domanda più importante
+
+> **Se un medico vede MedWork per la prima volta domani, cosa appare immediatamente datato, confuso o inferiore ai SaaS moderni?**
+
+**In ordine di impatto percettivo:**
+
+1. **Le tabelle.** Header `Company Name` / `Branch Address` con dentro date di nascita, toolbar con 5 pulsanti identici, nessun ordinamento visibile, nessuna selezione multipla. È la prima cosa che un medico guarda dopo il login admin ed è la più vecchia del prodotto. Sembra **2015**.
+2. **La navigazione a tre livelli.** Sidebar → strip di chip (per giunta tagliata) → seconda riga di tab, con la stessa voce "Lavoratori" in due aree e "Lavoratori (CRUD)" come nome di una schermata. Un medico non sa dove si trova e non trova ciò che cerca senza leggere tutto. Sembra **prodotto costruito per reparto, non per ruolo**.
+3. **Ciò che manca e che gli altri hanno.** Nessuna ricerca globale, nessuna firma massiva, nessun centro giudizi: arriva dal medico che "i miei 6 giudizi da firmare li firmo uno per uno?". La promessa "GIUDIZI DA FIRMARE 5" senza un pulsante che li firmi è peggio di non mostrarla.
+4. **I segnali di non-finito**: "00" nei KPI, il saluto bianco su fondo bianco, `window.confirm()` del browser per cancellare un'azienda, nessuno skeleton al caricamento. Sono i classici dettagli che fanno dire **"software interno"** invece di "prodotto".
+5. **Il telefono/tablet.** Il medico che apre MedWork su iPad durante un sopralluogo trova scroll orizzontale e menu fuori schermo: **non è utilizzabile**, e nel 2026 questo è un giudizio immediato.
+
+**Cosa invece funziona e va protetto:** *Il Mio Giorno* (cockpit con KPI, agenda e "Avvia Visita" in 1 clic), *Dashboard Medico* (triage/readiness), *Nuova Visita (Step)* (macros anamnestiche, copia ultima visita, standard SIML) e il *Batch Session Planner* dello scadenzario. Questi 4 moduli sono **più avanti di CartSan e WinAspi**: il problema è che oggi il medico non li vede tutti dallo stesso posto.
+
+
+---
+
+## APPENDICE — METODOLOGIA, ARTEFATTI, LIMITI
+
+### Strumenti effettivamente usati
+
+- **Playwright 1.62 (Chromium headless)** — esplorazione browser reale di tutte le aree/moduli, 1440×900 e 390×844.
+  Nota: `agent-browser@^0.38.1` è dichiarato in `medwork-frontend/package.json` ma **non è installato** nel repository (`node_modules/agent-browser` assente): è stata usata la suite Playwright già presente.
+- **Harness di audit** (aggiunti in questa sessione, riutilizzabili):
+  - `medwork-frontend/scripts/ux-audit-explore.mjs` (51 screenshot + `observations.json`)
+  - `medwork-frontend/scripts/ux-audit-http.mjs` (raccolta richieste ≥400)
+  - `medwork-frontend/scripts/ux-audit-doctor-ia.mjs` (IA per ruolo + misura overflow chip strip)
+  - `medwork-frontend/scripts/ux-audit-verify-myday.mjs` (verifica funzionale del ripristino)
+- **Test esistenti** eseguiti come controprova: `vitest run` (2/2 ✅), `playwright test tests/p1-improvements.spec.ts` (2 pass / 3 fail).
+
+### Evidenze prodotte
+
+- Screenshot: `screenshots/ux-audit/00-login.png` … `62-myday-restored-admin.png` (51 + 3 file).
+- Dati strutturati: `screenshots/ux-audit/observations.json`, `screenshots/ux-audit/http-failures.json`.
+- Errori console raccolti: `useFlexGap` prop, `key` mancante in `tbody` (`CrudEntityView`), 2× `500 /api/master-data/doctor-availabilities`.
+
+### Riproduzione
+
+```powershell
+# backend + frontend (SQLite locale)
+.\start-medwork.ps1
+# audit
+cd medwork-frontend
+node scripts/ux-audit-explore.mjs
+node scripts/ux-audit-doctor-ia.mjs
+node scripts/ux-audit-verify-myday.mjs
 ```
-Rank | Impact | Effort | Title
------|--------|--------|--------------------------------------------------
-  1  |   🔴🔴🔴  |  2h    | Fix "Copia da ultima visita" disabled (tooltip)
-  2  |   🔴🔴🔴  |  4h    | Compressa tabella companies (< 10 colonne visibili)
-  3  |   🔴🔴🔴  |  2h    | Unisci "Esporta CSV/Excel" in dropdown
-  4  |   🔴🔴🔴  |  1h    | Tooltip su icone sidebar
-  5  |   🔴🔴🔴  |  1h    | Fix placeholder "00:00" in agenda
-  6  |   🔴🔴🔴  |  1giorno | Aggiungi onboarding guidato
-  7  |   🔴🔴🔴  |  2giorni | Unifica filtri lavoratori (dual → single)
-  8  |   🔴🔴    |  2giorni | Aggiungi stepper indicator con progress bar
-  9  |   🔴🔴    |  1giorno | Tooltip KPI dashboard + descrizioni
-  10 |   🔴🔴    |  2giorni | Auto-save nei form visita
-  11 |   🔴🔴    |  3giorni | Breadcrumb + page title navigazione
-  12 |   🔴🔴    |  2giorni | Conferma dati prima di "Avvia Visita"
-  13 |   🔴🔴    |  4h    | Confirm dialog per "Elimina"
-  14 |   🔴🔴    |  3giorni | Attiva Dark Mode
-  15 |   🔴🔴    |  5giorni | Rifattorizza legacy-* → MUI sx props
-  16 |   🔴🔴    |  5giorni | Unifica 5 scadenzari in 1 calendario
-  17 |   🔴🔴    |  3giorni | Notification center unificato
-  18 |   🔴      |  5giorni | Riprogetta tabella companies (card-based)
-  19 |   🔴      |  2h    | Fix placeholder ricerca ("Cerca per nome, CF...")
-  20 |   🔴      |  4giorni | Loading skeleton per tutte le chiamate API
-```
 
----
+### Limiti
 
-## LE SCREEN CHE NECESSITANO REDESIGN
+- Audit condotto su **dati di test** (5 lavoratori, 3 aziende): i giudizi sulla densità delle tabelle sono stati integrati con la lettura del codice (`entityConfigs` 330 label, Audit Trail 436 righe), non con volumi reali.
+- Nessun test di usabilità con utenti reali: il "percepito" è quello di un valutatore esperto di dominio.
+- Non sono stati valutati: backend, sicurezza, multi-tenancy, performance API (fuori scope), né i PDF generati.
+- Il comportamento sotto carico (500+ lavoratori) non è verificabile con il dataset di test.
 
-### 🔴 Critiche (Redesign immediato)
-
-1. **Companies Table** (`/companies`)
-   - Problema: 40+ colonne, nessuna gerarchia visiva
-   - Target: card-based su mobile, table con column selector su desktop
-
-2. **Workers Page** (`/workers`)
-   - Problema: dual filter, row buttons giganti, due sistemi (WorkersCenter + CrudEntityView)
-   - Target: unificare filtri, sostituire row button con inline actions
-
-3. **Medical Visit Stepper** (`/health-surveillance/medical-visit-stepper`)
-   - Problema: 2 step senza indicatori, nessun save automatico, campi confusi
-   - Target: stepper a 3-4 step con progress bar, auto-save, tooltips
-
-4. **Login Screen**
-   - Problema: personalizzato (custom Paper), non allineato con MUI
-   - Target: MUI Dialog con brand, animazione di ingresso
-
-### 🟡 Importanti (Redesign entro 1 settimana)
-
-5. **Dashboard "Il Mio Giorno"**
-   - Aggiungere contesto, descrizioni KPI, agenda con orari reali
-
-6. **Schedule/Planning**
-   - Unificare i 5 scadenzari in un unico calendar/timeline
-
-7. **Settings**
-   - Migliorare layout e aggiungere sezione help/onboarding
-
-### 🟢 Minori (Miglioramenti)
-
-8. **Topbar** — ridurre azioni, aggiungere search più intelligente
-9. **Sidebar** — collassabile, con tooltip, ordine logico
-10. **Footer** — aggiungere versione, help link, supporto
-
----
-
-## DOMANDA CHIAVE: Cosa percepisce un medico vedendo MedWork per la prima volta?
-
-> **Se un medico vede MedWork per la prima volta domani, cosa appare immediatamente datato, confuso, o inferiore ai prodotti SaaS moderni?**
-
-### Risposta in sintesi:
-
-**1. L'interfaccia è densa e caotica (2015)**
-- 40+ colonne in una tabella
-- Sidebar con 6 voci e tante sotto-voci nascoste
-- Topbar con 10+ azioni
-- Doppio filtro nella pagina lavoratori
-- **Percezione**: "Questo sembra un software vecchio. Non è cloud-native."
-
-**2. Manca qualsiasi onboarding o guida (2015)**
-- Nessun tour guidato
-- Nessun tooltip sui campi
-- Nessuna indicazione di "cosa fare adesso"
-- **Percezione**: "Come uso questo? Non so da dove iniziare."
-
-**3. Dualismo legacy CSS + MUI (2020)**
-- `.legacy-btn`, `.legacy-tab`, `.legacy-side-item` classi ovunque
-- Stili custom che sovrascrivono MUI
-- **Percezione**: "Qualcuno ha provato a modernizzare ma ha lasciato il codice vecchio."
-
-**4. Niente feedback immediato (2018)**
-- Nessun loading spinner
-- Nessun save automatico
-- Nessun confirmation dialog
-- **Percezione**: "Cosa è successo? Il mio click ha funzionato?"
-
-**5. Nessuna animazione o microinterazione (2018)**
-- Transizioni minime (0.2s)
-- Nessun skeleton screen
-- Nessun empty state
-- **Percezione**: "Questa app è statica. Non risponde come un prodotto moderno."
-
-**6. Responsive primitivo (2019)**
-- Breakpoint a 900px, niente tablet
-- Sidebar non collassabile
-- **Percezione**: "Non funziona bene su tablet o telefono."
-
-### Il Verdetto Finale
-
-**MedWork percepito come software del 2015-2018 con un tentativo di modernizzazione superficiale (MUI v7 + React 19) che non ha coinvolto il layer di interazione e UX.**
-
-La differenza tra "aspetto moderno" e "funziona come SaaS 2026" è abissale. I colori, i font, e la struttura sono moderni. Ma la densità, la mancanza di feedback, l'assenza di onboarding, il dualismo CSS, e le tabelle oversized la rendono un prodotto che **non compete con CartSan, WinAspi, Zucchetti o Simpledo** sul piano percepito.
-
-Per essere competitivo nel 2026, MedWork ha bisogno di:
-1. **Un design system coerente** (rimuovere tutte le `legacy-*` classi)
-2. **Onboarding guidato** (tour + tooltips + empty states)
-3. **Feedback immediato** (loading, auto-save, confirmation)
-4. **Riduzione della densità** (tabelle compresse, filtri unificati)
-5. **Microinterazioni** (animazioni, skeleton, toast system)
-6. **Mobile-first responsive** (collassabile sidebar, touch-friendly)
-
----
-
-## APPENDICE — METODOLOGIA
-
-### Strumenti Usati
-- **agent-browser** (v0.38.1) per esplorazione browser automatizzata
-- **Playwright** (v1.62.1) per test e report esistenti
-- **Serena MCP** per analisi simbolica del codice
-- **Visual inspection** tramite screenshot
-
-### Fonti Dati
-- `/screenshots/audit_dashboard.png`
-- `/screenshots/audit_workers.png`
-- `/screenshots/audit_schedule.png`
-- `/medwork-frontend/tests/physician-scenarios.spec.ts`
-- `/medwork-frontend/tests/p0-improvements.spec.ts`
-- `/medwork-frontend/tests/critical-improvements-p1.spec.ts`
-- `/medwork-frontend/playwright-report/data/`
-- `/medwork-frontend/src/App.tsx`
-- `/medwork-frontend/src/App.css`
-- `/medwork-frontend/src/theme.ts`
-- `/medwork-frontend/src/index.css`
-- `/medwork-frontend/src/components/` (tutti i componenti)
-
-### Limitazioni
-- Audit basato su snapshot statiche e test esistenti, non su test di usabilità reali con utenti
-- Non è stato testato il backend (nessun dato di performance API)
-- Nessun test su mobile reale (solo responsive breakpoint)
-- Il dark mode non è stato testato (non attivo)

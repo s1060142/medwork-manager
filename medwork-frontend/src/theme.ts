@@ -15,6 +15,7 @@ export const createDynamicTheme = (dynamicTheme: Record<string, any> = {}, mode:
       light: '#334155',
       dark: '#0b1b36',
       contrastText: '#ffffff',
+      type: 'secondary',
     },
     background: {
       default: '#f4f6fa',
@@ -22,15 +23,36 @@ export const createDynamicTheme = (dynamicTheme: Record<string, any> = {}, mode:
     },
     text: {
       primary: '#111827',
-      secondary: '#6b7280',
+      secondary: '#4b5563',
     },
     error: {
       main: '#dc2626',
+    },
+    success: {
+      main: '#15803d',
+      light: '#16a34a',
+      dark: '#15803d',
+      contrastText: '#ffffff',
+    },
+    warning: {
+      main: '#b45309',
+      light: '#d97706',
+      dark: '#92400e',
+      contrastText: '#ffffff',
+    },
+    info: {
+      main: '#1d4ed8',
+      light: '#2563eb',
+      dark: '#1e40af',
+      contrastText: '#ffffff',
     },
     divider: '#e5e8ef',
   },
   shape: {
     borderRadius: 8,
+    borderRadiusSm: 6,
+    borderRadiusMd: 8,
+    borderRadiusLg: 12,
   },
   typography: {
     fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
