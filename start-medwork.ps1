@@ -9,6 +9,15 @@ Write-Host "  MedWork Manager - Avvio Rapido (Host + SQLite DB)" -ForegroundColo
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 
+# 0. Preflight porte di sviluppo (esclusioni Windows Hyper-V/WSL/Docker)
+Write-Host "[0/3] Controllo porte di sviluppo (5173 / 5279)..." -ForegroundColor Yellow
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $ProjectRoot 'fix-dev-ports.ps1') -CheckOnly
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "      Avvio interrotto: le porte sono riservate dal sistema operativo." -ForegroundColor Red
+    Write-Host "      Rimedio: powershell -ExecutionPolicy Bypass -File .\fix-dev-ports.ps1" -ForegroundColor Yellow
+    return
+}
+
 # 1. Backend
 Write-Host "[1/3] Controllo Backend .NET (Host)..." -ForegroundColor Yellow
 $backendListening = Get-NetTCPConnection -LocalPort 5279 -ErrorAction SilentlyContinue

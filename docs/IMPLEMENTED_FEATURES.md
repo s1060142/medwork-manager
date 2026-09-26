@@ -109,6 +109,7 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | Protocol multi-step → DB | Protocol con Steps JSON nel DB | ✅ |
 | LoginCard refresh | Refresh token + remember me | ✅ |
 | Type visita italiano | Localizzazione completata | ✅ |
+| Porte dev bloccate dal SO (frontend non si avvia) | `fix-dev-ports.ps1`: diagnostica e sblocca in modo permanente 5173/5279 quando Hyper-V/WSL/Docker (HNS + `winnat`) le riservano come *excluded port range* (Vite `EACCES`, Kestrel socket `10013`). Preflight `-CheckOnly` integrato in `start-medwork.ps1` e `start-medwork.bat`, che interrompe l'avvio con istruzioni chiare invece di fallire in modo opaco | ✅ |
 
 ---
 

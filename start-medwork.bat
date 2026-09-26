@@ -13,6 +13,17 @@ set "FRONTEND_DIR=%PROJECT_ROOT%\medwork-frontend"
 set "BACKEND_URL=http://localhost:5279"
 set "FRONTEND_URL=http://localhost:5173"
 
+:: 0. Preflight porte di sviluppo (esclusioni Hyper-V/WSL/Docker su Windows)
+echo [0/3] Controllo porte di sviluppo [5173 / 5279]...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\fix-dev-ports.ps1" -CheckOnly
+if !errorlevel! neq 0 (
+    echo       Avvio interrotto: le porte sono riservate dal sistema operativo.
+    echo       Rimedio: fix-dev-ports.ps1 [una tantum, richiede conferma UAC]
+    echo.
+    pause
+    exit /b 1
+)
+
 :: 1. Controllo / Avvio Backend .NET (Host con SQLite)
 echo [1/3] Controllo Backend .NET (Host)...
 netstat -ano | findstr ":5279" >nul 2>&1
