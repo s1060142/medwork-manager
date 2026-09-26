@@ -60,4 +60,22 @@ describe('App shell and navigation', () => {
       expect(screen.getByText(/Pianificazione Visite/i)).toBeInTheDocument()
     })
   })
+
+  test('displays persistent clinical context banner and allows reset to global view', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // Verify Active Company banner renders
+    expect(await screen.findByText(/Azienda Attiva: Acme Industria S.p.A./i)).toBeInTheDocument()
+    expect(screen.getByText(/📍 Sede: Via Roma 10/i)).toBeInTheDocument()
+
+    // Click reset to global view
+    const resetBtn = screen.getByRole('button', { name: /Torna a Vista Globale/i })
+    await user.click(resetBtn)
+
+    // Verify global banner appears
+    await waitFor(() => {
+      expect(screen.getByText(/🌐 Vista Globale \(Tutte le Aziende\)/i)).toBeInTheDocument()
+    })
+  })
 })

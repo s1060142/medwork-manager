@@ -30,9 +30,9 @@ import AssessmentIcon from '@mui/icons-material/Assessment'
 
 import { apiGet, apiSend, getHeaders, getApiBaseUrl } from '../services/apiClient'
 
-export default function Allegato3BCenter() {
+export default function Allegato3BCenter({ activeCompanyId = '' }) {
   const [companies, setCompanies] = useState([])
-  const [selectedCompanyId, setSelectedCompanyId] = useState('')
+  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId && activeCompanyId !== 'all' ? activeCompanyId : '')
   const [year, setYear] = useState(new Date().getFullYear())
   
   const [loadingPreview, setLoadingPreview] = useState(false)
@@ -47,6 +47,12 @@ export default function Allegato3BCenter() {
   useEffect(() => {
     loadCompanies()
   }, [])
+
+  useEffect(() => {
+    if (activeCompanyId && activeCompanyId !== 'all') {
+      setSelectedCompanyId(activeCompanyId)
+    }
+  }, [activeCompanyId])
 
   useEffect(() => {
     if (selectedCompanyId) {

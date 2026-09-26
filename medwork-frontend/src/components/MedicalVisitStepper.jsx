@@ -125,7 +125,7 @@ const initialData = {
   heightCm: '',
 }
 
-function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) {
+function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, activeCompanyId = '', activeBranchId = '' }) {
   const [activeStep, setActiveStep] = useState(0)
   const [employees, setEmployees] = useState([])
   const [doctors, setDoctors] = useState([])
@@ -147,6 +147,15 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
   const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
   const [copyingVisit, setCopyingVisit] = useState(false)
   const [phraseTemplates, setPhraseTemplates] = useState([])
+
+  const visibleEmployees = useMemo(() => {
+    if (!activeCompanyId || activeCompanyId === 'all') return employees
+    return employees.filter((emp) => {
+      if (Number(emp.companyId) !== Number(activeCompanyId)) return false
+      if (activeBranchId && activeBranchId !== 'all' && Number(emp.branchId) !== Number(activeBranchId)) return false
+      return true
+    })
+  }, [employees, activeCompanyId, activeBranchId])
 
   const { handleKeyDown: handleMacroKeyDown, handleTextChange: handleMacroTextChange } = useTextExpander((field, val) => {
     setFormData(prev => ({ ...prev, [field]: val }))
@@ -714,7 +723,7 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee }) 
                     onChange={(event) => setField('employeeId', event.target.value)}
                     sx={{ gridColumn: { xs: '1 / -1', md: 'span 2' } }}
                   >
-                    {employees.map((item) => (
+                    {visibleEmployees.map((item) => (
                       <MenuItem key={item.id} value={item.id}>
                         {item.firstName} {item.lastName} — CF: {item.taxCode || 'N/D'} ({item.companyName || 'Azienda N/D'})
                       </MenuItem>

@@ -144,6 +144,36 @@ No feature is considered complete until validated.
 
 ---
 
+# MANDATORY PRE-COMPLETION VERIFICATION RULE
+
+No implementation may be reported as completed.
+
+Before any completion report:
+
+1. Launch application.
+2. Login.
+3. Navigate manually using browser automation.
+4. Verify user-visible behavior.
+5. Compare expected vs actual behavior.
+6. Produce PASS/FAIL.
+
+If any FAIL exists:
+
+- Do NOT produce a completion report.
+- Return work to implementation.
+
+A feature is complete only when:
+
+- code works
+- UI works
+- user workflow works
+- no duplicated UX exists
+- no contradictory behavior exists
+
+Never ask the human to perform verification.
+
+---
+
 # ECC REVIEW RULES
 
 Whenever ECC is available:

@@ -56,9 +56,9 @@ const RECALL_TEMPLATES = [
   },
 ]
 
-function RecallCampaignsCenter() {
+function RecallCampaignsCenter({ activeCompanyId = '' }) {
   const [companies, setCompanies] = useState([])
-  const [selectedCompanyId, setSelectedCompanyId] = useState(0)
+  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId && activeCompanyId !== 'all' ? Number(activeCompanyId) : 0)
   const [daysThreshold, setDaysThreshold] = useState(30)
   const [selectedTemplateId, setSelectedTemplateId] = useState('standard')
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -69,6 +69,14 @@ function RecallCampaignsCenter() {
   const [sending, setSending] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [digestMsg, setDigestMsg] = useState('')
+
+  useEffect(() => {
+    if (activeCompanyId && activeCompanyId !== 'all') {
+      setSelectedCompanyId(Number(activeCompanyId))
+    } else {
+      setSelectedCompanyId(0)
+    }
+  }, [activeCompanyId])
 
   useEffect(() => {
     apiGet('/api/master-data/companies')

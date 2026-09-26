@@ -37,7 +37,7 @@ import EmailIcon from '@mui/icons-material/Email'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { apiGet, apiSend } from '../services/apiClient'
 
-export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule }) {
+export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule, activeCompanyId = '' }) {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -47,7 +47,8 @@ export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule }
     setLoading(true)
     setError('')
     try {
-      const data = await apiGet('/api/doctor-data/dashboard')
+      const queryParam = activeCompanyId && activeCompanyId !== 'all' ? `?companyId=${activeCompanyId}` : ''
+      const data = await apiGet(`/api/doctor-data/dashboard${queryParam}`)
       setSummary(data)
     } catch (err) {
       setError(err.message || 'Errore nel caricamento della dashboard.')
@@ -58,7 +59,7 @@ export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule }
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [activeCompanyId])
 
   const handleSendMorningDigest = async () => {
     try {

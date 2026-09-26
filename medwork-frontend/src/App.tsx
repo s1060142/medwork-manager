@@ -90,6 +90,15 @@ function readActiveCompanyFromSettings() {
   }
 }
 
+function readActiveBranchFromSettings() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+    return parsed.activeBranchId || ''
+  } catch {
+    return ''
+  }
+}
+
 const ENTITY_BY_KEY = Object.fromEntries(ENTITY_CONFIGS.map((item) => [item.key, item]))
 
 const SIDE_NAV_ITEMS = [
@@ -213,7 +222,9 @@ function App() {
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
   const [selectedEmployeeIdForVisit, setSelectedEmployeeIdForVisit] = useState(null)
   const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
-  const [companiesList, setCompaniesList] = useState([])
+  const [activeBranchId, setActiveBranchId] = useState(() => readActiveBranchFromSettings())
+  const [companiesList, setCompaniesList] = useState<any[]>([])
+  const [branchesList, setBranchesList] = useState<any[]>([])
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role])
 
@@ -234,7 +245,30 @@ function App() {
           setSelectedModuleKey('companies')
         }
       })
+
+    apiGet('/api/master-data/branches')
+      .then((data) => {
+        if (Array.isArray(data)) setBranchesList(data)
+      })
+      .catch(() => setBranchesList([]))
   }, [isAuthenticated])
+
+  const companyBranches = useMemo(() => {
+    if (!activeCompanyId) return []
+    return branchesList.filter((b) => Number(b.companyId) === Number(activeCompanyId))
+  }, [branchesList, activeCompanyId])
+
+  const activeCompanyName = useMemo(() => {
+    if (!activeCompanyId) return ''
+    const c = companiesList.find((item) => String(item.id) === String(activeCompanyId))
+    return c?.name || c?.ragioneSociale || `Azienda #${activeCompanyId}`
+  }, [companiesList, activeCompanyId])
+
+  const activeBranchName = useMemo(() => {
+    if (!activeBranchId) return ''
+    const b = branchesList.find((item) => String(item.id) === String(activeBranchId))
+    return b?.name || b?.address || `Sede #${activeBranchId}`
+  }, [branchesList, activeBranchId])
 
   const [searchOpen, setSearchOpen] = useState(false)
   const [toast, setToast] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' | 'info' }>({ open: false, message: '', severity: 'info' })
@@ -380,30 +414,48 @@ function App() {
 
   const handleSettingsChange = (nextSettings) => {
     setActiveCompanyId(nextSettings?.activeCompanyId || '')
+    setActiveBranchId(nextSettings?.activeBranchId || '')
   }
 
   const handleCompanyContextSwitch = (newCompanyId) => {
     setActiveCompanyId(newCompanyId)
+    setActiveBranchId('')
     try {
       const existing = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
-      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ ...existing, activeCompanyId: newCompanyId }))
+      localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify({ ...existing, activeCompanyId: newCompanyId, activeBranchId: '' })
+      )
     } catch {}
+    appendAuditEvent({ module: 'Context', action: 'SwitchCompany', detail: newCompanyId || 'Global' })
   }
 
-  // Centri reintegrati: moduli standalone precedentemente orfani (vedi FRONTEND_UX_AUDIT.md).
+  const handleBranchContextSwitch = (newBranchId) => {
+    setActiveBranchId(newBranchId)
+    try {
+      const existing = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+      localStorage.setItem(
+        SETTINGS_STORAGE_KEY,
+        JSON.stringify({ ...existing, activeBranchId: newBranchId })
+      )
+    } catch {}
+    appendAuditEvent({ module: 'Context', action: 'SwitchBranch', detail: newBranchId || 'AllBranches' })
+  }
+
+  // Centri reintegrati: moduli standalone con propagazione contesto attivo
   const REINTEGRATED_MODULES = {
-    'giudizio-idoneita': () => <GiudizioIdoneitaCenter />,
-    'cartella-sanitaria': () => <CartellaSanitariaCenter />,
+    'giudizio-idoneita': () => <GiudizioIdoneitaCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} />,
+    'cartella-sanitaria': () => <CartellaSanitariaCenter activeCompanyId={activeCompanyId} />,
     'firma-grafometrica': () => <FirmaGrafometricaCenter />,
-    compliance: () => <ComplianceCenter onNavigateModule={handleModuleNavigation} />,
-    'allegato-3b': () => <Allegato3BCenter />,
-    analytics: () => <AnalyticsCenter />,
-    agenda: () => <AgendaCenter />,
-    appointments: () => <AppointmentsCenter />,
-    'recall-campaigns': () => <RecallCampaignsCenter />,
-    'activity-deadlines': () => <ActivityDeadlinesCenter />,
-    nominations: () => <NominationsDeadlinesCenter />,
-    'vaccination-deadlines': () => <VaccinationDeadlinesCenter />,
+    compliance: () => <ComplianceCenter activeCompanyId={activeCompanyId} onNavigateModule={handleModuleNavigation} />,
+    'allegato-3b': () => <Allegato3BCenter activeCompanyId={activeCompanyId} />,
+    analytics: () => <AnalyticsCenter activeCompanyId={activeCompanyId} />,
+    agenda: () => <AgendaCenter activeCompanyId={activeCompanyId} />,
+    appointments: () => <AppointmentsCenter activeCompanyId={activeCompanyId} />,
+    'recall-campaigns': () => <RecallCampaignsCenter activeCompanyId={activeCompanyId} />,
+    'activity-deadlines': () => <ActivityDeadlinesCenter activeCompanyId={activeCompanyId} />,
+    nominations: () => <NominationsDeadlinesCenter activeCompanyId={activeCompanyId} />,
+    'vaccination-deadlines': () => <VaccinationDeadlinesCenter activeCompanyId={activeCompanyId} />,
     'alert-multicanale': () => <AlertMulticanaleCenter />,
     'company-groups-workspace': () => <CompanyGroupsCenter />,
     'medical-staff': () => <MedicalStaffCenter />,
@@ -419,6 +471,7 @@ function App() {
     if (moduleKey === 'dashboard') {
       return (
         <Dashboard
+          activeCompanyId={activeCompanyId}
           onNavigateModule={handleModuleNavigation}
           onOpenMedicalVisitCreate={(employeeId) => {
             setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
@@ -431,6 +484,8 @@ function App() {
     if (moduleKey === 'medical-dashboard') {
       return (
         <DashboardMedico
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           onNewVisit={(employeeId) => {
             setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
             setSelectedModuleKey('medical-visit-stepper')
@@ -443,6 +498,7 @@ function App() {
       return (
         <DashboardScadenze
           activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
           onOpenEmployeeCreate={() => setSelectedModuleKey('employees-crud')}
           onOpenReports={() => setSelectedModuleKey('reporting')}
@@ -455,6 +511,8 @@ function App() {
         <CrudEntityView
           config={ENTITY_BY_KEY.companies}
           currentRole={role}
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           externalCreateToken={0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
         />
@@ -465,6 +523,7 @@ function App() {
       return (
         <WorkersCenter
           activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
         />
       )
@@ -475,6 +534,8 @@ function App() {
         <CrudEntityView
           config={ENTITY_BY_KEY.employees}
           currentRole={role}
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
         />
@@ -482,16 +543,18 @@ function App() {
     }
 
     if (moduleKey === 'protocols') {
-      return <ProtocolsCenter />
+      return <ProtocolsCenter activeCompanyId={activeCompanyId} />
     }
 
     if (moduleKey === 'schedules') {
-      return <VisitPlanningCenter activeCompanyId={activeCompanyId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
+      return <VisitPlanningCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
     }
 
     if (moduleKey === 'medical-visit-stepper') {
       return (
         <MedicalVisitStepper
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           initialEmployeeId={selectedEmployeeIdForVisit}
           onCreated={() => {
             setSelectedEmployeeIdForVisit(null)
@@ -502,11 +565,11 @@ function App() {
     }
 
     if (moduleKey === 'appointments-calendar') {
-      return <AppointmentsCalendar onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
+      return <AppointmentsCalendar activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
     }
 
     if (moduleKey === 'billing') {
-      return <BillingCenter />
+      return <BillingCenter activeCompanyId={activeCompanyId} />
     }
 
     if (moduleKey === 'audit') {
@@ -522,7 +585,7 @@ function App() {
     }
 
     if (moduleKey === 'reporting') {
-      return <ReportsCenter />
+      return <ReportsCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} />
     }
 
     const moduleItem = roleAwareModules.find((item) => item.key === moduleKey)
@@ -533,6 +596,8 @@ function App() {
         <CrudEntityView
           config={currentEntityConfig}
           currentRole={role}
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
           externalCreateToken={quickCreateRequest?.entityKey === currentEntityConfig?.key ? quickCreateRequest.token : 0}
           onExternalCreateConsumed={handleQuickCreateConsumed}
         />
@@ -626,10 +691,10 @@ function App() {
 
               {/* CENTER CONTEXT SELECTOR */}
               <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  Azienda Attiva:
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  🏢 Azienda:
                 </Typography>
-                <FormControl size="small" sx={{ minWidth: 200 }}>
+                <FormControl size="small" sx={{ minWidth: 210 }}>
                   <Select
                     value={activeCompanyId || ''}
                     onChange={(e) => handleCompanyContextSwitch(e.target.value)}
@@ -637,10 +702,11 @@ function App() {
                     sx={{
                       height: 30,
                       color: '#ffffff',
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      bgcolor: activeCompanyId ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.1)',
                       fontSize: '12px',
                       borderRadius: 1.5,
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.2)' },
+                      fontWeight: activeCompanyId ? 600 : 400,
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: activeCompanyId ? '#60a5fa' : 'rgba(255, 255, 255, 0.2)' },
                       '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#93c5fd' },
                       '& .MuiSvgIcon-root': { color: '#ffffff' },
                     }}
@@ -655,6 +721,36 @@ function App() {
                     ))}
                   </Select>
                 </FormControl>
+
+                {activeCompanyId && companyBranches.length > 0 && (
+                  <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <Select
+                      value={activeBranchId || ''}
+                      onChange={(e) => handleBranchContextSwitch(e.target.value)}
+                      displayEmpty
+                      sx={{
+                        height: 30,
+                        color: '#ffffff',
+                        bgcolor: activeBranchId ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                        fontSize: '12px',
+                        borderRadius: 1.5,
+                        fontWeight: activeBranchId ? 600 : 400,
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: activeBranchId ? '#34d399' : 'rgba(255, 255, 255, 0.2)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#6ee7b7' },
+                        '& .MuiSvgIcon-root': { color: '#ffffff' },
+                      }}
+                    >
+                      <MenuItem value="">
+                        <em>📍 Tutte le Sedi</em>
+                      </MenuItem>
+                      {companyBranches.map((b) => (
+                        <MenuItem key={b.id} value={String(b.id)}>
+                          {b.name || b.address || `Sede #${b.id}`}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
               </Box>
 
               <Box className="legacy-topbar-right">
@@ -724,6 +820,101 @@ function App() {
               </aside>
 
               <main className="legacy-main-content">
+                {/* PERSISTENT CLINICAL CONTEXT BANNER */}
+                <Box
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    bgcolor: activeCompanyId ? '#0f172a' : '#f8fafc',
+                    color: activeCompanyId ? '#f8fafc' : '#475569',
+                    borderBottom: '1px solid',
+                    borderColor: activeCompanyId ? 'rgba(59, 130, 246, 0.3)' : '#e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: 1.5,
+                  }}
+                >
+                  <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                    {activeCompanyId ? (
+                      <>
+                        <Chip
+                          icon={<BusinessIcon sx={{ fontSize: 16, color: '#93c5fd !important' }} />}
+                          label={`Azienda Attiva: ${activeCompanyName}`}
+                          size="small"
+                          sx={{
+                            bgcolor: 'rgba(59, 130, 246, 0.2)',
+                            color: '#93c5fd',
+                            fontWeight: 700,
+                            fontSize: '12px',
+                            border: '1px solid rgba(147, 197, 253, 0.3)',
+                          }}
+                        />
+                        {activeBranchName ? (
+                          <Chip
+                            label={`📍 Sede: ${activeBranchName}`}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(16, 185, 129, 0.2)',
+                              color: '#6ee7b7',
+                              fontWeight: 600,
+                              fontSize: '11px',
+                              border: '1px solid rgba(110, 231, 183, 0.3)',
+                            }}
+                          />
+                        ) : (
+                          <Chip
+                            label="📍 Tutte le Sedi"
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(255, 255, 255, 0.1)',
+                              color: '#cbd5e1',
+                              fontSize: '11px',
+                            }}
+                          />
+                        )}
+                        <Typography variant="caption" sx={{ color: '#94a3b8', ml: 1, display: { xs: 'none', lg: 'inline' } }}>
+                          ⚡ Contesto clinico attivo: viste filtrate su lavoratori, visite, giudizi, cartelle e scadenze.
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <Chip
+                          label="🌐 Vista Globale (Tutte le Aziende)"
+                          size="small"
+                          sx={{
+                            bgcolor: '#e2e8f0',
+                            color: '#334155',
+                            fontWeight: 700,
+                            fontSize: '11px',
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          Seleziona un'azienda nel selettore in alto per isolare il contesto operativo della sessione.
+                        </Typography>
+                      </>
+                    )}
+                  </Stack>
+
+                  {activeCompanyId && (
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => handleCompanyContextSwitch('')}
+                      sx={{
+                        color: '#94a3b8',
+                        textTransform: 'none',
+                        fontSize: '11px',
+                        py: 0.2,
+                        '&:hover': { color: '#f8fafc', bgcolor: 'rgba(255,255,255,0.08)' },
+                      }}
+                    >
+                      ✖ Torna a Vista Globale
+                    </Button>
+                  )}
+                </Box>
+
                 <Box className="legacy-content-wrapper">
                   {/* BREADCRUMB & CONTEXT LINE */}
                   <Box className="legacy-context-line">
@@ -745,7 +936,7 @@ function App() {
                       {activeCompanyId && (
                         <Chip
                           size="small"
-                          label={`Azienda: #${activeCompanyId}`}
+                          label={`ID Azienda: #${activeCompanyId}`}
                           color="info"
                           variant="outlined"
                           sx={{ height: 20, fontSize: '11px' }}

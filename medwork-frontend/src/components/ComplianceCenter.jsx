@@ -37,7 +37,7 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import { apiGet } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
 
-export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner }) {
+export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner, activeCompanyId = '' }) {
   const [alerts, setAlerts] = useState([])
   const [companies, setCompanies] = useState([])
   const [visits, setVisits] = useState([])
@@ -51,17 +51,25 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
     setLoading(true)
     setError('')
     try {
+      const queryParam = activeCompanyId && activeCompanyId !== 'all' ? `?companyId=${activeCompanyId}` : ''
       const [alertData, companyData, visitData, employeeData] = await Promise.all([
-        apiGet('/api/doctor-data/compliance-alerts').catch(() => []),
+        apiGet(`/api/doctor-data/compliance-alerts${queryParam}`).catch(() => []),
         apiGet('/api/master-data/companies').catch(() => []),
         apiGet('/api/master-data/medical-visits').catch(() => []),
         apiGet('/api/master-data/employees').catch(() => []),
       ])
       const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
+      let loadedVisits = unwrap(visitData)
+      let loadedEmployees = unwrap(employeeData)
+      if (activeCompanyId && activeCompanyId !== 'all') {
+        loadedEmployees = loadedEmployees.filter(e => Number(e.companyId) === Number(activeCompanyId))
+        const empIds = new Set(loadedEmployees.map(e => Number(e.id)))
+        loadedVisits = loadedVisits.filter(v => empIds.has(Number(v.employeeId)))
+      }
       setAlerts(unwrap(alertData))
       setCompanies(unwrap(companyData))
-      setVisits(unwrap(visitData))
-      setEmployees(unwrap(employeeData))
+      setVisits(loadedVisits)
+      setEmployees(loadedEmployees)
     } catch (err) {
       setError(err.message || 'Errore nel caricamento dei dati di compliance.')
     } finally {
@@ -71,7 +79,7 @@ export default function ComplianceCenter({ onNavigateModule, onOpenBatchPlanner 
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [activeCompanyId])
 
   // Calculate multidimensional compliance scores
   const complianceStats = useMemo(() => {

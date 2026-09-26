@@ -81,14 +81,14 @@ function getOutcomeInfo(code, label) {
   return { code: 'IDONE0', label: label || 'Idoneo', color: 'success' }
 }
 
-export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
+export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCompanyId = '' }) {
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [searchText, setSearchText] = useState('')
-  const [selectedCompanyId, setSelectedCompanyId] = useState('all')
+  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId || 'all')
   const [selectedOutcomeCode, setSelectedOutcomeCode] = useState('all')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [activeVisit, setActiveVisit] = useState(null)
@@ -110,12 +110,21 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
   const [autoDispatchPec, setAutoDispatchPec] = useState(true)
   const [batchSigning, setBatchSigning] = useState(false)
 
+  useEffect(() => {
+    if (activeCompanyId) {
+      setSelectedCompanyId(activeCompanyId)
+    } else {
+      setSelectedCompanyId('all')
+    }
+  }, [activeCompanyId])
+
   const loadData = async () => {
     try {
       setLoading(true)
       setError('')
+      const queryParam = activeCompanyId && activeCompanyId !== 'all' ? `?companyId=${activeCompanyId}` : ''
       const [visitsData, companiesData] = await Promise.all([
-        apiGet('/api/visit-judgments'),
+        apiGet(`/api/visit-judgments${queryParam}`),
         apiGet('/api/master-data/companies').catch(() => []),
       ])
       const unwrap = (d) => (Array.isArray(d) ? d : (Array.isArray(d?.data) ? d.data : []))
@@ -138,7 +147,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
 
   useEffect(() => {
     loadData()
-  }, [medicalVisitId])
+  }, [medicalVisitId, activeCompanyId])
 
   const openEdit = (visit) => {
     setActiveVisit(visit)
@@ -402,7 +411,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
     let inidonei = 0
     let inAttesa = 0
 
-    visits.forEach((v) => {
+    filteredVisits.forEach((v) => {
       const info = getOutcomeInfo(v.outcomeCode, v.outcome)
       if (info.code === 'IDONE0') idonei++
       else if (info.code === 'IDONE0P' || info.code === 'IDONE0L') prescrizioni++
@@ -410,8 +419,8 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null }) {
       else inAttesa++
     })
 
-    return { total: visits.length, idonei, prescrizioni, inidonei, inAttesa }
-  }, [visits])
+    return { total: filteredVisits.length, idonei, prescrizioni, inidonei, inAttesa }
+  }, [filteredVisits])
 
   return (
     <Box sx={{ p: 2.5, maxWidth: 1500, mx: 'auto' }}>

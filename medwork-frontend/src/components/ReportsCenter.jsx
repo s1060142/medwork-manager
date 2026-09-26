@@ -122,7 +122,7 @@ const ANALYSIS_TABS = [
   { key: 'charts', label: 'Grafici e analisi' },
 ]
 
-function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTabChange }) {
+function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTabChange, activeCompanyId = '', activeBranchId = '' }) {
   const [activeAnalysisTab, setActiveAnalysisTab] = useState(initialTab)
   const [loadingKey, setLoadingKey] = useState('')
   const [error, setError] = useState('')
@@ -131,10 +131,22 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
   const [companies, setCompanies] = useState([])
   const [branches, setBranches] = useState([])
 
-  const [companyId, setCompanyId] = useState('')
-  const [branchId, setBranchId] = useState('')
+  const [companyId, setCompanyId] = useState(activeCompanyId && activeCompanyId !== 'all' ? activeCompanyId : '')
+  const [branchId, setBranchId] = useState(activeBranchId && activeBranchId !== 'all' ? activeBranchId : '')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+
+  useEffect(() => {
+    if (activeCompanyId && activeCompanyId !== 'all') {
+      setCompanyId(activeCompanyId)
+    }
+  }, [activeCompanyId])
+
+  useEffect(() => {
+    if (activeBranchId && activeBranchId !== 'all') {
+      setBranchId(activeBranchId)
+    }
+  }, [activeBranchId])
 
   useEffect(() => {
     Promise.all([

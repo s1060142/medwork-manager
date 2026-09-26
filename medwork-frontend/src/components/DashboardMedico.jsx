@@ -37,9 +37,10 @@ function MetricCard({ title, count, icon, color, subtitle }) {
   )
 }
 
-export default function DashboardMedico({ onNewVisit }) {
+export default function DashboardMedico({ onNewVisit, activeCompanyId = '', activeBranchId = '' }) {
   const [visits, setVisits] = useState([])
   const [records, setRecords] = useState([])
+  const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -47,14 +48,27 @@ export default function DashboardMedico({ onNewVisit }) {
     Promise.all([
       apiGet('/api/master-data/medical-visits').catch(() => []),
       apiGet('/api/master-data/medical-records').catch(() => []),
+      apiGet('/api/master-data/employees').catch(() => []),
     ])
-      .then(([visitData, recordData]) => {
-        setVisits(Array.isArray(visitData) ? visitData : [])
-        setRecords(Array.isArray(recordData) ? recordData : [])
+      .then(([visitData, recordData, empData]) => {
+        let vList = Array.isArray(visitData) ? visitData : []
+        let rList = Array.isArray(recordData) ? recordData : []
+        let eList = Array.isArray(empData) ? empData : []
+
+        if (activeCompanyId && activeCompanyId !== 'all') {
+          eList = eList.filter(e => Number(e.companyId) === Number(activeCompanyId))
+          const empIds = new Set(eList.map(e => Number(e.id)))
+          vList = vList.filter(v => empIds.has(Number(v.employeeId)))
+          rList = rList.filter(r => empIds.has(Number(r.employeeId)))
+        }
+
+        setVisits(vList)
+        setRecords(rList)
+        setEmployees(eList)
       })
       .catch((err) => setError(err.message || 'Errore nel caricamento della dashboard.'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [activeCompanyId])
 
   const { next7, overdue, toSign, anomalies } = useMemo(() => {
     const now = new Date()

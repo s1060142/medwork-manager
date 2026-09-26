@@ -20,7 +20,7 @@ import { apiGet, apiSend } from '../services/apiClient'
 import { appendAuditEvent } from '../utils/auditTrail'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
 
-function BillingCenter() {
+function BillingCenter({ activeCompanyId = '' }) {
   const [companies, setCompanies] = useState([])
   const [docs, setDocs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,8 +53,13 @@ function BillingCenter() {
     [companies],
   )
 
+  const filteredDocs = useMemo(() => {
+    if (!activeCompanyId || activeCompanyId === 'all') return docs
+    return docs.filter((d) => Number(d.companyId) === Number(activeCompanyId))
+  }, [docs, activeCompanyId])
+
   const totals = useMemo(() => {
-    return docs.reduce(
+    return filteredDocs.reduce(
       (accumulator, doc) => {
         const amount = Number(doc.amount) || 0
         accumulator.total += amount
@@ -64,7 +69,7 @@ function BillingCenter() {
       },
       { total: 0, paid: 0, overdue: 0 },
     )
-  }, [docs])
+  }, [filteredDocs])
 
   const handleGenerate = async () => {
     if (!periodFrom || !periodTo) return
@@ -170,7 +175,7 @@ function BillingCenter() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {docs.map((doc) => (
+            {filteredDocs.map((doc) => (
               <TableRow key={doc.id} hover>
                 <TableCell>{doc.invoiceNumber}</TableCell>
                 <TableCell>{doc.period || '-'}</TableCell>

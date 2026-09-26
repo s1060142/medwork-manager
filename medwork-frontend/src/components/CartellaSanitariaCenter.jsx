@@ -38,7 +38,7 @@ const FIELDS = [
   { key: 'notes', label: 'Annotazioni del medico competente', multiline: true, rows: 3, helperText: 'Note cliniche riservate (art. 25 c. 1 lett. l D.Lgs. 81/08)' },
 ]
 
-export default function CartellaSanitariaCenter({ employeeId: employeeIdProp }) {
+export default function CartellaSanitariaCenter({ employeeId: employeeIdProp, activeCompanyId = '' }) {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [employeeOptions, setEmployeeOptions] = useState([])
   const [loadingEmployees, setLoadingEmployees] = useState(false)
@@ -63,11 +63,15 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp }) 
     setLoadingEmployees(true)
     apiGet('/api/master-data/employees')
       .then((data) => {
-        setEmployeeOptions(Array.isArray(data) ? data : [])
+        let list = Array.isArray(data) ? data : []
+        if (activeCompanyId && activeCompanyId !== 'all') {
+          list = list.filter((item) => Number(item.companyId) === Number(activeCompanyId))
+        }
+        setEmployeeOptions(list)
       })
       .catch(() => {})
       .finally(() => setLoadingEmployees(false))
-  }, [employeeIdProp])
+  }, [employeeIdProp, activeCompanyId])
 
   // Load medical record when employeeId changes
   useEffect(() => {

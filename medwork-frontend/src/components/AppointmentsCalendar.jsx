@@ -71,7 +71,7 @@ function buildMonthGrid(monthDate) {
   return days
 }
 
-function AppointmentsCalendar({ onCreateAppointment }) {
+function AppointmentsCalendar({ onCreateAppointment, activeCompanyId = '', activeBranchId = '' }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [visits, setVisits] = useState([])
@@ -79,12 +79,20 @@ function AppointmentsCalendar({ onCreateAppointment }) {
   const monthDays = useMemo(() => buildMonthGrid(monthDate), [monthDate])
   
   const [selectedDate, setSelectedDate] = useState(() => atStartOfDay(new Date()))
-  const [selectedCompany, setSelectedCompany] = useState('all')
+  const [selectedCompany, setSelectedCompany] = useState(activeCompanyId || 'all')
   const [selectedType, setSelectedType] = useState('all')
 
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [magicLinkStatus, setMagicLinkStatus] = useState('')
+
+  useEffect(() => {
+    if (activeCompanyId) {
+      setSelectedCompany(activeCompanyId)
+    } else {
+      setSelectedCompany('all')
+    }
+  }, [activeCompanyId])
 
   useEffect(() => {
     const load = async () => {
@@ -96,8 +104,9 @@ function AppointmentsCalendar({ onCreateAppointment }) {
         
         const start = monthDays[0].toISOString()
         const end = new Date(monthDays[monthDays.length - 1].getTime() + 86400000).toISOString()
+        const companyParam = activeCompanyId && activeCompanyId !== 'all' ? `&companyId=${activeCompanyId}` : ''
 
-        const visitData = await apiGet(`/api/doctor-data/calendar-events?start=${start}&end=${end}`)
+        const visitData = await apiGet(`/api/doctor-data/calendar-events?start=${start}&end=${end}${companyParam}`)
         setVisits(Array.isArray(visitData) ? visitData : [])
       } catch (requestError) {
         setError(requestError.message || 'Errore nel caricamento calendario.')
@@ -107,7 +116,7 @@ function AppointmentsCalendar({ onCreateAppointment }) {
     }
 
     load()
-  }, [monthDate, monthDays])
+  }, [monthDate, monthDays, activeCompanyId])
 
   const handleSendMagicLink = async () => {
     if (!selectedEvent) return

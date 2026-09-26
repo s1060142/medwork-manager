@@ -606,65 +606,66 @@ public class DoctorCrudController : BaseController
     }
 
     [HttpGet("dashboard")]
-    public async Task<IActionResult> GetDashboardSummary()
+    public async Task<IActionResult> GetDashboardSummary([FromQuery] int? companyId = null)
     {
         var tenantId = GetTenantId();
         var today = DateTime.UtcNow.Date;
         var endOfWeek = today.AddDays(7);
         var in30Days = today.AddDays(30);
 
-        var visitsToday = await _dbContext.MedicalVisits
+        var visitsQuery = _dbContext.MedicalVisits
             .AsNoTracking()
-            .Where(v => v.TenantId == tenantId && v.VisitDate.Date == today)
+            .Where(v => v.TenantId == tenantId);
+
+        var employeesQuery = _dbContext.Employees
+            .AsNoTracking()
+            .Where(e => e.TenantId == tenantId && (e.StatoRisorsa == "Attivo" || e.StatoRisorsa == null));
+
+        if (companyId.HasValue && companyId.Value > 0)
+        {
+            visitsQuery = visitsQuery.Where(v => v.Employee != null && v.Employee.CompanyId == companyId.Value);
+            employeesQuery = employeesQuery.Where(e => e.CompanyId == companyId.Value);
+        }
+
+        var visitsToday = await visitsQuery
+            .Where(v => v.VisitDate.Date == today)
             .CountAsync();
 
-        var deadlinesThisWeek = await _dbContext.MedicalVisits
-            .AsNoTracking()
-            .Where(v => v.TenantId == tenantId && 
-                        v.NextDeadlineDate.Date >= today && 
-                        v.NextDeadlineDate.Date <= endOfWeek)
+        var deadlinesThisWeek = await visitsQuery
+            .Where(v => v.NextDeadlineDate.Date >= today && v.NextDeadlineDate.Date <= endOfWeek)
             .Select(v => v.EmployeeId)
             .Distinct()
             .CountAsync();
 
-        var overdueVisits = await _dbContext.MedicalVisits
-            .AsNoTracking()
-            .Where(v => v.TenantId == tenantId && v.NextDeadlineDate.Date < today)
+        var overdueVisits = await visitsQuery
+            .Where(v => v.NextDeadlineDate.Date < today)
             .Select(v => v.EmployeeId)
             .Distinct()
             .CountAsync();
 
-        var pendingSignatures = await _dbContext.MedicalVisits
-            .AsNoTracking()
-            .Where(v => v.TenantId == tenantId && !v.IsSigned)
+        var pendingSignatures = await visitsQuery
+            .Where(v => !v.IsSigned)
             .CountAsync();
 
-        var totalActiveWorkers = await _dbContext.Employees
-            .AsNoTracking()
-            .Where(e => e.TenantId == tenantId && (e.StatoRisorsa == "Attivo" || e.StatoRisorsa == null))
-            .CountAsync();
+        var totalActiveWorkers = await employeesQuery.CountAsync();
 
         var complianceScore = totalActiveWorkers > 0 
             ? Math.Max(0, Math.Min(100, (int)Math.Round((1.0 - (double)overdueVisits / totalActiveWorkers) * 100)))
             : 100;
 
         // Today's schedule list (or upcoming if none today for rich demo/usability)
-        var todayVisits = await _dbContext.MedicalVisits
-            .AsNoTracking()
+        var todayVisits = await visitsQuery
             .Include(v => v.Employee)
             .Include(v => v.Employee.Company)
-            .Where(v => v.TenantId == tenantId && v.VisitDate.Date == today)
+            .Where(v => v.VisitDate.Date == today)
             .OrderBy(v => v.VisitDate)
             .ToListAsync();
 
         if (todayVisits.Count == 0)
         {
-            // If no visits strictly today, provide recent/upcoming schedule for realistic operational view
-            todayVisits = await _dbContext.MedicalVisits
-                .AsNoTracking()
+            todayVisits = await visitsQuery
                 .Include(v => v.Employee)
                 .Include(v => v.Employee.Company)
-                .Where(v => v.TenantId == tenantId)
                 .OrderByDescending(v => v.VisitDate)
                 .Take(5)
                 .ToListAsync();
@@ -796,13 +797,20 @@ public class DoctorCrudController : BaseController
     }
 
     [HttpGet("calendar-events")]
-    public async Task<IActionResult> GetCalendarEvents([FromQuery] DateTime start, [FromQuery] DateTime end)
+    public async Task<IActionResult> GetCalendarEvents([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] int? companyId = null)
     {
         var tenantId = GetTenantId();
-        var visits = await _dbContext.MedicalVisits
+        var query = _dbContext.MedicalVisits
             .Include(v => v.Employee)
             .ThenInclude(e => e.Company)
-            .Where(v => v.TenantId == tenantId && v.VisitDate >= start && v.VisitDate <= end)
+            .Where(v => v.TenantId == tenantId && v.VisitDate >= start && v.VisitDate <= end);
+
+        if (companyId.HasValue && companyId.Value > 0)
+        {
+            query = query.Where(v => v.Employee != null && v.Employee.CompanyId == companyId.Value);
+        }
+
+        var visits = await query
             .Select(v => new CalendarEventDto(
                 v.Id,
                 v.EmployeeId,
@@ -901,31 +909,38 @@ public class DoctorCrudController : BaseController
     }
 
     [HttpGet("compliance-alerts")]
-    public async Task<IActionResult> GetComplianceAlerts()
+    public async Task<IActionResult> GetComplianceAlerts([FromQuery] int? companyId = null)
     {
         var tenantId = GetTenantId();
         var alerts = new List<ComplianceAlertDto>();
 
+        var empQuery = _dbContext.Employees.Where(e => e.TenantId == tenantId && e.IsActive && e.JobRoleId == null);
+        var compQuery = _dbContext.Companies.Where(c => c.TenantId == tenantId && c.IsActive && (c.RSPP == null || c.RSPP == ""));
+        var visitQuery = _dbContext.MedicalVisits.Include(v => v.Employee).Where(v => v.TenantId == tenantId && v.VisitDate > DateTime.UtcNow.AddDays(1));
+
+        if (companyId.HasValue && companyId.Value > 0)
+        {
+            empQuery = empQuery.Where(e => e.CompanyId == companyId.Value);
+            compQuery = compQuery.Where(c => c.Id == companyId.Value);
+            visitQuery = visitQuery.Where(v => v.Employee != null && v.Employee.CompanyId == companyId.Value);
+        }
+
         // Missing Job Roles
-        var missingJobRoles = await _dbContext.Employees
-            .Where(e => e.TenantId == tenantId && e.IsActive && e.JobRoleId == null)
+        var missingJobRoles = await empQuery
             .Select(e => new ComplianceAlertDto("Employee", e.Id, e.FirstName + " " + e.LastName, "Manca la Mansione (JobRole) assegnata", "Warning"))
             .ToListAsync();
         
         alerts.AddRange(missingJobRoles);
 
         // Missing RSPP
-        var missingRSPP = await _dbContext.Companies
-            .Where(c => c.TenantId == tenantId && c.IsActive && (c.RSPP == null || c.RSPP == ""))
+        var missingRSPP = await compQuery
             .Select(c => new ComplianceAlertDto("Company", c.Id, c.Name, "RSPP non definito", "Critical"))
             .ToListAsync();
             
         alerts.AddRange(missingRSPP);
 
         // Future visits
-        var futureVisits = await _dbContext.MedicalVisits
-            .Include(v => v.Employee)
-            .Where(v => v.TenantId == tenantId && v.VisitDate > DateTime.UtcNow.AddDays(1))
+        var futureVisits = await visitQuery
             .Select(v => new ComplianceAlertDto("MedicalVisit", v.Id, v.Employee != null ? v.Employee.FirstName + " " + v.Employee.LastName : "", "Data visita nel futuro", "Warning"))
             .ToListAsync();
             
