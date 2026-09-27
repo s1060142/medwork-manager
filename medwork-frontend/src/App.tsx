@@ -468,7 +468,7 @@ function App() {
   // Centri reintegrati: moduli standalone con propagazione contesto attivo
   const REINTEGRATED_MODULES = {
     'giudizio-idoneita': () => <GiudizioIdoneitaCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} />,
-    'cartella-sanitaria': () => <CartellaSanitariaCenter activeCompanyId={activeCompanyId} />,
+    'cartella-sanitaria': () => <CartellaSanitariaCenter activeCompanyId={activeCompanyId} employeeId={selectedEmployeeIdForVisit} />,
     'firma-grafometrica': () => <FirmaGrafometricaCenter />,
     compliance: () => <ComplianceCenter activeCompanyId={activeCompanyId} onNavigateModule={handleModuleNavigation} />,
     'allegato-3b': () => <Allegato3BCenter activeCompanyId={activeCompanyId} />,
@@ -984,7 +984,7 @@ function App() {
           onSelectWorker={(worker) => {
             setSelectedEmployeeIdForVisit(worker?.id ? String(worker.id) : null)
             setSelectedArea('health-surveillance')
-            setSelectedModuleKey('medical-visit-stepper')
+            setSelectedModuleKey('cartella-sanitaria')
           }}
           onSelectCompany={(company) => {
             if (company?.id) handleCompanyContextSwitch(String(company.id))

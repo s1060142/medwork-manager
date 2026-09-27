@@ -42,11 +42,16 @@ Implementation Notes:
    - Eliminata la barra tab legacy secondaria in Gestione Aziende.
 
 6. **Risoluzione Autenticazione & 401 Unauthorized Root Cause**:
+   - `handleLoginSuccess` in `App.tsx` ora chiama `apiGet('/api/master-data/companies')` per inizializzare `activeCompanyId` dal primo risultato della API. Questo risolve la causa principale: `activeCompanyId` restava `''` al login, causando il fallimento silenzioso di tutte le chiamate API di WorkersCenter (401 → `.catch(() => [])` → componente non monta).
    - Gestione pulita e reattiva dei token scaduti con reset automatico della sessione ed emissione dell'evento `medwork:auth-expired`.
+7. **Risoluzione ReferenceError in Navigazione**:
+   - Eliminato residuo `setSelectedCompanyTab` che causava errore silenzioso al click su "Gestione Lavoratori".
+8. **Rimozione Barra Tab Duplicata in Gestione Aziende (`App.tsx`)**:
+   - Eliminata la barra tab legacy secondaria in Gestione Aziende.
 
 Build Results:
-- `npm run build` (Vite production bundle): PASS (12953 modules transformed in 46.25s, exit code 0)
+- `npm run build` (Vite production bundle): PASS (12953 modules transformed, exit code 0)
 
 Test Results:
-- `npm test` (Vitest test suite): PASS (8/8 tests passing in 27.48s)
-- `npx playwright test tests/debug-auth-workers.spec.ts` (Playwright Chromium E2E): PASS (1/1 passed in 15.0s)
+- `npm test` (Vitest test suite): PASS (8/8 tests passing)
+- `npx playwright test tests/debug-auth-workers.spec.ts` (Playwright Chromium E2E): PASS (1/1 passed)

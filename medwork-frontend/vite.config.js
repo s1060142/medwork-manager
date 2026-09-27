@@ -1,7 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+const apiProxy = {
+  '/api': {
+    target: 'http://127.0.0.1:5279',
+    changeOrigin: true,
+    secure: false,
+    proxyTimeout: 10000,
+    timeout: 10000,
+    headers: {
+      'Host': '127.0.0.1:5279'
+    }
+  },
+}
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -21,12 +33,12 @@ export default defineConfig({
       port: 5173,
       clientPort: 5173,
     },
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:5279',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    proxy: apiProxy,
+  },
+  preview: {
+    host: '127.0.0.1',
+    port: 4173,
+    strictPort: true,
+    proxy: apiProxy,
   },
 })

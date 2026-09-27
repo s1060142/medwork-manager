@@ -49,7 +49,14 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp, ac
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [savedAt, setSavedAt] = useState('')
-  
+
+  // Sync employeeIdProp changes to internal state (e.g. when selected from GlobalSearchModal)
+  useEffect(() => {
+    if (employeeIdProp && String(employeeIdProp) !== String(employeeId)) {
+      setEmployeeId(String(employeeIdProp))
+    }
+  }, [employeeIdProp])
+
   // Cessation modal state
   const [cessationOpen, setCessationOpen] = useState(false)
   const [cessationDate, setCessationDate] = useState(new Date().toISOString().slice(0, 10))

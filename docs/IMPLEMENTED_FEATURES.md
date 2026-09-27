@@ -4,6 +4,16 @@
 
 Storico delle feature consegnate, ordinate per fase e priorità.
 
+## Sprint 5 — Mansione Anamnesis Checklist & Auth/Proxy Hardening (Settembre 2026)
+
+| Feature / Miglioria | Dettaglio Implementativo | Stato |
+|---|---|---|
+| **Checklist Anamnestica Dinamica per Mansione & Rischi (Allegato 3A)** | `MedicalVisitStepper.jsx`: Sostituito il vecchio dropdown "Frasi Rapide" con checklist clinica strutturata su 7 categorie di rischio (VDT, MMC, Rumore & Vibrazioni, Chimico & Polveri, Lavoro Notturno, Guida & Quota, Negatività Generale). Auto-matching con `jobRole` del lavoratore, badge `★ Suggerito`, 1-click apply standard e toggles individuali. | ✅ Conforme |
+| **Auth & Context Bootstrap Root Cause Resolution** | `App.tsx`: `handleLoginSuccess` e bootstrap effect ora caricano esplicitamente `/api/master-data/companies` impostando `activeCompanyId`, eliminando il problema delle API calls 401 a cascata. | ✅ Conforme |
+| **Navigation & ReferenceError Fix** | `App.tsx`: Eliminato residuo `setSelectedCompanyTab` orfano in `handleAreaNavigation` che causava errore silenzioso e blocco montaggio vista lavoratori. | ✅ Conforme |
+| **Vite Preview Proxy Support** | `vite.config.js`: Aggiunto blocco `preview.proxy` identico a `server.proxy` per consentire validazioni E2E e QA sia su dev server (5173) che preview server (4173). | ✅ Conforme |
+| **Rimozione Voci Orfane "Frasi Tipo"** | `App.tsx`: Rimozione di `phrase-templates` da chip navigation, macro-aree e routing. | ✅ Conforme |
+
 ## Sprint 4 — Active Company Context & Single Source of Truth Architecture (Settembre 2026)
 
 | Feature / Miglioria | Dettaglio Implementativo | Stato |
@@ -134,6 +144,8 @@ Storico delle feature consegnate, ordinate per fase e priorità.
 | Protocol multi-step → DB | Protocol con Steps JSON nel DB | ✅ |
 | LoginCard refresh | Refresh token + remember me | ✅ |
 | Type visita italiano | Localizzazione completata | ✅ |
+| **GlobalSearchModal.jsx `Stack` ReferenceError** | Aggiunto `Stack` all'import `@mui/material` in `GlobalSearchModal.jsx` — era usato il componente `<Stack>` senza importazione, causando `Uncaught ReferenceError: Stack is not defined` | ✅ Risolto |
+| **GlobalSearchModal doppio click → CartellaSanitaria** | Due bug collegati: (1) `App.tsx` `onSelectWorker` navigava a `medical-visit-stepper` invece di `cartella-sanitaria` quando si selezionava un lavoratore dalla search; (2) `REINTEGRATED_MODULES['cartella-sanitaria']` non passava `employeeId={selectedEmployeeIdForVisit}` a `CartellaSanitariaCenter`, causando la visualizzazione del selector dropdown invece del caricamento automatico della cartella. Aggiunto `useEffect` in `CartellaSanitariaCenter` per sincronizzare i cambiamenti di `employeeIdProp` allo stato interno | ✅ Risolto |
 | Porte dev bloccate dal SO (frontend non si avvia) | `fix-dev-ports.ps1`: diagnostica e sblocca in modo permanente 5173/5279 quando Hyper-V/WSL/Docker (HNS + `winnat`) le riservano come *excluded port range* (Vite `EACCES`, Kestrel socket `10013`). Preflight `-CheckOnly` integrato in `start-medwork.ps1` e `start-medwork.bat`, che interrompe l'avvio con istruzioni chiare invece di fallire in modo opaco | ✅ |
 
 ---

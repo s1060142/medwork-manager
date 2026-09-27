@@ -96,7 +96,7 @@ Cosa funziona oggi, organizzato per modulo.
 
 ## 🏥 Visite Mediche
 
-- `MedicalVisitStepper` — flusso step-by-step (anamnesi → obiettivo → giudizio)
+- `MedicalVisitStepper` — flusso step-by-step (anamnesi → obiettivo → giudizio) con **Checklist Anamnestica Dinamica per Mansione & Rischi (Allegato 3A)**: 7 categorie di rischio (VDT, MMC, Rumore, Chimico, Notturno, Guida/Quota, Generale) con riconoscimento automatico mansione, badge `★ Suggerito`, 1-click apply e check interattivi.
 - **Tunnel 1-Click "Avvia Visita" da Scadenziario**: Avvio immediato visita pre-selezionando lavoratore, azienda e protocollo attivo
 - `MedicalVisitsController` — CRUD completo
 - `MedicalRecordsController` — CRUD completo cartelle sanitarie (Cartella 3A ricollocata sotto Sorveglianza Sanitaria)
