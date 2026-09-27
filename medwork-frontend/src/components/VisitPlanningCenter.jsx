@@ -320,8 +320,26 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
                 planRows.map((row) => {
                   const isSelected = selectedEmpIds.includes(row.employeeId)
                   return (
-                    <TableRow key={`${row.employeeId}-${row.deadline}`} hover selected={isSelected}>
-                      <TableCell padding="checkbox">
+                    <TableRow
+                      key={`${row.employeeId}-${row.deadline}`}
+                      hover
+                      tabIndex={0}
+                      selected={isSelected}
+                      onClick={() => handleToggleRow(row.employeeId)}
+                      onDoubleClick={() => onOpenMedicalVisitCreate && onOpenMedicalVisitCreate(row.employeeId)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          onOpenMedicalVisitCreate && onOpenMedicalVisitCreate(row.employeeId)
+                        }
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      }}
+                    >
+                      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isSelected}
                           onChange={() => handleToggleRow(row.employeeId)}
@@ -346,19 +364,30 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
                       </TableCell>
                       <TableCell>{row.visitType}</TableCell>
                       <TableCell>{formatDate(row.suggestedDate)}</TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Button
                             size="small"
                             variant="contained"
                             color="primary"
                             startIcon={<PlayArrowIcon />}
-                            onClick={() => onOpenMedicalVisitCreate && onOpenMedicalVisitCreate(row.employeeId)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onOpenMedicalVisitCreate && onOpenMedicalVisitCreate(row.employeeId)
+                            }}
                             sx={{ textTransform: 'none' }}
                           >
                             Visita
                           </Button>
-                          <Button size="small" variant="outlined" onClick={() => sendConvocation(row)} sx={{ textTransform: 'none' }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              sendConvocation(row)
+                            }}
+                            sx={{ textTransform: 'none' }}
+                          >
                             Convoca
                           </Button>
                         </Stack>

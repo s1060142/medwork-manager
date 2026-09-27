@@ -164,11 +164,11 @@ function AppointmentsCalendar({ onCreateAppointment, activeCompanyId = '', activ
 
   const filteredVisits = useMemo(() => {
     return normalizedVisits.filter((visit) => {
-      const companyMatch = selectedCompany === 'all' || Number(selectedCompany) === visit.companyId
+      const companyMatch = !activeCompanyId || activeCompanyId === 'all' || Number(activeCompanyId) === visit.companyId
       const typeMatch = selectedType === 'all' || selectedType === visit.category
       return companyMatch && typeMatch
     })
-  }, [normalizedVisits, selectedCompany, selectedType])
+  }, [normalizedVisits, activeCompanyId, selectedType])
 
   const eventsByDay = useMemo(() => {
     return filteredVisits.reduce((accumulator, visit) => {
@@ -220,13 +220,6 @@ function AppointmentsCalendar({ onCreateAppointment, activeCompanyId = '', activ
             </Stack>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-              <Select size="small" value={selectedCompany} onChange={(event) => setSelectedCompany(event.target.value)} sx={{ minWidth: 180 }}>
-                <MenuItem value="all">Tutte le aziende</MenuItem>
-                {companyOptions.map((company) => (
-                  <MenuItem key={company.id} value={company.id}>{company.name}</MenuItem>
-                ))}
-              </Select>
-
               <Select size="small" value={selectedType} onChange={(event) => setSelectedType(event.target.value)} sx={{ minWidth: 180 }}>
                 <MenuItem value="all">Tutti i tipi</MenuItem>
                 <MenuItem value="Medical Visits">Medical Visits</MenuItem>

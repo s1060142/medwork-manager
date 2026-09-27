@@ -25,6 +25,7 @@ import { showNotification } from '../utils/notification'
 function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
   const [vaccinations, setVaccinations] = useState([])
+  const [selectedRowId, setSelectedRowId] = useState(null)
   
   // Dialog state
   const [planningCampaign, setPlanningCampaign] = useState(false)
@@ -85,6 +86,11 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
     }
   }
 
+  const filteredVaccinations = vaccinations.filter((item) => {
+    if (!activeCompanyId || activeCompanyId === 'all') return true
+    return Number(item.employee?.companyId || item.employee?.company?.id) === Number(activeCompanyId)
+  })
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
@@ -119,19 +125,38 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                 <TableRow>
                   <TableCell colSpan={6} align="center">Caricamento...</TableCell>
                 </TableRow>
-              ) : vaccinations.length === 0 ? (
+              ) : filteredVaccinations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">Nessuna vaccinazione programmata.</TableCell>
                 </TableRow>
               ) : (
-                vaccinations.map((item) => {
+                filteredVaccinations.map((item) => {
                   const isMissing = !item.vaccineDate
                   const isDueSoon = item.nextDueDate && new Date(item.nextDueDate) <= new Date(new Date().setMonth(new Date().getMonth() + 2))
                   const statusLabel = isMissing ? 'Missing' : (isDueSoon ? 'Due Soon' : 'Valid')
                   const statusColor = isMissing ? 'error' : (isDueSoon ? 'warning' : 'success')
 
+                  const isSelected = selectedRowId === item.id
                   return (
-                    <TableRow key={item.id} hover>
+                    <TableRow
+                      key={item.id}
+                      hover
+                      tabIndex={0}
+                      selected={isSelected}
+                      onClick={() => setSelectedRowId(item.id)}
+                      onDoubleClick={() => handleOpenRecord(item)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleOpenRecord(item)
+                        }
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      }}
+                    >
                       <TableCell><strong>{item.employee?.company?.name || '-'}</strong></TableCell>
                       <TableCell>{item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : '-'}</TableCell>
                       <TableCell>{item.vaccineName}</TableCell>
@@ -143,8 +168,18 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                           color={statusColor} 
                         />
                       </TableCell>
-                      <TableCell align="right">
-                        <Button size="small" onClick={() => handleOpenRecord(item)}>Registra Somministrazione</Button>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenRecord(item)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                        >
+                          Registra
+                        </Button>
                       </TableCell>
                     </TableRow>
                   )

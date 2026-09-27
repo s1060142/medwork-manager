@@ -6,7 +6,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { it } from 'date-fns/locale'
 import theme from './theme'
 import './index.css'
-import App from './App.jsx'
+import App from './App'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

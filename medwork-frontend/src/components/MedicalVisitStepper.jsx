@@ -6,8 +6,10 @@ import {
   ButtonGroup,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   Divider,
+  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
@@ -32,6 +34,8 @@ import HistoryIcon from '@mui/icons-material/History'
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import DrawIcon from '@mui/icons-material/Draw'
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
 import SignaturePadModal from './SignaturePadModal'
 import { useTextExpander } from '../hooks/useTextExpander'
 import { apiGet, apiSend } from '../services/apiClient'
@@ -87,6 +91,86 @@ const PRESCRIPTION_PRESETS = [
   { category: 'Ambienti & Turni', text: 'Divieto di guida carrelli elevatori e macchine semoventi', type: 'limit' },
   { category: 'Ambienti & Turni', text: 'Esclusione da spazi confinati o a rischio asfissia', type: 'limit' },
   { category: 'Ambienti & Turni', text: 'Esclusione da esposizione a vibrazioni al corpo intero / mano-braccio', type: 'limit' },
+]
+
+// Pre-compiled Clinical Checklists by Mansione & Occupational Risk (D.Lgs. 81/08 Allegato 3A)
+const MANSIONE_CHECKLISTS = [
+  {
+    id: 'vdt',
+    label: 'Videoterminale (VDT)',
+    icon: '💻',
+    keywords: ['vdt', 'impieg', 'uffic', 'amministrat', 'contab', 'programm', 'svilupp', 'tecnic', 'desk', 'segret'],
+    items: [
+      { id: 'vdt_vis', text: 'Assenza astenopia, cefalea e disturbi visivi legati all\'uso di videoterminali.', field: 'workHistory' },
+      { id: 'vdt_post', text: 'Assenza rachialgie, cervicobrachialgie o disturbi muscolo-scheletrici posturali.', field: 'workHistory' },
+      { id: 'vdt_erg', text: 'Postazione ergonomicamente adeguata; rispetto pause 15 min ogni 120 min di lavoro a VDT.', field: 'workHistory' },
+    ],
+  },
+  {
+    id: 'mmc',
+    label: 'Movimentazione Carichi (MMC)',
+    icon: '📦',
+    keywords: ['mmc', 'magazzin', 'logist', 'operai', 'produz', 'montag', 'facchin', 'caric', 'edile', 'movimentaz'],
+    items: [
+      { id: 'mmc_rach', text: 'Negativa per lombalgie acute o croniche, sciatalgie o disturbi del rachide da sovraccarico biomeccanico.', field: 'workHistory' },
+      { id: 'mmc_ernie', text: 'Nessun pregresso intervento chirurgico di ernia discale o patologie discali note.', field: 'personalHistory' },
+      { id: 'mmc_tec', text: 'Applicazione corretta delle tecniche di movimentazione manuale dei carichi e ausili meccanici.', field: 'workHistory' },
+    ],
+  },
+  {
+    id: 'rumore',
+    label: 'Rumore & Vibrazioni',
+    icon: '🔊',
+    keywords: ['rumor', 'vibraz', 'officin', 'carpenter', 'meccanic', 'fonder', 'cantier', 'stampag'],
+    items: [
+      { id: 'rum_ipo', text: 'Assenza acufeni, sensazione di ovattamento auricolare o ipoacusia soggettiva riferita.', field: 'personalHistory' },
+      { id: 'rum_dpi', text: 'Uso costante e regolare dei DPI uditivi (otoprotettori SNR adeguato) nelle aree rumorose.', field: 'workHistory' },
+      { id: 'vib_vasc', text: 'Assenza disturbi angio-neurologici agli arti superiori (fenomeno di Raynaud / HAVS).', field: 'personalHistory' },
+    ],
+  },
+  {
+    id: 'chimico',
+    label: 'Agenti Chimici & Polveri',
+    icon: '🧪',
+    keywords: ['chimic', 'polver', 'fumi', 'vernic', 'saldat', 'laborat', 'puliz', 'lavagg', 'solvent'],
+    items: [
+      { id: 'ch_resp', text: 'Assenza sintomi respiratori, tosse cronica, dispnea o iperreattività bronchiale professionale.', field: 'personalHistory' },
+      { id: 'ch_derma', text: 'Cute integra: assenza dermatiti da contatto, eczemi o reazioni allergiche occupazionali.', field: 'personalHistory' },
+      { id: 'ch_dpi', text: 'Uso regolare dei DPI per vie respiratorie (maschere filtranti) e guanti di protezione chimica.', field: 'workHistory' },
+    ],
+  },
+  {
+    id: 'notturno',
+    label: 'Lavoro Notturno & Turni',
+    icon: '🌙',
+    keywords: ['notte', 'notturn', 'turnist', 'vigil', 'guard', 'h24'],
+    items: [
+      { id: 'notte_sonno', text: 'Qualità del sonno adeguata, assenza sindrome da disadattamento al lavoro a turni/notturno.', field: 'personalHistory' },
+      { id: 'notte_gastro', text: 'Assenza disturbi gastrointestinali, dispepsia o alterazioni metaboliche correlate ai turni.', field: 'personalHistory' },
+    ],
+  },
+  {
+    id: 'guida',
+    label: 'Guida & Macchine / Quota',
+    icon: '🚜',
+    keywords: ['guid', 'carrell', 'mulett', 'autista', 'autocarro', 'quota', 'pontegg', 'patente'],
+    items: [
+      { id: 'gui_vert', text: 'Assenza vertigini, sincopi, lipotimie, crisi comiziali o disturbi dell\'equilibrio.', field: 'personalHistory' },
+      { id: 'gui_farm', text: 'Non assunzione di farmaci sedativi, psicotropi né consumo di alcolici/sostanze incompatibili.', field: 'personalHistory' },
+      { id: 'gui_vis', text: 'Integrità visiva e coordinazione neuromotoria idonee alla conduzione di mezzi/lavoro in quota.', field: 'workHistory' },
+    ],
+  },
+  {
+    id: 'generale',
+    label: 'Negatività Generale (Tutte)',
+    icon: '🩺',
+    keywords: [],
+    items: [
+      { id: 'gen_rem', text: 'Anamnesi patologica remota e prossima negativa per patologie croniche o degenerative in atto.', field: 'personalHistory' },
+      { id: 'gen_farm', text: 'Nessuna terapia farmacologica cronica o assunzione continuativa di farmaci.', field: 'personalHistory' },
+      { id: 'gen_abit', text: 'Abitudini di vita regolari; non fumatore / attività fisica periodica.', field: 'personalHistory' },
+    ],
+  },
 ]
 
 const initialData = {
@@ -146,7 +230,7 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
   const [lastVisitPreview, setLastVisitPreview] = useState(null)
   const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
   const [copyingVisit, setCopyingVisit] = useState(false)
-  const [phraseTemplates, setPhraseTemplates] = useState([])
+  const [selectedMansioneCat, setSelectedMansioneCat] = useState('vdt')
 
   const visibleEmployees = useMemo(() => {
     if (!activeCompanyId || activeCompanyId === 'all') return employees
@@ -208,10 +292,6 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
         setDoctors(Array.isArray(doctorData) ? doctorData : [])
       })
       .catch(() => {})
-      
-    apiGet('/api/master-data/phrase-templates')
-      .then(data => setPhraseTemplates(Array.isArray(data) ? data : []))
-      .catch(() => {})
   }, [])
 
   // Auto-fetch context, last visit and self-service responses when employee changes
@@ -254,6 +334,86 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       })
       .catch(() => setSelfServiceAnamnesis(null))
   }, [formData.employeeId, employees])
+
+  // Current employee and detected job role
+  const currentEmployee = useMemo(() => {
+    return employees.find(e => Number(e.id) === Number(formData.employeeId))
+  }, [employees, formData.employeeId])
+
+  const detectedJobRole = useMemo(() => {
+    return employeeContext?.jobRole || currentEmployee?.jobRole || ''
+  }, [employeeContext, currentEmployee])
+
+  // Matched category based on job role
+  const matchedMansioneId = useMemo(() => {
+    if (!detectedJobRole) return null
+    const roleLower = detectedJobRole.toLowerCase()
+    const match = MANSIONE_CHECKLISTS.find(cat =>
+      cat.keywords.length > 0 && cat.keywords.some(k => roleLower.includes(k))
+    )
+    return match ? match.id : null
+  }, [detectedJobRole])
+
+  // Auto-select category when worker changes
+  useEffect(() => {
+    if (matchedMansioneId) {
+      setSelectedMansioneCat(matchedMansioneId)
+    }
+  }, [matchedMansioneId])
+
+  const activeChecklist = useMemo(() => {
+    return MANSIONE_CHECKLISTS.find(c => c.id === selectedMansioneCat) || MANSIONE_CHECKLISTS[0]
+  }, [selectedMansioneCat])
+
+  const isItemChecked = (item) => {
+    const currentVal = formData[item.field] || ''
+    return currentVal.includes(item.text)
+  }
+
+  const toggleChecklistItem = (item) => {
+    const currentVal = formData[item.field] || ''
+    if (currentVal.includes(item.text)) {
+      // Remove it cleanly
+      const updated = currentVal
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && l !== item.text.trim())
+        .join('\n')
+      setField(item.field, updated)
+    } else {
+      // Append it
+      const updated = currentVal ? `${currentVal}\n${item.text}` : item.text
+      setField(item.field, updated)
+    }
+  }
+
+  const handleApplyAllCategory = (catId) => {
+    const cat = MANSIONE_CHECKLISTS.find(c => c.id === catId)
+    if (!cat) return
+
+    let newWorkHistory = formData.workHistory || ''
+    let newPersonalHistory = formData.personalHistory || ''
+
+    cat.items.forEach(item => {
+      if (item.field === 'workHistory') {
+        if (!newWorkHistory.includes(item.text)) {
+          newWorkHistory = newWorkHistory ? `${newWorkHistory}\n${item.text}` : item.text
+        }
+      } else if (item.field === 'personalHistory') {
+        if (!newPersonalHistory.includes(item.text)) {
+          newPersonalHistory = newPersonalHistory ? `${newPersonalHistory}\n${item.text}` : item.text
+        }
+      }
+    })
+
+    setFormData(prev => ({
+      ...prev,
+      workHistory: newWorkHistory,
+      personalHistory: newPersonalHistory,
+    }))
+    setSuccess(`✓ Applicati i riscontri clinici standard per ${cat.label}`)
+    setTimeout(() => setSuccess(''), 4000)
+  }
 
   // Auto-fetch deadline preview
   useEffect(() => {
@@ -309,6 +469,19 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
     return { activeText: activeLines.join('\n'), sunsetItems }
   }
 
+  const handleEmployeeChange = (newEmployeeId) => {
+    const emp = employees.find((e) => Number(e.id) === Number(newEmployeeId))
+    setFormData({
+      ...initialData,
+      employeeId: newEmployeeId ? String(newEmployeeId) : '',
+      visitDate: formData.visitDate || initialData.visitDate,
+      doctorId: emp?.companyDoctorId || formData.doctorId || initialData.doctorId,
+    })
+    setActiveStep(0)
+    setError('')
+    setSuccess('')
+  }
+
   // 1. SMART CLONE PREVIOUS VISIT WITH INTELLIGENT TEMPORAL FILTER
   const handleCopyLastVisit = async () => {
     if (!formData.employeeId) return
@@ -323,16 +496,16 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
 
         setFormData(prev => ({
           ...prev,
-          workHistory: data.workHistory || prev.workHistory,
-          personalHistory: data.personalHistory || prev.personalHistory,
-          familyHistory: data.familyHistory || prev.familyHistory,
-          remotePathology: data.remotePathology || prev.remotePathology,
-          recentPathology: data.recentPathology || prev.recentPathology,
-          targetOrgans: data.targetOrgans || prev.targetOrgans || 'Udito, apparato respiratorio, rachide',
-          objectiveExam: data.objectiveExam || prev.objectiveExam,
-          prescriptions: prescFilter.activeText || prev.prescriptions,
-          limitations: limitFilter.activeText || prev.limitations,
-          clinicalNotes: data.clinicalNotes ? `${prev.clinicalNotes ? prev.clinicalNotes + '\n' : ''}[Da visita prec.]: ${data.clinicalNotes}` : prev.clinicalNotes,
+          workHistory: data.workHistory || '',
+          personalHistory: data.personalHistory || '',
+          familyHistory: data.familyHistory || '',
+          remotePathology: data.remotePathology || '',
+          recentPathology: data.recentPathology || '',
+          targetOrgans: data.targetOrgans || 'Udito, apparato respiratorio, rachide',
+          objectiveExam: data.objectiveExam || '',
+          prescriptions: prescFilter.activeText || '',
+          limitations: limitFilter.activeText || '',
+          clinicalNotes: data.clinicalNotes ? `[Da visita prec.]: ${data.clinicalNotes}` : '',
         }))
 
         if (allSunsets.length > 0) {
@@ -720,7 +893,7 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                     label="Lavoratore in Visita *"
                     size="small"
                     value={formData.employeeId}
-                    onChange={(event) => setField('employeeId', event.target.value)}
+                    onChange={(event) => handleEmployeeChange(event.target.value)}
                     sx={{ gridColumn: { xs: '1 / -1', md: 'span 2' } }}
                   >
                     {visibleEmployees.map((item) => (
@@ -779,36 +952,125 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
 
                 <Divider sx={{ my: 1 }} />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <FlashOnIcon color="primary" fontSize="small" />
-                    <Typography variant="subtitle2" color="primary" fontWeight={700}>
-                      Frasi Rapide & Template Anamnestici
-                    </Typography>
+                {/* CHECKLIST ANAMNESTICA PER MANSIONE E RISCHI (D.Lgs. 81/08 Allegato 3A) */}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: '#f8fafc',
+                    borderColor: '#cbd5e1',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} justifyContent="space-between" spacing={1.5} sx={{ mb: 1.5 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <PlaylistAddCheckIcon color="primary" />
+                      <Box>
+                        <Typography variant="subtitle2" color="primary.main" fontWeight={700}>
+                          Checklist Anamnestica per Mansione & Rischi (Allegato 3A)
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Seleziona o applica i riscontri clinici standard per mansione senza dover digitare testo.
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+                      {detectedJobRole && (
+                        <Chip
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          label={`Mansione: ${detectedJobRole}`}
+                          icon={<AssignmentTurnedInIcon fontSize="small" />}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<FlashOnIcon />}
+                        onClick={() => handleApplyAllCategory(selectedMansioneCat)}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        Applica check standard ({activeChecklist?.label?.split(' ')[0] || 'Categoria'})
+                      </Button>
+                    </Stack>
                   </Stack>
-                  <TextField
-                    select
-                    size="small"
-                    label="Inserisci template anamnestico rapido..."
-                    value=""
-                    onChange={(e) => {
-                      if (!e.target.value) return
-                      const phrase = phraseTemplates.find(p => p.id === e.target.value)
-                      if (phrase) {
-                        const targetField = phrase.category === 'AnamnesiLavorativa' ? 'workHistory' : 
-                                            phrase.category === 'AnamnesiFamiliare' ? 'familyHistory' : 
-                                            'personalHistory'
-                        setField(targetField, formData[targetField] ? `${formData[targetField]}\n${phrase.text}` : phrase.text)
-                      }
-                    }}
-                    sx={{ minWidth: 320 }}
-                  >
-                    <MenuItem value=""><em>Seleziona formula clinica...</em></MenuItem>
-                    {phraseTemplates.map(p => (
-                      <MenuItem key={p.id} value={p.id}>[{p.category}] {p.text.substring(0, 50)}...</MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
+
+                  {/* Category Selector Chips */}
+                  <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap sx={{ mb: 1.5 }}>
+                    {MANSIONE_CHECKLISTS.map((cat) => {
+                      const isSelected = selectedMansioneCat === cat.id
+                      const isSuggested = matchedMansioneId === cat.id
+                      return (
+                        <Chip
+                          key={cat.id}
+                          label={`${cat.icon} ${cat.label}${isSuggested ? ' ★ Suggerito' : ''}`}
+                          onClick={() => setSelectedMansioneCat(cat.id)}
+                          color={isSelected ? 'primary' : isSuggested ? 'info' : 'default'}
+                          variant={isSelected ? 'filled' : 'outlined'}
+                          size="small"
+                          sx={{
+                            fontWeight: isSelected || isSuggested ? 700 : 500,
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        />
+                      )
+                    })}
+                  </Stack>
+
+                  {/* Checklist Items */}
+                  <Grid container spacing={1}>
+                    {activeChecklist?.items?.map((item) => {
+                      const checked = isItemChecked(item)
+                      return (
+                        <Grid item xs={12} md={4} key={item.id}>
+                          <Paper
+                            variant="outlined"
+                            onClick={() => toggleChecklistItem(item)}
+                            sx={{
+                              p: 1.2,
+                              height: '100%',
+                              borderRadius: 1.5,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: 1,
+                              bgcolor: checked ? '#f0fdf4' : '#ffffff',
+                              borderColor: checked ? '#86efac' : '#e2e8f0',
+                              transition: 'all 0.15s ease',
+                              '&:hover': {
+                                bgcolor: checked ? '#dcfce7' : '#f1f5f9',
+                                borderColor: checked ? '#4ade80' : '#cbd5e1',
+                              },
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={checked}
+                              onChange={() => toggleChecklistItem(item)}
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{ p: 0.25, mt: 0.2 }}
+                              color="success"
+                            />
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="body2" sx={{ fontSize: '0.8125rem', fontWeight: checked ? 600 : 400, color: checked ? '#15803d' : 'text.primary', lineHeight: 1.3 }}>
+                                {item.text}
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                                Destinazione: {item.field === 'workHistory' ? 'Anamnesi Lavorativa' : 'Anamnesi Personale'}
+                              </Typography>
+                            </Box>
+                          </Paper>
+                        </Grid>
+                      )
+                    })}
+                  </Grid>
+                </Paper>
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>

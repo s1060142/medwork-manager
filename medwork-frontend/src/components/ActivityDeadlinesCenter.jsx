@@ -24,6 +24,7 @@ import { showNotification } from '../utils/notification'
 function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
   const [activities, setActivities] = useState([])
+  const [selectedRowId, setSelectedRowId] = useState(null)
   
   // Execution Dialog state
   const [executingActivity, setExecutingActivity] = useState(null)
@@ -73,6 +74,11 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
     }
   }
 
+  const filteredActivities = activities.filter((item) => {
+    if (!activeCompanyId || activeCompanyId === 'all') return true
+    return Number(item.companyId || item.company?.id) === Number(activeCompanyId)
+  })
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
@@ -106,32 +112,63 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
                 <TableRow>
                   <TableCell colSpan={5} align="center">Caricamento...</TableCell>
                 </TableRow>
-              ) : activities.length === 0 ? (
+              ) : filteredActivities.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align="center">Nessuna attività programmata.</TableCell>
                 </TableRow>
               ) : (
-                activities.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell><strong>{item.activityType}</strong></TableCell>
-                    <TableCell>{item.company?.name || '-'}</TableCell>
-                    <TableCell>{new Date(item.deadlineDate).toLocaleDateString('it-IT')}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        size="small" 
-                        label={item.status} 
-                        color={item.status === 'Done' ? 'success' : item.status === 'In Progress' ? 'primary' : 'default'} 
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      {item.status !== 'Done' ? (
-                        <Button size="small" onClick={() => handleOpenExecute(item)}>Esegui</Button>
-                      ) : (
-                        <Button size="small" disabled>Completata</Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredActivities.map((item) => {
+                  const isSelected = selectedRowId === item.id
+                  return (
+                    <TableRow
+                      key={item.id}
+                      hover
+                      tabIndex={0}
+                      selected={isSelected}
+                      onClick={() => setSelectedRowId(item.id)}
+                      onDoubleClick={() => handleOpenExecute(item)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleOpenExecute(item)
+                        }
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      }}
+                    >
+                      <TableCell><strong>{item.activityType}</strong></TableCell>
+                      <TableCell>{item.company?.name || '-'}</TableCell>
+                      <TableCell>{new Date(item.deadlineDate).toLocaleDateString('it-IT')}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          size="small" 
+                          label={item.status} 
+                          color={item.status === 'Done' ? 'success' : item.status === 'In Progress' ? 'primary' : 'default'} 
+                        />
+                      </TableCell>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        {item.status !== 'Done' ? (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenExecute(item)
+                            }}
+                            sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                          >
+                            Esegui
+                          </Button>
+                        ) : (
+                          <Button size="small" disabled sx={{ fontSize: 12, px: 1 }}>Completata</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>

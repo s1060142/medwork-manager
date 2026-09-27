@@ -4,14 +4,15 @@
 
 Storico delle feature consegnate, ordinate per fase e priorità.
 
-## Sprint 4 — Active Company Context & Clinical Scope Architecture (Settembre 2026)
+## Sprint 4 — Active Company Context & Single Source of Truth Architecture (Settembre 2026)
 
 | Feature / Miglioria | Dettaglio Implementativo | Stato |
 |---|---|---|
 | **Global Active Company Selector (Topbar)** | `App.tsx`: Selettore unificato `🏢 Azienda:` con supporto per `🌐 Tutte le Aziende (Globale)` e singola azienda con visualizzazione sedi operative collegate. | ✅ Conforme |
 | **Active Branch / Sede Selector** | `App.tsx`: Selettore dinamico sede (`📍 Tutte le Sedi` o specifica sede) che si attiva quando un'azienda è selezionata. | ✅ Conforme |
 | **Persistent Clinical Context Banner** | `App.tsx`: Banner sticky ad alta visibilità presente in testa a ogni pagina con indicazione di Ragione Sociale, Sede, stato di isolamento e shortcut "Torna a Vista Globale". | ✅ Conforme |
-| **Full Context Propagation across 100% of Screens** | Propagazione di `activeCompanyId` e `activeBranchId` su tutti i moduli: `WorkersCenter`, `GiudizioIdoneitaCenter`, `CartellaSanitariaCenter`, `MedicalVisitStepper`, `ReportsCenter`, `Allegato3BCenter`, `Dashboard`, `DashboardMedico`, `DashboardScadenze`, `ComplianceCenter`, `RecallCampaignsCenter`, `AppointmentsCalendar`, `BillingCenter`, e tutte le viste `CrudEntityView`. | ✅ Conforme |
+| **Removal of Duplicate Local Filtering** | Rimossi tutti i selettori/filtri locali ridondanti di azienda in presenza di contesto attivo (`WorkersCenter`, `GiudizioIdoneitaCenter`, `ReportsCenter`, `Allegato3BCenter`, `RecallCampaignsCenter`, `AppointmentsCalendar`, `SiteVisitDeadlinesCenter`, `EmployerPortalView`). L'azienda attiva è ora l'unica fonte di verità (Single Source of Truth). | ✅ Conforme |
+| **Full Context Propagation across 100% of Screens** | Propagazione e scoping automatico di lavoratori, visite, giudizi, scadenze, campagne e reportistica su tutti i moduli (`WorkersCenter`, `GiudizioIdoneitaCenter`, `CartellaSanitariaCenter`, `MedicalVisitStepper`, `ReportsCenter`, `Allegato3BCenter`, `Dashboard`, `DashboardMedico`, `DashboardScadenze`, `ComplianceCenter`, `RecallCampaignsCenter`, `AppointmentsCalendar`, `BillingCenter`, `ActivityDeadlinesCenter`, `NominationsDeadlinesCenter`, `VaccinationDeadlinesCenter`, `SiteVisitDeadlinesCenter`, `EmployerPortalView` e viste `CrudEntityView`). | ✅ Conforme |
 | **Backend Query Filtering Alignment** | `DoctorCrudController.cs`: Aggiunto parametro query `companyId` agli endpoint `dashboard`, `calendar-events`, `compliance-alerts`, consentendo il calcolo automatico di KPI, calendari e allerte scoped all'azienda attiva. | ✅ Conforme |
 | **Context Persistence** | Persistenza automatica di `activeCompanyId` e `activeBranchId` in `localStorage` (`medwork.runtime.settings`) con ripristino istantaneo al ricaricamento o login. | ✅ Conforme |
 

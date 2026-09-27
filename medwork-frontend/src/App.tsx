@@ -117,32 +117,18 @@ const LEGACY_MODULE_ALIASES = {
   'batch-signature': 'giudizio-idoneita',
   'firma-massiva': 'giudizio-idoneita',
   'visit-planning': 'schedules',
-  'doctor-dashboard': 'medical-dashboard',
-}
-
-const COMPANY_TABS = [
-  { key: 'groups', label: 'Gruppi Aziendali' },
-  { key: 'registry', label: 'Anagrafica Lavoratori' },
-  { key: 'checklist', label: 'Protocolli Sanitari' },
-  { key: 'activities', label: 'Pianificazione Visite' },
-]
-
-const COMPANY_TAB_TO_MODULE = {
-  groups: 'companies',
-  registry: 'employees',
-  checklist: 'protocols',
-  activities: 'schedules',
+  'doctor-dashboard': 'dashboard',
+  'medical-dashboard': 'dashboard',
+  'employees-crud': 'employees',
 }
 
 const MODULE_ITEMS = [
   { key: 'dashboard', label: 'Il Mio Giorno' },
-  { key: 'medical-dashboard', label: 'Dashboard Medico' },
   { key: 'home', label: 'Dashboard Scadenze' },
   { key: 'companies', label: 'Aziende', entityKey: 'companies' },
   { key: 'company-groups', label: 'Gruppi Aziendali', entityKey: 'company-groups' },
   { key: 'company-contacts', label: 'Figure Aziendali', entityKey: 'company-contacts' },
   { key: 'employees', label: 'Lavoratori' },
-  { key: 'employees-crud', label: 'Lavoratori (CRUD)', entityKey: 'employees' },
   { key: 'protocols', label: 'Protocolli' },
   { key: 'protocols-registry', label: 'Registro Protocolli', entityKey: 'protocols-registry' },
   { key: 'personal-protocols', label: 'Protocolli Personali', entityKey: 'personal-protocols' },
@@ -188,19 +174,18 @@ const MODULE_ITEMS = [
   { key: 'company-groups-workspace', label: 'Workspace Gruppi' },
   { key: 'medical-staff', label: 'Personale Sanitario' },
   { key: 'migration', label: 'Migrazione & Import' },
-  { key: 'phrase-templates', label: 'Frasi Tipo' },
   { key: 'questionnaires', label: 'Questionari' },
   { key: 'employer-portal', label: 'Portale RSPP/DdL' },
 ]
 
 const AREA_MODULE_KEYS = {
-  'health-surveillance': ['dashboard', 'medical-dashboard', 'medical-visit-stepper', 'appointments-calendar', 'giudizio-idoneita', 'cartella-sanitaria', 'medical-records', 'medical-visits', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'firma-grafometrica'],
+  'health-surveillance': ['dashboard', 'medical-visit-stepper', 'appointments-calendar', 'giudizio-idoneita', 'cartella-sanitaria', 'medical-records', 'medical-visits', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'firma-grafometrica'],
   'company-management': ['companies', 'company-groups-workspace', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
-  'workers-management': ['employees', 'employees-crud', 'employee-risks', 'medical-records', 'medical-visits'],
-  schedule: ['home', 'agenda', 'appointments', 'schedules', 'appointments-calendar', 'recall-campaigns', 'activity-deadlines', 'nominations', 'vaccination-deadlines', 'doctor-availabilities', 'alert-multicanale', 'notification-logs'],
+  'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
+  schedule: ['home', 'schedules', 'agenda', 'appointments', 'appointments-calendar', 'recall-campaigns', 'activity-deadlines', 'nominations', 'vaccination-deadlines', 'doctor-availabilities', 'alert-multicanale', 'notification-logs'],
   analysis: ['reporting', 'compliance', 'allegato-3b', 'analytics', 'audit'],
   'employer-portal': ['employer-portal'],
-  administration: ['billing', 'medical-staff', 'migration', 'phrase-templates', 'questionnaires', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
+  administration: ['billing', 'medical-staff', 'migration', 'questionnaires', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
 }
 
 const AREA_DEFAULT_MODULE = {
@@ -217,7 +202,6 @@ function App() {
   const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
   const [role, setRole] = useState(() => localStorage.getItem('role') || '')
   const [selectedArea, setSelectedArea] = useState(() => (role === 'Doctor' ? 'health-surveillance' : 'company-management'))
-  const [selectedCompanyTab, setSelectedCompanyTab] = useState('groups')
   const [selectedModuleKey, setSelectedModuleKey] = useState(() => (role === 'Doctor' ? 'dashboard' : 'companies'))
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
   const [selectedEmployeeIdForVisit, setSelectedEmployeeIdForVisit] = useState(null)
@@ -233,7 +217,25 @@ function App() {
 
     apiGet('/api/master-data/companies')
       .then((data) => {
-        if (Array.isArray(data)) setCompaniesList(data)
+        if (Array.isArray(data)) {
+          setCompaniesList(data)
+          if (data.length > 0) {
+            setActiveCompanyId((current) => {
+              if (current && data.some((c) => String(c.id) === String(current))) {
+                return current
+              }
+              const defaultCompanyId = String(data[0].id)
+              try {
+                const existing = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+                localStorage.setItem(
+                  SETTINGS_STORAGE_KEY,
+                  JSON.stringify({ ...existing, activeCompanyId: defaultCompanyId })
+                )
+              } catch {}
+              return defaultCompanyId
+            })
+          }
+        }
       })
       .catch((error) => {
         if (error?.status === 401) {
@@ -298,6 +300,17 @@ function App() {
     return () => window.removeEventListener('medwork:notify', handler)
   }, [])
 
+  // Global auth expiration listener — reset invalid session on 401
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setToken('')
+      setRole('')
+      setSearchOpen(false)
+    }
+    window.addEventListener('medwork:auth-expired', handleAuthExpired)
+    return () => window.removeEventListener('medwork:auth-expired', handleAuthExpired)
+  }, [])
+
   const handleToastClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return
     setToast((t) => ({ ...t, open: false }))
@@ -321,7 +334,6 @@ function App() {
       'medical-dashboard',
       'home',
       'employees',
-      'employees-crud',
       'protocols',
       'protocols-registry',
       'personal-protocols',
@@ -370,6 +382,21 @@ function App() {
       setSelectedArea('company-management')
       setSelectedModuleKey('companies')
     }
+    apiGet('/api/master-data/companies')
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const defaultCompanyId = String(data[0].id)
+          setActiveCompanyId(defaultCompanyId)
+          try {
+            const existing = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}')
+            localStorage.setItem(
+              SETTINGS_STORAGE_KEY,
+              JSON.stringify({ ...existing, activeCompanyId: defaultCompanyId })
+            )
+          } catch {}
+        }
+      })
+      .catch(() => {})
     appendAuditEvent({ module: 'Auth', action: 'Login', detail: userRole })
   }
 
@@ -380,7 +407,6 @@ function App() {
     setToken('')
     setRole('')
     setSelectedArea('company-management')
-    setSelectedCompanyTab('groups')
     setSelectedModuleKey('companies')
     setQuickCreateRequest(null)
     setSelectedEmployeeIdForVisit(null)
@@ -394,9 +420,6 @@ function App() {
   const handleAreaNavigation = (nextArea) => {
     setSelectedArea(nextArea)
     setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
-    if (nextArea === 'company-management') {
-      setSelectedCompanyTab('groups')
-    }
     appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
   }
 
@@ -460,7 +483,6 @@ function App() {
     'company-groups-workspace': () => <CompanyGroupsCenter />,
     'medical-staff': () => <MedicalStaffCenter />,
     migration: () => <MigrationCenter />,
-    'phrase-templates': () => <PhraseTemplatesCenter />,
     questionnaires: () => <QuestionnairesCenter />,
     'employer-portal': () => <EmployerPortalView companyId={activeCompanyId} />,
   }
@@ -500,7 +522,10 @@ function App() {
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
           onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
-          onOpenEmployeeCreate={() => setSelectedModuleKey('employees-crud')}
+          onOpenEmployeeCreate={() => {
+            setSelectedArea('workers-management')
+            setSelectedModuleKey('employees')
+          }}
           onOpenReports={() => setSelectedModuleKey('reporting')}
         />
       )
@@ -519,25 +544,19 @@ function App() {
       )
     }
 
-    if (moduleKey === 'employees') {
+    if (moduleKey === 'employees' || moduleKey === 'employees-crud') {
       return (
         <WorkersCenter
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
-          onOpenEmployeeCreate={() => setQuickCreateRequest({ entityKey: 'employees', token: Date.now() })}
-        />
-      )
-    }
-
-    if (moduleKey === 'employees-crud') {
-      return (
-        <CrudEntityView
-          config={ENTITY_BY_KEY.employees}
-          currentRole={role}
-          activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
-          externalCreateToken={quickCreateRequest?.entityKey === 'employees' ? quickCreateRequest.token : 0}
-          onExternalCreateConsumed={handleQuickCreateConsumed}
+          onOpenMedicalVisitCreate={(employeeId) => {
+            setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
+          onOpenEmployeeProfile={(emp) => {
+            setSelectedEmployeeIdForVisit(emp?.id ? String(emp.id) : null)
+            setSelectedModuleKey('cartella-sanitaria')
+          }}
         />
       )
     }
@@ -608,35 +627,6 @@ function App() {
   }
 
   const renderWorkspaceContent = () => {
-    const companyMode =
-      selectedArea === 'company-management' &&
-      Object.values(COMPANY_TAB_TO_MODULE).includes(selectedModuleKey)
-
-    if (companyMode) {
-      return (
-        <Box className="legacy-workspace-card">
-          <Box className="legacy-tab-row">
-            {COMPANY_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`legacy-tab ${selectedCompanyTab === tab.key ? 'is-active' : ''}`}
-                onClick={() => {
-                  const moduleKey = COMPANY_TAB_TO_MODULE[tab.key]
-                  setSelectedCompanyTab(tab.key)
-                  setSelectedModuleKey(moduleKey)
-                  appendAuditEvent({ module: 'Navigation', action: 'Open', detail: `company-tab:${tab.key}` })
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </Box>
-          <Box className="legacy-content-area">{renderModuleContent(selectedModuleKey)}</Box>
-        </Box>
-      )
-    }
-
     return renderModuleContent(selectedModuleKey)
   }
 
@@ -690,7 +680,7 @@ function App() {
               </Box>
 
               {/* CENTER CONTEXT SELECTOR */}
-              <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   🏢 Azienda:
                 </Typography>
@@ -955,10 +945,6 @@ function App() {
                           className={`mw-chip ${selectedModuleKey === item.key ? 'is-active' : ''}`}
                           onClick={() => {
                             setSelectedModuleKey(item.key)
-                            const matchingTab = Object.entries(COMPANY_TAB_TO_MODULE).find(([, value]) => value === item.key)?.[0]
-                            if (matchingTab) {
-                              setSelectedCompanyTab(matchingTab)
-                            }
                             appendAuditEvent({ module: 'Navigation', action: 'Open', detail: item.key })
                           }}
                         >

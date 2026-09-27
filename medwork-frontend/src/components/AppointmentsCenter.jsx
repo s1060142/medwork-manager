@@ -25,6 +25,7 @@ import { showNotification } from '../utils/notification'
 function AppointmentsCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
   const [appointments, setAppointments] = useState([])
+  const [selectedRowId, setSelectedRowId] = useState(null)
   
   // Management Dialog state
   const [managingSlot, setManagingSlot] = useState(null)
@@ -91,6 +92,11 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
     }
   }
 
+  const filteredAppointments = (appointments || []).filter((item) => {
+    if (!activeCompanyId || activeCompanyId === 'all') return true
+    return Number(item.companyId || item.company?.id) === Number(activeCompanyId)
+  })
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
@@ -125,29 +131,60 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
                 <TableRow>
                   <TableCell colSpan={6} align="center">Caricamento...</TableCell>
                 </TableRow>
-              ) : appointments.length === 0 ? (
+              ) : filteredAppointments.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">Nessun slot disponibile.</TableCell>
                 </TableRow>
               ) : (
-                appointments.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell><strong>{new Date(item.startTime).toLocaleDateString('it-IT')}</strong></TableCell>
-                    <TableCell>{new Date(item.startTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})} - {new Date(item.endTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</TableCell>
-                    <TableCell>{item.company?.name || '-'}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        size="small" 
-                        label={item.status} 
-                        color={item.status === 'Booked' ? 'success' : item.status === 'Pending' ? 'warning' : 'default'} 
-                      />
-                    </TableCell>
-                    <TableCell>{item.bookedSlots}/{item.totalSlots}</TableCell>
-                    <TableCell align="right">
-                      <Button size="small" onClick={() => handleOpenManage(item)}>Gestisci</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredAppointments.map((item) => {
+                  const isSelected = selectedRowId === item.id
+                  return (
+                    <TableRow
+                      key={item.id}
+                      hover
+                      tabIndex={0}
+                      selected={isSelected}
+                      onClick={() => setSelectedRowId(item.id)}
+                      onDoubleClick={() => handleOpenManage(item)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleOpenManage(item)
+                        }
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      }}
+                    >
+                      <TableCell><strong>{new Date(item.startTime).toLocaleDateString('it-IT')}</strong></TableCell>
+                      <TableCell>{new Date(item.startTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})} - {new Date(item.endTime).toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}</TableCell>
+                      <TableCell>{item.company?.name || '-'}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          size="small" 
+                          label={item.status} 
+                          color={item.status === 'Booked' ? 'success' : item.status === 'Pending' ? 'warning' : 'default'} 
+                        />
+                      </TableCell>
+                      <TableCell>{item.bookedSlots}/{item.totalSlots}</TableCell>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenManage(item)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                        >
+                          Gestisci
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>

@@ -8,6 +8,7 @@ async function fetchWithRefresh(url: string, config: RequestInit) {
   let response = await fetch(url, config)
   
   if (response.status === 401) {
+    let refreshed = false
     try {
       const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
         method: 'POST',
@@ -24,11 +25,23 @@ async function fetchWithRefresh(url: string, config: RequestInit) {
               (config.headers as Record<string, string>)['Authorization'] = `Bearer ${data.accessToken}`
             }
             response = await fetch(url, config)
+            if (response.status !== 401) {
+              refreshed = true
+            }
           }
         }
       }
     } catch (e) {
       console.error('Auto-refresh failed', e)
+    }
+
+    if (!refreshed && response.status === 401) {
+      // Clean invalid token and notify app to return to login screen
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('role')
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('medwork:auth-expired'))
+      }
     }
   }
   return response

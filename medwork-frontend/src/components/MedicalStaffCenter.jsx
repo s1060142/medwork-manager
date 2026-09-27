@@ -100,6 +100,7 @@ export default function MedicalStaffCenter() {
   const [onlyActive, setOnlyActive] = useState(true)
 
   // Dialogs
+  const [selectedRowId, setSelectedRowId] = useState(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [absenceDialogOpen, setAbsenceDialogOpen] = useState(false)
@@ -599,19 +600,40 @@ export default function MedicalStaffCenter() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    staffList.map((staff) => (
-                      <TableRow key={staff.id} hover sx={{ opacity: staff.isActive ? 1 : 0.65 }}>
-                        <TableCell>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {staff.firstName} {staff.lastName}
-                          </Typography>
-                          <Chip
-                            label={STAFF_ROLES.find(r => r.value === staff.professionalRole)?.label || staff.professionalRole}
-                            color={ROLE_COLORS[staff.professionalRole] || 'default'}
-                            size="small"
-                            sx={{ mt: 0.5, fontWeight: 'bold', fontSize: '0.7rem' }}
-                          />
-                        </TableCell>
+                    staffList.map((staff) => {
+                      const isSelected = selectedRowId === staff.id
+                      return (
+                        <TableRow
+                          key={staff.id}
+                          hover
+                          tabIndex={0}
+                          selected={isSelected}
+                          onClick={() => setSelectedRowId(staff.id)}
+                          onDoubleClick={() => handleOpenEdit(staff)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              handleOpenEdit(staff)
+                            }
+                          }}
+                          sx={{
+                            cursor: 'pointer',
+                            opacity: staff.isActive ? 1 : 0.65,
+                            '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                            '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                          }}
+                        >
+                          <TableCell>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {staff.firstName} {staff.lastName}
+                            </Typography>
+                            <Chip
+                              label={STAFF_ROLES.find(r => r.value === staff.professionalRole)?.label || staff.professionalRole}
+                              color={ROLE_COLORS[staff.professionalRole] || 'default'}
+                              size="small"
+                              sx={{ mt: 0.5, fontWeight: 'bold', fontSize: '0.7rem' }}
+                            />
+                          </TableCell>
                         <TableCell>
                           <Typography variant="body2" fontFamily="monospace" fontWeight="bold">
                             {staff.taxCode || 'N/D'}
@@ -715,7 +737,7 @@ export default function MedicalStaffCenter() {
                           </Tooltip>
                         </TableCell>
                       </TableRow>
-                    ))
+                    )})
                   )}
                 </TableBody>
               </Table>

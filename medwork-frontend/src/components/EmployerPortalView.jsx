@@ -282,7 +282,7 @@ export default function EmployerPortalView({ companyId: propCompanyId = null }) 
           </Box>
 
           <Stack direction="row" spacing={1.5} flexWrap="wrap">
-            {companies.length > 1 && (
+            {(!propCompanyId || propCompanyId === 'all') && companies.length > 1 && (
               <TextField
                 select
                 size="small"

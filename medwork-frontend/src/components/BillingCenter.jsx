@@ -4,6 +4,10 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   MenuItem,
   Paper,
   Stack,
@@ -23,6 +27,8 @@ import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/da
 function BillingCenter({ activeCompanyId = '' }) {
   const [companies, setCompanies] = useState([])
   const [docs, setDocs] = useState([])
+  const [selectedRowId, setSelectedRowId] = useState(null)
+  const [activeDoc, setActiveDoc] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -30,6 +36,12 @@ function BillingCenter({ activeCompanyId = '' }) {
 
   const [periodFrom, setPeriodFrom] = useState('')
   const [periodTo, setPeriodTo] = useState('')
+
+  const handleOpenDoc = (doc) => {
+    if (!doc) return
+    setSelectedRowId(doc.id)
+    setActiveDoc(doc)
+  }
 
   useEffect(() => {
     apiGet('/api/billing/documents')
@@ -175,38 +187,62 @@ function BillingCenter({ activeCompanyId = '' }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredDocs.map((doc) => (
-              <TableRow key={doc.id} hover>
-                <TableCell>{doc.invoiceNumber}</TableCell>
-                <TableCell>{doc.period || '-'}</TableCell>
-                <TableCell>{companyMap[doc.companyId] || `Azienda #${doc.companyId}`}</TableCell>
-                <TableCell>{doc.visitCount ?? 0}</TableCell>
-                <TableCell>€ {(Number(doc.amount) || 0).toFixed(2)}</TableCell>
-                <TableCell>{doc.issuedAt ? new Date(doc.issuedAt).toLocaleDateString('it-IT') : '-'}</TableCell>
-                <TableCell>
-                  <Stack direction="row" spacing={0.7}>
-                    {['bozza', 'emesso', 'pagato', 'scaduto'].map((status) => (
-                      <Chip
-                        key={status}
-                        size="small"
-                        label={status}
-                        variant={doc.status === status ? 'filled' : 'outlined'}
-                        color={
-                          status === 'pagato'
-                            ? 'success'
-                            : status === 'scaduto'
-                              ? 'error'
-                              : status === 'emesso'
-                                ? 'primary'
-                                : 'default'
-                        }
-                        onClick={() => updateStatus(doc.id, status)}
-                      />
-                    ))}
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredDocs.map((doc) => {
+              const isSelected = selectedRowId === doc.id
+              return (
+                <TableRow
+                  key={doc.id}
+                  hover
+                  tabIndex={0}
+                  selected={isSelected}
+                  onClick={() => setSelectedRowId(doc.id)}
+                  onDoubleClick={() => handleOpenDoc(doc)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleOpenDoc(doc)
+                    }
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                    '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                  }}
+                >
+                  <TableCell><strong>{doc.invoiceNumber}</strong></TableCell>
+                  <TableCell>{doc.period || '-'}</TableCell>
+                  <TableCell>{companyMap[doc.companyId] || `Azienda #${doc.companyId}`}</TableCell>
+                  <TableCell>{doc.visitCount ?? 0}</TableCell>
+                  <TableCell>€ {(Number(doc.amount) || 0).toFixed(2)}</TableCell>
+                  <TableCell>{doc.issuedAt ? new Date(doc.issuedAt).toLocaleDateString('it-IT') : '-'}</TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Stack direction="row" spacing={0.7}>
+                      {['bozza', 'emesso', 'pagato', 'scaduto'].map((status) => (
+                        <Chip
+                          key={status}
+                          size="small"
+                          label={status}
+                          variant={doc.status === status ? 'filled' : 'outlined'}
+                          color={
+                            status === 'pagato'
+                              ? 'success'
+                              : status === 'scaduto'
+                                ? 'error'
+                                : status === 'emesso'
+                                  ? 'primary'
+                                  : 'default'
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            updateStatus(doc.id, status)
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
             {docs.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7}>
@@ -217,6 +253,45 @@ function BillingCenter({ activeCompanyId = '' }) {
           </TableBody>
         </Table>
       </Paper>
+
+      {/* Invoice Details Dialog */}
+      <Dialog open={!!activeDoc} onClose={() => setActiveDoc(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          Dettaglio Fattura: {activeDoc?.invoiceNumber}
+        </DialogTitle>
+        <DialogContent dividers>
+          {activeDoc && (
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Azienda</Typography>
+                <Typography variant="body1" fontWeight={600}>
+                  {companyMap[activeDoc.companyId] || `Azienda #${activeDoc.companyId}`}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Periodo di Fatturazione</Typography>
+                <Typography variant="body1">{activeDoc.period || '-'}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Conteggio Visite</Typography>
+                <Typography variant="body1">{activeDoc.visitCount ?? 0} visite mediche incluse</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Importo Totale</Typography>
+                <Typography variant="h5" color="primary.main">€ {(Number(activeDoc.amount) || 0).toFixed(2)}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Stato Pagamento</Typography>
+                <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 600 }}>{activeDoc.status}</Typography>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setActiveDoc(null)}>Chiudi</Button>
+          <Button variant="contained" onClick={() => window.print()}>Stampa Fattura</Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   )
 }

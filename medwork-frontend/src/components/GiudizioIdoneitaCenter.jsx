@@ -88,7 +88,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [searchText, setSearchText] = useState('')
-  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId || 'all')
   const [selectedOutcomeCode, setSelectedOutcomeCode] = useState('all')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [activeVisit, setActiveVisit] = useState(null)
@@ -105,18 +104,11 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
   const [pecBulkLoading, setPecBulkLoading] = useState(false)
   const [pecSentMap, setPecSentMap] = useState({})
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [selectedRowId, setSelectedRowId] = useState(null)
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [pinCode, setPinCode] = useState('1234')
   const [autoDispatchPec, setAutoDispatchPec] = useState(true)
   const [batchSigning, setBatchSigning] = useState(false)
-
-  useEffect(() => {
-    if (activeCompanyId) {
-      setSelectedCompanyId(activeCompanyId)
-    } else {
-      setSelectedCompanyId('all')
-    }
-  }, [activeCompanyId])
 
   const loadData = async () => {
     try {
@@ -383,7 +375,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
   // Filtered rows
   const filteredVisits = useMemo(() => {
     return visits.filter((v) => {
-      if (selectedCompanyId !== 'all' && Number(v.companyId) !== Number(selectedCompanyId)) {
+      if (activeCompanyId && activeCompanyId !== 'all' && Number(v.companyId) !== Number(activeCompanyId)) {
         return false
       }
       if (selectedOutcomeCode !== 'all') {
@@ -402,7 +394,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
       }
       return true
     })
-  }, [visits, selectedCompanyId, selectedOutcomeCode, searchText])
+  }, [visits, activeCompanyId, selectedOutcomeCode, searchText])
 
   // KPIs
   const metrics = useMemo(() => {
@@ -533,19 +525,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
           <TextField
             size="small"
             select
-            label="Azienda"
-            value={selectedCompanyId}
-            onChange={(e) => setSelectedCompanyId(e.target.value)}
-            sx={{ minWidth: 220 }}
-          >
-            <MenuItem value="all">Tutte le aziende</MenuItem>
-            {companies.map((c) => (
-              <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            size="small"
-            select
             label="Esito Giudizio"
             value={selectedOutcomeCode}
             onChange={(e) => setSelectedOutcomeCode(e.target.value)}
@@ -561,7 +540,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
             startIcon={<RestartAltIcon />}
             onClick={() => {
               setSearchText('')
-              setSelectedCompanyId('all')
               setSelectedOutcomeCode('all')
             }}
           >
@@ -616,9 +594,28 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
                 const isPecSent = pecSentMap[row.id]
                 const isSelected = selectedIds.has(row.id)
 
+                const isRowFocused = selectedRowId === row.id
                 return (
-                  <TableRow key={row.id} hover selected={isSelected}>
-                    <TableCell padding="checkbox">
+                  <TableRow
+                    key={row.id}
+                    hover
+                    tabIndex={0}
+                    selected={isSelected || isRowFocused}
+                    onClick={() => setSelectedRowId(row.id)}
+                    onDoubleClick={() => openEdit(row)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        openEdit(row)
+                      }
+                    }}
+                    sx={{
+                      cursor: 'pointer',
+                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                    }}
+                  >
+                    <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={isSelected}
                         onChange={() => handleSelectOne(row.id)}
@@ -648,7 +645,7 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
                         <Chip size="small" variant="outlined" label="Da inviare" />
                       )}
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell align="center" onClick={(e) => e.stopPropagation()}>
                       <Stack direction="row" spacing={0.5} justifyContent="center">
                         <Tooltip title="Invia Giudizio via PEC al Datore di Lavoro">
                           <IconButton

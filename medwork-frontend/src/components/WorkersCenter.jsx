@@ -9,11 +9,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  FormControlLabel,
   MenuItem,
   Paper,
   Stack,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -23,12 +21,18 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import BusinessIcon from '@mui/icons-material/Business'
+import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { apiGet, apiSend } from '../services/apiClient'
-import { downloadCsv } from '../utils/csv'
 import { showNotification } from '../utils/notification'
+import { calculateItalianTaxCode } from '../utils/taxCode'
+import { getItalianMunicipalities } from '../services/municipalityService'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
+import BoltIcon from '@mui/icons-material/Bolt'
+import WorkerFormDialog from './WorkerFormDialog'
 
 function toDate(value) {
   const date = new Date(value)
@@ -64,7 +68,7 @@ function classifyFitness(outcome, outcomeCode) {
   return { key: 'none', label: 'Senza idoneità', color: 'default' }
 }
 
-function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate,  onOpenEmployeeProfile, onDeleteConfirm }) {
+function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmployeeCreate, onOpenEmployeeProfile, onOpenMedicalVisitCreate, onDeleteConfirm }) {
   const [employees, setEmployees] = useState([])
   const [visits, setVisits] = useState([])
   const [companies, setCompanies] = useState([])
@@ -77,27 +81,44 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   const [workerSearch, setWorkerSearch] = useState('')
   const [workerStatus, setWorkerStatus] = useState('active')
   const [selectedDoctorId, setSelectedDoctorId] = useState('all')
-  const [companySearch, setCompanySearch] = useState('')
-  const [companyArchiviation, setCompanyArchiviation] = useState('active')
-  const [companyContext, setCompanyContext] = useState(activeCompanyId || 'all')
-  const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId || '')
+  const [selectedRowId, setSelectedRowId] = useState(null)
 
-  useEffect(() => {
-    setCompanyContext(activeCompanyId || 'all')
-    setSelectedCompanyId(activeCompanyId || '')
-  }, [activeCompanyId])
+  const handleOpenRow = (row) => {
+    if (!row) return
+    setSelectedRowId(row.id)
+    onOpenEmployeeProfile?.(row)
+  }
+
+  const activeCompanyName = useMemo(() => {
+    if (!activeCompanyId || activeCompanyId === 'all') return ''
+    const c = companies.find((item) => String(item.id) === String(activeCompanyId))
+    return c?.name || c?.ragioneSociale || `Azienda #${activeCompanyId}`
+  }, [companies, activeCompanyId])
+
+  const activeBranchName = useMemo(() => {
+    if (!activeBranchId || activeBranchId === 'all') return ''
+    const b = branches.find((item) => String(item.id) === String(activeBranchId))
+    return b?.name || b?.address || `Sede #${activeBranchId}`
+  }, [branches, activeBranchId])
 
   const loadData = async () => {
     try {
       setLoading(true)
       setError('')
 
+      const params = new URLSearchParams()
+      params.set('includeArchived', 'true')
+      params.set('pageSize', '1000')
+      if (activeCompanyId && activeCompanyId !== 'all') {
+        params.set('companyId', String(activeCompanyId))
+      }
+
       const [employeesData, visitsData, companiesData, branchesData, rolesData, doctorsData] = await Promise.all([
-        apiGet('/api/master-data/employees?includeArchived=true'),
-        apiGet('/api/master-data/medical-visits'),
-        apiGet('/api/master-data/companies'),
-        apiGet('/api/master-data/branches'),
-        apiGet('/api/master-data/job-roles'),
+        apiGet(`/api/master-data/employees?${params.toString()}`).catch(() => []),
+        apiGet('/api/master-data/medical-visits').catch(() => []),
+        apiGet('/api/master-data/companies').catch(() => []),
+        apiGet('/api/master-data/branches').catch(() => []),
+        apiGet('/api/master-data/job-roles').catch(() => []),
         apiGet('/api/master-data/doctors').catch(() => []),
       ])
 
@@ -118,13 +139,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [activeCompanyId, activeBranchId])
 
   useEffect(() => {
     const handleEmployeeCreated = () => {
       loadData()
     }
-    // On update: patch the specific row in-place for instant feedback, no full reload
     const handleEmployeeUpdated = (event) => {
       const updated = event.detail
       if (updated && updated.id) {
@@ -134,7 +154,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
               ? {
                   ...emp,
                   ...updated,
-                  // Preserve computed fields that come from other data sources
                   companyName: updated.companyName ?? emp.companyName,
                   companyDoctorName: updated.companyDoctorName ?? emp.companyDoctorName,
                   jobRoleName: updated.jobRoleName ?? emp.jobRoleName,
@@ -144,7 +163,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           )
         )
       } else {
-        // Fallback: full reload if no detail
         loadData()
       }
     }
@@ -159,32 +177,12 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
       window.removeEventListener('medwork:employee-created', handleEmployeeCreated)
       window.removeEventListener('medwork:employee-updated', handleEmployeeUpdated)
     }
-  }, [])
+  }, [activeCompanyId, activeBranchId])
 
   const handleResetFilters = () => {
-    setCompanySearch('')
-    setCompanyArchiviation('active')
     setWorkerSearch('')
     setWorkerStatus('active')
     setSelectedDoctorId('all')
-    setCompanyContext('all')
-    setSelectedCompanyId('')
-  }
-
-  const handleFilterEmployees = async () => {
-    try {
-      setError('')
-      const params = new URLSearchParams()
-      params.set('includeArchived', 'true')
-      if (workerSearch) params.set('search', workerSearch)
-      if (companyContext && companyContext !== 'all') params.set('companyId', String(companyContext))
-      const query = params.toString()
-      const endpoint = `/api/master-data/employees${query ? `?${query}` : ''}`
-      const data = await apiGet(endpoint)
-      setEmployees(Array.isArray(data) ? data : [])
-    } catch (requestError) {
-      setError(requestError?.message || 'Errore durante il filtro lavoratori.')
-    }
   }
 
   const handleToggleArchive = async (row) => {
@@ -201,7 +199,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
     try {
       await apiSend('PATCH', `/api/admin-data/employees/${employeeId}/archive`, {
-        isArchived: newArchived
+        isArchived: newArchived,
       })
     } catch (requestError) {
       // Revert on error
@@ -214,6 +212,19 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     }
   }
 
+  const [workerFormOpen, setWorkerFormOpen] = useState(false)
+  const [editingWorker, setEditingWorker] = useState(null)
+
+  const handleOpenCreateWorker = () => {
+    setEditingWorker(null)
+    setWorkerFormOpen(true)
+  }
+
+  const handleOpenEditWorker = (row) => {
+    setEditingWorker(row)
+    setWorkerFormOpen(true)
+  }
+
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, employeeId: undefined, label: '' })
 
   const handleDeleteEmployee = async (row) => {
@@ -223,7 +234,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
   }
 
   const handleDeleteConfirm = async () => {
-    const { employeeId, label } = deleteConfirm
+    const { employeeId } = deleteConfirm
     setDeleteConfirm({ open: false, employeeId: undefined, label: '' })
     if (!employeeId) return
     try {
@@ -234,47 +245,8 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         onDeleteConfirm(deleteConfirm)
       }
     } catch (requestError) {
-      showNotification(requestError?.message || 'Errore durante l\'eliminazione del lavoratore.', 'error')
+      showNotification(requestError?.message || "Errore durante l'eliminazione del lavoratore.", 'error')
     }
-  }
-
-  const handleExportCompanies = () => {
-    const headers = ['id', 'name', 'vatNumber', 'city', 'province', 'status']
-    const labelMap = {
-      id: 'ID',
-      name: 'Nome',
-      vatNumber: 'P.IVA',
-      city: 'Città',
-      province: 'Provincia',
-      status: 'Stato',
-    }
-    const rows = visibleCompanyRows.map((row) => ({
-      id: row.id,
-      name: row.name || row.legalName || '',
-      vatNumber: row.vatNumber || '',
-      city: row.operationalCity || '',
-      province: row.operationalProvince || '',
-      status: row.status || '',
-    }))
-    downloadCsv(
-      'aziende',
-      headers.map((key) => ({ label: labelMap[key], value: key })),
-      rows,
-    )
-  }
-
-  const handlePrint = () => {
-    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-    const rows = (visibleCompanyRows || []).map((row) => `<tr><td>${esc(row.name || row.legalName || '')}</td><td>${esc(row.vatNumber || '')}</td><td>${esc(row.operationalCity || '')}</td><td>${esc(row.operationalProvince || '')}</td><td>${esc(row.status || '')}</td></tr>`).join('')
-    const win = window.open('', '_blank')
-    if (!win) { showNotification('Stampa non disponibile: consenti l\'apertura della nuova scheda nel browser.', 'warning'); return }
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Elenco Aziende</title>
-      <style>body{font-family:sans-serif;padding:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px;text-align:left}</style>
-      </head><body><h2>Elenco Aziende</h2>
-      <table><thead><tr><th>Ragione Sociale</th><th>P.IVA</th><th>Città</th><th>Provincia</th><th>Stato</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-      <script>window.onload=function(){window.print()}</script></body></html>`)
-    win.document.close()
   }
 
   const latestVisitByEmployee = useMemo(() => {
@@ -289,48 +261,20 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
     }, {})
   }, [visits])
 
-  const workerRows = useMemo(() => {
-    return employees
-      .map((employee) => {
-        const latestVisit = latestVisitByEmployee[Number(employee.id)]
-        const fitness = classifyFitness(latestVisit?.outcome, latestVisit?.outcomeCode)
-        const nextDue = latestVisit?.nextDeadlineDate ? new Date(latestVisit.nextDeadlineDate) : null
-        const isOverdue = nextDue && nextDue < new Date()
-        const isDueSoon = nextDue && !isOverdue && (nextDue - new Date()) < 30 * 24 * 60 * 60 * 1000
-        return {
-          ...employee,
-          latestVisitDate: latestVisit?.visitDate || null,
-          latestOutcome: latestVisit?.outcome || '',
-          latestOutcomeCode: latestVisit?.outcomeCode || null,
-          latestNextDeadline: latestVisit?.nextDeadlineDate || null,
-          fitness,
-          isOverdue,
-          isDueSoon,
-          isArchived: employee.isArchived === true,
-          jobRoleDisplay: employee.jobRoleName || employee.jobRole || '-',
-          workingStatus: 'Attivo',
-        }
-      })
-      .sort((left, right) => String(left.lastName || '').localeCompare(String(right.lastName || '')))
-  }, [employees, latestVisitByEmployee])
-
-  const filteredCompanyRows = useMemo(() => {
-    const needle = normalizeText(companySearch)
-
-    return companies.filter((row) => {
-      const isArchived = row.status === 'Archiviata'
-      if (companyArchiviation === 'active' && isArchived) return false
-      if (companyArchiviation === 'archived' && !isArchived) return false
-      if (!needle) return true
-      const searchable = `${row.name || ''} ${row.legalName || ''} ${row.operationalCity || ''} ${row.provincia || ''}`.toLowerCase()
-      return searchable.includes(needle)
-    })
-  }, [companies, companySearch, companyArchiviation])
+  function employeeStatusFilter(list, status) {
+    if (status === 'all') return list
+    if (status === 'active') return list.filter((item) => !item.isArchived)
+    if (status === 'archived') return list.filter((item) => item.isArchived)
+    return list
+  }
 
   const filteredWorkerRows = useMemo(() => {
     const needle = normalizeText(workerSearch)
     const source = employees.filter((row) => {
-      if (companyContext && companyContext !== 'all' && Number(row.companyId) !== Number(companyContext)) {
+      if (activeCompanyId && activeCompanyId !== 'all' && Number(row.companyId) !== Number(activeCompanyId)) {
+        return false
+      }
+      if (activeBranchId && activeBranchId !== 'all' && Number(row.branchId) !== Number(activeBranchId)) {
         return false
       }
       if (selectedDoctorId && selectedDoctorId !== 'all' && Number(row.companyDoctorId) !== Number(selectedDoctorId)) {
@@ -347,7 +291,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         const fitness = classifyFitness(latestVisit?.outcome, latestVisit?.outcomeCode)
         const nextDue = latestVisit?.nextDeadlineDate ? new Date(latestVisit.nextDeadlineDate) : null
         const isOverdue = nextDue && nextDue < new Date()
-        const isDueSoon = nextDue && !isOverdue && (nextDue - new Date()) < 30 * 24 * 60 * 60 * 1000
+        const isDueSoon = nextDue && !isOverdue && nextDue - new Date() < 30 * 24 * 60 * 60 * 1000
         return {
           ...employee,
           latestVisitDate: latestVisit?.visitDate || null,
@@ -368,216 +312,120 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
         const searchable = `${row.lastName || ''} ${row.firstName || ''} ${row.taxCode || ''} ${row.jobRoleDisplay || ''} ${row.companyDoctorName || ''}`.toLowerCase()
         return searchable.includes(needle)
       })
-  }, [employees, workerSearch, workerStatus, selectedDoctorId, latestVisitByEmployee, companyContext])
+  }, [employees, workerSearch, workerStatus, selectedDoctorId, latestVisitByEmployee, activeCompanyId, activeBranchId])
 
-  function employeeStatusFilter(list, status) {
-    if (status === 'all') return list
-    if (status === 'active') return list.filter((item) => !item.isArchived)
-    if (status === 'archived') return list.filter((item) => item.isArchived)
-    return list
-  }
-
-  const visibleBranches = useMemo(() => {
-    if (!companyContext || companyContext === 'all') return branches
-    return branches.filter((item) => Number(item.companyId) === Number(companyContext))
-  }, [branches, companyContext])
-
-  const visibleCompanyRows = useMemo(() => filteredCompanyRows, [filteredCompanyRows])
+  const stats = useMemo(() => {
+    const total = filteredWorkerRows.length
+    const active = filteredWorkerRows.filter((w) => !w.isArchived).length
+    const fit = filteredWorkerRows.filter((w) => w.fitness?.key === 'fit').length
+    const overdue = filteredWorkerRows.filter((w) => w.isOverdue).length
+    const dueSoon = filteredWorkerRows.filter((w) => w.isDueSoon).length
+    return { total, active, fit, overdue, dueSoon }
+  }, [filteredWorkerRows])
 
   return (
     <Stack spacing={2}>
-      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Box>
-            <Typography variant="h6">Aziende / Lavoratori</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Vista operativa con filtri avanzati e stato lavorativo.
-            </Typography>
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Button type="button" variant="contained" startIcon={<AddIcon />} onClick={onOpenEmployeeCreate}>Aggiungi</Button>
-          </Stack>
-        </Box>
-
-        <Box sx={{ mb: 2 }}>
-          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            <TextField
-              size="small"
-              label="Nominativo"
-              variant="outlined"
-              value={companySearch}
-              onChange={(event) => setCompanySearch(event.target.value)}
-            />
-            <TextField
-              size="small"
-              label="Provincia"
-              variant="outlined"
-              value=""
-              onChange={() => {}}
-            />
-            <TextField
-              size="small"
-              label="Comune"
-              variant="outlined"
-              value=""
-              onChange={() => {}}
-            />
-            <TextField
-              size="small"
-              label="Archiviazione"
-              select
-              variant="outlined"
-              value={companyArchiviation}
-              onChange={(event) => setCompanyArchiviation(event.target.value)}
-            >
-              <MenuItem value="active">Attive</MenuItem>
-              <MenuItem value="archived">Archiviate</MenuItem>
-            </TextField>
-          </Box>
-          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            <Button type="button" variant="contained" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-          </Box>
-        </Box>
-
-        <Box sx={{ borderRadius: 8, overflow: "hidden" }}>
-          <Table size="small" sx={{ minWidth: 980 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox" />
-                <TableCell>Azienda</TableCell>
-                <TableCell>Indirizzo</TableCell>
-                <TableCell>P.Iva</TableCell>
-                <TableCell>Medico</TableCell>
-                <TableCell>Coordinati</TableCell>
-                <TableCell>Dip.</TableCell>
-                <TableCell>Archiviata</TableCell>
-                <TableCell>Archivio</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {visibleCompanyRows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  hover
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    const next = Number(row.id)
-                    setCompanyContext(next)
-                    setSelectedCompanyId(next)
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      const next = Number(row.id)
-                      setCompanyContext(next)
-                      setSelectedCompanyId(next)
-                    }
-                  }}
-                  sx={{
-                    ...(Number(selectedCompanyId) === Number(row.id)
-                      ? { backgroundColor: 'rgba(25, 118, 210, 0.08)' }
-                      : { backgroundColor: 'transparent' }),
-                  }}
-                >
-                  <TableCell padding="checkbox" />
-                  <TableCell>{`${String(row.id || '').padStart(3, '0')} - ${row.name || '-'} - ${row.companyGroupCode || 1}`}</TableCell>
-                  <TableCell>{`${row.operationalAddress || ''}${row.operationalCity ? ` - ${row.operationalCity}` : ''}${row.operationalProvince ? ` (${row.operationalProvince})` : ''}`}</TableCell>
-                  <TableCell>{row.vatNumber || '-'}</TableCell>
-                  <TableCell sx={{ color: (row.coordinatorDoctorName || row.doctorName) ? '#0f4c81' : 'inherit', fontWeight: (row.coordinatorDoctorName || row.doctorName) ? 500 : 400 }}>
-                    {row.coordinatorDoctorName || row.doctorName || '-'}
-                  </TableCell>
-                  <TableCell>{(row.isCoordinator || row.coordinatorDoctorName) ? 'Sì' : '-'}</TableCell>
-                  <TableCell>{row.employeesCount ?? '-'}</TableCell>
-                  <TableCell>{row.status === 'Archiviata' ? 'Sì' : 'No'}</TableCell>
-                  <TableCell>
-                    <Box className="row-actions">
-                      <button
-                        type="button"
-                        sx={{ width: 30, height: 30, borderRadius: 6 }}
-                        aria-label="Archivio"
-                        title={row.status === 'Archiviata' ? 'Ripristina azienda' : 'Archivia azienda'}
-                        onClick={async (event) => {
-                          event.stopPropagation()
-                          const newStatus = row.status === 'Archiviata' ? 'Attiva' : 'Archiviata'
-                          setCompanies((previous) =>
-                            previous.map((item) =>
-                              Number(item.id) === Number(row.id) ? { ...item, status: newStatus } : item,
-                            ),
-                          )
-                          try {
-                            await apiSend('PATCH', `/api/admin-data/companies/${row.id}`, { status: newStatus })
-                          } catch (requestError) {
-                            setCompanies((previous) =>
-                              previous.map((item) =>
-                                Number(item.id) === Number(row.id) ? { ...item, status: row.status } : item,
-                              ),
-                            )
-                            showNotification(requestError?.message || 'Errore durante l\'aggiornamento stato azienda.', 'error')
-                          }
-                        }}
-                      >📁</button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {visibleCompanyRows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9}>
-                    <Typography variant="body2" color="text.secondary">Nessuna azienda trovata.</Typography>
-                  </TableCell>
-                </TableRow>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 280px' }, gap: 2 }}>
+        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+          <Box sx={{ mb: 2 }}>
+            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+              <Typography variant="h6" fontWeight={700}>
+                Gestione Lavoratori
+              </Typography>
+              {activeCompanyName ? (
+                <Chip
+                  icon={<BusinessIcon sx={{ fontSize: '16px !important' }} />}
+                  label={`Azienda: ${activeCompanyName}`}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              ) : (
+                <Chip
+                  label="Tutte le aziende"
+                  size="small"
+                  variant="outlined"
+                  sx={{ color: 'text.secondary' }}
+                />
               )}
-            </TableBody>
-          </Table>
-        </Box>
-
-        <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
-          <Stack direction="row" spacing={1}>
-            <Button type="button" variant="contained" onClick={onOpenEmployeeCreate}>+ Nuovo lavoratore</Button>
-            <Button type="button" variant="outlined" onClick={handlePrint}>Stampa</Button>
-            <Button type="button" variant="outlined" onClick={handleExportCompanies}>Esporta dati in excel</Button>
-          </Stack>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="caption" color="text.secondary">Elementi per pagina</Typography>
-            <TextField size="small" select sx={{ minWidth: 90 }} value={20} onChange={() => {}}>
-              <MenuItem value={20}>20</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-            </TextField>
-            <Typography variant="caption" color="text.secondary">
-              {visibleCompanyRows.length ? `1 - ${visibleCompanyRows.length} of ${filteredCompanyRows.length}` : '0 of 0'}
+              {activeBranchName && (
+                <Chip
+                  icon={<LocationOnIcon sx={{ fontSize: '16px !important' }} />}
+                  label={`Sede: ${activeBranchName}`}
+                  color="success"
+                  variant="outlined"
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+            </Stack>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Anagrafica lavoratori, idoneità e fascicoli sanitari della sorveglianza sanitaria attiva.
             </Typography>
+          </Box>
+
+          {/* Quick Metrics / Stats Chips */}
+          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+            <Chip
+              label={`Totale: ${stats.total}`}
+              size="small"
+              sx={{ fontWeight: 600, bgcolor: '#f1f5f9' }}
+            />
+            <Chip
+              label={`Attivi: ${stats.active}`}
+              size="small"
+              color="primary"
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+            <Chip
+              label={`Idonei: ${stats.fit}`}
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+            {stats.overdue > 0 && (
+              <Chip
+                label={`Visite Scadute: ${stats.overdue}`}
+                size="small"
+                color="error"
+                sx={{ fontWeight: 600 }}
+              />
+            )}
+            {stats.dueSoon > 0 && (
+              <Chip
+                label={`In Scadenza (30gg): ${stats.dueSoon}`}
+                size="small"
+                color="warning"
+                sx={{ fontWeight: 600 }}
+              />
+            )}
           </Stack>
-        </Box>
-      </Paper>
 
-      <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="subtitle1">Lavoratori</Typography>
-        </Box>
-
-        <Box sx={{ mb: 2 }}>
-          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+          {/* Filters Toolbar */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="center" flexWrap="wrap">
             <TextField
               size="small"
-              label="Cognome"
+              label="Cerca lavoratore (cognome, nome, CF, mansione...)"
               variant="outlined"
               value={workerSearch}
               onChange={(event) => setWorkerSearch(event.target.value)}
+              sx={{ minWidth: 260, flexGrow: 1 }}
             />
-            <TextField size="small" label="Nome" variant="outlined" value="" onChange={() => {}} />
-            <TextField size="small" label="Codice fiscale" variant="outlined" value="" onChange={() => {}} />
             <TextField
               size="small"
-              label="Stato"
+              label="Stato Lavoratore"
               select
               variant="outlined"
               value={workerStatus}
               onChange={(event) => setWorkerStatus(event.target.value)}
+              sx={{ minWidth: 160 }}
             >
-              <MenuItem value="active">Non cessati</MenuItem>
-              <MenuItem value="all">Tutti</MenuItem>
-              <MenuItem value="archived">Archiviati</MenuItem>
+              <MenuItem value="active">Non cessati (Attivi)</MenuItem>
+              <MenuItem value="all">Tutti (inclusi archiviati)</MenuItem>
+              <MenuItem value="archived">Solo archiviati</MenuItem>
             </TextField>
             <TextField
               size="small"
@@ -586,7 +434,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
               variant="outlined"
               value={selectedDoctorId}
               onChange={(event) => setSelectedDoctorId(event.target.value)}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: 180 }}
             >
               <MenuItem value="all">Tutti i medici</MenuItem>
               {doctors.map((doc) => (
@@ -595,41 +443,113 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                 </MenuItem>
               ))}
             </TextField>
-          </Box>
-          <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-            <Button type="button" variant="contained" startIcon={<RestartAltIcon />} onClick={handleResetFilters}>Reset</Button>
-          </Box>
-        </Box>
+            <Button
+              type="button"
+              variant="outlined"
+              startIcon={<RestartAltIcon />}
+              onClick={handleResetFilters}
+              sx={{ textTransform: 'none' }}
+            >
+              Reset
+            </Button>
+          </Stack>
+        </Paper>
 
-        <Box sx={{ borderRadius: 8, overflow: "hidden" }}>
-          <Table size="small" sx={{ minWidth: 1100 }}>
-            <TableHead>
+        {/* Quick Actions Card */}
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            bgcolor: '#ffffff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+            <BoltIcon color="primary" fontSize="small" />
+            <Typography variant="subtitle1" fontWeight={700}>
+              Quick Actions
+            </Typography>
+          </Stack>
+          <Stack spacing={1}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={() => onOpenMedicalVisitCreate?.(selectedRowId)}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                bgcolor: '#0f3a74',
+                '&:hover': { bgcolor: '#0b2a54' },
+              }}
+            >
+              Nuova Visita Medica
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={handleOpenCreateWorker}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Nuovo Lavoratore
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={loadData}
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Ricarica dati
+            </Button>
+          </Stack>
+        </Paper>
+      </Box>
+
+      {/* Workers Table Card */}
+      <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, bgcolor: '#ffffff' }}>
+
+        {/* Workers Table */}
+        <TableContainer sx={{ borderRadius: 2, border: '1px solid #e5e7eb' }}>
+          <Table size="small" sx={{ minWidth: 980 }}>
+            <TableHead sx={{ bgcolor: '#f8fafc' }}>
               <TableRow>
-                <TableCell padding="checkbox" />
-                <TableCell>Lavoratore</TableCell>
-                <TableCell>Data nascita</TableCell>
-                <TableCell>Mansione</TableCell>
-                <TableCell>Medico Competente</TableCell>
-                <TableCell>Reparto</TableCell>
-                <TableCell>Luogo di lavoro</TableCell>
-                <TableCell>Periodicità</TableCell>
-                <TableCell>Ultima visita</TableCell>
-                <TableCell>Prossima visita</TableCell>
-                <TableCell>Scadenza</TableCell>
-                <TableCell>Visita</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Lavoratore</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Azienda</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Data nascita</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Mansione</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Medico Competente</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Reparto</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Ultima visita</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Prossima scadenza</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Idoneità</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Azioni</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredWorkerRows.map((row) => {
                 const latestVisit = latestVisitByEmployee[Number(row.id)]
+                const isSelected = selectedRowId === row.id
                 return (
                   <TableRow
                     key={row.id}
                     hover
-                    onDoubleClick={() => {
-                      onOpenEmployeeProfile?.(row)
+                    tabIndex={0}
+                    selected={isSelected}
+                    onClick={() => setSelectedRowId(row.id)}
+                    onDoubleClick={() => handleOpenRow(row)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleOpenRow(row)
+                      }
                     }}
                     sx={{
+                      cursor: 'pointer',
+                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       backgroundColor: row.isOverdue
                         ? 'rgba(211,47,47,0.05)'
                         : row.isDueSoon
@@ -637,91 +557,118 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                         : 'inherit',
                     }}
                   >
-                    <TableCell padding="checkbox" />
                     <TableCell sx={{ fontWeight: 600 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {row.isOverdue && <span title="Visita scaduta">🔴</span>}
                         {row.isDueSoon && !row.isOverdue && <span title="Visita in scadenza">🟡</span>}
                         {`${row.lastName || ''} ${row.firstName || ''}`.trim()}
                       </Box>
+                      {row.taxCode && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {row.taxCode}
+                        </Typography>
+                      )}
                     </TableCell>
+                    <TableCell>{row.companyName || '-'}</TableCell>
                     <TableCell>{formatDate(row.birthDate)}</TableCell>
                     <TableCell>{row.jobRoleDisplay}</TableCell>
                     <TableCell sx={{ color: row.companyDoctorName ? '#0f4c81' : 'text.secondary', fontWeight: row.companyDoctorName ? 500 : 400 }}>
                       {row.companyDoctorName || '-'}
                     </TableCell>
                     <TableCell>{row.reparto || '-'}</TableCell>
-                    <TableCell>{row.luogoDiLavoro || '-'}</TableCell>
-                    <TableCell>{row.periodicita || '-'}</TableCell>
                     <TableCell>{formatDate(row.dataUltimaVisita || latestVisit?.visitDate)}</TableCell>
-                    <TableCell>{formatDate(row.dataProssimaVisita || latestVisit?.nextDeadlineDate)}</TableCell>
                     <TableCell
                       sx={{
                         color: row.isOverdue ? 'error.main' : row.isDueSoon ? 'warning.main' : 'inherit',
-                        fontWeight: (row.isOverdue || row.isDueSoon) ? 600 : 400,
+                        fontWeight: row.isOverdue || row.isDueSoon ? 600 : 400,
                       }}
                     >
-                      {formatDate(latestVisit?.nextDeadlineDate)}
+                      {formatDate(latestVisit?.nextDeadlineDate || row.dataProssimaVisita)}
                     </TableCell>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        {row.fitness.key !== 'none' && (
-                          <Chip
-                            size="small"
-                            label={row.fitness.label}
-                            color={row.fitness.color}
-                            sx={{ fontSize: '0.65rem', height: 20 }}
-                          />
-                        )}
-                        <Box className="row-actions">
-                          <button
-                            type="button"
-                            sx={{ width: 30, height: 30, borderRadius: 6 }}
-                            aria-label="Lista"
-                            title="Apri cartella lavoratore"
-                            onClick={() => onOpenEmployeeProfile?.(row)}
-                          >📋</button>
-                          <button
-                            type="button"
-                            sx={{ width: 30, height: 30, borderRadius: 6 }}
-                            aria-label="Cessazione"
-                            title="Cessazione rapporto & Consegna Cartella (Art. 25 D.Lgs. 81/08)"
-                            onClick={() => {
-                              onOpenEmployeeProfile?.(row)
-                            }}
-                          >📦</button>
-                          <button
-                            type="button"
-                            sx={{ width: 30, height: 30, borderRadius: 6 }}
-                            aria-label="Archivio"
-                            title={row.isArchived ? 'Ripristina' : 'Archivia'}
-                            onClick={() => handleToggleArchive(row)}
-                          >📁</button>
-                          <button
-                            type="button"
-                            sx={{ width: 30, height: 30, borderRadius: 6 }}
-                            aria-label="Elimina"
-                            title="Elimina lavoratore"
-                            onClick={() => handleDeleteEmployee(row)}
-                          >🗑️</button>
-                        </Box>
-                      </Box>
+                      {row.fitness.key !== 'none' ? (
+                        <Chip
+                          size="small"
+                          label={row.fitness.label}
+                          color={row.fitness.color}
+                          sx={{ fontSize: '0.65rem', height: 20 }}
+                        />
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">-</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          title="Apri cartella sanitaria"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onOpenEmployeeProfile?.(row)
+                          }}
+                          sx={{ minWidth: 32, px: 1, textTransform: 'none', fontSize: '12px' }}
+                        >
+                          📋 Cartella
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          title="Modifica anagrafica lavoratore"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenEditWorker(row)
+                          }}
+                          sx={{ minWidth: 32, px: 0.8 }}
+                        >
+                          <EditIcon sx={{ fontSize: 16 }} />
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color={row.isArchived ? 'info' : 'warning'}
+                          title={row.isArchived ? 'Ripristina lavoratore' : 'Archivia lavoratore'}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleArchive(row)
+                          }}
+                          sx={{ minWidth: 32, px: 0.8 }}
+                        >
+                          📁
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          title="Elimina lavoratore"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteEmployee(row)
+                          }}
+                          sx={{ minWidth: 32, px: 0.8 }}
+                        >
+                          🗑️
+                        </Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 )
               })}
-              {filteredWorkerRows.length === 0 && (
+              {filteredWorkerRows.length === 0 && !loading && (
                 <TableRow>
-                  <TableCell colSpan={11}>
-                    <Typography variant="body2" color="text.secondary">Nessun lavoratore trovato.</Typography>
+                  <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Nessun lavoratore trovato per il contesto e i filtri selezionati.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </Box>
+        </TableContainer>
 
-        <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
+        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
           <Box />
           <Typography variant="caption" color="text.secondary">
             {filteredWorkerRows.length
@@ -733,6 +680,7 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
 
       {!!error && <Alert severity="error">{error}</Alert>}
       {loading && <Alert severity="info">Caricamento dati in corso...</Alert>}
+
       {/* DELETE CONFIRMATION DIALOG */}
       <Dialog open={deleteConfirm.open} onClose={() => setDeleteConfirm({ open: false, employeeId: undefined, label: '' })}>
         <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Conferma eliminazione</DialogTitle>
@@ -742,10 +690,29 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button variant="outlined" onClick={() => setDeleteConfirm({ open: false, employeeId: undefined, label: '' })}>Annulla</Button>
-          <Button variant="contained" color="error" onClick={handleDeleteConfirm}>Elimina</Button>
+          <Button variant="outlined" onClick={() => setDeleteConfirm({ open: false, employeeId: undefined, label: '' })}>
+            Annulla
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDeleteConfirm}>
+            Elimina
+          </Button>
         </DialogActions>
       </Dialog>
+
+      {/* UNIFIED WORKER FORM DIALOG */}
+      <WorkerFormDialog
+        open={workerFormOpen}
+        onClose={() => {
+          setWorkerFormOpen(false)
+          setEditingWorker(null)
+        }}
+        onSaved={() => {
+          loadData()
+        }}
+        initialCompanyId={activeCompanyId}
+        initialBranchId={activeBranchId}
+        worker={editingWorker}
+      />
     </Stack>
   )
 }

@@ -106,11 +106,26 @@ function ProtocolsCenter() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchText, setSearchText] = useState('')
+  const [selectedRowId, setSelectedRowId] = useState(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [smartDialogOpen, setSmartDialogOpen] = useState(false)
   const [formData, setFormData] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+
+  const handleOpenEdit = (row) => {
+    if (!row) return
+    setSelectedRowId(row.id)
+    setFormData({
+      name: row.name || '',
+      cadenceDays: row.cadenceDays || 365,
+      lawReference: row.lawReference || 'D.Lgs. 81/08',
+      objective: row.objective || '',
+      description: row.description || '',
+    })
+    setFormError('')
+    setDialogOpen(true)
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -274,38 +289,79 @@ function ProtocolsCenter() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibleProtocols.map(row => (
-                <TableRow key={row.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={700}>{row.name}</Typography>
-                    {row.objective && (
-                      <Typography variant="caption" color="text.secondary">{row.objective}</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={row.lawReference || 'D.Lgs. 81/08'} size="small" variant="outlined" sx={{ fontSize: '0.75rem' }} />
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2" fontWeight={600}>{row.cadenceDays} gg</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      ({row.cadenceDays === 365 ? '1 anno' : row.cadenceDays === 730 ? '2 anni' : `${Math.round(row.cadenceDays / 365)} anni`})
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      size="small"
-                      color={row.isActive ? 'success' : 'default'}
-                      label={row.isActive ? 'Attivo' : 'Disattivo'}
-                      sx={{ fontWeight: 600 }}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button size="small" onClick={() => handleToggle(row.id)}>
-                      {row.isActive ? 'Disattiva' : 'Attiva'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {visibleProtocols.map(row => {
+                const isSelected = selectedRowId === row.id
+                return (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    tabIndex={0}
+                    selected={isSelected}
+                    onClick={() => setSelectedRowId(row.id)}
+                    onDoubleClick={() => handleOpenEdit(row)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleOpenEdit(row)
+                      }
+                    }}
+                    sx={{
+                      cursor: 'pointer',
+                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                    }}
+                  >
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={700}>{row.name}</Typography>
+                      {row.objective && (
+                        <Typography variant="caption" color="text.secondary">{row.objective}</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={row.lawReference || 'D.Lgs. 81/08'} size="small" variant="outlined" sx={{ fontSize: '0.75rem' }} />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2" fontWeight={600}>{row.cadenceDays} gg</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        ({row.cadenceDays === 365 ? '1 anno' : row.cadenceDays === 730 ? '2 anni' : `${Math.round(row.cadenceDays / 365)} anni`})
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        size="small"
+                        color={row.isActive ? 'success' : 'default'}
+                        label={row.isActive ? 'Attivo' : 'Disattivo'}
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenEdit(row)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                        >
+                          Modifica
+                        </Button>
+                        <Button
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggle(row.id)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                        >
+                          {row.isActive ? 'Disattiva' : 'Attiva'}
+                        </Button>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
               {visibleProtocols.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5}>

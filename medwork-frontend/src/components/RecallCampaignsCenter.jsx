@@ -61,6 +61,7 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState(activeCompanyId && activeCompanyId !== 'all' ? Number(activeCompanyId) : 0)
   const [daysThreshold, setDaysThreshold] = useState(30)
   const [selectedTemplateId, setSelectedTemplateId] = useState('standard')
+  const [selectedRowId, setSelectedRowId] = useState(null)
   const [previewOpen, setPreviewOpen] = useState(false)
   
   const [candidates, setCandidates] = useState([])
@@ -186,24 +187,7 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
       {/* FILTERS & TEMPLATE SELECTOR */}
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, bgcolor: '#ffffff' }}>
         <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-              Azienda Cliente
-            </Typography>
-            <Select 
-              size="small" 
-              fullWidth 
-              value={selectedCompanyId} 
-              onChange={(e) => setSelectedCompanyId(Number(e.target.value))}
-            >
-              <MenuItem value={0}>Tutte le aziende convenzionate</MenuItem>
-              {companies.map(c => (
-                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-              ))}
-            </Select>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <Typography variant="subtitle2" fontWeight={700} gutterBottom>
               Template Notifica & Convocazione
             </Typography>
@@ -219,7 +203,7 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
             </Select>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <Box sx={{ px: 1 }}>
               <Typography variant="subtitle2" fontWeight={700} gutterBottom>
                 Finestra di Preavviso: <strong>{daysThreshold} giorni</strong>
@@ -291,40 +275,64 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {candidates.map(row => (
-                    <TableRow key={row.employeeId} hover>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight={700}>{row.employeeName}</Typography>
-                      </TableCell>
-                      <TableCell>{row.companyName}</TableCell>
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          color={new Date(row.deadlineDate) < new Date() ? 'error' : 'warning'}
-                          label={new Date(row.deadlineDate).toLocaleDateString('it-IT')}
-                          variant="outlined"
-                          sx={{ fontWeight: 600 }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip label="Email + PEC" size="small" sx={{ fontSize: '0.75rem' }} />
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
-                          <Chip label="In attesa invio" size="small" color="default" sx={{ fontSize: '0.75rem' }} />
-                          <Button
+                  {candidates.map(row => {
+                    const isSelected = selectedRowId === row.employeeId
+                    return (
+                      <TableRow
+                        key={row.employeeId}
+                        hover
+                        tabIndex={0}
+                        selected={isSelected}
+                        onClick={() => setSelectedRowId(row.employeeId)}
+                        onDoubleClick={() => setPreviewOpen(true)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setPreviewOpen(true)
+                          }
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                          '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                        }}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={700}>{row.employeeName}</Typography>
+                        </TableCell>
+                        <TableCell>{row.companyName}</TableCell>
+                        <TableCell>
+                          <Chip
                             size="small"
+                            color={new Date(row.deadlineDate) < new Date() ? 'error' : 'warning'}
+                            label={new Date(row.deadlineDate).toLocaleDateString('it-IT')}
                             variant="outlined"
-                            color="error"
-                            onClick={() => handleMarkNoShow(row)}
-                            sx={{ textTransform: 'none', fontSize: '0.72rem', py: 0.2 }}
-                          >
-                            No-Show / Sollecito DdL
-                          </Button>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            sx={{ fontWeight: 600 }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="Email + PEC" size="small" sx={{ fontSize: '0.75rem' }} />
+                        </TableCell>
+                        <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                            <Chip label="In attesa invio" size="small" color="default" sx={{ fontSize: '0.75rem' }} />
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleMarkNoShow(row)
+                              }}
+                              sx={{ textTransform: 'none', fontSize: '0.72rem', py: 0.2 }}
+                            >
+                              No-Show / Sollecito DdL
+                            </Button>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>

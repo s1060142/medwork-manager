@@ -25,6 +25,7 @@ import { showNotification } from '../utils/notification'
 function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
   const [nominations, setNominations] = useState([])
+  const [selectedRowId, setSelectedRowId] = useState(null)
   
   // Dialog state
   const [editingNomination, setEditingNomination] = useState(null)
@@ -75,6 +76,11 @@ function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
     }
   }
 
+  const filteredNominations = nominations.filter((item) => {
+    if (!activeCompanyId || activeCompanyId === 'all') return true
+    return Number(item.companyId || item.company?.id) === Number(activeCompanyId)
+  })
+
   return (
     <Stack spacing={2}>
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
@@ -109,29 +115,60 @@ function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
                 <TableRow>
                   <TableCell colSpan={6} align="center">Caricamento...</TableCell>
                 </TableRow>
-              ) : nominations.length === 0 ? (
+              ) : filteredNominations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center">Nessuna nomina registrata.</TableCell>
                 </TableRow>
               ) : (
-                nominations.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell><strong>{item.company?.name || '-'}</strong></TableCell>
-                    <TableCell>{item.roleName}</TableCell>
-                    <TableCell>{item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : '-'}</TableCell>
-                    <TableCell>{item.certificationExpiry ? new Date(item.certificationExpiry).toLocaleDateString('it-IT') : '-'}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        size="small" 
-                        label={item.status} 
-                        color={item.status === 'Expired' ? 'error' : item.status === 'Due Soon' ? 'warning' : 'success'} 
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Button size="small" onClick={() => handleOpenEdit(item)}>Modifica</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredNominations.map((item) => {
+                  const isSelected = selectedRowId === item.id
+                  return (
+                    <TableRow
+                      key={item.id}
+                      hover
+                      tabIndex={0}
+                      selected={isSelected}
+                      onClick={() => setSelectedRowId(item.id)}
+                      onDoubleClick={() => handleOpenEdit(item)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleOpenEdit(item)
+                        }
+                      }}
+                      sx={{
+                        cursor: 'pointer',
+                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      }}
+                    >
+                      <TableCell><strong>{item.company?.name || '-'}</strong></TableCell>
+                      <TableCell>{item.roleName}</TableCell>
+                      <TableCell>{item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : '-'}</TableCell>
+                      <TableCell>{item.certificationExpiry ? new Date(item.certificationExpiry).toLocaleDateString('it-IT') : '-'}</TableCell>
+                      <TableCell>
+                        <Chip 
+                          size="small" 
+                          label={item.status} 
+                          color={item.status === 'Expired' ? 'error' : item.status === 'Due Soon' ? 'warning' : 'success'} 
+                        />
+                      </TableCell>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenEdit(item)
+                          }}
+                          sx={{ textTransform: 'none', fontSize: 12, px: 1 }}
+                        >
+                          Modifica
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>

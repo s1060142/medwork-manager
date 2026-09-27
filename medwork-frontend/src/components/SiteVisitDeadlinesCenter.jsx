@@ -40,6 +40,13 @@ function SiteVisitDeadlinesCenter({ activeCompanyId = '' }) {
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState(activeCompanyId || '')
   const [feedback, setFeedback] = useState(null)
 
+  useEffect(() => {
+    setSelectedCompanyFilter(activeCompanyId || '')
+    if (activeCompanyId && activeCompanyId !== 'all') {
+      setPlanCompanyId(activeCompanyId)
+    }
+  }, [activeCompanyId])
+
   // Dialog states
   const [planningOpen, setPlanningOpen] = useState(false)
   const [reportingVisit, setReportingVisit] = useState(null)
@@ -255,19 +262,21 @@ function SiteVisitDeadlinesCenter({ activeCompanyId = '' }) {
       {/* Filter & Controls */}
       <Paper variant="outlined" sx={{ p: 2, borderRadius: 3 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
-          <TextField
-            select
-            size="small"
-            label="Filtra per Azienda"
-            value={selectedCompanyFilter}
-            onChange={(e) => setSelectedCompanyFilter(e.target.value)}
-            sx={{ minWidth: 260 }}
-          >
-            <MenuItem value="">Tutte le aziende</MenuItem>
-            {companies.map(c => (
-              <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-            ))}
-          </TextField>
+          {(!activeCompanyId || activeCompanyId === 'all') && (
+            <TextField
+              select
+              size="small"
+              label="Filtra per Azienda"
+              value={selectedCompanyFilter}
+              onChange={(e) => setSelectedCompanyFilter(e.target.value)}
+              sx={{ minWidth: 260 }}
+            >
+              <MenuItem value="">Tutte le aziende</MenuItem>
+              {companies.map(c => (
+                <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+              ))}
+            </TextField>
+          )}
 
           <Typography variant="body2" color="text.secondary">
             Visualizzati <strong>{filteredVisits.length}</strong> sopralluoghi

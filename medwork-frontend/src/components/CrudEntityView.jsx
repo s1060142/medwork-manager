@@ -28,6 +28,7 @@ import {
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import PrintIcon from '@mui/icons-material/Print'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
@@ -247,6 +248,7 @@ function CrudEntityView({
   const [municipalitiesError, setMunicipalitiesError] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [selectedRowId, setSelectedRowId] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [profileEmployee, setProfileEmployee] = useState(null)
   const [profileCompany, setProfileCompany] = useState(null)
@@ -257,7 +259,23 @@ function CrudEntityView({
     setFormData(updater)
   }
 
-  const canEdit = !config.readOnly && (currentRole === 'Admin' || currentRole === config.role)
+  const handleOpenRow = (row) => {
+    if (!row) return
+    setSelectedRowId(row[config.idField || 'id'] ?? row._id)
+    if (config.key === 'companies' && onOpenCompanyProfile) {
+      onOpenCompanyProfile(row)
+    } else if (config.key === 'employees') {
+      if (onOpenEmployeeProfile) {
+        onOpenEmployeeProfile(row)
+      } else {
+        setProfileEmployee(row)
+      }
+    } else if (canEdit) {
+      openEdit(row)
+    }
+  }
+
+  const canEdit = !config.readOnly && (currentRole === 'Admin' || currentRole === config.role || currentRole === 'Doctor' || !config.role)
 
   const columns = useMemo(() => {
     if (!rows.length) return []
@@ -520,16 +538,23 @@ function CrudEntityView({
   }, [config])
 
   useEffect(() => {
-    if (!externalCreateToken || !canEdit) return
+    if (!externalCreateToken) return
     openCreate()
     if (typeof onExternalCreateConsumed === 'function') {
       onExternalCreateConsumed()
     }
-  }, [externalCreateToken, canEdit])
+  }, [externalCreateToken])
 
   const openCreate = () => {
     setEditingRow(null)
-    setFormData(defaultFormData(config.fields))
+    const initial = defaultFormData(config.fields)
+    if (effectiveCompanyId && config.fields.some((f) => f.name === 'companyId')) {
+      initial.companyId = Number(effectiveCompanyId)
+    }
+    if (activeBranchId && activeBranchId !== 'all' && config.fields.some((f) => f.name === 'branchId')) {
+      initial.branchId = Number(activeBranchId)
+    }
+    setFormData(initial)
     setFormErrors({})
     setDirty(false)
     setDialogOpen(true)
@@ -820,8 +845,18 @@ function CrudEntityView({
               }}
               sx={{ minWidth: 250 }}
             />
-            <Button variant="outlined" onClick={loadRows}>Aggiorna</Button>
-            {canEdit && <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Nuovo</Button>}
+            {canEdit && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={openCreate}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
+                {['companies', 'branches', 'anamneses', 'vaccinations', 'site-visits'].includes(config.key) || config.gender === 'f'
+                  ? `Nuova ${config.singularLabel || config.label || 'Voce'}`
+                  : `Nuovo ${config.singularLabel || config.label || 'Elemento'}`}
+              </Button>
+            )}
           </Stack>
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" onClick={() => downloadCsv(`${config.key}.csv`, configuredColumns, filteredRows)}>
@@ -850,44 +885,70 @@ function CrudEntityView({
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagedRows.map((row) => (
-                <TableRow
-                  key={row.id ?? row._id}
-                  hover
-                  onDoubleClick={() => {
-                    if (config.key === 'companies' && onOpenCompanyProfile) {
-                      onOpenCompanyProfile(row)
-                    } else if (config.key === 'employees' && onOpenEmployeeProfile) {
-                      onOpenEmployeeProfile(row)
-                    }
-                  }}
-                >
-                  <TableCell padding="checkbox" />
-                  {defaultColumns.map((column) => (
-                    <TableCell key={column}>{displayValue(row[column])}</TableCell>
-                  ))}
-                  {canEdit && (
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={1} justifyContent="flex-end">
-                        <Button size="small" onClick={() => openEdit(row)} sx={{ fontSize: 12, px: 1.5 }}>Modifica</Button>
-                        <Button size="small" color="error" onClick={() => handleDelete(row)} sx={{ fontSize: 12, px: 1.5 }}>Elimina</Button>
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            if (config.key === 'companies' && onOpenCompanyProfile) {
-                              onOpenCompanyProfile(row)
-                            } else {
-                              setProfileEmployee(row)
-                            }
-                          }}
-                        >
-                          Profilo
-                        </Button>
-                      </Stack>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
+              {pagedRows.map((row) => {
+                const rowId = row[config.idField || 'id'] ?? row._id
+                const isSelected = selectedRowId === rowId
+                return (
+                  <TableRow
+                    key={rowId}
+                    hover
+                    tabIndex={0}
+                    selected={isSelected}
+                    onClick={() => setSelectedRowId(rowId)}
+                    onDoubleClick={() => handleOpenRow(row)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        handleOpenRow(row)
+                      }
+                    }}
+                    sx={{
+                      cursor: 'pointer',
+                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
+                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                    }}
+                  >
+                    <TableCell padding="checkbox" />
+                    {defaultColumns.map((column) => (
+                      <TableCell key={column}>{displayValue(row[column])}</TableCell>
+                    ))}
+                    {canEdit && (
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                        <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            title="Modifica"
+                            aria-label="Modifica"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openEdit(row)
+                            }}
+                            sx={{ p: 0.5 }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <Button size="small" onClick={() => openEdit(row)} sx={{ fontSize: 12, px: 1 }}>Modifica</Button>
+                          <Button size="small" color="error" onClick={() => handleDelete(row)} sx={{ fontSize: 12, px: 1 }}>Elimina</Button>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              if (config.key === 'companies' && onOpenCompanyProfile) {
+                                onOpenCompanyProfile(row)
+                              } else {
+                                setProfileEmployee(row)
+                              }
+                            }}
+                            sx={{ fontSize: 12, px: 1 }}
+                          >
+                            Profilo
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                )
+              })}
               {pagedRows.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={canEdit ? defaultColumns.length + 2 : defaultColumns.length + 1}>
@@ -962,7 +1023,7 @@ function CrudEntityView({
           <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
             {editingRow
               ? `Modifica ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`
-              : `Nuova ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
+              : `${['companies', 'branches', 'anamneses', 'vaccinations', 'site-visits'].includes(config.key) || config.gender === 'f' ? 'Nuova' : 'Nuovo'} ${(config.singularLabel || config.label || 'elemento').toLowerCase()}`}
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
             <IconButton size="small" onClick={confirmClose} aria-label="Chiudi">

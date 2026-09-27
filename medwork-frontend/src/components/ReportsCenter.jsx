@@ -797,39 +797,34 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
       </Box>
 
       <Box sx={{ mb: 2 }}>
-        <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-          <TextField
-            select
-            size="small"
-            label="Seleziona azienda"
-            value={companyId}
-            onChange={(event) => {
-              setCompanyId(event.target.value)
-              setBranchId('')
-            }}
-          >
-            <MenuItem value="">Seleziona azienda</MenuItem>
-            {companies.map((company) => (
-              <MenuItem key={company.id} value={company.id}>{company.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            size="small"
-            label="Seleziona sede"
-            value={branchId}
-            onChange={(event) => setBranchId(event.target.value)}
-          >
-            <MenuItem value="">Seleziona sede (opzionale)</MenuItem>
-            {filteredBranches.map((branch) => (
-              <MenuItem key={branch.id} value={branch.id}>{branch.address || branch.city || `Sede #${branch.id}`}</MenuItem>
-            ))}
-          </TextField>
-          <Button variant="outlined" onClick={() => showNotification('Filtro elementi archiviati non ancora disponibile.', 'info')}>Mostra archiviate</Button>
-          <TextField size="small" label="Nominativo" variant="outlined" value="" onChange={() => {}} />
-          <Button variant="outlined" onClick={() => showNotification('Ricerca avanzata non ancora disponibile.', 'info')}>Ricerca avanzata</Button>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => showNotification('Ricarica elenco completata.', 'info')}>Ricarica elenco</Button>
-        </Box>
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+          {companyId ? (
+            <Chip
+              label={`Azienda: ${companies.find((c) => String(c.id) === String(companyId))?.name || `Azienda #${companyId}`}`}
+              color="primary"
+              variant="outlined"
+              size="small"
+              sx={{ fontWeight: 600 }}
+            />
+          ) : (
+            <Chip label="Tutte le aziende" size="small" variant="outlined" />
+          )}
+          {branchId && (
+            <Chip
+              label={`Sede: ${branches.find((b) => String(b.id) === String(branchId))?.name || `Sede #${branchId}`}`}
+              color="success"
+              variant="outlined"
+              size="small"
+              sx={{ fontWeight: 600 }}
+            />
+          )}
+          <Button variant="outlined" onClick={() => showNotification('Filtro elementi archiviati non ancora disponibile.', 'info')}>
+            Mostra archiviate
+          </Button>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => showNotification('Ricarica elenco completata.', 'info')}>
+            Ricarica elenco
+          </Button>
+        </Stack>
       </Box>
 
       {activeAnalysisTab === 'visits' && (

@@ -72,7 +72,11 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
       }
       if (list.length > 0) {
         setCompanies(list)
-        setSelectedCompanyId(list[0].id)
+        if (activeCompanyId && activeCompanyId !== 'all') {
+          setSelectedCompanyId(activeCompanyId)
+        } else if (!selectedCompanyId) {
+          setSelectedCompanyId(list[0].id)
+        }
       }
     } catch (err) {
       setError('Impossibile caricare l\'elenco delle aziende.')
@@ -164,36 +168,31 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
               Generazione automatica aggregata dati sanitari e di rischio, validazione XSD conforme e invio telematico INAIL.
             </Typography>
           </Box>
-          <Chip
-            icon={<VerifiedUserIcon />}
-            label="Schema XSD v1.0 Validato"
-            color="success"
-            variant="outlined"
-            size="small"
-          />
+          <Stack direction="row" spacing={1} alignItems="center">
+            {selectedCompany && (
+              <Chip
+                label={`Azienda: ${selectedCompany.name}`}
+                color="primary"
+                variant="outlined"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+            )}
+            <Chip
+              icon={<VerifiedUserIcon />}
+              label="Schema XSD v1.0 Validato"
+              color="success"
+              variant="outlined"
+              size="small"
+            />
+          </Stack>
         </Stack>
 
         <Divider sx={{ my: 2 }} />
 
         {/* CONTROLS */}
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={8} md={6}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label="Azienda di Riferimento *"
-              value={selectedCompanyId}
-              onChange={(e) => setSelectedCompanyId(Number(e.target.value))}
-            >
-              {companies.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.name} {c.vatNumber ? `(P.IVA: ${c.vatNumber})` : ''}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={4} md={3}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               size="small"
@@ -204,7 +203,7 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
               inputProps={{ min: 2020, max: 2030 }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} sm={6}>
             <Stack direction="row" spacing={1}>
               <Button
                 fullWidth
