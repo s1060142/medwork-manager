@@ -46,6 +46,11 @@ Implementation Notes:
    - Gestione pulita e reattiva dei token scaduti con reset automatico della sessione ed emissione dell'evento `medwork:auth-expired`.
 7. **Risoluzione ReferenceError in Navigazione**:
    - Eliminato residuo `setSelectedCompanyTab` che causava errore silenzioso al click su "Gestione Lavoratori".
+8. **Risoluzione Service Worker Race Condition**:
+   - `main.jsx` DEV mode service worker unregister cambiato da `getRegistrations()` a `navigator.serviceWorker.ready.then()`.
+   - La vecchia chiamata `getRegistrations()` veniva eseguita DOPO che il service worker aveva già intercettato e servito il bundle PROD cached.
+   - La nuova chiamata `ready.then()` attende che il service worker sia completamente attivo prima di fare unregister, eliminando la race condition.
+   - Questo spiega perché Playwright passava (Chromium fresco senza service worker cached) ma il browser reale falliva (service worker cached serve il bundle vecchio).
 8. **Rimozione Barra Tab Duplicata in Gestione Aziende (`App.tsx`)**:
    - Eliminata la barra tab legacy secondaria in Gestione Aziende.
 

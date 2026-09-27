@@ -20,10 +20,16 @@ createRoot(document.getElementById('root')).render(
 )
 
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-      registration.unregister().catch(() => {})
-    })
+  // Clear service worker cache and unregister before React mounts
+  // This prevents stale PROD bundle from being served to real browsers
+  if (navigator.serviceWorker.controller) {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => caches.delete(key))
+    }).catch(() => {})
+    navigator.serviceWorker.controller.unregister().catch(() => {})
+  }
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.unregister().catch(() => {})
   })
 }
 

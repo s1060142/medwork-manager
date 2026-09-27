@@ -105,94 +105,130 @@ const SIDE_NAV_ITEMS = [
   { key: 'health-surveillance', label: 'Sorveglianza Sanitaria', icon: HealthAndSafetyIcon },
   { key: 'company-management', label: 'Gestione Aziende', icon: BusinessIcon },
   { key: 'workers-management', label: 'Gestione Lavoratori', icon: BadgeIcon },
-  { key: 'schedule', label: 'Scadenzario & Visite', icon: EventIcon },
   { key: 'analysis', label: 'Analisi & Relazioni', icon: AssessmentIcon },
   { key: 'employer-portal', label: 'Portale RSPP/DdL', icon: LocalHospitalIcon },
   { key: 'administration', label: 'Amministrazione', icon: SettingsApplicationsIcon },
 ]
 
-// Azioni storiche del cockpit che puntavano a centri non più presenti come moduli dedicati:
-// vengono risolte su un modulo vivo per non lasciare mai un vicolo cieco.
+// Azioni storiche del cockpit e vecchi collegamenti risolti in modo trasparente
 const LEGACY_MODULE_ALIASES = {
   'batch-signature': 'giudizio-idoneita',
   'firma-massiva': 'giudizio-idoneita',
   'visit-planning': 'schedules',
+  'home': 'schedules',
+  'schedule': 'schedules',
+  'agenda': 'appointments-calendar',
+  'appointments': 'appointments-calendar',
   'doctor-dashboard': 'dashboard',
   'medical-dashboard': 'dashboard',
   'employees-crud': 'employees',
+  'medical-records': 'cartella-sanitaria',
+  'medical-visits': 'cartella-sanitaria',
+  'anamneses': 'medical-visit-stepper',
+  'scheduled-exams': 'schedules',
+  'visit-exams': 'medical-visit-stepper',
+  'vaccinations': 'vaccination-deadlines',
 }
 
 const MODULE_ITEMS = [
+  // --- Macro-Area: Sorveglianza Sanitaria & Visite (Accorpamento Flusso Clinico Unico) ---
   { key: 'dashboard', label: 'Il Mio Giorno' },
-  { key: 'home', label: 'Dashboard Scadenze' },
-  { key: 'companies', label: 'Aziende', entityKey: 'companies' },
-  { key: 'company-groups', label: 'Gruppi Aziendali', entityKey: 'company-groups' },
-  { key: 'company-contacts', label: 'Figure Aziendali', entityKey: 'company-contacts' },
-  { key: 'employees', label: 'Lavoratori' },
-  { key: 'protocols', label: 'Protocolli' },
-  { key: 'protocols-registry', label: 'Registro Protocolli', entityKey: 'protocols-registry' },
-  { key: 'personal-protocols', label: 'Protocolli Personali', entityKey: 'personal-protocols' },
-  { key: 'schedules', label: 'Scadenze & Agende' },
   { key: 'medical-visit-stepper', label: 'Nuova Visita (Step)' },
-  { key: 'appointments-calendar', label: 'Calendario Visite' },
-  { key: 'billing', label: 'Fatturazione' },
-  { key: 'audit', label: 'Audit Trail' },
-  { key: 'exam-types', label: 'Cataloghi Esami', entityKey: 'exam-types' },
-  { key: 'job-roles', label: 'Mansioni', entityKey: 'job-roles' },
-  { key: 'tools', label: 'Strumenti' },
-  { key: 'settings', label: 'Impostazioni' },
-  { key: 'reporting', label: 'Reportistica & All. 3B' },
+  { key: 'cartella-sanitaria', label: 'Cartella Sanitaria 3A' },
+  { key: 'giudizio-idoneita', label: 'Centro Giudizi & Firma' },
+  { key: 'appointments-calendar', label: 'Calendario & Appuntamenti' },
+  { key: 'schedules', label: 'Scadenze & Pianificazione' },
+  { key: 'recall-campaigns', label: 'Convocazioni & Recall' },
+  { key: 'vaccination-deadlines', label: 'Vaccinazioni' },
+  { key: 'site-visits', label: 'Sopralluoghi Ambienti' },
+  { key: 'firma-grafometrica', label: 'Firma su Tablet' },
+
+  // --- Macro-Area: Gestione Aziende ---
+  { key: 'companies', label: 'Aziende', entityKey: 'companies' },
+  { key: 'company-groups-workspace', label: 'Gruppi Aziendali' },
+  { key: 'company-contacts', label: 'Figure Aziendali', entityKey: 'company-contacts' },
+  { key: 'protocols', label: 'Protocolli Sanitari' },
   { key: 'branches', label: 'Sedi', entityKey: 'branches' },
   { key: 'departments', label: 'Reparti', entityKey: 'departments' },
   { key: 'work-locations', label: 'Luoghi di Lavoro', entityKey: 'work-locations' },
-  { key: 'risk-factors', label: 'Fattori di Rischio', entityKey: 'risk-factors' },
-  { key: 'employee-risks', label: 'Rischi Dipendente', entityKey: 'employee-risks' },
-  { key: 'medical-records', label: 'Cartelle Sanitarie (All. 3A)', entityKey: 'medical-records' },
-  { key: 'medical-visits', label: 'Registro Visite Mediche', entityKey: 'medical-visits' },
-  { key: 'anamneses', label: 'Anamnesi Guidata', entityKey: 'anamneses' },
-  { key: 'visit-exams', label: 'Esami Visita', entityKey: 'visit-exams' },
-  { key: 'scheduled-exams', label: 'Accertamenti Strumentali', entityKey: 'scheduled-exams' },
-  { key: 'site-visits', label: 'Sopralluoghi Ambienti', entityKey: 'site-visits' },
-  { key: 'vaccinations', label: 'Vaccinazioni', entityKey: 'vaccinations' },
-  { key: 'doctor-availabilities', label: 'Disponibilità Medici', entityKey: 'doctor-availabilities' },
-  { key: 'notification-logs', label: 'Log Notifiche', entityKey: 'notification-logs' },
 
-  // --- Moduli reintegrati: centri precedentemente orfani (vedi FRONTEND_UX_AUDIT.md) ---
-  { key: 'giudizio-idoneita', label: 'Centro Giudizi & Firma' },
-  { key: 'cartella-sanitaria', label: 'Cartella Sanitaria 3A' },
-  { key: 'firma-grafometrica', label: 'Firma Grafometrica' },
+  // --- Macro-Area: Gestione Lavoratori ---
+  { key: 'employees', label: 'Lavoratori' },
+  { key: 'employee-risks', label: 'Rischi Lavoratori', entityKey: 'employee-risks' },
+
+  // --- Macro-Area: Analisi & Relazioni ---
+  { key: 'reporting', label: 'Reportistica & All. 3B' },
   { key: 'compliance', label: 'Compliance Radar' },
   { key: 'allegato-3b', label: 'Allegato 3B INAIL' },
   { key: 'analytics', label: 'Analytics & Predizioni' },
-  { key: 'agenda', label: 'Agenda Giornaliera' },
-  { key: 'appointments', label: 'Prenotazioni' },
-  { key: 'recall-campaigns', label: 'Convocazioni & Recall' },
-  { key: 'activity-deadlines', label: 'Scadenzario Attività' },
-  { key: 'nominations', label: 'Scadenzario Nomine' },
-  { key: 'vaccination-deadlines', label: 'Scadenzario Vaccinazioni' },
-  { key: 'alert-multicanale', label: 'Alert Multi-canale' },
-  { key: 'company-groups-workspace', label: 'Workspace Gruppi' },
+  { key: 'audit', label: 'Audit Trail' },
+
+  // --- Macro-Area: Portale RSPP/DdL ---
+  { key: 'employer-portal', label: 'Portale RSPP/DdL' },
+
+  // --- Macro-Area: Amministrazione ---
   { key: 'medical-staff', label: 'Personale Sanitario' },
+  { key: 'billing', label: 'Fatturazione' },
   { key: 'migration', label: 'Migrazione & Import' },
   { key: 'questionnaires', label: 'Questionari' },
-  { key: 'employer-portal', label: 'Portale RSPP/DdL' },
+  { key: 'exam-types', label: 'Cataloghi Esami', entityKey: 'exam-types' },
+  { key: 'job-roles', label: 'Mansioni', entityKey: 'job-roles' },
+  { key: 'risk-factors', label: 'Fattori di Rischio', entityKey: 'risk-factors' },
+  { key: 'tools', label: 'Strumenti' },
+  { key: 'settings', label: 'Impostazioni' },
 ]
 
 const AREA_MODULE_KEYS = {
-  'health-surveillance': ['dashboard', 'medical-visit-stepper', 'appointments-calendar', 'giudizio-idoneita', 'cartella-sanitaria', 'medical-records', 'medical-visits', 'anamneses', 'scheduled-exams', 'vaccinations', 'visit-exams', 'site-visits', 'firma-grafometrica'],
-  'company-management': ['companies', 'company-groups-workspace', 'company-groups', 'company-contacts', 'employees', 'protocols', 'schedules', 'branches', 'departments', 'work-locations'],
-  'workers-management': ['employees', 'employee-risks', 'medical-records', 'medical-visits'],
-  schedule: ['home', 'schedules', 'agenda', 'appointments', 'appointments-calendar', 'recall-campaigns', 'activity-deadlines', 'nominations', 'vaccination-deadlines', 'doctor-availabilities', 'alert-multicanale', 'notification-logs'],
-  analysis: ['reporting', 'compliance', 'allegato-3b', 'analytics', 'audit'],
+  'health-surveillance': [
+    'dashboard',
+    'medical-visit-stepper',
+    'cartella-sanitaria',
+    'giudizio-idoneita',
+    'appointments-calendar',
+    'schedules',
+    'recall-campaigns',
+    'vaccination-deadlines',
+    'site-visits',
+    'firma-grafometrica',
+  ],
+  'company-management': [
+    'companies',
+    'company-groups-workspace',
+    'company-contacts',
+    'protocols',
+    'branches',
+    'departments',
+    'work-locations',
+  ],
+  'workers-management': [
+    'employees',
+    'employee-risks',
+  ],
+  analysis: [
+    'reporting',
+    'compliance',
+    'allegato-3b',
+    'analytics',
+    'audit',
+  ],
   'employer-portal': ['employer-portal'],
-  administration: ['billing', 'medical-staff', 'migration', 'questionnaires', 'tools', 'settings', 'exam-types', 'job-roles', 'risk-factors', 'protocols-registry', 'personal-protocols'],
+  administration: [
+    'medical-staff',
+    'billing',
+    'migration',
+    'questionnaires',
+    'exam-types',
+    'job-roles',
+    'risk-factors',
+    'tools',
+    'settings',
+  ],
 }
 
 const AREA_DEFAULT_MODULE = {
   'health-surveillance': 'dashboard',
   'company-management': 'companies',
   'workers-management': 'employees',
-  schedule: 'home',
   analysis: 'reporting',
   'employer-portal': 'employer-portal',
   administration: 'settings',
@@ -332,33 +368,30 @@ function App() {
     const doctorAllowed = new Set([
       'dashboard',
       'medical-dashboard',
-      'home',
-      'employees',
-      'protocols',
-      'protocols-registry',
-      'personal-protocols',
-      'schedules',
       'medical-visit-stepper',
-      'appointments-calendar',
-      'anamneses',
-      'scheduled-exams',
-      'vaccinations',
-      'tools',
-      'reporting',
-      'medical-records',
-      'medical-visits',
-      'visit-exams',
-      'exam-types',
-      'giudizio-idoneita',
       'cartella-sanitaria',
-      'firma-grafometrica',
-      'compliance',
-      'allegato-3b',
-      'agenda',
-      'appointments',
+      'giudizio-idoneita',
+      'appointments-calendar',
+      'schedules',
       'recall-campaigns',
       'vaccination-deadlines',
       'site-visits',
+      'firma-grafometrica',
+      'companies',
+      'company-groups-workspace',
+      'company-contacts',
+      'protocols',
+      'branches',
+      'departments',
+      'work-locations',
+      'employees',
+      'employee-risks',
+      'reporting',
+      'compliance',
+      'allegato-3b',
+      'analytics',
+      'audit',
+      'tools',
     ])
 
     return MODULE_ITEMS.filter((item) => doctorAllowed.has(item.key))
@@ -584,7 +617,18 @@ function App() {
     }
 
     if (moduleKey === 'appointments-calendar') {
-      return <AppointmentsCalendar activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onCreateAppointment={() => setQuickCreateRequest({ entityKey: 'medical-visits', token: Date.now() })} />
+      return (
+        <AppointmentsCalendar
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
+          onOpenMedicalVisitCreate={(employeeId) => {
+            if (employeeId) {
+              setProfileEmployeeId(employeeId)
+            }
+            setSelectedModuleKey('medical-visit-stepper')
+          }}
+        />
+      )
     }
 
     if (moduleKey === 'billing') {

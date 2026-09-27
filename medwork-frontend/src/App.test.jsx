@@ -75,25 +75,22 @@ describe('App shell and navigation', () => {
   test('renders the main navigation areas after login as Doctor', async () => {
     renderApp()
 
-    // The left sidebar should expose the primary areas defined in SIDE_NAV_ITEMS for Doctor
+    // The left sidebar exposes the clean primary areas for Doctor
     expect(await screen.findByRole('button', { name: /Sorveglianza Sanitaria/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Gestione Aziende/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Gestione Lavoratori/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Scadenzario & Visite/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Analisi & Relazioni/i })).toBeInTheDocument()
   })
 
-  test('shows schedule area dashboard or allows switching to visit planning', async () => {
+  test('shows health surveillance dashboard or allows switching to visit planning', async () => {
     const user = userEvent.setup()
     renderApp()
 
-    const scheduleButton = await screen.findByRole('button', { name: /Scadenzario & Visite/i })
-    await user.click(scheduleButton)
+    // By default doctor lands on Il Mio Giorno
+    expect(await screen.findByRole('heading', { name: /Il Mio Giorno/i })).toBeInTheDocument()
 
-    await waitFor(() => {
-      expect(screen.getByText(/Visite in Scadenza/i)).toBeInTheDocument()
-    })
-
-    const visitPlanningButton = screen.getByRole('button', { name: /Scadenze & Agende/i })
+    // Click on Scadenze & Pianificazione chip
+    const visitPlanningButton = await screen.findByRole('button', { name: /Scadenze & Pianificazione/i })
     await user.click(visitPlanningButton)
 
     await waitFor(() => {
@@ -217,11 +214,11 @@ describe('App shell and navigation', () => {
     const user = userEvent.setup()
     renderApp()
 
-    // Navigate to Health Surveillance -> Nuova Visita Medica
+    // Navigate to Health Surveillance -> Nuova Visita (Step)
     const healthNavBtn = await screen.findByRole('button', { name: /Sorveglianza Sanitaria/i })
     await user.click(healthNavBtn)
 
-    const stepperChip = await screen.findByRole('button', { name: /Nuova Visita Medica/i })
+    const stepperChip = await screen.findByRole('button', { name: /Nuova Visita \(Step\)/i })
     await user.click(stepperChip)
 
     // Verify checklist is rendered

@@ -6,14 +6,12 @@ Cosa funziona oggi, organizzato per modulo.
 ---
 
 ## 🖥️ Interfaccia Utente & SaaS Navigation Shell
-- **Modern SaaS Shell**: Layout moderno con sidebar organizzata per flussi clinici/amministrativi, limitazione larghezza viewport (1600px max-width) anti-stretching su monitor ultrawide e breadcrumb bar dinamica. I moduli dell'area attiva sono selezionabili dalla strip di chip sotto la breadcrumb.
-- **Cockpit "Il Mio Giorno"**: Landing per Medico Competente (e accessibile anche all'Admin) con KPI *Visite in programma oggi / Giudizi da firmare / Scadenze visite 7 gg / Compliance D.Lgs. 81/08*, agenda pazienti del giorno con **Avvia Visita** in 1 clic, Morning Digest e shortcut (Batch Visit Planner, Recall, Smart Protocol Generator). I drill-down delle KPI vengono risolti su moduli esistenti (`handleModuleNavigation`).
-- **Doctor Cockpit Hub**: `DashboardMedico` disponibile come secondo modulo dell'area *Sorveglianza Sanitaria*, con indicatori real-time di scadenze a 7 giorni, visite scadute, triage clinico e tunnel diretto *"⚡ Avvia Visita"*.
-- **Active Company & Branch Context Hub**: Selettore rapido globale nella topbar (🏢 Tutte le Aziende / Azienda Specifica + 📍 Selettore Sede/Stabilimento dedicato) con persistenza in `localStorage`.
+- **Unified Clinical Navigation**: Accorpamento completo e pulito di tutte le attività cliniche, di visita e di scadenza sotto l'unica macro-area **Sorveglianza Sanitaria** (`Il Mio Giorno`, `Nuova Visita (Step)`, `Cartella Sanitaria 3A`, `Centro Giudizi & Firma`, `Calendario & Appuntamenti`, `Scadenze & Pianificazione`, `Convocazioni & Recall`, `Vaccinazioni`, `Sopralluoghi Ambienti`, `Firma su Tablet`). Eliminazione totale dei sottomenu ridondanti e dei duplicati.
+- **Cockpit "Il Mio Giorno"**: Landing per Medico Competente con KPI *Visite in programma oggi / Giudizi da firmare / Scadenze visite 7 gg / Compliance D.Lgs. 81/08*, agenda pazienti del giorno con **Avvia Visita** in 1 clic, Morning Digest e shortcut.
+- **Active Company & Branch Context Hub**: Selettore rapido globale nella topbar con persistenza in `localStorage`.
 - **Persistent Clinical Context Banner**: Banner contestuale sticky presente in ogni modulo e schermata, indicante Ragione Sociale attiva, Sede operativa, status isolamento clinico e pulsante rapido per ripristino modalità globale.
 - **Universal Context Propagation**: Filtraggio automatico end-to-end su Lavoratori, Registro Visite, Centro Giudizi & Firma, Cartelle Sanitarie (All. 3A), Scadenzario Attività, Convocazioni Recall, Compliance Radar, Allegato 3B, Calendario Visite, Dashboard e Fatturazione.
 - **MUI X Date Localization**: Integrazione a livello root di `LocalizationProvider` con `AdapterDateFns` e locale italiano (`it`).
-- **Full Module Integration & Reachability**: Tutti i 27 componenti e centri specialistici del frontend sono integrati e accessibili nelle rispettive macro-aree di `App.tsx` (Firma Massiva/Giudizio Idoneità, Cartelle 3A, Scadenzari specialistici, Recall & Convocazioni, Import HR, Ricerca Globale `Ctrl+K`, Allegato 3B Center, Analytics, Migration, Employer Portal).
 
 ---
 
@@ -99,7 +97,8 @@ Cosa funziona oggi, organizzato per modulo.
 - `MedicalVisitStepper` — flusso step-by-step (anamnesi → obiettivo → giudizio) con **Checklist Anamnestica Dinamica per Mansione & Rischi (Allegato 3A)**: 7 categorie di rischio (VDT, MMC, Rumore, Chimico, Notturno, Guida/Quota, Generale) con riconoscimento automatico mansione, badge `★ Suggerito`, 1-click apply e check interattivi.
 - **Tunnel 1-Click "Avvia Visita" da Scadenziario**: Avvio immediato visita pre-selezionando lavoratore, azienda e protocollo attivo
 - `MedicalVisitsController` — CRUD completo
-- `MedicalRecordsController` — CRUD completo cartelle sanitarie (Cartella 3A ricollocata sotto Sorveglianza Sanitaria)
+- `AppointmentsCalendar` — Calendario visite e appuntamenti con **Interazione Rapida a Doppio Click**: doppio click su qualsiasi giorno del mese per aprire la modale interattiva di pianificazione appuntamento precompilata con la data selezionata, orario, ricerca/selezione del lavoratore, scelta della tipologia di visita (Periodica, Preventiva, Richiesta, Cambio Mansione, Rientro Malattia >60gg, Straordinaria, Vaccinazione, Esami Clinici), note e pulsanti diretti "Salva in Agenda" o "Apri Stepper Clinico (5 fasi)".
+- `MedicalRecordsController` — CRUD completo cartelle sanitarie (Cartella 3A ricollocata sotto Sorveglianza Sanitaria) con **Visualizzatore Completo Scheda Visita & Storico Clinico**: tab dedicato per navigare cronologicamente tra tutte le visite mediche effettuate con visualizzazione per intero di parametri vitali (PA, FC, SpO2, BMI, Temp), esame obiettivo clinico, organi bersaglio, riscontri anamnestici, giudizio di idoneità a norma Art. 41 D.Lgs. 81/08 e download 1-click del certificato PDF (DPR 445/2000).
 - `VisitJudgmentController` — Giudizi strutturati (OutcomeCode, Prescrizioni, Limitazioni, NextReviewDate)
 - Calcolo automatico prossima scadenza da protocollo
 - JobRole protocol fallback (se nessun PersonalProtocol, usa protocollo di mansione)
