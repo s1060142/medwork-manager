@@ -32,6 +32,8 @@ import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt'
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import { apiGet, apiSend } from '../services/apiClient'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 function SiteVisitDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -420,12 +422,10 @@ function SiteVisitDeadlinesCenter({ activeCompanyId = '' }) {
 
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <TextField
+                <DatePicker
                   label="Data Sopralluogo *"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={planDate}
-                  onChange={(e) => setPlanDate(e.target.value)}
+                  value={currentDateValue(planDate)}
+                  onChange={(date) => setPlanDate(formDateValue(date))}
                   fullWidth
                 />
               </Grid>
@@ -492,12 +492,10 @@ function SiteVisitDeadlinesCenter({ activeCompanyId = '' }) {
                 <MenuItem value="Non Conforme">Non Conforme (Gravi carenze igienico-sanitarie)</MenuItem>
               </TextField>
 
-              <TextField
+              <DatePicker
                 label="Data Prossimo Sopralluogo"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={reportNextDueDate}
-                onChange={(e) => setReportNextDueDate(e.target.value)}
+                value={currentDateValue(reportNextDueDate)}
+                onChange={(date) => setReportNextDueDate(formDateValue(date))}
                 fullWidth
               />
 

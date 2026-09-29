@@ -63,6 +63,8 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import FlakyIcon from '@mui/icons-material/Flaky'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
 import { apiGet, apiSend, getApiBaseUrl, getHeaders } from '../services/apiClient'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 export default function CompanyGroupsCenter() {
   const [groups, setGroups] = useState([])
@@ -1825,13 +1827,11 @@ export default function CompanyGroupsCenter() {
             Pianifica le visite per i {selectedCandidates.length} lavoratori selezionati appartenenti alle diverse aziende del gruppo.
           </Typography>
           <Stack spacing={2}>
-            <TextField
-              type="date"
+            <DatePicker
               label="Data Prevista Visita"
               fullWidth
-              value={visitPlanForm.scheduledDate}
-              onChange={(e) => setVisitPlanForm(prev => ({ ...prev, scheduledDate: e.target.value }))}
-              InputLabelProps={{ shrink: true }}
+              value={currentDateValue(visitPlanForm.scheduledDate)}
+              onChange={(date) => setVisitPlanForm(prev => ({ ...prev, scheduledDate: formDateValue(date) }))}
             />
             <FormControl fullWidth>
               <InputLabel>Tipologia Visita</InputLabel>
@@ -1886,23 +1886,19 @@ export default function CompanyGroupsCenter() {
             />
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <TextField
-                  type="date"
+                <DatePicker
                   label="Data Inizio"
                   fullWidth
-                  value={campaignForm.startDate}
-                  onChange={(e) => setCampaignForm(prev => ({ ...prev, startDate: e.target.value }))}
-                  InputLabelProps={{ shrink: true }}
+                  value={currentDateValue(campaignForm.startDate)}
+                  onChange={(date) => setCampaignForm(prev => ({ ...prev, startDate: formDateValue(date) }))}
                 />
               </Grid>
               <Grid item xs={6}>
-                <TextField
-                  type="date"
+                <DatePicker
                   label="Data Conclusione"
                   fullWidth
-                  value={campaignForm.endDate}
-                  onChange={(e) => setCampaignForm(prev => ({ ...prev, endDate: e.target.value }))}
-                  InputLabelProps={{ shrink: true }}
+                  value={currentDateValue(campaignForm.endDate)}
+                  onChange={(date) => setCampaignForm(prev => ({ ...prev, endDate: formDateValue(date) }))}
                 />
               </Grid>
             </Grid>
@@ -1932,13 +1928,11 @@ export default function CompanyGroupsCenter() {
             Programma il sopralluogo congiunto obbligatorio ex Art. 25 c. 1 lett. l D.Lgs 81/08 per tutte le aziende operative del gruppo.
           </Typography>
           <Stack spacing={2}>
-            <TextField
-              type="date"
+            <DatePicker
               label="Data Sopralluogo"
               fullWidth
-              value={siteVisitForm.scheduledDate}
-              onChange={(e) => setSiteVisitForm(prev => ({ ...prev, scheduledDate: e.target.value }))}
-              InputLabelProps={{ shrink: true }}
+              value={currentDateValue(siteVisitForm.scheduledDate)}
+              onChange={(date) => setSiteVisitForm(prev => ({ ...prev, scheduledDate: formDateValue(date) }))}
             />
             <TextField
               label="Note e Punti di Ispezione"

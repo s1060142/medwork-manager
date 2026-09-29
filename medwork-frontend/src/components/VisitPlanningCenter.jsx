@@ -31,6 +31,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import SendIcon from '@mui/icons-material/Send'
 import EventAvailableIcon from '@mui/icons-material/EventAvailable'
 import { apiGet, apiSend } from '../services/apiClient'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 function toDate(value) {
   const date = new Date(value)
@@ -427,14 +429,17 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                type="date"
+              <DatePicker
                 fullWidth
-                size="small"
                 label="Data della Sessione *"
-                value={batchDate}
-                onChange={(e) => setBatchDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
+                value={currentDateValue(batchDate)}
+                onChange={(date) => setBatchDate(formDateValue(date))}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: 'small',
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={4}>

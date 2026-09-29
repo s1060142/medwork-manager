@@ -17,7 +17,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import DatePicker from './DatePicker'
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
@@ -831,25 +831,15 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
         <Box sx={{ mt: 2 }}>
           <Box sx={{ mb: 2 }}>
             <Box direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-              <DesktopDatePicker
-                size="small"
+              <DatePicker
                 label="Data Da*"
-                variant="outlined"
                 value={currentDateValue('2026-01-01')}
                 onChange={() => {}}
-                inputFormat="dd/MM/yyyy"
-                locale={DATE_PICKER_LOCALE}
-                InputLabelProps={{ shrink: true }}
               />
-              <DesktopDatePicker
-                size="small"
+              <DatePicker
                 label="Data A*"
-                variant="outlined"
                 value={currentDateValue('2026-12-31')}
                 onChange={() => {}}
-                inputFormat="dd/MM/yyyy"
-                locale={DATE_PICKER_LOCALE}
-                InputLabelProps={{ shrink: true }}
               />
               <TextField size="small" label="Tipologia" variant="outlined" select value="" onChange={() => {}}>
                 <MenuItem value="">Seleziona</MenuItem>
@@ -915,25 +905,15 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
                 <TextField size="small" label="Intervallo date" variant="outlined" select value="" onChange={() => {}}>
                   <MenuItem value="">Seleziona</MenuItem>
                 </TextField>
-                <DesktopDatePicker
-                  size="small"
+                <DatePicker
                   label="Data Da*"
-                  variant="outlined"
                   value={currentDateValue('2026-01-01')}
                   onChange={() => {}}
-                  inputFormat="dd/MM/yyyy"
-                  locale={DATE_PICKER_LOCALE}
-                  InputLabelProps={{ shrink: true }}
                 />
-                <DesktopDatePicker
-                  size="small"
+                <DatePicker
                   label="Data a"
-                  variant="outlined"
                   value={currentDateValue('2026-12-31')}
                   onChange={() => {}}
-                  inputFormat="dd/MM/yyyy"
-                  locale={DATE_PICKER_LOCALE}
-                  InputLabelProps={{ shrink: true }}
                 />
                 <TextField size="small" label="Tipo analisi*" variant="outlined" select value="" onChange={() => {}}>
                   <MenuItem value="">Seleziona</MenuItem>

@@ -61,6 +61,8 @@ import {
 } from '@mui/icons-material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 const STAFF_ROLES = [
   { value: 'MedicoCompetente', label: 'Medico Competente (Art. 38)' },
@@ -1181,25 +1183,31 @@ export default function MedicalStaffCenter() {
             </Typography>
             <Grid container spacing={1.5}>
               <Grid item xs={6}>
-                <TextField
+                <DatePicker
                   fullWidth
-                  type="date"
-                  size="small"
                   label="Data Inizio"
-                  InputLabelProps={{ shrink: true }}
-                  value={absenceForm.startDate}
-                  onChange={(e) => setAbsenceForm({ ...absenceForm, startDate: e.target.value })}
+                  value={currentDateValue(absenceForm.startDate)}
+                  onChange={(date) => setAbsenceForm({ ...absenceForm, startDate: formDateValue(date) })}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      size: 'small',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
-                <TextField
+                <DatePicker
                   fullWidth
-                  type="date"
-                  size="small"
                   label="Data Fine"
-                  InputLabelProps={{ shrink: true }}
-                  value={absenceForm.endDate}
-                  onChange={(e) => setAbsenceForm({ ...absenceForm, endDate: e.target.value })}
+                  value={currentDateValue(absenceForm.endDate)}
+                  onChange={(date) => setAbsenceForm({ ...absenceForm, endDate: formDateValue(date) })}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      size: 'small',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={4}>

@@ -350,17 +350,32 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2, fontWeight: 700 }}>Anagrafica Generale</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <TextField size="small" label="Nome" value={employee?.firstName || ''} InputProps={{ readOnly: true }} />
-                  <TextField size="small" label="Cognome" value={employee?.lastName || ''} InputProps={{ readOnly: true }} />
+                  <TextField
+                    size="small"
+                    label="Nome"
+                    value={formData.firstName}
+                    onChange={handleFieldChange('firstName')}
+                  />
+                  <TextField
+                    size="small"
+                    label="Cognome"
+                    value={formData.lastName}
+                    onChange={handleFieldChange('lastName')}
+                  />
                   <DatePicker
                     size="small"
                     label="Data di nascita"
-                    value={currentDateValue(employee?.birthDate)}
-                    inputFormat="dd/MM/yyyy"
-                    readOnly
-                    renderInput={(params) => <TextField size="small" {...params} />}
-                    locale={DATE_PICKER_LOCALE}
-                    InputLabelProps={{ shrink: true }}
+                    value={currentDateValue(formData.birthDate)}
+                    onChange={(date) => {
+                      setFormData((prev) => ({ ...prev, birthDate: formDateValue(date) }))
+                      setDirty(true)
+                    }}
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        InputLabelProps: { shrink: true }
+                      }
+                    }}
                   />
                   <TextField size="small" label="Sesso*" select value={formData.gender} onChange={handleFieldChange('gender')}>
                     <MenuItem value="M">Maschio</MenuItem>

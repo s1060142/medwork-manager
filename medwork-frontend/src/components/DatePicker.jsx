@@ -2,18 +2,38 @@ import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
 import { DATE_PICKER_LOCALE } from '../utils/datePicker'
 
 /**
- * DatePicker component that hides the placeholder text.
- * Fixes the issue where "GG/MM/AAAA" placeholder overlaps with the label.
+ * Unified DatePicker component that hides the placeholder text and fixes
+ * label overlap issues, supporting both slotProps and direct top-level props.
  */
-export function DatePicker({ slotProps, ...props }) {
+export function DatePicker({
+  slotProps,
+  size,
+  error,
+  helperText,
+  fullWidth,
+  required,
+  format = 'dd/MM/yyyy',
+  inputFormat,
+  sx,
+  ...props
+}) {
+  const finalFormat = inputFormat || format
+
   return (
     <DesktopDatePicker
-      {...props}
+      format={finalFormat}
       locale={DATE_PICKER_LOCALE}
-      InputLabelProps={{ shrink: true, ...props.InputLabelProps }}
+      sx={sx}
+      {...props}
       slotProps={{
         ...slotProps,
         textField: {
+          size: size ?? slotProps?.textField?.size ?? 'small',
+          error: error ?? slotProps?.textField?.error,
+          helperText: helperText ?? slotProps?.textField?.helperText,
+          fullWidth: fullWidth ?? slotProps?.textField?.fullWidth,
+          required: required ?? slotProps?.textField?.required,
+          InputLabelProps: { shrink: true, ...slotProps?.textField?.InputLabelProps },
           ...slotProps?.textField,
           placeholder: '',
           inputProps: {

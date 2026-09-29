@@ -21,6 +21,8 @@ import {
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -201,12 +203,10 @@ function NominationsDeadlinesCenter({ activeCompanyId = '' }) {
                 <MenuItem value="Preposto">Preposto</MenuItem>
               </TextField>
               
-              <TextField 
+              <DatePicker 
                 label="Scadenza Certificato" 
-                type="date" 
-                InputLabelProps={{ shrink: true }}
-                value={editExpiry}
-                onChange={(e) => setEditExpiry(e.target.value)}
+                value={currentDateValue(editExpiry)}
+                onChange={(date) => setEditExpiry(formDateValue(date))}
                 fullWidth
               />
             </Stack>

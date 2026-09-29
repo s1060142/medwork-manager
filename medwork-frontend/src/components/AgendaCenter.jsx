@@ -22,6 +22,8 @@ import {
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 function toDate(value) {
   const date = new Date(value)
@@ -80,11 +82,10 @@ function AgendaCenter({ activeCompanyId = '', onOpenMedicalVisitCreate }) {
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="center">
-            <TextField 
-              type="date" 
-              size="small" 
-              value={selectedDate} 
-              onChange={(e) => setSelectedDate(e.target.value)} 
+            <DatePicker
+              label="Data Agenda"
+              value={currentDateValue(selectedDate)}
+              onChange={(date) => setSelectedDate(formDateValue(date))}
             />
             <Button variant="outlined" onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}>Oggi</Button>
             <Button variant="contained" onClick={handleMorningDigest}>Invia Morning Digest</Button>

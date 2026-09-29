@@ -26,6 +26,8 @@ import { showNotification } from '../utils/notification'
 import { calculateItalianTaxCode } from '../utils/taxCode'
 import { getItalianMunicipalities } from '../services/municipalityService'
 import { appendAuditEvent } from '../utils/auditTrail'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 export default function WorkerFormDialog({
   open,
@@ -404,18 +406,21 @@ export default function WorkerFormDialog({
               </Box>
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1.5fr' }, gap: 2, mt: 2 }}>
-                <TextField
-                  size="small"
-                  type="date"
+                <DatePicker
                   label="Data di Nascita *"
-                  InputLabelProps={{ shrink: true }}
-                  value={form.birthDate}
-                  onChange={(e) => {
-                    setForm((prev) => ({ ...prev, birthDate: e.target.value }))
+                  value={currentDateValue(form.birthDate)}
+                  onChange={(date) => {
+                    setForm((prev) => ({ ...prev, birthDate: formDateValue(date) }))
                     if (errors.birthDate) setErrors((err) => ({ ...err, birthDate: null }))
                   }}
-                  error={Boolean(errors.birthDate)}
-                  helperText={errors.birthDate}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      error: Boolean(errors.birthDate),
+                      helperText: errors.birthDate,
+                      InputLabelProps: { shrink: true },
+                    },
+                  }}
                 />
                 <TextField
                   select

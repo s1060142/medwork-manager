@@ -22,7 +22,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import DatePicker from './DatePicker'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import InfoIcon from '@mui/icons-material/Info'
 import FlashOnIcon from '@mui/icons-material/FlashOn'
@@ -927,14 +927,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                     ))}
                   </TextField>
 
-                  <DesktopDatePicker
-                    size="small"
+                  <DatePicker
                     label="Data Visita *"
-                    InputLabelProps={{ shrink: true }}
                     value={currentDateValue(formData.visitDate)}
                     onChange={(date) => setField('visitDate', formDateValue(date))}
-                    inputFormat="dd/MM/yyyy"
-                    locale={DATE_PICKER_LOCALE}
                   />
 
                   <TextField
@@ -1418,17 +1414,13 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                     ))}
                   </TextField>
 
-                  <DesktopDatePicker
-                    size="small"
+                  <DatePicker
                     label="Prossima Scadenza Sorveglianza Sanitaria *"
-                    InputLabelProps={{ shrink: true }}
                     value={currentDateValue(formData.nextDeadlineDate)}
                     onChange={(date) => {
                       setField('nextDeadlineDate', formDateValue(date))
                       setDeadlineSource('manual')
                     }}
-                    inputFormat="dd/MM/yyyy"
-                    locale={DATE_PICKER_LOCALE}
                     slotProps={{
                       textField: {
                         helperText:

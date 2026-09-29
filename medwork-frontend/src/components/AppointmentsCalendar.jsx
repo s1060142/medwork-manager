@@ -29,6 +29,8 @@ import EventIcon from '@mui/icons-material/Event'
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 const WEEK_DAYS = ['LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB', 'DOM']
 
@@ -503,15 +505,18 @@ function AppointmentsCalendar({ onCreateAppointment, onOpenMedicalVisitCreate, a
 
             <Grid container spacing={2}>
               <Grid item xs={12} sm={7}>
-                <TextField
+                <DatePicker
                   label="Data Visita *"
-                  type="date"
                   fullWidth
-                  size="small"
-                  value={dialogDate}
-                  onChange={(e) => setDialogDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  required
+                  value={currentDateValue(dialogDate)}
+                  onChange={(date) => setDialogDate(formDateValue(date))}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      required: true,
+                      fullWidth: true,
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} sm={5}>

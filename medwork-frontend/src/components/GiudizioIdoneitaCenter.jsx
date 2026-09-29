@@ -27,7 +27,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import DatePicker from './DatePicker'
 import SaveIcon from '@mui/icons-material/Save'
 import DownloadIcon from '@mui/icons-material/Download'
 import EditIcon from '@mui/icons-material/Edit'
@@ -780,9 +780,8 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
               helperText="Specificare divieti o esclusioni da mansioni specifiche o posture prolungate."
             />
 
-            <DesktopDatePicker
+            <DatePicker
               label="Data Prossima Revisione / Scadenza Idoneità *"
-              InputLabelProps={{ shrink: true }}
               value={currentDateValue(judgmentForm.nextReviewDate)}
               onChange={(date) =>
                 setJudgmentForm({
@@ -790,8 +789,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
                   nextReviewDate: formDateValue(date),
                 })
               }
-              inputFormat="dd/MM/yyyy"
-              locale={DATE_PICKER_LOCALE}
             />
           </Stack>
         </DialogContent>

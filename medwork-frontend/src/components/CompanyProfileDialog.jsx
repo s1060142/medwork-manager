@@ -24,7 +24,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker'
+import DatePicker from './DatePicker'
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import SaveIcon from '@mui/icons-material/Save'
@@ -527,21 +527,15 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Altri dati</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
                   <TextField size="small" label="Numero lettera intenti" value={formData.intentLetterNumber} onChange={handleFieldChange('intentLetterNumber')} />
-                  <DesktopDatePicker
+                  <DatePicker
                     label="Data lettera intenti"
                     value={currentDateValue(formData.intentLetterDate)}
                     onChange={(date) => handleFieldChange('intentLetterDate')({ target: { value: formDateValue(date) } })}
-                    inputFormat="yyyy-MM-dd"
-                    locale={DATE_PICKER_LOCALE}
-                    renderInput={(params) => <TextField {...params} size="small" />}
                   />
-                  <DesktopDatePicker
+                  <DatePicker
                     label="Scadenza lettera intenti"
                     value={currentDateValue(formData.intentLetterExpiry)}
                     onChange={(date) => handleFieldChange('intentLetterExpiry')({ target: { value: formDateValue(date) } })}
-                    inputFormat="yyyy-MM-dd"
-                    locale={DATE_PICKER_LOCALE}
-                    renderInput={(params) => <TextField {...params} size="small" />}
                   />
                   <TextField size="small" label="Addebito spese bancarie" select value={formData.bankChargesDebit} onChange={handleFieldChange('bankChargesDebit')}>
                     <MenuItem value="">Seleziona</MenuItem>

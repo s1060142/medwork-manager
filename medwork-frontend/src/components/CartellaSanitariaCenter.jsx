@@ -40,6 +40,8 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { apiDownload, apiGet, apiSend } from '../services/apiClient'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 const FIELDS = [
   { key: 'medicalHistory', label: 'Anamnesi patologica remota', multiline: true, rows: 4, helperText: 'Patologie pregresse, interventi chirurgici, ospedalizzazioni' },
@@ -694,14 +696,17 @@ export default function CartellaSanitariaCenter({ employeeId: employeeIdProp, ac
           </Typography>
 
           <Stack spacing={2.5}>
-            <TextField
+            <DatePicker
               label="Data Cessazione / Consegna"
-              type="date"
-              size="small"
               fullWidth
-              value={cessationDate}
-              onChange={(e) => setCessationDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              value={currentDateValue(cessationDate)}
+              onChange={(date) => setCessationDate(formDateValue(date))}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  size: 'small',
+                },
+              }}
             />
 
             <FormControl component="fieldset">

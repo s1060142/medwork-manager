@@ -21,6 +21,8 @@ import {
 } from '@mui/material'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
+import DatePicker from './DatePicker'
+import { currentDateValue, formDateValue } from '../utils/datePicker'
 
 function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
   const [loading, setLoading] = useState(true)
@@ -206,12 +208,10 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
               <MenuItem value="Antiepatite B">Antiepatite B</MenuItem>
               <MenuItem value="Antinfluenzale">Antinfluenzale</MenuItem>
             </TextField>
-            <TextField 
+            <DatePicker 
               label="Data Prevista" 
-              type="date" 
-              InputLabelProps={{ shrink: true }}
-              value={campaignDate}
-              onChange={(e) => setCampaignDate(e.target.value)}
+              value={currentDateValue(campaignDate)}
+              onChange={(date) => setCampaignDate(formDateValue(date))}
               fullWidth
             />
             <Typography variant="body2" color="text.secondary">
@@ -238,12 +238,10 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                 <Typography variant="body1">{recordingVaccine.employee ? `${recordingVaccine.employee.firstName} ${recordingVaccine.employee.lastName}` : '-'}</Typography>
               </Box>
               
-              <TextField 
+              <DatePicker 
                 label="Data Somministrazione" 
-                type="date" 
-                InputLabelProps={{ shrink: true }}
-                value={recordDate}
-                onChange={(e) => setRecordDate(e.target.value)}
+                value={currentDateValue(recordDate)}
+                onChange={(date) => setRecordDate(formDateValue(date))}
                 fullWidth
               />
               
@@ -254,12 +252,10 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                 fullWidth
               />
               
-              <TextField 
+              <DatePicker 
                 label="Prossima Scadenza (Richiamo)" 
-                type="date" 
-                InputLabelProps={{ shrink: true }}
-                value={recordNextDue}
-                onChange={(e) => setRecordNextDue(e.target.value)}
+                value={currentDateValue(recordNextDue)}
+                onChange={(date) => setRecordNextDue(formDateValue(date))}
                 fullWidth
               />
             </Stack>
