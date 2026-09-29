@@ -6,6 +6,8 @@ Cosa funziona oggi, organizzato per modulo.
 ---
 
 ## 🖥️ Interfaccia Utente & SaaS Navigation Shell
+- **Browser History & Hash Routing (Indietro / Avanti)**: Navigazione fluida e bidirezionale integrata con la cronologia del browser (`#/<macro-area>/<modulo>?employeeId=...`) e ascolto su `hashchange`/`popstate`. Premere il tasto "Indietro" o gesture torna alla vista/entità precedente senza mai uscire dal browser.
+- **In-App Navigation Controls & Interactive Breadcrumbs**: Pulsanti rapidi "← Indietro" e "Avanti →" nella barra del contesto, breadcrumb gerarchiche interattive e pulsante di risalita rapida *"← Torna a Elenco Lavoratori"* quando si consulta una cartella sanitaria o stepper clinico.
 - **Unified Clinical Navigation**: Accorpamento completo e pulito di tutte le attività cliniche, di visita e di scadenza sotto l'unica macro-area **Sorveglianza Sanitaria** (`Il Mio Giorno`, `Nuova Visita (Step)`, `Cartella Sanitaria 3A`, `Centro Giudizi & Firma`, `Calendario & Appuntamenti`, `Scadenze & Pianificazione`, `Convocazioni & Recall`, `Vaccinazioni`, `Sopralluoghi Ambienti`, `Firma su Tablet`). Eliminazione totale dei sottomenu ridondanti e dei duplicati.
 - **Cockpit "Il Mio Giorno"**: Landing per Medico Competente con KPI *Visite in programma oggi / Giudizi da firmare / Scadenze visite 7 gg / Compliance D.Lgs. 81/08*, agenda pazienti del giorno con **Avvia Visita** in 1 clic, Morning Digest e shortcut.
 - **Active Company & Branch Context Hub**: Selettore rapido globale nella topbar con persistenza in `localStorage`.

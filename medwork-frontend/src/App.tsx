@@ -38,6 +38,8 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
 import PersonIcon from '@mui/icons-material/Person'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import FlashOnIcon from '@mui/icons-material/FlashOn'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import DashboardScadenze from './components/DashboardScadenze'
 import DashboardMedico from './components/DashboardMedico'
 import Dashboard from './components/Dashboard'
@@ -234,19 +236,136 @@ const AREA_DEFAULT_MODULE = {
   administration: 'settings',
 }
 
+function parseRoute(hash: string, currentRole: string) {
+  const cleanHash = (hash || '').startsWith('#') ? (hash || '').slice(1) : (hash || '')
+  if (!cleanHash || cleanHash === '/') {
+    return {
+      area: currentRole === 'Doctor' ? 'health-surveillance' : 'company-management',
+      moduleKey: currentRole === 'Doctor' ? 'dashboard' : 'companies',
+      employeeId: null,
+      searchOpen: false,
+    }
+  }
+
+  const [pathPart, queryPart] = cleanHash.split('?')
+  const queryParams = new URLSearchParams(queryPart || '')
+  const segments = (pathPart || '').split('/').filter(Boolean)
+
+  let area = ''
+  let moduleKey = ''
+
+  if (segments.length >= 2) {
+    area = segments[0]
+    moduleKey = segments[1]
+  } else if (segments.length === 1) {
+    const single = segments[0]
+    if (AREA_MODULE_KEYS[single]) {
+      area = single
+      moduleKey = AREA_DEFAULT_MODULE[single] || 'companies'
+    } else {
+      moduleKey = single
+      area = Object.entries(AREA_MODULE_KEYS).find(([, keys]) => keys.includes(single))?.[0] || ''
+    }
+  }
+
+  // Resolve legacy aliases
+  if (LEGACY_MODULE_ALIASES[moduleKey]) {
+    moduleKey = LEGACY_MODULE_ALIASES[moduleKey]
+  }
+
+  // Fallbacks if not resolved
+  if (!area || !AREA_MODULE_KEYS[area]) {
+    const owning = Object.entries(AREA_MODULE_KEYS).find(([, keys]) => keys.includes(moduleKey))?.[0]
+    if (owning) {
+      area = owning
+    } else {
+      area = currentRole === 'Doctor' ? 'health-surveillance' : 'company-management'
+    }
+  }
+
+  if (!moduleKey || !MODULE_ITEMS.some((m) => m.key === moduleKey)) {
+    moduleKey = AREA_DEFAULT_MODULE[area] || (currentRole === 'Doctor' ? 'dashboard' : 'companies')
+  }
+
+  const employeeId = queryParams.get('employeeId') || null
+  const searchOpen = queryParams.get('search') === 'true' || queryParams.get('search') === '1'
+
+  return { area, moduleKey, employeeId, searchOpen }
+}
+
+function buildRouteHash(area: string, moduleKey: string, params: Record<string, string | null | undefined> = {}) {
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, val]) => {
+    if (val !== null && val !== undefined && val !== '') {
+      searchParams.set(key, String(val))
+    }
+  })
+  const qs = searchParams.toString()
+  return `#/${area}/${moduleKey}${qs ? '?' + qs : ''}`
+}
+
 function App() {
   const [token, setToken] = useState(() => localStorage.getItem('accessToken') || '')
   const [role, setRole] = useState(() => localStorage.getItem('role') || '')
-  const [selectedArea, setSelectedArea] = useState(() => (role === 'Doctor' ? 'health-surveillance' : 'company-management'))
-  const [selectedModuleKey, setSelectedModuleKey] = useState(() => (role === 'Doctor' ? 'dashboard' : 'companies'))
+
+  const initialRoute = useMemo(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      return parseRoute(window.location.hash, role)
+    }
+    return null
+  }, [role])
+
+  const [selectedArea, setSelectedArea] = useState(() => initialRoute?.area || (role === 'Doctor' ? 'health-surveillance' : 'company-management'))
+  const [selectedModuleKey, setSelectedModuleKey] = useState(() => initialRoute?.moduleKey || (role === 'Doctor' ? 'dashboard' : 'companies'))
   const [quickCreateRequest, setQuickCreateRequest] = useState(null)
-  const [selectedEmployeeIdForVisit, setSelectedEmployeeIdForVisit] = useState(null)
+  const [selectedEmployeeIdForVisit, setSelectedEmployeeIdForVisit] = useState<string | null>(() => initialRoute?.employeeId || null)
   const [activeCompanyId, setActiveCompanyId] = useState(() => readActiveCompanyFromSettings())
   const [activeBranchId, setActiveBranchId] = useState(() => readActiveBranchFromSettings())
   const [companiesList, setCompaniesList] = useState<any[]>([])
   const [branchesList, setBranchesList] = useState<any[]>([])
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role])
+
+  const updateRouteHash = (nextArea: string, nextModuleKey: string, params: Record<string, string | null | undefined> = {}, replace = false) => {
+    if (typeof window === 'undefined') return
+    const targetHash = buildRouteHash(nextArea, nextModuleKey, params)
+    if (window.location.hash !== targetHash) {
+      if (replace) {
+        window.history.replaceState(null, '', targetHash)
+      } else {
+        window.location.hash = targetHash
+      }
+    }
+  }
+
+  // Sincronizzazione automatica della cronologia del browser (Tasti Indietro / Avanti, Popstate, Deep links)
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const syncFromHash = () => {
+      const route = parseRoute(window.location.hash, role)
+      setSelectedArea(route.area)
+      setSelectedModuleKey(route.moduleKey)
+      setSelectedEmployeeIdForVisit(route.employeeId)
+      if (route.searchOpen) setSearchOpen(true)
+    }
+
+    if (window.location.hash) {
+      syncFromHash()
+    } else {
+      const initialArea = role === 'Doctor' ? 'health-surveillance' : 'company-management'
+      const initialModule = role === 'Doctor' ? 'dashboard' : 'companies'
+      updateRouteHash(initialArea, initialModule, {}, true)
+    }
+
+    window.addEventListener('hashchange', syncFromHash)
+    window.addEventListener('popstate', syncFromHash)
+
+    return () => {
+      window.removeEventListener('hashchange', syncFromHash)
+      window.removeEventListener('popstate', syncFromHash)
+    }
+  }, [isAuthenticated, role])
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -408,13 +527,13 @@ function App() {
     localStorage.setItem('role', userRole)
     setToken(accessToken)
     setRole(userRole)
-    if (userRole === 'Doctor') {
-      setSelectedArea('health-surveillance')
-      setSelectedModuleKey('dashboard')
-    } else {
-      setSelectedArea('company-management')
-      setSelectedModuleKey('companies')
-    }
+    const initialArea = userRole === 'Doctor' ? 'health-surveillance' : 'company-management'
+    const initialModule = userRole === 'Doctor' ? 'dashboard' : 'companies'
+    setSelectedArea(initialArea)
+    setSelectedModuleKey(initialModule)
+    setSelectedEmployeeIdForVisit(null)
+    updateRouteHash(initialArea, initialModule, {}, true)
+
     apiGet('/api/master-data/companies')
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -443,6 +562,9 @@ function App() {
     setSelectedModuleKey('companies')
     setQuickCreateRequest(null)
     setSelectedEmployeeIdForVisit(null)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname)
+    }
     appendAuditEvent({ module: 'Auth', action: 'Logout', detail: role || '-' })
   }
 
@@ -451,20 +573,26 @@ function App() {
   }
 
   const handleAreaNavigation = (nextArea) => {
+    const nextModule = AREA_DEFAULT_MODULE[nextArea] || 'companies'
     setSelectedArea(nextArea)
-    setSelectedModuleKey(AREA_DEFAULT_MODULE[nextArea] || 'companies')
+    setSelectedModuleKey(nextModule)
+    setSelectedEmployeeIdForVisit(null)
+    updateRouteHash(nextArea, nextModule, { employeeId: null })
     appendAuditEvent({ module: 'Navigation', action: 'Open', detail: nextArea })
   }
 
-  const handleModuleNavigation = (targetKey) => {
+  const handleModuleNavigation = (targetKey, extraParams = {}) => {
     const resolvedKey = MODULE_ITEMS.some((item) => item.key === targetKey)
       ? targetKey
       : LEGACY_MODULE_ALIASES[targetKey]
     if (!resolvedKey || !MODULE_ITEMS.some((item) => item.key === resolvedKey)) return
 
-    const owningArea = Object.entries(AREA_MODULE_KEYS).find(([, keys]) => keys.includes(resolvedKey))?.[0]
-    if (owningArea) setSelectedArea(owningArea)
+    const owningArea = Object.entries(AREA_MODULE_KEYS).find(([, keys]) => keys.includes(resolvedKey))?.[0] || selectedArea
+    setSelectedArea(owningArea)
     setSelectedModuleKey(resolvedKey)
+    const empId = extraParams.employeeId !== undefined ? extraParams.employeeId : null
+    setSelectedEmployeeIdForVisit(empId)
+    updateRouteHash(owningArea, resolvedKey, { employeeId: empId })
     appendAuditEvent({ module: 'Navigation', action: 'Open', detail: resolvedKey })
   }
 
@@ -529,8 +657,7 @@ function App() {
           activeCompanyId={activeCompanyId}
           onNavigateModule={handleModuleNavigation}
           onOpenMedicalVisitCreate={(employeeId) => {
-            setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
-            setSelectedModuleKey('medical-visit-stepper')
+            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
           }}
         />
       )
@@ -542,8 +669,7 @@ function App() {
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
           onNewVisit={(employeeId) => {
-            setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
-            setSelectedModuleKey('medical-visit-stepper')
+            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
           }}
         />
       )
@@ -554,12 +680,11 @@ function App() {
         <DashboardScadenze
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
-          onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')}
+          onOpenMedicalVisitCreate={() => handleModuleNavigation('medical-visit-stepper')}
           onOpenEmployeeCreate={() => {
-            setSelectedArea('workers-management')
-            setSelectedModuleKey('employees')
+            handleAreaNavigation('workers-management')
           }}
-          onOpenReports={() => setSelectedModuleKey('reporting')}
+          onOpenReports={() => handleModuleNavigation('reporting')}
         />
       )
     }
@@ -583,12 +708,10 @@ function App() {
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
           onOpenMedicalVisitCreate={(employeeId) => {
-            setSelectedEmployeeIdForVisit(employeeId ? String(employeeId) : null)
-            setSelectedModuleKey('medical-visit-stepper')
+            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
           }}
           onOpenEmployeeProfile={(emp) => {
-            setSelectedEmployeeIdForVisit(emp?.id ? String(emp.id) : null)
-            setSelectedModuleKey('cartella-sanitaria')
+            handleModuleNavigation('cartella-sanitaria', { employeeId: emp?.id ? String(emp.id) : null })
           }}
         />
       )
@@ -599,7 +722,7 @@ function App() {
     }
 
     if (moduleKey === 'schedules') {
-      return <VisitPlanningCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onOpenMedicalVisitCreate={() => setSelectedModuleKey('medical-visit-stepper')} />
+      return <VisitPlanningCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onOpenMedicalVisitCreate={() => handleModuleNavigation('medical-visit-stepper')} />
     }
 
     if (moduleKey === 'medical-visit-stepper') {
@@ -609,8 +732,7 @@ function App() {
           activeBranchId={activeBranchId}
           initialEmployeeId={selectedEmployeeIdForVisit}
           onCreated={() => {
-            setSelectedEmployeeIdForVisit(null)
-            setSelectedModuleKey('medical-visits')
+            handleModuleNavigation('cartella-sanitaria', { employeeId: selectedEmployeeIdForVisit })
           }}
         />
       )
@@ -622,10 +744,7 @@ function App() {
           activeCompanyId={activeCompanyId}
           activeBranchId={activeBranchId}
           onOpenMedicalVisitCreate={(employeeId) => {
-            if (employeeId) {
-              setProfileEmployeeId(employeeId)
-            }
-            setSelectedModuleKey('medical-visit-stepper')
+            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
           }}
         />
       )
@@ -951,19 +1070,156 @@ function App() {
 
                 <Box className="legacy-content-wrapper">
                   {/* BREADCRUMB & CONTEXT LINE */}
-                  <Box className="legacy-context-line">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                  <Box className="legacy-context-line" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5, py: 1 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                      {/* BROWSER BACK / FORWARD SHORTCUT BUTTONS */}
+                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 0.5 }}>
+                        <Tooltip title="Torna Indietro nella cronologia (Alt + Freccia Sinistra)">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => window.history.back()}
+                              aria-label="Torna indietro"
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                bgcolor: '#ffffff',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: 1.5,
+                                color: '#475569',
+                                '&:hover': { bgcolor: '#f1f5f9', color: '#0f172a', borderColor: '#94a3b8' },
+                              }}
+                            >
+                              <ArrowBackIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title="Vai Avanti nella cronologia (Alt + Freccia Destra)">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => window.history.forward()}
+                              aria-label="Vai avanti"
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                bgcolor: '#ffffff',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: 1.5,
+                                color: '#475569',
+                                '&:hover': { bgcolor: '#f1f5f9', color: '#0f172a', borderColor: '#94a3b8' },
+                              }}
+                            >
+                              <ArrowForwardIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Stack>
+
+                      {/* CLICKABLE BREADCRUMBS */}
+                      <Typography
+                        component="span"
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => handleAreaNavigation(selectedArea)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleAreaNavigation(selectedArea)
+                          }
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          color: '#475569',
+                          borderRadius: 1,
+                          p: 0.5,
+                          outline: 'none',
+                          '&:hover, &:focus-visible': { color: '#1d4ed8', bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                        }}
+                      >
                         {currentAreaLabel}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+
+                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                         /
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f1f3d' }}>
+
+                      <Typography
+                        component="span"
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => handleModuleNavigation(selectedModuleKey)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleModuleNavigation(selectedModuleKey)
+                          }
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontSize: '12px',
+                          color: '#0f1f3d',
+                          borderRadius: 1,
+                          p: 0.5,
+                          outline: 'none',
+                          '&:hover, &:focus-visible': { color: '#1d4ed8', bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                        }}
+                      >
                         {currentModuleLabel}
                       </Typography>
+
+                      {selectedEmployeeIdForVisit && (
+                        <>
+                          <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                            /
+                          </Typography>
+                          <Chip
+                            size="small"
+                            label={`Lavoratore #${selectedEmployeeIdForVisit}`}
+                            color="primary"
+                            variant="outlined"
+                            onDelete={() => {
+                              setSelectedEmployeeIdForVisit(null)
+                              updateRouteHash(selectedArea, selectedModuleKey, { employeeId: null })
+                            }}
+                            sx={{ height: 22, fontSize: '11px', fontWeight: 600 }}
+                          />
+                        </>
+                      )}
                     </Stack>
+
+                    {/* RIGHT SIDE QUICK ACTIONS & SESSION INFO */}
                     <Stack direction="row" spacing={1} alignItems="center">
+                      {selectedEmployeeIdForVisit && (selectedModuleKey === 'cartella-sanitaria' || selectedModuleKey === 'medical-visit-stepper') && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<ArrowBackIcon sx={{ fontSize: 13 }} />}
+                          onClick={() => {
+                            setSelectedEmployeeIdForVisit(null)
+                            handleModuleNavigation('employees')
+                          }}
+                          sx={{
+                            height: 24,
+                            fontSize: '11px',
+                            textTransform: 'none',
+                            py: 0,
+                            px: 1,
+                            borderColor: '#93c5fd',
+                            color: '#1d4ed8',
+                            bgcolor: '#eff6ff',
+                            fontWeight: 600,
+                            borderRadius: 1.5,
+                            '&:hover': { bgcolor: '#dbeafe', borderColor: '#3b82f6' },
+                          }}
+                        >
+                          Torna a Elenco Lavoratori
+                        </Button>
+                      )}
+
                       <Typography variant="caption" color="text.secondary">
                         Sessione: {role}
                       </Typography>
@@ -987,10 +1243,7 @@ function App() {
                           key={item.key}
                           type="button"
                           className={`mw-chip ${selectedModuleKey === item.key ? 'is-active' : ''}`}
-                          onClick={() => {
-                            setSelectedModuleKey(item.key)
-                            appendAuditEvent({ module: 'Navigation', action: 'Open', detail: item.key })
-                          }}
+                          onClick={() => handleModuleNavigation(item.key)}
                         >
                           {item.label}
                         </button>
@@ -1026,14 +1279,11 @@ function App() {
           onClose={() => setSearchOpen(false)}
           onNavigateModule={(targetKey) => handleModuleNavigation(targetKey)}
           onSelectWorker={(worker) => {
-            setSelectedEmployeeIdForVisit(worker?.id ? String(worker.id) : null)
-            setSelectedArea('health-surveillance')
-            setSelectedModuleKey('cartella-sanitaria')
+            handleModuleNavigation('cartella-sanitaria', { employeeId: worker?.id ? String(worker.id) : null })
           }}
           onSelectCompany={(company) => {
             if (company?.id) handleCompanyContextSwitch(String(company.id))
-            setSelectedArea('company-management')
-            setSelectedModuleKey('companies')
+            handleModuleNavigation('companies')
           }}
         />
       )}

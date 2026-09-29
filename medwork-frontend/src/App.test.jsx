@@ -66,6 +66,7 @@ vi.mock('./services/apiClient', () => ({
 }))
 
 beforeEach(() => {
+  window.location.hash = ''
   localStorage.setItem('accessToken', 'test-token')
   localStorage.setItem('role', 'Doctor')
   localStorage.setItem('medwork.runtime.settings', JSON.stringify({ activeCompanyId: '1', activeBranchId: '1' }))
@@ -160,7 +161,7 @@ describe('App shell and navigation', () => {
 
     // Verify navigation to Cartella Sanitaria
     await waitFor(() => {
-      expect(screen.getByText(/Cartella Sanitaria 3A/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/Cartella Sanitaria 3A/i).length).toBeGreaterThan(0)
     })
   })
 
@@ -240,7 +241,43 @@ describe('App shell and navigation', () => {
       expect(workHistoryInput.value).toContain('sovraccarico biomeccanico')
     })
   })
+
+  test('synchronizes hash route and allows navigating back via browser popstate / in-app back', async () => {
+    const user = userEvent.setup()
+    renderApp()
+
+    // 1. Navigate to Gestione Lavoratori
+    const workersNavBtn = await screen.findByRole('button', { name: /Gestione Lavoratori/i })
+    await user.click(workersNavBtn)
+
+    await waitFor(() => {
+      expect(window.location.hash).toContain('/workers-management/employees')
+      expect(screen.getByText(/Rossi Mario/i)).toBeInTheDocument()
+    })
+
+    // 2. Open worker profile by double clicking row
+    const workerRow = screen.getByText(/Rossi Mario/i).closest('tr')
+    if (workerRow) {
+      await user.dblClick(workerRow)
+    }
+
+    await waitFor(() => {
+      expect(window.location.hash).toContain('/health-surveillance/cartella-sanitaria?employeeId=10')
+      expect(screen.getAllByText(/Cartella Sanitaria 3A/i).length).toBeGreaterThan(0)
+      expect(screen.getByText(/Torna a Elenco Lavoratori/i)).toBeInTheDocument()
+    })
+
+    // 3. Test in-app return button
+    const backBtn = screen.getByRole('button', { name: /Torna a Elenco Lavoratori/i })
+    await user.click(backBtn)
+
+    await waitFor(() => {
+      expect(window.location.hash).toContain('/workers-management/employees')
+      expect(screen.getByText(/Rossi Mario/i)).toBeInTheDocument()
+    })
+  })
 })
+
 
 
 
