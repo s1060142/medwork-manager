@@ -35,7 +35,7 @@ const QUICK_ACTIONS = [
   { id: 'act-judgments', title: 'Centro Giudizi di Idoneità', subtitle: 'Verbalizzazione e rilascio certificati Art. 41', moduleKey: 'giudizio-idoneita', icon: HealthAndSafetyIcon, color: '#2e7d32' },
   { id: 'act-batch-sign', title: 'Firma Digitale Massiva', subtitle: 'Firma multipla certificati e giudizi di idoneità', moduleKey: 'batch-signature', icon: DrawIcon, color: '#00838f' },
   { id: 'act-sopralluoghi', title: 'Sopralluoghi Ambienti di Lavoro', subtitle: 'Pianificazione e verbali ispettivi ex Art. 25 D.Lgs. 81/08', moduleKey: 'sopralluoghi', icon: HealthAndSafetyIcon, color: '#00796b' },
-  { id: 'act-agenda', title: 'Agenda & Calendario Visite', subtitle: 'Consulta e programma appuntamenti', moduleKey: 'agenda', icon: EventIcon, color: '#ed6c02' },
+  { id: 'act-agenda', title: 'Agenda & Pianificazione Visite', subtitle: 'Calendario appuntamenti e scadenzario protocolli', moduleKey: 'agenda-planning', icon: EventIcon, color: '#ed6c02' },
   { id: 'act-deadlines', title: 'Scadenzario Sorveglianza Sanitaria', subtitle: 'Scadenze visite, nomine e sopralluoghi', moduleKey: 'visit-deadlines', icon: EventIcon, color: '#0288d1' },
   { id: 'act-3b', title: 'Flusso Allegato 3B INAIL', subtitle: 'Cruscotto statistico Art. 40 INAIL', moduleKey: 'allegato-3b', icon: AssessmentIcon, color: '#9c27b0' },
   { id: 'act-groups', title: 'Gruppi Aziendali & Holding', subtitle: 'Gestione aggregata holding e consorzi (D.Lgs. 81/08)', moduleKey: 'company-groups', icon: BusinessIcon, color: '#0d47a1' },

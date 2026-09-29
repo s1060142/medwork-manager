@@ -212,7 +212,7 @@ export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule, 
               cursor: 'pointer',
               '&:hover': { bgcolor: '#fffbf5' }
             }}
-            onClick={() => onNavigateModule && onNavigateModule('schedules')}
+            onClick={() => onNavigateModule && onNavigateModule('agenda-planning')}
           >
             <CardContent>
               <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
@@ -287,7 +287,7 @@ export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule, 
           <Button
             size="small"
             variant="outlined"
-            onClick={() => onNavigateModule && onNavigateModule('schedules')}
+            onClick={() => onNavigateModule && onNavigateModule('agenda-planning')}
           >
             Visualizza Calendario Completo →
           </Button>
@@ -384,7 +384,7 @@ export default function Dashboard({ onOpenMedicalVisitCreate, onNavigateModule, 
               transition: 'all 0.2s',
               '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }
             }}
-            onClick={() => onNavigateModule && onNavigateModule('visit-planning')}
+            onClick={() => onNavigateModule && onNavigateModule('agenda-planning')}
           >
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar sx={{ bgcolor: '#e0f2fe', color: '#0284c7' }}>

@@ -83,19 +83,19 @@ describe('App shell and navigation', () => {
     expect(screen.getByRole('button', { name: /Analisi & Relazioni/i })).toBeInTheDocument()
   })
 
-  test('shows health surveillance dashboard or allows switching to visit planning', async () => {
+  test('shows health surveillance dashboard or allows switching to unified agenda and planning', async () => {
     const user = userEvent.setup()
     renderApp()
 
     // By default doctor lands on Il Mio Giorno
     expect(await screen.findByRole('heading', { name: /Il Mio Giorno/i })).toBeInTheDocument()
 
-    // Click on Scadenze & Pianificazione chip
-    const visitPlanningButton = await screen.findByRole('button', { name: /Scadenze & Pianificazione/i })
-    await user.click(visitPlanningButton)
+    // Click on Agenda & Pianificazione chip
+    const agendaButton = await screen.findByRole('button', { name: /Agenda & Pianificazione/i })
+    await user.click(agendaButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Pianificazione Visite/i)).toBeInTheDocument()
+      expect(screen.getByText(/Agenda & Pianificazione Visite/i)).toBeInTheDocument()
     })
   })
 

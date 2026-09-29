@@ -53,6 +53,7 @@ import AuditCenter from './components/AuditCenter'
 import ToolsCenter from './components/ToolsCenter'
 import SettingsCenter from './components/SettingsCenter'
 import VisitPlanningCenter from './components/VisitPlanningCenter'
+import AgendaPlanningCenter from './components/AgendaPlanningCenter'
 import MedicalVisitStepper from './components/MedicalVisitStepper'
 import WorkersCenter from './components/WorkersCenter'
 // Centri reintegrati caricati in modo lazy: non appesantiscono il first paint della shell.
@@ -116,18 +117,20 @@ const SIDE_NAV_ITEMS = [
 const LEGACY_MODULE_ALIASES = {
   'batch-signature': 'giudizio-idoneita',
   'firma-massiva': 'giudizio-idoneita',
-  'visit-planning': 'schedules',
-  'home': 'schedules',
-  'schedule': 'schedules',
-  'agenda': 'appointments-calendar',
-  'appointments': 'appointments-calendar',
+  'visit-planning': 'agenda-planning',
+  'home': 'agenda-planning',
+  'schedule': 'agenda-planning',
+  'schedules': 'agenda-planning',
+  'agenda': 'agenda-planning',
+  'appointments': 'agenda-planning',
+  'appointments-calendar': 'agenda-planning',
   'doctor-dashboard': 'dashboard',
   'medical-dashboard': 'dashboard',
   'employees-crud': 'employees',
   'medical-records': 'cartella-sanitaria',
   'medical-visits': 'cartella-sanitaria',
   'anamneses': 'medical-visit-stepper',
-  'scheduled-exams': 'schedules',
+  'scheduled-exams': 'agenda-planning',
   'visit-exams': 'medical-visit-stepper',
   'vaccinations': 'vaccination-deadlines',
 }
@@ -135,11 +138,10 @@ const LEGACY_MODULE_ALIASES = {
 const MODULE_ITEMS = [
   // --- Macro-Area: Sorveglianza Sanitaria & Visite (Accorpamento Flusso Clinico Unico) ---
   { key: 'dashboard', label: 'Il Mio Giorno' },
+  { key: 'agenda-planning', label: 'Agenda & Pianificazione' },
   { key: 'medical-visit-stepper', label: 'Nuova Visita (Step)' },
   { key: 'cartella-sanitaria', label: 'Cartella Sanitaria 3A' },
   { key: 'giudizio-idoneita', label: 'Centro Giudizi & Firma' },
-  { key: 'appointments-calendar', label: 'Calendario & Appuntamenti' },
-  { key: 'schedules', label: 'Scadenze & Pianificazione' },
   { key: 'recall-campaigns', label: 'Convocazioni & Recall' },
   { key: 'vaccination-deadlines', label: 'Vaccinazioni' },
   { key: 'site-visits', label: 'Sopralluoghi Ambienti' },
@@ -183,11 +185,10 @@ const MODULE_ITEMS = [
 const AREA_MODULE_KEYS = {
   'health-surveillance': [
     'dashboard',
+    'agenda-planning',
     'medical-visit-stepper',
     'cartella-sanitaria',
     'giudizio-idoneita',
-    'appointments-calendar',
-    'schedules',
     'recall-campaigns',
     'vaccination-deadlines',
     'site-visits',
@@ -490,6 +491,7 @@ function App() {
       'medical-visit-stepper',
       'cartella-sanitaria',
       'giudizio-idoneita',
+      'agenda-planning',
       'appointments-calendar',
       'schedules',
       'recall-campaigns',
@@ -721,8 +723,17 @@ function App() {
       return <ProtocolsCenter activeCompanyId={activeCompanyId} />
     }
 
-    if (moduleKey === 'schedules') {
-      return <VisitPlanningCenter activeCompanyId={activeCompanyId} activeBranchId={activeBranchId} onOpenMedicalVisitCreate={() => handleModuleNavigation('medical-visit-stepper')} />
+    if (moduleKey === 'agenda-planning' || moduleKey === 'appointments-calendar' || moduleKey === 'schedules') {
+      return (
+        <AgendaPlanningCenter
+          activeCompanyId={activeCompanyId}
+          activeBranchId={activeBranchId}
+          initialTab={moduleKey === 'schedules' ? 'planning' : 'calendar'}
+          onOpenMedicalVisitCreate={(employeeId) => {
+            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
+          }}
+        />
+      )
     }
 
     if (moduleKey === 'medical-visit-stepper') {
@@ -733,18 +744,6 @@ function App() {
           initialEmployeeId={selectedEmployeeIdForVisit}
           onCreated={() => {
             handleModuleNavigation('cartella-sanitaria', { employeeId: selectedEmployeeIdForVisit })
-          }}
-        />
-      )
-    }
-
-    if (moduleKey === 'appointments-calendar') {
-      return (
-        <AppointmentsCalendar
-          activeCompanyId={activeCompanyId}
-          activeBranchId={activeBranchId}
-          onOpenMedicalVisitCreate={(employeeId) => {
-            handleModuleNavigation('medical-visit-stepper', { employeeId: employeeId ? String(employeeId) : null })
           }}
         />
       )

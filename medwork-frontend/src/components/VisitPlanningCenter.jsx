@@ -50,7 +50,7 @@ function addDays(fromDate, days) {
   return date
 }
 
-function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate }) {
+function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpenMedicalVisitCreate, onBatchPlanned }) {
   const [days, setDays] = useState(60)
   const [visits, setVisits] = useState([])
   const [employees, setEmployees] = useState([])
@@ -213,8 +213,12 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
       })
       setSaveMessage(`✓ ${res.message || `Pianificate con successo ${selectedEmpIds.length} visite mediche!`}`)
       setBatchModalOpen(false)
+      const plannedCount = selectedEmpIds.length
       setSelectedEmpIds([])
       await load()
+      if (onBatchPlanned) {
+        onBatchPlanned({ count: plannedCount, date: batchDate })
+      }
     } catch (err) {
       setError(err.message || 'Errore durante la pianificazione massiva.')
     } finally {
