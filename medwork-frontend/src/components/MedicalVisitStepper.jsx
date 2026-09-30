@@ -37,6 +37,9 @@ import DrawIcon from '@mui/icons-material/Draw'
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
 import SignaturePadModal from './SignaturePadModal'
+import VoiceDictationButton from './VoiceDictationButton'
+import WorkerClinicalDrawer from './WorkerClinicalDrawer'
+import InstrumentalExamsCard from './InstrumentalExamsCard'
 import { useTextExpander } from '../hooks/useTextExpander'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -231,6 +234,9 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
   const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
   const [copyingVisit, setCopyingVisit] = useState(false)
   const [selectedMansioneCat, setSelectedMansioneCat] = useState('vdt')
+  const [clinicalDrawerOpen, setClinicalDrawerOpen] = useState(false)
+  const [instrumentalExams, setInstrumentalExams] = useState({ summaryText: '', data: null })
+  const [todaySchedule, setTodaySchedule] = useState([])
 
   const visibleEmployees = useMemo(() => {
     if (!activeCompanyId || activeCompanyId === 'all') return employees
@@ -292,7 +298,78 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
         setDoctors(Array.isArray(doctorData) ? doctorData : [])
       })
       .catch(() => {})
+
+    apiGet('/api/doctor-data/dashboard')
+      .then((dash) => {
+        if (Array.isArray(dash?.todaySchedule)) {
+          setTodaySchedule(dash.todaySchedule)
+        }
+      })
+      .catch(() => {})
   }, [])
+
+  const nextPatientInQueue = useMemo(() => {
+    const currentId = Number(formData.employeeId)
+    if (todaySchedule && todaySchedule.length > 0) {
+      const currentIndex = todaySchedule.findIndex((p) => Number(p.employeeId) === currentId)
+      if (currentIndex !== -1) {
+        for (let i = currentIndex + 1; i < todaySchedule.length; i++) {
+          if (!todaySchedule[i].status?.includes('Completat')) return todaySchedule[i]
+        }
+      }
+      const queued = todaySchedule.find((p) => Number(p.employeeId) !== currentId && !p.status?.includes('Completat'))
+      if (queued) return queued
+    }
+
+    // Fallback: suggest next employee from the active company list for continuous clinic throughput
+    if (visibleEmployees && visibleEmployees.length > 1 && formData.employeeId) {
+      const currentIndex = visibleEmployees.findIndex((e) => Number(e.id) === currentId)
+      const nextIndex = (currentIndex + 1) % visibleEmployees.length
+      const nextEmp = visibleEmployees[nextIndex]
+      if (nextEmp && Number(nextEmp.id) !== currentId) {
+        return {
+          employeeId: nextEmp.id,
+          employeeName: `${nextEmp.firstName || ''} ${nextEmp.lastName || ''}`.trim() || nextEmp.fullName || `Lavoratore #${nextEmp.id}`,
+          time: 'In attesa',
+        }
+      }
+    }
+
+    return null
+  }, [todaySchedule, visibleEmployees, formData.employeeId])
+
+  const handleVoiceAppend = (field, text) => {
+    if (!text) return
+    setFormData((prev) => {
+      const current = prev[field] || ''
+      const updated = current ? `${current} ${text}` : text
+      return { ...prev, [field]: updated }
+    })
+    setSuccess(`🎙️ Trascrizione vocale inserita in ${field}`)
+    setTimeout(() => setSuccess(''), 2500)
+  }
+
+  const handleInstrumentalExamsChange = ({ summaryText, data }) => {
+    setInstrumentalExams({ summaryText, data })
+  }
+
+  const handleApplyHistoricalVisitData = (visit) => {
+    if (!visit) return
+    setFormData((prev) => ({
+      ...prev,
+      workHistory: visit.workHistory || prev.workHistory,
+      personalHistory: visit.personalHistory || prev.personalHistory,
+      targetOrgans: visit.targetOrgans || prev.targetOrgans,
+      prescriptions: visit.prescriptions || prev.prescriptions,
+      limitations: visit.limitations || prev.limitations,
+      clinicalNotes: prev.clinicalNotes
+        ? `${prev.clinicalNotes}\n[Rif. Visita ${visit.visitDate?.slice(0, 10)}]: ${visit.outcome}`
+        : `[Rif. Visita ${visit.visitDate?.slice(0, 10)}]: ${visit.outcome}`,
+    }))
+    setClinicalDrawerOpen(false)
+    setSuccess('✓ Reperti storici importati con successo nello stepper!')
+    setTimeout(() => setSuccess(''), 3500)
+  }
 
   // Auto-fetch context, last visit and self-service responses when employee changes
   useEffect(() => {
@@ -717,14 +794,18 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       parts.push(`--- Parametri Vitali: ${vitalsParts.join(' | ')} ---`)
     }
 
+    if (instrumentalExams?.summaryText) {
+      parts.push(`--- Accertamenti Strumentali & Diagnostici (D.Lgs. 81/08) ---\n${instrumentalExams.summaryText}`)
+    }
+
     if (formData.objectiveExam) {
       parts.push(`Note aggiuntive: ${formData.objectiveExam}`)
     }
     return parts.join('\n')
   }
 
-  const handleSave = async () => {
-    if (!validateStep()) return
+  const handleSave = async (options = {}) => {
+    if (!validateStep()) return false
 
     try {
       setSaving(true)
@@ -770,13 +851,30 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       setEmployeeContext(null)
       setLastVisitPreview(null)
 
-      if (typeof onCreated === 'function') {
+      if (!options.skipOnCreated && typeof onCreated === 'function') {
         onCreated(createdVisit)
       }
+      return true
     } catch (requestError) {
       setError(requestError.message || 'Errore nel salvataggio della visita medica.')
+      return false
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveAndNextPatient = async (nextEmpId) => {
+    const ok = await handleSave({ skipOnCreated: true })
+    if (ok !== false && nextEmpId) {
+      setFormData({
+        ...initialData,
+        employeeId: String(nextEmpId),
+        visitDate: new Date().toISOString().split('T')[0],
+      })
+      setActiveStep(0)
+      setCapturedSignature(null)
+      setSuccess(`⚡ Visita salvata! Aperta la scheda del prossimo paziente schedulato.`)
+      setTimeout(() => setSuccess(''), 4500)
     }
   }
 
@@ -794,13 +892,33 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                 Inserimento rapido conforme D.Lgs. 81/08 (Allegato 3A) con precompilazione intelligente.
               </Typography>
             </Box>
-            <Chip 
-              icon={<VerifiedIcon />} 
-              label="Standard SIML Conforme" 
-              color="primary" 
-              variant="outlined" 
-              size="small" 
-            />
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<HistoryIcon />}
+                disabled={!formData.employeeId}
+                onClick={() => setClinicalDrawerOpen(true)}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  borderColor: '#93c5fd',
+                  color: '#1d4ed8',
+                  bgcolor: '#eff6ff',
+                  '&:hover': { bgcolor: '#dbeafe' },
+                }}
+              >
+                📂 Fascicolo Storico Lavoratore
+              </Button>
+              <Chip 
+                icon={<VerifiedIcon />} 
+                label="Standard SIML Conforme" 
+                color="primary" 
+                variant="outlined" 
+                size="small" 
+              />
+            </Stack>
           </Stack>
         </Paper>
 
@@ -1080,6 +1198,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                       onKeyDown={(e) => handleMacroKeyDown(e, formData.workHistory, 'workHistory')}
                       placeholder="Es. Addetto alla produzione da 10 anni. (Scrivi .norm, .vdt, .mmc, .rum e premi spazio per macro)"
                       helperText="Macro: .norm, .vdt, .mmc, .rum, .guida, .notte + Spazio"
+                      InputProps={{
+                        endAdornment: (
+                          <VoiceDictationButton
+                            fieldName="anamnesi lavorativa"
+                            onTextRecognized={(t) => handleVoiceAppend('workHistory', t)}
+                          />
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1093,6 +1219,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                       onKeyDown={(e) => handleMacroKeyDown(e, formData.personalHistory, 'personalHistory')}
                       placeholder="Es. Non fumatore, consumo moderato alcolici ai pasti. Non assume farmaci cronici..."
                       helperText="Macro: .norm, .vdt + Spazio"
+                      InputProps={{
+                        endAdornment: (
+                          <VoiceDictationButton
+                            fieldName="anamnesi personale"
+                            onTextRecognized={(t) => handleVoiceAppend('personalHistory', t)}
+                          />
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1105,6 +1239,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                       onChange={(event) => handleMacroTextChange('familyHistory', event.target.value)}
                       onKeyDown={(e) => handleMacroKeyDown(e, formData.familyHistory, 'familyHistory')}
                       placeholder="Es. Anamnesi familiare negativa per patologie cardiovascolari precoci. Madre ipertesa..."
+                      InputProps={{
+                        endAdornment: (
+                          <VoiceDictationButton
+                            fieldName="anamnesi familiare"
+                            onTextRecognized={(t) => handleVoiceAppend('familyHistory', t)}
+                          />
+                        ),
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1375,6 +1517,12 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                   </Box>
                 </Box>
 
+                {/* ACCERTAMENTI STRUMENTALI & DIAGNOSTICI (D.Lgs. 81/08) */}
+                <InstrumentalExamsCard
+                  values={instrumentalExams.data}
+                  onChange={handleInstrumentalExamsChange}
+                />
+
                 <TextField
                   multiline
                   minRows={2}
@@ -1382,6 +1530,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                   value={formData.objectiveExam}
                   onChange={(event) => setField('objectiveExam', event.target.value)}
                   placeholder="Eventuali note libere o esiti di test complementari..."
+                  InputProps={{
+                    endAdornment: (
+                      <VoiceDictationButton
+                        fieldName="note esame obiettivo"
+                        onTextRecognized={(t) => handleVoiceAppend('objectiveExam', t)}
+                      />
+                    ),
+                  }}
                 />
 
                 <TextField
@@ -1391,6 +1547,14 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                   value={formData.clinicalNotes}
                   onChange={(event) => setField('clinicalNotes', event.target.value)}
                   placeholder="Note confidenziali visibili solo al medico competente..."
+                  InputProps={{
+                    endAdornment: (
+                      <VoiceDictationButton
+                        fieldName="note cliniche riservate"
+                        onTextRecognized={(t) => handleVoiceAppend('clinicalNotes', t)}
+                      />
+                    ),
+                  }}
                 />
               </Stack>
             )}
@@ -1542,15 +1706,34 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                 Avanti
               </Button>
             ) : (
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={handleSave} 
-                disabled={saving}
-                sx={{ px: 4, fontWeight: 700 }}
-              >
-                {saving ? 'Salvataggio in corso...' : 'Salva & Rilascia Giudizio'}
-              </Button>
+              <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                {nextPatientInQueue && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<FlashOnIcon />}
+                    disabled={saving}
+                    onClick={() => handleSaveAndNextPatient(nextPatientInQueue.employeeId)}
+                    sx={{
+                      bgcolor: '#7c3aed',
+                      '&:hover': { bgcolor: '#6d28d9' },
+                      fontWeight: 700,
+                      textTransform: 'none',
+                    }}
+                  >
+                    ⚡ Salva & Chiama: {nextPatientInQueue.employeeName} ({nextPatientInQueue.time || '09:30'}) ➔
+                  </Button>
+                )}
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  onClick={() => handleSave()} 
+                  disabled={saving}
+                  sx={{ px: 4, fontWeight: 700, textTransform: 'none' }}
+                >
+                  {saving ? 'Salvataggio in corso...' : 'Salva & Rilascia Giudizio'}
+                </Button>
+              </Stack>
             )}
           </Stack>
         </Paper>
@@ -1640,6 +1823,15 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
           )}
         </Paper>
       </Box>
+
+      {/* 📂 Drawer Fascicolo Storico Lavoratore */}
+      <WorkerClinicalDrawer
+        open={clinicalDrawerOpen}
+        onClose={() => setClinicalDrawerOpen(false)}
+        employeeId={formData.employeeId}
+        employeeData={currentEmployee}
+        onApplyData={handleApplyHistoricalVisitData}
+      />
     </Stack>
   )
 }
