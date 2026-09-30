@@ -39,7 +39,7 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
 import SignaturePadModal from './SignaturePadModal'
 import VoiceDictationButton from './VoiceDictationButton'
 import WorkerClinicalDrawer from './WorkerClinicalDrawer'
-import InstrumentalExamsCard from './InstrumentalExamsCard'
+import InstrumentalExamsCard, { DEFAULT_NORMAL_EXAMS, buildInstrumentalSummary } from './InstrumentalExamsCard'
 import { useTextExpander } from '../hooks/useTextExpander'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -640,9 +640,17 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       }))
 
       setActiveStep(1)
-      setSuccess(`⚡ Delta Veloce attivato: anamnesi clonata, apparati nella norma, ${allSunsets.length > 0 ? allSunsets.length + ' prescrizioni scadute depurate, ' : ''}idoneità preimpostata. Inserisci solo PAO e Peso!`)
+      setInstrumentalExams({
+        summaryText: buildInstrumentalSummary(DEFAULT_NORMAL_EXAMS),
+        data: { ...DEFAULT_NORMAL_EXAMS },
+      })
+      setSuccess(`⚡ Delta Veloce attivato: anamnesi clonata, apparati e accertamenti nella norma, ${allSunsets.length > 0 ? allSunsets.length + ' prescrizioni scadute depurate, ' : ''}idoneità preimpostata. Inserisci solo PAO e Peso!`)
     } catch {
       setActiveStep(1)
+      setInstrumentalExams({
+        summaryText: buildInstrumentalSummary(DEFAULT_NORMAL_EXAMS),
+        data: { ...DEFAULT_NORMAL_EXAMS },
+      })
       setFormData(prev => ({
         ...prev,
         objCardio: 'nella norma',
@@ -695,7 +703,11 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       objVista: 'nella norma',
       objUdito: 'nella norma',
     }))
-    setSuccess('✓ Tutti gli 8 apparati impostati su "Nella norma (N.D.P.)"')
+    setInstrumentalExams({
+      summaryText: buildInstrumentalSummary(DEFAULT_NORMAL_EXAMS),
+      data: { ...DEFAULT_NORMAL_EXAMS },
+    })
+    setSuccess('✓ Tutti gli 8 apparati e accertamenti strumentali impostati su "Nella norma (N.D.P.)"')
     setTimeout(() => setSuccess(''), 3000)
   }
 
@@ -704,7 +716,11 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       ...prev,
       ...NORMAL_EXAM_DEFAULTS,
     }))
-    setSuccess('✓ Inserite formule cliniche standard per tutti gli apparati')
+    setInstrumentalExams({
+      summaryText: buildInstrumentalSummary(DEFAULT_NORMAL_EXAMS),
+      data: { ...DEFAULT_NORMAL_EXAMS },
+    })
+    setSuccess('✓ Inserite formule cliniche standard per tutti gli apparati e accertamenti strumentali')
     setTimeout(() => setSuccess(''), 3000)
   }
 

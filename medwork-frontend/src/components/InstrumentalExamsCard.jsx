@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -7,9 +7,7 @@ import {
   Chip,
   Collapse,
   Divider,
-  Grid,
   IconButton,
-  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -24,11 +22,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import TuneIcon from '@mui/icons-material/Tune'
 
-export default function InstrumentalExamsCard({ values, onChange }) {
-  const [expanded, setExpanded] = useState(true)
-
-  // Local state with defaults
-  const [visiotest, setVisiotest] = useState(() => values?.visiotest || {
+export const DEFAULT_NORMAL_EXAMS = {
+  visiotest: {
     performed: true,
     visusOD: '10/10',
     visusOS: '10/10',
@@ -36,80 +31,86 @@ export default function InstrumentalExamsCard({ values, onChange }) {
     stereopsis: 'Normale',
     foria: 'Ortoria',
     summary: 'Visus naturale/corretto 10/10 bilat., senso cromatico e stereopsi conservati.',
-  })
-
-  const [audiometry, setAudiometry] = useState(() => values?.audiometry || {
+  },
+  audiometry: {
     performed: true,
     status: 'Normale',
-    summary: 'Tracciato audiometrico nei limiti di norma bilat. (0-20 dB).',
-  })
-
-  const [spirometry, setSpirometry] = useState(() => values?.spirometry || {
+    summary: 'Soglia audiometrica bilaterale nei limiti fisiologici (0-20 dB).',
+  },
+  spirometry: {
     performed: true,
     fvc: '98',
     fev1: '95',
     tiffeneau: '82',
     pattern: 'Normale',
-    summary: 'Curva flusso-volume fisiologica. FVC > 90%, FEV1 > 90%, Tiffeneau 82%.',
-  })
-
-  const [drugTest, setDrugTest] = useState(() => values?.drugTest || {
+    summary: 'Parametri spirometrici nei limiti (FVC 98%, FEV1 95%, Tiffeneau 82%).',
+  },
+  drugTest: {
     performed: false,
     result: 'Negativo',
     substances: 'THC, COC, AMP, MET, OPI, BZO, MTD, MDMA',
     summary: 'Test rapido urine 8 sostanze d\'abuso: Tutte Negative.',
-  })
+  },
+}
+
+export const buildInstrumentalSummary = (data) => {
+  if (!data) return ''
+  const parts = []
+  if (data.visiotest?.performed) parts.push(`[Visiotest/Ergovision]: ${data.visiotest.summary}`)
+  if (data.audiometry?.performed) parts.push(`[Audiometria Tonale]: ${data.audiometry.summary}`)
+  if (data.spirometry?.performed) parts.push(`[Spirometria]: ${data.spirometry.summary}`)
+  if (data.drugTest?.performed) parts.push(`[Screening Tossicologico]: ${data.drugTest.summary}`)
+  return parts.join('\n')
+}
+
+export default function InstrumentalExamsCard({ values, onChange }) {
+  const [expanded, setExpanded] = useState(true)
+
+  // Local state initialized with provided values or textbook defaults
+  const [visiotest, setVisiotest] = useState(() => values?.visiotest || DEFAULT_NORMAL_EXAMS.visiotest)
+  const [audiometry, setAudiometry] = useState(() => values?.audiometry || DEFAULT_NORMAL_EXAMS.audiometry)
+  const [spirometry, setSpirometry] = useState(() => values?.spirometry || DEFAULT_NORMAL_EXAMS.spirometry)
+  const [drugTest, setDrugTest] = useState(() => values?.drugTest || DEFAULT_NORMAL_EXAMS.drugTest)
+
+  // Synchronize when values change from outside (e.g. "Tutto N.D.P." or reset)
+  useEffect(() => {
+    if (values) {
+      if (values.visiotest) setVisiotest(values.visiotest)
+      if (values.audiometry) setAudiometry(values.audiometry)
+      if (values.spirometry) setSpirometry(values.spirometry)
+      if (values.drugTest) setDrugTest(values.drugTest)
+    }
+  }, [values])
 
   // Propagate updates to parent
   const notifyParent = (newVisio, newAudio, newSpiro, newDrug) => {
-    const parts = []
-    if (newVisio.performed) parts.push(`[Visiotest/Ergovision]: ${newVisio.summary}`)
-    if (newAudio.performed) parts.push(`[Audiometria Tonale]: ${newAudio.summary}`)
-    if (newSpiro.performed) parts.push(`[Spirometria]: ${newSpiro.summary}`)
-    if (newDrug.performed) parts.push(`[Screening Tossicologico]: ${newDrug.summary}`)
-
-    const fullSummary = parts.join('\n')
+    if (typeof onChange !== 'function') return
+    const data = {
+      visiotest: newVisio,
+      audiometry: newAudio,
+      spirometry: newSpiro,
+      drugTest: newDrug,
+    }
+    const fullSummary = buildInstrumentalSummary(data)
     onChange({
       summaryText: fullSummary,
-      data: {
-        visiotest: newVisio,
-        audiometry: newAudio,
-        spirometry: newSpiro,
-        drugTest: newDrug,
-      },
+      data,
     })
   }
 
+  // Initial mount notification if values was empty
+  useEffect(() => {
+    if (!values && typeof onChange === 'function') {
+      notifyParent(visiotest, audiometry, spirometry, drugTest)
+    }
+  }, [])
+
   // 1-Click Fast Presets
   const setAllExamsNormal = () => {
-    const v = {
-      performed: true,
-      visusOD: '10/10',
-      visusOS: '10/10',
-      colorSense: 'Normale',
-      stereopsis: 'Normale',
-      foria: 'Ortoria',
-      summary: 'Visus 10/10 bilat., stereopsi e senso cromatico conservati.',
-    }
-    const a = {
-      performed: true,
-      status: 'Normale',
-      summary: 'Soglia audiometrica bilaterale nei limiti fisiologici.',
-    }
-    const s = {
-      performed: true,
-      fvc: '98',
-      fev1: '95',
-      tiffeneau: '82',
-      pattern: 'Normale',
-      summary: 'Parametri spirometrici nei limiti (FVC 98%, FEV1 95%, Tiffeneau 82%).',
-    }
-    const d = {
-      performed: false,
-      result: 'Negativo',
-      substances: 'THC, COC, AMP, MET, OPI, BZO, MTD, MDMA',
-      summary: 'Test rapido urine 8 sostanze d\'abuso: Tutte Negative.',
-    }
+    const v = { ...DEFAULT_NORMAL_EXAMS.visiotest }
+    const a = { ...DEFAULT_NORMAL_EXAMS.audiometry }
+    const s = { ...DEFAULT_NORMAL_EXAMS.spirometry }
+    const d = { ...DEFAULT_NORMAL_EXAMS.drugTest }
 
     setVisiotest(v)
     setAudiometry(a)
@@ -151,19 +152,21 @@ export default function InstrumentalExamsCard({ values, onChange }) {
   }
 
   const applySpirometryPreset = (patternType) => {
-    let summary = 'Curva flusso-volume fisiologica. FVC > 90%, FEV1 > 90%, Tiffeneau 82%.'
+    let summary = 'Parametri spirometrici nei limiti (FVC 98%, FEV1 95%, Tiffeneau 82%).'
     let pattern = 'Normale'
     let fvc = '98'
     let fev1 = '95'
+    let tiffeneau = '82'
 
     if (patternType === 'obstructive') {
       summary = 'Deficit ventilatorio di tipo ostruttivo di grado lieve (FEV1 72%, Tiffeneau 68%).'
       pattern = 'Ostruttivo lieve'
       fvc = '92'
       fev1 = '72'
+      tiffeneau = '68'
     }
 
-    const updated = { performed: true, fvc, fev1, tiffeneau: '82', pattern, summary }
+    const updated = { performed: true, fvc, fev1, tiffeneau, pattern, summary }
     setSpirometry(updated)
     notifyParent(visiotest, audiometry, updated, drugTest)
   }
@@ -234,10 +237,10 @@ export default function InstrumentalExamsCard({ values, onChange }) {
 
       <Collapse in={expanded}>
         <CardContent sx={{ p: 2.5 }}>
-          <Grid container spacing={2.5}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5 }}>
             {/* 1. VISIOTEST */}
-            <Grid item xs={12} md={6}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd' }}>
+            <Box>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd', height: '100%' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <VisibilityIcon sx={{ fontSize: 18, color: '#0284c7' }} />
@@ -265,43 +268,49 @@ export default function InstrumentalExamsCard({ values, onChange }) {
                   </Stack>
                 </Stack>
 
-                <Grid container spacing={1}>
-                  <Grid item xs={6}>
-                    <TextField
-                      size="small"
-                      label="Visus OD"
-                      value={visiotest.visusOD}
-                      onChange={(e) => {
-                        const updated = { ...visiotest, visusOD: e.target.value }
-                        setVisiotest(updated)
-                        notifyParent(updated, audiometry, spirometry, drugTest)
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      size="small"
-                      label="Visus OS"
-                      value={visiotest.visusOS}
-                      onChange={(e) => {
-                        const updated = { ...visiotest, visusOS: e.target.value }
-                        setVisiotest(updated)
-                        notifyParent(updated, audiometry, spirometry, drugTest)
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <TextField
+                    size="small"
+                    label="Visus OD"
+                    value={visiotest.visusOD}
+                    onChange={(e) => {
+                      const newOD = e.target.value
+                      const updated = {
+                        ...visiotest,
+                        visusOD: newOD,
+                        summary: `Visus OD: ${newOD}, OS: ${visiotest.visusOS}, stereopsi e senso cromatico conservati.`,
+                      }
+                      setVisiotest(updated)
+                      notifyParent(updated, audiometry, spirometry, drugTest)
+                    }}
+                    fullWidth
+                  />
+                  <TextField
+                    size="small"
+                    label="Visus OS"
+                    value={visiotest.visusOS}
+                    onChange={(e) => {
+                      const newOS = e.target.value
+                      const updated = {
+                        ...visiotest,
+                        visusOS: newOS,
+                        summary: `Visus OD: ${visiotest.visusOD}, OS: ${newOS}, stereopsi e senso cromatico conservati.`,
+                      }
+                      setVisiotest(updated)
+                      notifyParent(updated, audiometry, spirometry, drugTest)
+                    }}
+                    fullWidth
+                  />
+                </Box>
                 <Typography variant="caption" sx={{ color: '#64748b', mt: 1, display: 'block' }}>
                   {visiotest.summary}
                 </Typography>
               </Paper>
-            </Grid>
+            </Box>
 
             {/* 2. AUDIOMETRIA */}
-            <Grid item xs={12} md={6}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd' }}>
+            <Box>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd', height: '100%' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <HearingIcon sx={{ fontSize: 18, color: '#7c3aed' }} />
@@ -344,11 +353,11 @@ export default function InstrumentalExamsCard({ values, onChange }) {
                   Stato: <strong>{audiometry.status}</strong>
                 </Typography>
               </Paper>
-            </Grid>
+            </Box>
 
             {/* 3. SPIROMETRIA */}
-            <Grid item xs={12} md={6}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd' }}>
+            <Box>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd', height: '100%' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <AirIcon sx={{ fontSize: 18, color: '#16a34a' }} />
@@ -376,56 +385,65 @@ export default function InstrumentalExamsCard({ values, onChange }) {
                   </Stack>
                 </Stack>
 
-                <Grid container spacing={1}>
-                  <Grid item xs={4}>
-                    <TextField
-                      size="small"
-                      label="FVC %"
-                      value={spirometry.fvc}
-                      onChange={(e) => {
-                        const updated = { ...spirometry, fvc: e.target.value }
-                        setSpirometry(updated)
-                        notifyParent(visiotest, audiometry, updated, drugTest)
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      size="small"
-                      label="FEV1 %"
-                      value={spirometry.fev1}
-                      onChange={(e) => {
-                        const updated = { ...spirometry, fev1: e.target.value }
-                        setSpirometry(updated)
-                        notifyParent(visiotest, audiometry, updated, drugTest)
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      size="small"
-                      label="Tiffeneau %"
-                      value={spirometry.tiffeneau}
-                      onChange={(e) => {
-                        const updated = { ...spirometry, tiffeneau: e.target.value }
-                        setSpirometry(updated)
-                        notifyParent(visiotest, audiometry, updated, drugTest)
-                      }}
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+                  <TextField
+                    size="small"
+                    label="FVC %"
+                    value={spirometry.fvc}
+                    onChange={(e) => {
+                      const newFvc = e.target.value
+                      const updated = {
+                        ...spirometry,
+                        fvc: newFvc,
+                        summary: `Parametri spirometrici: FVC ${newFvc}%, FEV1 ${spirometry.fev1}%, Tiffeneau ${spirometry.tiffeneau}% (${spirometry.pattern}).`,
+                      }
+                      setSpirometry(updated)
+                      notifyParent(visiotest, audiometry, updated, drugTest)
+                    }}
+                    fullWidth
+                  />
+                  <TextField
+                    size="small"
+                    label="FEV1 %"
+                    value={spirometry.fev1}
+                    onChange={(e) => {
+                      const newFev1 = e.target.value
+                      const updated = {
+                        ...spirometry,
+                        fev1: newFev1,
+                        summary: `Parametri spirometrici: FVC ${spirometry.fvc}%, FEV1 ${newFev1}%, Tiffeneau ${spirometry.tiffeneau}% (${spirometry.pattern}).`,
+                      }
+                      setSpirometry(updated)
+                      notifyParent(visiotest, audiometry, updated, drugTest)
+                    }}
+                    fullWidth
+                  />
+                  <TextField
+                    size="small"
+                    label="Tiffeneau %"
+                    value={spirometry.tiffeneau}
+                    onChange={(e) => {
+                      const newTiff = e.target.value
+                      const updated = {
+                        ...spirometry,
+                        tiffeneau: newTiff,
+                        summary: `Parametri spirometrici: FVC ${spirometry.fvc}%, FEV1 ${spirometry.fev1}%, Tiffeneau ${newTiff}% (${spirometry.pattern}).`,
+                      }
+                      setSpirometry(updated)
+                      notifyParent(visiotest, audiometry, updated, drugTest)
+                    }}
+                    fullWidth
+                  />
+                </Box>
                 <Typography variant="caption" sx={{ color: '#64748b', mt: 1, display: 'block' }}>
                   {spirometry.summary}
                 </Typography>
               </Paper>
-            </Grid>
+            </Box>
 
             {/* 4. DRUG TEST & ALCOL */}
-            <Grid item xs={12} md={6}>
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd' }}>
+            <Box>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: '#fbfcfd', height: '100%' }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <ScienceIcon sx={{ fontSize: 18, color: '#ea580c' }} />
@@ -468,8 +486,8 @@ export default function InstrumentalExamsCard({ values, onChange }) {
                   Sostanze: <em>THC, COC, AMP, MET, OPI, BZO, MTD, MDMA</em>
                 </Typography>
               </Paper>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Collapse>
     </Card>
