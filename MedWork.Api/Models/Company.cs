@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MedWork.Api.Models;
 
@@ -118,6 +119,12 @@ public class Company
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
+
+    [NotMapped]
+    public int? CoordinatorDoctorId { get; set; }
+
+    [NotMapped]
+    public string? CoordinatorDoctorName { get; set; }
 
     // Navigation properties
     public Tenant? Tenant { get; set; }

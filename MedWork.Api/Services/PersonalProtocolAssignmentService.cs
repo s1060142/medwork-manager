@@ -61,6 +61,7 @@ public class PersonalProtocolAssignmentService : IPersonalProtocolAssignmentServ
             .Where(protocolId => !existingIds.Contains(protocolId))
             .Select(protocolId => new PersonalProtocol
             {
+                TenantId = employee.TenantId,
                 EmployeeId = employeeId,
                 ProtocolId = protocolId,
                 AssignedAt = DateTime.UtcNow,

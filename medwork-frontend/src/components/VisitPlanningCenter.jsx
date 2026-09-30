@@ -330,8 +330,6 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
                       key={`${row.employeeId}-${row.deadline}`}
                       hover
                       tabIndex={0}
-                      selected={isSelected}
-                      onClick={() => handleToggleRow(row.employeeId)}
                       onDoubleClick={() => onOpenMedicalVisitCreate && onOpenMedicalVisitCreate(row.employeeId)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -341,8 +339,6 @@ function VisitPlanningCenter({ activeCompanyId = '', activeBranchId = '', onOpen
                       }}
                       sx={{
                         cursor: 'pointer',
-                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       }}
                     >
                       <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>

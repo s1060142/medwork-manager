@@ -38,8 +38,6 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital'
 import PersonIcon from '@mui/icons-material/Person'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import FlashOnIcon from '@mui/icons-material/FlashOn'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import DashboardScadenze from './components/DashboardScadenze'
 import DashboardMedico from './components/DashboardMedico'
 import Dashboard from './components/Dashboard'
@@ -56,6 +54,7 @@ import VisitPlanningCenter from './components/VisitPlanningCenter'
 import AgendaPlanningCenter from './components/AgendaPlanningCenter'
 import MedicalVisitStepper from './components/MedicalVisitStepper'
 import WorkersCenter from './components/WorkersCenter'
+import PatientIntakeView from './components/PatientIntakeView'
 // Centri reintegrati caricati in modo lazy: non appesantiscono il first paint della shell.
 const GiudizioIdoneitaCenter = lazy(() => import('./components/GiudizioIdoneitaCenter'))
 const CartellaSanitariaCenter = lazy(() => import('./components/CartellaSanitariaCenter'))
@@ -252,6 +251,15 @@ function parseRoute(hash: string, currentRole: string) {
   const queryParams = new URLSearchParams(queryPart || '')
   const segments = (pathPart || '').split('/').filter(Boolean)
 
+  if (segments[0] === 'intake') {
+    return {
+      area: 'health-surveillance',
+      moduleKey: 'intake',
+      employeeId: null,
+      searchOpen: false,
+    }
+  }
+
   let area = ''
   let moduleKey = ''
 
@@ -324,8 +332,20 @@ function App() {
   const [activeBranchId, setActiveBranchId] = useState(() => readActiveBranchFromSettings())
   const [companiesList, setCompaniesList] = useState<any[]>([])
   const [branchesList, setBranchesList] = useState<any[]>([])
+  const [currentHash, setCurrentHash] = useState(() => (typeof window !== 'undefined' ? window.location.hash : ''))
 
   const isAuthenticated = useMemo(() => token && (role === 'Doctor' || role === 'Admin'), [token, role])
+  const isPublicIntake = currentHash.startsWith('#/intake') || (typeof window !== 'undefined' && window.location.hash.startsWith('#/intake'))
+
+  useEffect(() => {
+    const handleHashChange = () => setCurrentHash(window.location.hash || '')
+    window.addEventListener('hashchange', handleHashChange)
+    window.addEventListener('popstate', handleHashChange)
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+      window.removeEventListener('popstate', handleHashChange)
+    }
+  }, [])
 
   const updateRouteHash = (nextArea: string, nextModuleKey: string, params: Record<string, string | null | undefined> = {}, replace = false) => {
     if (typeof window === 'undefined') return
@@ -344,6 +364,7 @@ function App() {
     if (!isAuthenticated) return
 
     const syncFromHash = () => {
+      if (window.location.hash.startsWith('#/intake')) return
       const route = parseRoute(window.location.hash, role)
       setSelectedArea(route.area)
       setSelectedModuleKey(route.moduleKey)
@@ -352,7 +373,9 @@ function App() {
     }
 
     if (window.location.hash) {
-      syncFromHash()
+      if (!window.location.hash.startsWith('#/intake')) {
+        syncFromHash()
+      }
     } else {
       const initialArea = role === 'Doctor' ? 'health-surveillance' : 'company-management'
       const initialModule = role === 'Doctor' ? 'dashboard' : 'companies'
@@ -792,14 +815,21 @@ function App() {
     return renderModuleContent(selectedModuleKey)
   }
 
-  const currentAreaLabel = SIDE_NAV_ITEMS.find((i) => i.key === selectedArea)?.label || selectedArea
-  const currentModuleLabel = MODULE_ITEMS.find((i) => i.key === selectedModuleKey)?.label || selectedModuleKey
-
   return (
     <>
       <CssBaseline />
       <Box className="legacy-shell">
-        {!isAuthenticated ? (
+        {isPublicIntake ? (
+          <PatientIntakeView
+            onExit={() => {
+              if (isAuthenticated) {
+                window.location.hash = role === 'Doctor' ? '#/health-surveillance/dashboard' : '#/company-management/companies'
+              } else {
+                window.location.hash = '#/'
+              }
+            }}
+          />
+        ) : !isAuthenticated ? (
           <Box className="legacy-login-wrap">
             <Paper className="legacy-login-card" elevation={0}>
               <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 1.5 }}>
@@ -1068,172 +1098,6 @@ function App() {
                 </Box>
 
                 <Box className="legacy-content-wrapper">
-                  {/* BREADCRUMB & CONTEXT LINE */}
-                  <Box className="legacy-context-line" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5, py: 1 }}>
-                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                      {/* BROWSER BACK / FORWARD SHORTCUT BUTTONS */}
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 0.5 }}>
-                        <Tooltip title="Torna Indietro nella cronologia (Alt + Freccia Sinistra)">
-                          <span>
-                            <IconButton
-                              size="small"
-                              onClick={() => window.history.back()}
-                              aria-label="Torna indietro"
-                              sx={{
-                                width: 28,
-                                height: 28,
-                                bgcolor: '#ffffff',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: 1.5,
-                                color: '#475569',
-                                '&:hover': { bgcolor: '#f1f5f9', color: '#0f172a', borderColor: '#94a3b8' },
-                              }}
-                            >
-                              <ArrowBackIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title="Vai Avanti nella cronologia (Alt + Freccia Destra)">
-                          <span>
-                            <IconButton
-                              size="small"
-                              onClick={() => window.history.forward()}
-                              aria-label="Vai avanti"
-                              sx={{
-                                width: 28,
-                                height: 28,
-                                bgcolor: '#ffffff',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: 1.5,
-                                color: '#475569',
-                                '&:hover': { bgcolor: '#f1f5f9', color: '#0f172a', borderColor: '#94a3b8' },
-                              }}
-                            >
-                              <ArrowForwardIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Stack>
-
-                      {/* CLICKABLE BREADCRUMBS */}
-                      <Typography
-                        component="span"
-                        role="link"
-                        tabIndex={0}
-                        onClick={() => handleAreaNavigation(selectedArea)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleAreaNavigation(selectedArea)
-                          }
-                        }}
-                        sx={{
-                          cursor: 'pointer',
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          color: '#475569',
-                          borderRadius: 1,
-                          p: 0.5,
-                          outline: 'none',
-                          '&:hover, &:focus-visible': { color: '#1d4ed8', bgcolor: 'rgba(37, 99, 235, 0.08)' },
-                        }}
-                      >
-                        {currentAreaLabel}
-                      </Typography>
-
-                      <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                        /
-                      </Typography>
-
-                      <Typography
-                        component="span"
-                        role="link"
-                        tabIndex={0}
-                        onClick={() => handleModuleNavigation(selectedModuleKey)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleModuleNavigation(selectedModuleKey)
-                          }
-                        }}
-                        sx={{
-                          cursor: 'pointer',
-                          fontWeight: 700,
-                          fontSize: '12px',
-                          color: '#0f1f3d',
-                          borderRadius: 1,
-                          p: 0.5,
-                          outline: 'none',
-                          '&:hover, &:focus-visible': { color: '#1d4ed8', bgcolor: 'rgba(37, 99, 235, 0.08)' },
-                        }}
-                      >
-                        {currentModuleLabel}
-                      </Typography>
-
-                      {selectedEmployeeIdForVisit && (
-                        <>
-                          <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                            /
-                          </Typography>
-                          <Chip
-                            size="small"
-                            label={`Lavoratore #${selectedEmployeeIdForVisit}`}
-                            color="primary"
-                            variant="outlined"
-                            onDelete={() => {
-                              setSelectedEmployeeIdForVisit(null)
-                              updateRouteHash(selectedArea, selectedModuleKey, { employeeId: null })
-                            }}
-                            sx={{ height: 22, fontSize: '11px', fontWeight: 600 }}
-                          />
-                        </>
-                      )}
-                    </Stack>
-
-                    {/* RIGHT SIDE QUICK ACTIONS & SESSION INFO */}
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      {selectedEmployeeIdForVisit && (selectedModuleKey === 'cartella-sanitaria' || selectedModuleKey === 'medical-visit-stepper') && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<ArrowBackIcon sx={{ fontSize: 13 }} />}
-                          onClick={() => {
-                            setSelectedEmployeeIdForVisit(null)
-                            handleModuleNavigation('employees')
-                          }}
-                          sx={{
-                            height: 24,
-                            fontSize: '11px',
-                            textTransform: 'none',
-                            py: 0,
-                            px: 1,
-                            borderColor: '#93c5fd',
-                            color: '#1d4ed8',
-                            bgcolor: '#eff6ff',
-                            fontWeight: 600,
-                            borderRadius: 1.5,
-                            '&:hover': { bgcolor: '#dbeafe', borderColor: '#3b82f6' },
-                          }}
-                        >
-                          Torna a Elenco Lavoratori
-                        </Button>
-                      )}
-
-                      <Typography variant="caption" color="text.secondary">
-                        Sessione: {role}
-                      </Typography>
-                      {activeCompanyId && (
-                        <Chip
-                          size="small"
-                          label={`ID Azienda: #${activeCompanyId}`}
-                          color="info"
-                          variant="outlined"
-                          sx={{ height: 20, fontSize: '11px' }}
-                        />
-                      )}
-                    </Stack>
-                  </Box>
-
                   {/* MODULE CHIP STRIP */}
                   {!!areaModuleItems.length && areaModuleItems.length > 1 && (
                     <Box className="mw-chip-strip has-modules">

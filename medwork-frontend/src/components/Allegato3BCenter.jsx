@@ -20,6 +20,11 @@ import {
   TableRow,
   TextField,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material'
 import DescriptionIcon from '@mui/icons-material/Description'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
@@ -27,6 +32,10 @@ import SendIcon from '@mui/icons-material/Send'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
 import AssessmentIcon from '@mui/icons-material/Assessment'
+import CodeIcon from '@mui/icons-material/Code'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import CloseIcon from '@mui/icons-material/Close'
 
 import { apiGet, apiSend, getHeaders, getApiBaseUrl } from '../services/apiClient'
 
@@ -43,6 +52,10 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [genBusy, setGenBusy] = useState(false)
+
+  const [xmlModalOpen, setXmlModalOpen] = useState(false)
+  const [xmlContent, setXmlContent] = useState('')
+  const [xmlCopied, setXmlCopied] = useState(false)
 
   useEffect(() => {
     loadCompanies()
@@ -135,6 +148,34 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
       setError(err.message || 'Scaricamento file XML fallito.')
     } finally {
       setGenBusy(false)
+    }
+  }
+
+  const handleInspectXml = async () => {
+    if (!selectedCompanyId) return
+    setGenBusy(true)
+    setError('')
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/documents/allegato-3b/${selectedCompanyId}`, {
+        method: 'POST',
+        headers: getHeaders(),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const text = await res.text()
+      setXmlContent(text)
+      setXmlModalOpen(true)
+    } catch (err) {
+      setError(err.message || 'Recupero codice XML fallito.')
+    } finally {
+      setGenBusy(false)
+    }
+  }
+
+  const handleCopyXml = () => {
+    if (navigator?.clipboard?.writeText && xmlContent) {
+      navigator.clipboard.writeText(xmlContent)
+      setXmlCopied(true)
+      setTimeout(() => setXmlCopied(false), 3000)
     }
   }
 
@@ -421,7 +462,17 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
 
           {/* ACTION BAR */}
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, bgcolor: '#fcfdfe' }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end">
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="flex-end" alignItems="center">
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={genBusy ? <CircularProgress size={18} /> : <VisibilityIcon />}
+                onClick={handleInspectXml}
+                disabled={genBusy || !selectedCompanyId}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
+                Ispeziona Codice XML
+              </Button>
               <Button
                 variant="outlined"
                 startIcon={genBusy ? <CircularProgress size={18} /> : <FileDownloadIcon />}
@@ -429,7 +480,7 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
                 disabled={genBusy || !selectedCompanyId}
                 sx={{ textTransform: 'none', fontWeight: 600 }}
               >
-                Esporta File XML INAIL
+                Esporta File XML INAIL (.xml)
               </Button>
               <Button
                 variant="contained"
@@ -443,6 +494,72 @@ export default function Allegato3BCenter({ activeCompanyId = '' }) {
               </Button>
             </Stack>
           </Paper>
+
+          {/* XML INSPECTION MODAL */}
+          <Dialog
+            open={xmlModalOpen}
+            onClose={() => setXmlModalOpen(false)}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle sx={{ pb: 1, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CodeIcon color="primary" />
+                  <Typography variant="h6" fontWeight={700}>
+                    Tracciato XML Ufficiale Allegato 3B (DM 9/7/2012)
+                  </Typography>
+                </Stack>
+                <IconButton onClick={() => setXmlModalOpen(false)} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+            </DialogTitle>
+            <DialogContent sx={{ p: 2.5 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                File XML conforme alle specifiche tecniche INAIL per l'invio telematico annuale ai sensi dell'Art. 40 D.Lgs. 81/08.
+              </Alert>
+              <Box
+                component="pre"
+                sx={{
+                  p: 2,
+                  bgcolor: '#0f172a',
+                  color: '#38bdf8',
+                  borderRadius: 2,
+                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                  fontSize: '0.8rem',
+                  overflowX: 'auto',
+                  maxHeight: '450px',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                }}
+              >
+                {xmlContent}
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ p: 2, px: 3, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+              <Button
+                variant="outlined"
+                startIcon={<ContentCopyIcon />}
+                onClick={handleCopyXml}
+                color={xmlCopied ? 'success' : 'primary'}
+                sx={{ textTransform: 'none' }}
+              >
+                {xmlCopied ? 'Copiato!' : 'Copia XML'}
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<FileDownloadIcon />}
+                onClick={() => {
+                  handleDownloadXml()
+                  setXmlModalOpen(false)
+                }}
+                sx={{ textTransform: 'none', fontWeight: 700 }}
+              >
+                Scarica File XML
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Stack>
       ) : null}
     </Stack>

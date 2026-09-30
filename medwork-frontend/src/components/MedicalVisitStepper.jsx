@@ -36,10 +36,13 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import DrawIcon from '@mui/icons-material/Draw'
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn'
+import QrCode2Icon from '@mui/icons-material/QrCode2'
+import CloudDoneIcon from '@mui/icons-material/CloudDone'
 import SignaturePadModal from './SignaturePadModal'
 import VoiceDictationButton from './VoiceDictationButton'
 import WorkerClinicalDrawer from './WorkerClinicalDrawer'
 import InstrumentalExamsCard, { DEFAULT_NORMAL_EXAMS, buildInstrumentalSummary } from './InstrumentalExamsCard'
+import PreVisitQuestionnaireModal from './PreVisitQuestionnaireModal'
 import { useTextExpander } from '../hooks/useTextExpander'
 import { apiGet, apiSend } from '../services/apiClient'
 import { currentDateValue, formDateValue, DATE_PICKER_LOCALE } from '../utils/datePicker'
@@ -229,6 +232,10 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
   const [signatureModalOpen, setSignatureModalOpen] = useState(false)
   const [capturedSignature, setCapturedSignature] = useState(null)
   
+  const [preVisitModalOpen, setPreVisitModalOpen] = useState(false)
+  const [pendingDraft, setPendingDraft] = useState(null)
+  const [draftSavedAt, setDraftSavedAt] = useState(null)
+
   const [employeeContext, setEmployeeContext] = useState(null)
   const [lastVisitPreview, setLastVisitPreview] = useState(null)
   const [selfServiceAnamnesis, setSelfServiceAnamnesis] = useState(null)
@@ -237,6 +244,61 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
   const [clinicalDrawerOpen, setClinicalDrawerOpen] = useState(false)
   const [instrumentalExams, setInstrumentalExams] = useState({ summaryText: '', data: null })
   const [todaySchedule, setTodaySchedule] = useState([])
+
+  // Offline Auto-Draft: detect previous uncommitted draft
+  useEffect(() => {
+    if (!formData.employeeId) {
+      setPendingDraft(null)
+      return
+    }
+    try {
+      const raw = localStorage.getItem(`medwork_visit_draft_${formData.employeeId}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed?.savedAt && Date.now() - parsed.savedAt < 48 * 3600 * 1000) {
+          setPendingDraft(parsed)
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [formData.employeeId])
+
+  // Offline Auto-Draft: auto-save changes with debounce
+  useEffect(() => {
+    if (!formData.employeeId) return
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(`medwork_visit_draft_${formData.employeeId}`, JSON.stringify({
+          formData,
+          activeStep,
+          savedAt: Date.now(),
+        }))
+        setDraftSavedAt(Date.now())
+      } catch {
+        // quota
+      }
+    }, 1200)
+    return () => clearTimeout(timer)
+  }, [formData, activeStep])
+
+  const handleRestoreDraft = () => {
+    if (!pendingDraft?.formData) return
+    setFormData(pendingDraft.formData)
+    if (typeof pendingDraft.activeStep === 'number') {
+      setActiveStep(pendingDraft.activeStep)
+    }
+    setPendingDraft(null)
+    setSuccess('✓ Bozza locale ripristinata con successo!')
+    setTimeout(() => setSuccess(''), 3500)
+  }
+
+  const handleDiscardDraft = () => {
+    if (formData.employeeId) {
+      localStorage.removeItem(`medwork_visit_draft_${formData.employeeId}`)
+    }
+    setPendingDraft(null)
+  }
 
   const visibleEmployees = useMemo(() => {
     if (!activeCompanyId || activeCompanyId === 'all') return employees
@@ -862,6 +924,11 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
       })
 
       setSuccess('✓ Visita medica, parametri vitali e anamnesi registrate con successo nel fascicolo sanitario!')
+      if (formData.employeeId) {
+        localStorage.removeItem(`medwork_visit_draft_${formData.employeeId}`)
+      }
+      setPendingDraft(null)
+      setDraftSavedAt(null)
       setFormData(initialData)
       setActiveStep(0)
       setEmployeeContext(null)
@@ -909,6 +976,15 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
               </Typography>
             </Box>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+              {draftSavedAt && (
+                <Chip
+                  icon={<CloudDoneIcon sx={{ color: '#16a34a !important', fontSize: '16px' }} />}
+                  label="Bozza offline protetta"
+                  variant="outlined"
+                  size="small"
+                  sx={{ borderColor: '#86efac', bgcolor: '#f0fdf4', color: '#166534', fontWeight: 600, fontSize: '0.75rem' }}
+                />
+              )}
               <Button
                 variant="outlined"
                 size="small"
@@ -946,6 +1022,37 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
               </Step>
             ))}
           </Stepper>
+
+          {/* OFFLINE UNCOMMITTED DRAFT DETECTED ALERT */}
+          {pendingDraft && (
+            <Alert
+              severity="warning"
+              sx={{ mb: 2.5, borderRadius: 2 }}
+              action={
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button
+                    color="warning"
+                    variant="contained"
+                    size="small"
+                    onClick={handleRestoreDraft}
+                    sx={{ fontWeight: 700, textTransform: 'none' }}
+                  >
+                    Ripristina Bozza
+                  </Button>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleDiscardDraft}
+                    sx={{ textTransform: 'none' }}
+                  >
+                    Ignora
+                  </Button>
+                </Stack>
+              }
+            >
+              <strong>Trovata bozza non salvata</strong> registrata alle {new Date(pendingDraft.savedAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} del {new Date(pendingDraft.savedAt).toLocaleDateString('it-IT')} per questo lavoratore. Desideri ripristinarla?
+            </Alert>
+          )}
 
           {/* SMART CLONE & DELTA VELOCE BANNER */}
           {lastVisitPreview && activeStep === 0 && (
@@ -1117,6 +1224,17 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
                           sx={{ fontWeight: 600 }}
                         />
                       )}
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<QrCode2Icon />}
+                        disabled={!formData.employeeId}
+                        onClick={() => setPreVisitModalOpen(true)}
+                        sx={{ textTransform: 'none', fontWeight: 600, bgcolor: '#ffffff' }}
+                      >
+                        📱 Questionario Pre-Visita (QR Code)
+                      </Button>
                       <Button
                         size="small"
                         variant="contained"
@@ -1708,6 +1826,26 @@ function MedicalVisitStepper({ onCreated, initialEmployeeId, initialEmployee, ac
               onSignatureCaptured={(sig) => {
                 setCapturedSignature(sig)
                 setSuccess('✓ Firma grafometrica FEA acquisita con successo!')
+                setTimeout(() => setSuccess(''), 4000)
+              }}
+            />
+          )}
+
+          {preVisitModalOpen && (
+            <PreVisitQuestionnaireModal
+              open={preVisitModalOpen}
+              onClose={() => setPreVisitModalOpen(false)}
+              workerName={currentEmployee ? `${currentEmployee.firstName} ${currentEmployee.lastName}` : 'Lavoratore'}
+              workerTaxCode={currentEmployee?.taxCode || ''}
+              workerJobRole={detectedJobRole}
+              companyName={currentEmployee?.company?.name || ''}
+              onApplyAnamnesi={({ personalHistory, workHistory }) => {
+                setFormData(prev => ({
+                  ...prev,
+                  personalHistory: prev.personalHistory ? `${prev.personalHistory}\n${personalHistory}` : personalHistory,
+                  workHistory: prev.workHistory ? `${prev.workHistory}\n${workHistory}` : workHistory
+                }))
+                setSuccess('✓ Questionario pre-visita sintetizzato e applicato con successo all\'Allegato 3A!')
                 setTimeout(() => setSuccess(''), 4000)
               }}
             />

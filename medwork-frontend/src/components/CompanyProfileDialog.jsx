@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -11,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   Divider,
+  InputAdornment,
   MenuItem,
   Paper,
   Stack,
@@ -19,9 +21,11 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import DatePicker from './DatePicker'
@@ -31,6 +35,10 @@ import SaveIcon from '@mui/icons-material/Save'
 import PersonIcon from '@mui/icons-material/Person'
 import PhoneIcon from '@mui/icons-material/Phone'
 import EmailIcon from '@mui/icons-material/Email'
+import SearchIcon from '@mui/icons-material/Search'
+import PersonSearchIcon from '@mui/icons-material/PersonSearch'
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { apiGet, apiSend } from '../services/apiClient'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
@@ -127,6 +135,8 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
   const [availableGroups, setAvailableGroups] = useState([])
   const [assignedDoctorIds, setAssignedDoctorIds] = useState([])
   const [coordinatorDoctorId, setCoordinatorDoctorId] = useState(null)
+  const [doctorLookupOpen, setDoctorLookupOpen] = useState(false)
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState('')
   const [healthPlanOpen, setHealthPlanOpen] = useState(false)
   const [analyticsOpen, setAnalyticsOpen] = useState(false)
   const [allegato3bOpen, setAllegato3bOpen] = useState(false)
@@ -432,6 +442,85 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
                 </Box>
               </Paper>
 
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: coordinatorDoctorId ? '#eff6ff' : 'background.paper', borderColor: coordinatorDoctorId ? '#3b82f6' : 'divider' }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1} sx={{ mb: 1.5 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <MedicalServicesIcon fontSize="small" color={coordinatorDoctorId ? 'primary' : 'action'} /> Medico Competente Nominato (Art. 38 D.Lgs. 81/08)
+                  </Typography>
+                  {coordinatorDoctorId && (
+                    <Chip size="small" label="Medico Nominato" color="primary" variant="filled" />
+                  )}
+                </Stack>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, gap: 2, alignItems: 'center' }}>
+                  <Autocomplete
+                    size="small"
+                    options={availableDoctors}
+                    value={availableDoctors.find((d) => Number(d.id) === Number(coordinatorDoctorId)) || null}
+                    onChange={(_, newValue) => {
+                      const val = newValue ? Number(newValue.id) : null
+                      setCoordinatorDoctorId(val)
+                      if (val && !assignedDoctorIds.includes(val)) {
+                        setAssignedDoctorIds((current) => [...current, val])
+                      }
+                      setDirty(true)
+                    }}
+                    getOptionLabel={(opt) => (opt ? `Dott. ${opt.firstName} ${opt.lastName}${opt.specialty ? ` (${opt.specialty})` : ''}` : '')}
+                    isOptionEqualToValue={(opt, val) => Number(opt.id) === Number(val.id || val)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        label="Seleziona Medico Competente"
+                        placeholder="Cerca medico..."
+                        InputProps={{
+                          ...params.InputProps,
+                          endAdornment: (
+                            <>
+                              {params.InputProps.endAdornment}
+                              <InputAdornment position="end">
+                                <Tooltip title="Apri ricerca avanzata medico (Lookup)">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setDoctorSearchQuery('')
+                                      setDoctorLookupOpen(true)
+                                    }}
+                                    sx={{ color: 'primary.main', mr: -0.5 }}
+                                  >
+                                    <PersonSearchIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </InputAdornment>
+                            </>
+                          ),
+                        }}
+                      />
+                    )}
+                  />
+                  {coordinatorDoctorId ? (
+                    <Box sx={{ p: 1.2, bgcolor: '#ffffff', borderRadius: 1.5, border: '1px solid #bfdbfe' }}>
+                      {(() => {
+                        const doc = availableDoctors.find((d) => Number(d.id) === Number(coordinatorDoctorId))
+                        return (
+                          <>
+                            <Typography variant="body2" fontWeight={600} color="primary.main">
+                              Dott. {doc?.firstName} {doc?.lastName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {doc?.specialty || 'Medicina del Lavoro'}{doc?.medicalLicenseNumber ? ` • Albo: ${doc.medicalLicenseNumber}` : ''}{doc?.email ? ` • ${doc.email}` : ''}
+                            </Typography>
+                          </>
+                        )
+                      })()}
+                    </Box>
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      Nessun Medico Competente assegnato. Utilizza la lookup per nominare il medico competente aziendale.
+                    </Typography>
+                  )}
+                </Box>
+              </Paper>
+
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Indirizzi</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
@@ -556,27 +645,52 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           {tab === 2 && (
             <Stack spacing={2}>
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Medico Coordinatore</Typography>
-                <TextField
+                <Typography variant="subtitle2" sx={{ mb: 1.2 }}>Medico Coordinatore / Competente (Art. 38)</Typography>
+                <Autocomplete
                   size="small"
-                  select
-                  fullWidth
-                  value={coordinatorDoctorId ?? ''}
-                  onChange={(event) => {
-                    const value = event.target.value ? Number(event.target.value) : null
+                  options={availableDoctors}
+                  value={availableDoctors.find((d) => Number(d.id) === Number(coordinatorDoctorId)) || null}
+                  onChange={(_, newValue) => {
+                    const value = newValue ? Number(newValue.id) : null
                     setCoordinatorDoctorId(value)
                     if (value && !assignedDoctorIds.includes(value)) {
                       setAssignedDoctorIds((current) => [...current, value])
                     }
+                    setDirty(true)
                   }}
-                >
-                  <MenuItem value="">— Nessuno —</MenuItem>
-                  {availableDoctors.map((doctor) => (
-                    <MenuItem key={doctor.id} value={doctor.id}>
-                      {doctor.lastName} {doctor.firstName}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  getOptionLabel={(doctor) => (doctor ? `Dott. ${doctor.firstName} ${doctor.lastName}${doctor.specialty ? ` (${doctor.specialty})` : ''}` : '')}
+                  isOptionEqualToValue={(doc, val) => Number(doc.id) === Number(val.id || val)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      label="Medico Coordinatore"
+                      placeholder="Cerca medico..."
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {params.InputProps.endAdornment}
+                            <InputAdornment position="end">
+                              <Tooltip title="Apri ricerca avanzata medico (Lookup)">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setDoctorSearchQuery('')
+                                    setDoctorLookupOpen(true)
+                                  }}
+                                  sx={{ color: 'primary.main', mr: -0.5 }}
+                                >
+                                  <PersonSearchIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </InputAdornment>
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
               </Paper>
 
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
@@ -745,9 +859,184 @@ function CompanyProfileDialog({ open, onClose, company, onSaveCompany }) {
           {saving ? 'Salvataggio...' : 'Salva'}
         </Button>
         <Button variant="outlined" onClick={confirmClose} sx={{ color: '#555', borderColor: '#ccc' }}>
-          Annulla
+          Chiudi
         </Button>
       </DialogActions>
+      {/* LOOKUP MODALE MEDICO COMPETENTE */}
+      <Dialog
+        open={doctorLookupOpen}
+        onClose={() => setDoctorLookupOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
+              <MedicalServicesIcon fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight={700}>
+                Lookup Medico Competente
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                D.Lgs. 81/08 Art. 38 • Seleziona il Medico Competente da nominare per questa azienda
+              </Typography>
+            </Box>
+          </Stack>
+          <IconButton size="small" onClick={() => setDoctorLookupOpen(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 2 }}>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Cerca per cognome, nome, specializzazione, albo, email..."
+            value={doctorSearchQuery}
+            onChange={(e) => setDoctorSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: doctorSearchQuery ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setDoctorSearchQuery('')}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            }}
+            sx={{ mb: 2 }}
+          />
+
+          <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 380 }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Medico</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Specializzazione</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Iscrizione Albo</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Contatti</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Azione</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(() => {
+                  const q = doctorSearchQuery.toLowerCase().trim()
+                  const filtered = availableDoctors.filter((d) => {
+                    if (!q) return true
+                    const fullName = `${d.firstName || ''} ${d.lastName || ''} ${d.lastName || ''} ${d.firstName || ''}`.toLowerCase()
+                    const spec = (d.specialty || '').toLowerCase()
+                    const albo = (d.medicalLicenseNumber || '').toLowerCase()
+                    const mail = (d.email || '').toLowerCase()
+                    return fullName.includes(q) || spec.includes(q) || albo.includes(q) || mail.includes(q)
+                  })
+
+                  if (filtered.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Nessun medico trovato con i criteri di ricerca inseriti.
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  }
+
+                  const selectedDocId = Number(coordinatorDoctorId)
+
+                  return filtered.map((doc) => {
+                    const isSelected = selectedDocId === Number(doc.id)
+                    return (
+                      <TableRow
+                        key={doc.id}
+                        hover
+                        selected={isSelected}
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          const val = Number(doc.id)
+                          setCoordinatorDoctorId(val)
+                          if (!assignedDoctorIds.includes(val)) {
+                            setAssignedDoctorIds((current) => [...current, val])
+                          }
+                          setDirty(true)
+                          setDoctorLookupOpen(false)
+                        }}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            Dott. {doc.firstName} {doc.lastName}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip size="small" label={doc.specialty || 'Medicina del Lavoro'} color="primary" variant="outlined" />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption" fontFamily="monospace">
+                            {doc.medicalLicenseNumber || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {doc.email || '—'}
+                          </Typography>
+                          {doc.phone && (
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {doc.phone}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isSelected ? (
+                            <Chip size="small" label="Assegnato" color="success" icon={<CheckCircleIcon />} />
+                          ) : (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              sx={{ textTransform: 'none', px: 1.5 }}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const val = Number(doc.id)
+                                setCoordinatorDoctorId(val)
+                                if (!assignedDoctorIds.includes(val)) {
+                                  setAssignedDoctorIds((current) => [...current, val])
+                                }
+                                setDirty(true)
+                                setDoctorLookupOpen(false)
+                              }}
+                            >
+                              Seleziona
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                })()}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions sx={{ px: 2.5, py: 1.5, justifyContent: 'space-between' }}>
+          <Button
+            color="error"
+            onClick={() => {
+              setCoordinatorDoctorId(null)
+              setDirty(true)
+              setDoctorLookupOpen(false)
+            }}
+            sx={{ textTransform: 'none' }}
+          >
+            Rimuovi assegnazione
+          </Button>
+          <Button variant="outlined" onClick={() => setDoctorLookupOpen(false)} sx={{ textTransform: 'none' }}>
+            Chiudi
+          </Button>
+        </DialogActions>
+      </Dialog>
       {healthPlanOpen && <HealthPlanPreview open={healthPlanOpen} onClose={() => setHealthPlanOpen(false)} companyId={company?.id} />}
       {analyticsOpen && <EnterpriseAnalyticsDashboard open={analyticsOpen} onClose={() => setAnalyticsOpen(false)} companyId={company?.id} />}
       {allegato3bOpen && <Allegato3BPreview open={allegato3bOpen} onClose={() => setAllegato3bOpen(false)} companyId={company?.id} />}

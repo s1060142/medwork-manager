@@ -75,8 +75,8 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         var encryptedRequiredStringConverter = new ValueConverter<string, string>(
-            value => _fieldEncryptionService.Encrypt(value),
-            value => _fieldEncryptionService.Decrypt(value));
+            value => string.IsNullOrWhiteSpace(value) ? (value ?? string.Empty) : (_fieldEncryptionService != null ? _fieldEncryptionService.Encrypt(value) : (value ?? string.Empty)),
+            value => string.IsNullOrWhiteSpace(value) ? (value ?? string.Empty) : (_fieldEncryptionService != null ? _fieldEncryptionService.Decrypt(value) : (value ?? string.Empty)));
 
         var encryptedNullableStringConverter = new ValueConverter<string?, string?>(
             value => string.IsNullOrWhiteSpace(value) ? value : _fieldEncryptionService.Encrypt(value),
@@ -335,7 +335,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<VisitExam>(entity =>
         {
-            entity.Property(x => x.Result).HasMaxLength(3000).HasConversion(encryptedRequiredStringConverter).IsRequired();
+            entity.Property(x => x.Result).HasMaxLength(3000).HasConversion(encryptedNullableStringConverter);
             entity.Property(x => x.Notes).HasMaxLength(2000);
             entity.Property(x => x.ReferenceRange).HasMaxLength(300);
 

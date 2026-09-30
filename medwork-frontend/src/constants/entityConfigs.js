@@ -15,7 +15,16 @@ export const ENTITY_CONFIGS = [
     fields: [
       { name: 'name', label: 'Nome Azienda', type: 'text', required: true, minLength: 2, maxLength: 200, placeholder: 'Es. Acme Industria S.p.A.' },
       { name: 'companyGroupId', label: 'Gruppo Aziendale', type: 'select', required: false, optionsEndpoint: '/api/master-data/company-groups', optionValue: 'id', optionLabel: 'name' },
-      { name: 'coordinatorDoctorName', label: 'Medico Competente', type: 'text', readOnly: true },
+      {
+        name: 'coordinatorDoctorId',
+        label: 'Medico Competente',
+        type: 'lookup',
+        required: false,
+        optionsEndpoint: '/api/master-data/doctors',
+        optionValue: 'id',
+        optionLabel: 'doctor',
+        placeholder: 'Cerca e seleziona Medico Competente...',
+      },
       { name: 'legalName', label: 'Ragione Sociale', type: 'text', required: false, minLength: 2, maxLength: 250, placeholder: 'Es. ACME SPA' },
       {
         name: 'vatNumber',
@@ -155,7 +164,7 @@ export const ENTITY_CONFIGS = [
       { name: 'jobRole', label: 'Mansione', type: 'text', required: true, minLength: 2, maxLength: 120, placeholder: 'Es. Operatore linea' },
       { name: 'personalEmail', label: 'Email Personale', type: 'email', required: false, maxLength: 150, placeholder: 'Es. nome.cognome@email.it' },
       { name: 'phoneNumber', label: 'Telefono', type: 'tel', required: false, maxLength: 30, placeholder: 'Es. +39 333 1234567' },
-      { name: 'companyDoctorName', label: 'Medico Competente (Aziendale)', type: 'text', readOnly: true },
+      { name: 'companyDoctorId', label: 'Medico Competente (Aziendale)', type: 'lookup', optionsEndpoint: '/api/master-data/doctors', optionValue: 'id', optionLabel: 'doctor', placeholder: 'Seleziona Medico Competente...' },
       { name: 'medicoCurante', label: 'Medico Curante', type: 'text', required: false, maxLength: 150 },
       { name: 'indirizzoMedico', label: 'Indirizzo Medico', type: 'text', required: false, maxLength: 250 },
       { name: 'telefonoMedico', label: 'Telefono Medico', type: 'tel', required: false, maxLength: 30 },

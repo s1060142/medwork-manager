@@ -291,6 +291,28 @@ html, body {
   box-shadow: var(--shadow-xs);
 }
 
+/* --- Zero selection effect on table rows: only double-click is active --- */
+.MuiTableBody-root .MuiTableRow-root {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.MuiTableBody-root .MuiTableRow-root:focus,
+.MuiTableBody-root .MuiTableRow-root:focus-visible,
+.MuiTableBody-root .MuiTableRow-root:active,
+.MuiTableBody-root .MuiTableRow-root.Mui-selected,
+.MuiTableBody-root .MuiTableRow-root.Mui-selected:hover,
+.MuiTableBody-root .MuiTableRow-root.Mui-selected:focus,
+.MuiTableBody-root .MuiTableRow-root.Mui-selected > .MuiTableCell-root {
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.MuiTableBody-root .MuiTableRow-root.has-checkbox.Mui-selected {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
 /* --- Module Chip Strip --- */
 .mw-chip-strip,
 .legacy-module-strip {

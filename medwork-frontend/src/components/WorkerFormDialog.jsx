@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -10,9 +12,11 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  InputAdornment,
   MenuItem,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
@@ -21,6 +25,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh'
 import BusinessIcon from '@mui/icons-material/Business'
 import BadgeIcon from '@mui/icons-material/Badge'
 import ContactMailIcon from '@mui/icons-material/ContactMail'
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
 import { apiGet, apiSend } from '../services/apiClient'
 import { showNotification } from '../utils/notification'
 import { calculateItalianTaxCode } from '../utils/taxCode'
@@ -41,6 +46,7 @@ export default function WorkerFormDialog({
   const [companies, setCompanies] = useState([])
   const [branches, setBranches] = useState([])
   const [jobRoles, setJobRoles] = useState([])
+  const [doctors, setDoctors] = useState([])
   const [municipalities, setMunicipalities] = useState([])
   const [loadingInitial, setLoadingInitial] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -50,6 +56,9 @@ export default function WorkerFormDialog({
   const [form, setForm] = useState({
     companyId: '',
     branchId: '',
+    doctorId: '',
+    dataAssunzione: '',
+    statoRisorsa: 'Attivo',
     firstName: '',
     lastName: '',
     gender: 'M',
@@ -77,22 +86,31 @@ export default function WorkerFormDialog({
       apiGet('/api/master-data/companies').catch(() => []),
       apiGet('/api/master-data/branches').catch(() => []),
       apiGet('/api/master-data/job-roles').catch(() => []),
+      apiGet('/api/master-data/doctors').catch(() => []),
       getItalianMunicipalities().catch(() => []),
-    ]).then(([comps, brs, roles, munis]) => {
+    ]).then(([comps, brs, roles, docs, munis]) => {
       const compList = Array.isArray(comps) ? comps : (comps?.data || [])
       const branchList = Array.isArray(brs) ? brs : (brs?.data || [])
       const roleList = Array.isArray(roles) ? roles : (roles?.data || [])
+      const docList = Array.isArray(docs) ? docs : (docs?.data || [])
       const muniList = Array.isArray(munis) ? munis : []
 
       setCompanies(compList)
       setBranches(branchList)
       setJobRoles(roleList)
+      setDoctors(docList)
       setMunicipalities(muniList)
 
       if (worker?.id) {
+        const workerCompany = compList.find((c) => Number(c.id) === Number(worker.companyId))
+        const assignedDoctorId = worker.companyDoctorId || workerCompany?.coordinatorDoctorId || ''
+
         setForm({
           companyId: worker.companyId ? Number(worker.companyId) : '',
           branchId: worker.branchId ? Number(worker.branchId) : '',
+          doctorId: assignedDoctorId ? Number(assignedDoctorId) : '',
+          dataAssunzione: worker.dataAssunzione ? worker.dataAssunzione.split('T')[0] : (worker.hireDate ? worker.hireDate.split('T')[0] : ''),
+          statoRisorsa: worker.statoRisorsa || 'Attivo',
           firstName: worker.firstName || '',
           lastName: worker.lastName || '',
           gender: worker.gender || 'M',
@@ -112,6 +130,7 @@ export default function WorkerFormDialog({
           ? Number(initialCompanyId)
           : (compList[0]?.id ? Number(compList[0].id) : '')
 
+        const compObj = compList.find((c) => Number(c.id) === defaultCompany)
         const availableBranches = branchList.filter((b) => !defaultCompany || Number(b.companyId) === Number(defaultCompany))
         const defaultBranch = initialBranchId && initialBranchId !== 'all'
           ? Number(initialBranchId)
@@ -120,6 +139,9 @@ export default function WorkerFormDialog({
         setForm({
           companyId: defaultCompany,
           branchId: defaultBranch,
+          doctorId: compObj?.coordinatorDoctorId ? Number(compObj.coordinatorDoctorId) : '',
+          dataAssunzione: new Date().toISOString().split('T')[0],
+          statoRisorsa: 'Attivo',
           firstName: '',
           lastName: '',
           gender: 'M',
@@ -142,10 +164,12 @@ export default function WorkerFormDialog({
   const handleCompanyChange = (companyId) => {
     const compId = Number(companyId)
     const availableBranches = branches.filter((b) => Number(b.companyId) === compId)
+    const compObj = companies.find((c) => Number(c.id) === compId)
     setForm((prev) => ({
       ...prev,
       companyId: compId,
       branchId: availableBranches[0]?.id ? Number(availableBranches[0].id) : '',
+      doctorId: compObj?.coordinatorDoctorId ? Number(compObj.coordinatorDoctorId) : prev.doctorId,
     }))
     if (errors.companyId) setErrors((e) => ({ ...e, companyId: null }))
   }
@@ -216,6 +240,11 @@ export default function WorkerFormDialog({
     const payload = {
       companyId: Number(form.companyId),
       branchId: Number(form.branchId),
+      companyDoctorId: form.doctorId ? Number(form.doctorId) : null,
+      coordinatorDoctorId: form.doctorId ? Number(form.doctorId) : null,
+      dataAssunzione: form.dataAssunzione ? form.dataAssunzione : null,
+      hireDate: form.dataAssunzione ? form.dataAssunzione : null,
+      statoRisorsa: form.statoRisorsa || 'Attivo',
       firstName: form.firstName.trim(),
       lastName: form.lastName.trim(),
       taxCode: form.taxCode.trim().toUpperCase(),
@@ -226,6 +255,8 @@ export default function WorkerFormDialog({
       jobRole: form.jobRole || 'Operaio',
       reparto: form.reparto || null,
       matricola: form.matricola || null,
+      personalEmail: form.email || null,
+      phoneNumber: form.phone || null,
       email: form.email || null,
       phone: form.phone || null,
       domicilio: form.domicilio || null,
@@ -243,6 +274,19 @@ export default function WorkerFormDialog({
         showNotification(`Lavoratore ${payload.lastName} ${payload.firstName} inserito con successo.`, 'success')
         appendAuditEvent({ module: 'Workers', action: 'Create', detail: `${payload.lastName} ${payload.firstName} (CF: ${payload.taxCode})` })
         window.dispatchEvent(new CustomEvent('medwork:employee-created', { detail: savedResult }))
+      }
+
+      // Sincronizza eventuale Medico Competente sull'azienda
+      if (form.doctorId && form.companyId) {
+        try {
+          await apiSend('PUT', '/api/admin-data/company-doctors', {
+            companyId: Number(form.companyId),
+            doctorId: Number(form.doctorId),
+            isCoordinator: true,
+          })
+        } catch (docErr) {
+          console.warn('Sync company doctor:', docErr)
+        }
       }
 
       onSaved?.(savedResult || payload)
@@ -305,7 +349,7 @@ export default function WorkerFormDialog({
               <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
                 <BusinessIcon fontSize="small" color="primary" />
                 <Typography variant="subtitle2" fontWeight={700} color="#0f1f3d">
-                  1. Inquadramento Aziendale & Sede Operativa
+                  1. Inquadramento Aziendale & Sorveglianza Sanitaria (D.Lgs. 81/08)
                 </Typography>
               </Stack>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
@@ -345,6 +389,46 @@ export default function WorkerFormDialog({
                 </TextField>
               </Box>
 
+              {/* MEDICO COMPETENTE NOMINATO */}
+              <Box sx={{ mt: 2 }}>
+                <Autocomplete
+                  size="small"
+                  options={doctors}
+                  getOptionLabel={(d) => {
+                    if (!d) return ''
+                    return `Dott. ${d.firstName} ${d.lastName} (${d.specialty || 'Medicina del Lavoro'})${d.medicalLicenseNumber ? ` • Albo: ${d.medicalLicenseNumber}` : ''}`
+                  }}
+                  value={doctors.find((d) => Number(d.id) === Number(form.doctorId)) || null}
+                  onChange={(_, val) => {
+                    setForm((prev) => ({ ...prev, doctorId: val?.id ? Number(val.id) : '' }))
+                  }}
+                  isOptionEqualToValue={(option, value) => Number(option.id) === Number(value?.id)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Medico Competente Incaricato (D.Lgs. 81/08 Art. 38)"
+                      placeholder="Cerca e seleziona Medico Competente..."
+                      helperText={
+                        form.doctorId
+                          ? '✓ Medico Competente assegnato alla sorveglianza sanitaria del lavoratore'
+                          : 'Seleziona il Medico Competente nominato (ereditato da convenzione aziendale o incaricato)'
+                      }
+                      InputProps={{
+                        ...params.InputProps,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <MedicalServicesIcon color="primary" fontSize="small" />
+                            </InputAdornment>
+                            {params.InputProps.startAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              </Box>
+
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2, mt: 2 }}>
                 <TextField
                   size="small"
@@ -367,6 +451,36 @@ export default function WorkerFormDialog({
                   onChange={(e) => setForm((prev) => ({ ...prev, matricola: e.target.value }))}
                   placeholder="Es. MAT-042"
                 />
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 2 }}>
+                <DatePicker
+                  label="Data Assunzione (Allegato 3A)"
+                  value={currentDateValue(form.dataAssunzione)}
+                  onChange={(date) => {
+                    setForm((prev) => ({ ...prev, dataAssunzione: formDateValue(date) }))
+                  }}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      helperText: 'Inizio rapporto per computo anzianità mansione',
+                      InputLabelProps: { shrink: true },
+                    },
+                  }}
+                />
+                <TextField
+                  select
+                  size="small"
+                  label="Stato Lavoratore"
+                  value={form.statoRisorsa || 'Attivo'}
+                  onChange={(e) => setForm((prev) => ({ ...prev, statoRisorsa: e.target.value }))}
+                  helperText="Stato per inclusione in sorveglianza e scadenzario"
+                >
+                  <MenuItem value="Attivo">Attivo</MenuItem>
+                  <MenuItem value="In prova">In prova</MenuItem>
+                  <MenuItem value="Sospeso">Sospeso</MenuItem>
+                  <MenuItem value="Cessato">Cessato</MenuItem>
+                </TextField>
               </Box>
             </Box>
 

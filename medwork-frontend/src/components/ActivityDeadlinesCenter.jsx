@@ -124,8 +124,6 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
                       key={item.id}
                       hover
                       tabIndex={0}
-                      selected={isSelected}
-                      onClick={() => setSelectedRowId(item.id)}
                       onDoubleClick={() => handleOpenExecute(item)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -135,8 +133,6 @@ function ActivityDeadlinesCenter({ activeCompanyId = '' }) {
                       }}
                       sx={{
                         cursor: 'pointer',
-                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       }}
                     >
                       <TableCell><strong>{item.activityType}</strong></TableCell>

@@ -863,7 +863,6 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
               <Table size="small" sx={{ minWidth: 1100 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell padding="checkbox" />
                     <TableCell>Azienda</TableCell>
                     <TableCell>Lavoratore</TableCell>
                     <TableCell>Mansione</TableCell>
@@ -877,7 +876,7 @@ function ReportsCenter({ activeAnalysisTab: initialTab = 'visits', onAnalysisTab
                 </TableHead>
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={10}>
+                    <TableCell colSpan={9}>
                       <Typography variant="body2" color="text.secondary">Nessuna visita trovata.</Typography>
                     </TableCell>
                   </TableRow>

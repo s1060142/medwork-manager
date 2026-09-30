@@ -143,8 +143,6 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
                       key={item.id}
                       hover
                       tabIndex={0}
-                      selected={isSelected}
-                      onClick={() => setSelectedRowId(item.id)}
                       onDoubleClick={() => handleOpenManage(item)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -154,8 +152,6 @@ function AppointmentsCenter({ activeCompanyId = '' }) {
                       }}
                       sx={{
                         cursor: 'pointer',
-                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       }}
                     >
                       <TableCell><strong>{new Date(item.startTime).toLocaleDateString('it-IT')}</strong></TableCell>

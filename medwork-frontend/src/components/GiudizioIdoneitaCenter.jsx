@@ -600,8 +600,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
                     key={row.id}
                     hover
                     tabIndex={0}
-                    selected={isSelected || isRowFocused}
-                    onClick={() => setSelectedRowId(row.id)}
                     onDoubleClick={() => openEdit(row)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -611,8 +609,6 @@ export default function GiudizioIdoneitaCenter({ medicalVisitId = null, activeCo
                     }}
                     sx={{
                       cursor: 'pointer',
-                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                     }}
                   >
                     <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>

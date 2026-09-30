@@ -144,8 +144,6 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                       key={item.id}
                       hover
                       tabIndex={0}
-                      selected={isSelected}
-                      onClick={() => setSelectedRowId(item.id)}
                       onDoubleClick={() => handleOpenRecord(item)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -155,8 +153,6 @@ function VaccinationDeadlinesCenter({ activeCompanyId = '' }) {
                       }}
                       sx={{
                         cursor: 'pointer',
-                        '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                        '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       }}
                     >
                       <TableCell><strong>{item.employee?.company?.name || '-'}</strong></TableCell>

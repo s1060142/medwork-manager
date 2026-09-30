@@ -100,6 +100,18 @@ public class Employee
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]
     public string? Nazionalita { get => Nationality; set => Nationality = value; }
 
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? Email { get => PersonalEmail; set => PersonalEmail = value; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? Phone { get => PhoneNumber; set => PhoneNumber = value; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public int? CompanyDoctorId { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string? CompanyDoctorName { get; set; }
+
     [StringLength(100)]
     public string? EducationLevel { get; set; }
 

@@ -81,6 +81,27 @@ public class AdminCrudController : BaseController
                 x.IsActive,
                 x.CompanyGroupId,
                 CompanyGroupName = x.CompanyGroup != null ? x.CompanyGroup.Name : null,
+                CoordinatorDoctorId = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault(),
+                CoordinatorDoctorName = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault(),
+                DoctorName = x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault(),
             })
             .ToListAsync();
         return Ok(data);
@@ -100,6 +121,25 @@ public class AdminCrudController : BaseController
 
             _dbContext.Companies.Add(request);
             await _dbContext.SaveChangesAsync();
+
+            if (request.CoordinatorDoctorId.HasValue && request.CoordinatorDoctorId.Value > 0)
+            {
+                var docId = request.CoordinatorDoctorId.Value;
+                var docExists = await _dbContext.Doctors.AnyAsync(d => d.Id == docId && d.TenantId == tenantId);
+                if (docExists)
+                {
+                    _dbContext.CompanyDoctors.Add(new CompanyDoctor
+                    {
+                        CompanyId = request.Id,
+                        DoctorId = docId,
+                        IsCoordinator = true,
+                        IsActive = true,
+                        TenantId = tenantId
+                    });
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+
             return Ok(request);
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
@@ -189,6 +229,54 @@ public class AdminCrudController : BaseController
                                 entity.CompanyGroupId = request.CompanyGroupId;
                                 entity.UpdatedAt = DateTime.UtcNow;
 
+                if (request.CoordinatorDoctorId.HasValue)
+                {
+                    var docId = request.CoordinatorDoctorId.Value;
+                    if (docId > 0)
+                    {
+                        var docExists = await _dbContext.Doctors.AnyAsync(d => d.Id == docId && d.TenantId == tenantId);
+                        if (docExists)
+                        {
+                            var existingCd = await _dbContext.CompanyDoctors
+                                .Where(cd => cd.CompanyId == id && cd.TenantId == tenantId)
+                                .ToListAsync();
+
+                            var target = existingCd.FirstOrDefault(cd => cd.DoctorId == docId);
+                            if (target != null)
+                            {
+                                target.IsCoordinator = true;
+                                target.IsActive = true;
+                            }
+                            else
+                            {
+                                _dbContext.CompanyDoctors.Add(new CompanyDoctor
+                                {
+                                    CompanyId = id,
+                                    DoctorId = docId,
+                                    IsCoordinator = true,
+                                    IsActive = true,
+                                    TenantId = tenantId
+                                });
+                            }
+
+                            foreach (var other in existingCd.Where(cd => cd.DoctorId != docId && cd.IsCoordinator))
+                            {
+                                other.IsCoordinator = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var existingCd = await _dbContext.CompanyDoctors
+                            .Where(cd => cd.CompanyId == id && cd.TenantId == tenantId && cd.IsCoordinator)
+                            .ToListAsync();
+                        foreach (var cd in existingCd)
+                        {
+                            cd.IsCoordinator = false;
+                        }
+                    }
+                }
+
                 await _dbContext.SaveChangesAsync();
                 return Ok(entity);
             }
@@ -206,6 +294,23 @@ public class AdminCrudController : BaseController
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id && x.TenantId == tenantId);
             if (entity is null) return NotFound();
+
+            var coordDoc = await _dbContext.CompanyDoctors
+                .Where(x => x.CompanyId == id && x.TenantId == tenantId && x.IsActive && x.IsCoordinator)
+                .Include(x => x.Doctor)
+                .FirstOrDefaultAsync() ?? await _dbContext.CompanyDoctors
+                .Where(x => x.CompanyId == id && x.TenantId == tenantId && x.IsActive)
+                .Include(x => x.Doctor)
+                .FirstOrDefaultAsync();
+
+            if (coordDoc != null)
+            {
+                entity.CoordinatorDoctorId = coordDoc.DoctorId;
+                entity.CoordinatorDoctorName = coordDoc.Doctor != null
+                    ? $"Dott. {coordDoc.Doctor.FirstName} {coordDoc.Doctor.LastName}"
+                    : null;
+            }
+
             return Ok(entity);
         }
 
@@ -322,7 +427,34 @@ public class AdminCrudController : BaseController
                 x.TaxCode,
                 x.JobRole,
                 x.CompanyId,
-                x.BranchId
+                CompanyName = x.Company != null ? x.Company.Name : null,
+                x.BranchId,
+                BranchAddress = x.Branch != null ? x.Branch.Address : null,
+                x.BirthDate,
+                x.Gender,
+                x.BirthCity,
+                x.BirthCityCode,
+                x.PersonalEmail,
+                x.PhoneNumber,
+                x.Reparto,
+                x.Matricola,
+                x.DataAssunzione,
+                x.StatoRisorsa,
+                x.Domicilio,
+                CompanyDoctorId = x.Company != null ? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() ?? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive)
+                    .Select(cd => (int?)cd.DoctorId)
+                    .FirstOrDefault() : null,
+                CompanyDoctorName = x.Company != null ? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.IsCoordinator && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() ?? x.Company.CompanyDoctors
+                    .Where(cd => cd.IsActive && cd.Doctor != null)
+                    .Select(cd => "Dott. " + cd.Doctor.FirstName + " " + cd.Doctor.LastName)
+                    .FirstOrDefault() : null,
             })
             .ToListAsync();
         return Ok(data);
@@ -337,6 +469,26 @@ public class AdminCrudController : BaseController
             request.TenantId = tenantId;
             _dbContext.Employees.Add(request);
             await _dbContext.SaveChangesAsync();
+
+            // Sincronizza eventuale Medico Competente indicato
+            if (request.CompanyDoctorId.HasValue && request.CompanyDoctorId.Value > 0 && request.CompanyId > 0)
+            {
+                var existingDoc = await _dbContext.CompanyDoctors
+                    .FirstOrDefaultAsync(cd => cd.CompanyId == request.CompanyId && cd.DoctorId == request.CompanyDoctorId.Value && cd.TenantId == tenantId);
+                if (existingDoc == null)
+                {
+                    _dbContext.CompanyDoctors.Add(new CompanyDoctor
+                    {
+                        TenantId = tenantId,
+                        CompanyId = request.CompanyId,
+                        DoctorId = request.CompanyDoctorId.Value,
+                        IsCoordinator = true,
+                        IsActive = true,
+                        AssignedAt = DateTime.UtcNow
+                    });
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
 
             await _personalProtocolAssignmentService.AssignDefaultsForEmployeeAsync(request.Id);
 
@@ -407,6 +559,26 @@ public class AdminCrudController : BaseController
         entity.NotePerAzienda = request.NotePerAzienda;
         entity.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
+
+        if (request.CompanyDoctorId.HasValue && request.CompanyDoctorId.Value > 0 && entity.CompanyId > 0)
+        {
+            var existingDoc = await _dbContext.CompanyDoctors
+                .FirstOrDefaultAsync(cd => cd.CompanyId == entity.CompanyId && cd.DoctorId == request.CompanyDoctorId.Value && cd.TenantId == tenantId);
+            if (existingDoc == null)
+            {
+                _dbContext.CompanyDoctors.Add(new CompanyDoctor
+                {
+                    TenantId = tenantId,
+                    CompanyId = entity.CompanyId,
+                    DoctorId = request.CompanyDoctorId.Value,
+                    IsCoordinator = true,
+                    IsActive = true,
+                    AssignedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
         return Ok(entity);
     }
 
@@ -915,6 +1087,13 @@ public class AdminCrudController : BaseController
 
     private static bool IsUniqueConstraintViolation(DbUpdateException exception)
     {
-        return exception.InnerException is SqlException { Number: 2601 or 2627 };
+        if (exception.InnerException is SqlException { Number: 2601 or 2627 })
+            return true;
+
+        if (exception.InnerException is Microsoft.Data.Sqlite.SqliteException sqliteEx &&
+            (sqliteEx.SqliteErrorCode == 19 || sqliteEx.Message.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
     }
 }

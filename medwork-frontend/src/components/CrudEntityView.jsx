@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
+  Autocomplete,
+  Avatar,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -24,6 +27,7 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
@@ -35,12 +39,16 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload'
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import CloseIcon from '@mui/icons-material/Close'
+import PersonSearchIcon from '@mui/icons-material/PersonSearch'
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { apiGet, apiSend } from '../services/apiClient'
 import { getItalianMunicipalities } from '../services/municipalityService'
 import { calculateItalianTaxCode } from '../utils/taxCode'
 import { downloadCsv } from '../utils/csv'
 import { formDateValue } from '../utils/datePicker'
 import EmployeeProfileDialog from './EmployeeProfileDialog'
+import CompanyProfileDialog from './CompanyProfileDialog'
 import { showNotification } from '../utils/notification'
 
 function defaultFormData(fields) {
@@ -77,21 +85,29 @@ function buildCompositeQuery(config, row) {
 }
 
 function getOptionLabel(option, field) {
-  if (field.optionLabel === 'lastName') {
+  if (!option) return ''
+  if (field?.optionLabel === 'doctor') {
+    const name = `Dott. ${option.firstName || ''} ${option.lastName || ''}`.trim()
+    const spec = option.specialty ? ` (${option.specialty})` : ''
+    const albo = option.medicalLicenseNumber ? ` • Albo: ${option.medicalLicenseNumber}` : ''
+    return `${name}${spec}${albo}`
+  }
+
+  if (field?.optionLabel === 'lastName') {
     const firstName = option.firstName ? `${option.firstName} ` : ''
     return `${firstName}${option.lastName}`.trim()
   }
 
-  if (field.optionLabel === 'address') {
+  if (field?.optionLabel === 'address') {
     return `${option.address}${option.city ? ` (${option.city})` : ''}`
   }
 
-  if (field.optionLabel === 'outcome') {
+  if (field?.optionLabel === 'outcome') {
     const dateText = option.visitDate ? ` - ${new Date(option.visitDate).toLocaleDateString('it-IT')}` : ''
     return `${option.outcome}${dateText}`
   }
 
-  return option[field.optionLabel] ?? option.label ?? String(option[field.optionValue] ?? option.value ?? option)
+  return option[field?.optionLabel] ?? option.label ?? String(option[field?.optionValue] ?? option.value ?? option)
 }
 
 const QUERY_OPERATORS = [
@@ -248,10 +264,12 @@ function CrudEntityView({
   const [municipalitiesError, setMunicipalitiesError] = useState('')
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [selectedRowId, setSelectedRowId] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [profileEmployee, setProfileEmployee] = useState(null)
   const [profileCompany, setProfileCompany] = useState(null)
+  const [doctorLookupModalOpen, setDoctorLookupModalOpen] = useState(false)
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState('')
+  const [activeLookupField, setActiveLookupField] = useState(null)
   const [queryRules, setQueryRules] = useState([])
   const [dirty, setDirty] = useState(false)
   const markDirty = (updater) => {
@@ -261,9 +279,12 @@ function CrudEntityView({
 
   const handleOpenRow = (row) => {
     if (!row) return
-    setSelectedRowId(row[config.idField || 'id'] ?? row._id)
-    if (config.key === 'companies' && onOpenCompanyProfile) {
-      onOpenCompanyProfile(row)
+    if (config.key === 'companies') {
+      if (onOpenCompanyProfile) {
+        onOpenCompanyProfile(row)
+      } else {
+        setProfileCompany(row)
+      }
     } else if (config.key === 'employees') {
       if (onOpenEmployeeProfile) {
         onOpenEmployeeProfile(row)
@@ -447,7 +468,9 @@ function CrudEntityView({
   }
 
   const loadSelects = async () => {
-    const selectFields = config.fields.filter((field) => field.type === 'select' && field.optionsEndpoint)
+    const selectFields = config.fields.filter(
+      (field) => (field.type === 'select' || field.type === 'lookup') && field.optionsEndpoint,
+    )
     const uniqueEndpoints = [...new Set(selectFields.map((field) => field.optionsEndpoint))]
     const entries = await Promise.all(
       uniqueEndpoints.map(async (endpoint) => {
@@ -564,11 +587,27 @@ function CrudEntityView({
     setEditingRow(row)
     setFormData(
       config.fields.reduce((accumulator, field) => {
-        const rawValue = row[field.name]
+        let rawValue = row[field.name]
+        if (field.name === 'coordinatorDoctorId') {
+          if (rawValue === undefined || rawValue === null || rawValue === '') {
+            rawValue = row.coordinatorDoctorId ?? row.doctorId ?? ''
+          }
+          if (!rawValue && (row.coordinatorDoctorName || row.doctorName)) {
+            const doctors = selectOptions[field.optionsEndpoint] || []
+            const targetName = (row.coordinatorDoctorName || row.doctorName).trim().toLowerCase()
+            const found = doctors.find(
+              (d) =>
+                `Dott. ${d.firstName} ${d.lastName}`.toLowerCase() === targetName ||
+                `${d.lastName} ${d.firstName}`.toLowerCase() === targetName ||
+                `${d.firstName} ${d.lastName}`.toLowerCase() === targetName,
+            )
+            if (found) rawValue = found.id
+          }
+        }
         if (field.type === 'date') {
           accumulator[field.name] = formDateValue(rawValue ? new Date(rawValue) : null)
         } else {
-          accumulator[field.name] = rawValue
+          accumulator[field.name] = rawValue ?? ''
         }
         return accumulator
       }, {}),
@@ -684,10 +723,43 @@ function CrudEntityView({
         }
       })
 
+      if (config.key === 'companies' && payload.coordinatorDoctorId !== undefined) {
+        payload.coordinatorDoctorId = payload.coordinatorDoctorId ? Number(payload.coordinatorDoctorId) : null
+      }
+
       if (editingRow) {
         const rowId = editingRow[config.idField || 'id']
         const updateUrl = rowId != null ? `${config.updateEndpoint}/${rowId}` : config.updateEndpoint
         const updated = await apiSend('PUT', updateUrl, payload)
+
+        if (config.key === 'companies') {
+          const compId = rowId || updated?.id
+          const docId = payload.coordinatorDoctorId ? Number(payload.coordinatorDoctorId) : null
+          await apiSend('PUT', '/api/admin-data/company-doctors', {
+            companyId: Number(compId),
+            doctorIds: docId ? [docId] : [],
+            coordinatorDoctorId: docId,
+          }).catch(console.warn)
+
+          const docObj = (selectOptions['/api/master-data/doctors'] || []).find((d) => Number(d.id) === Number(docId))
+          const docName = docObj ? `Dott. ${docObj.firstName} ${docObj.lastName}` : null
+          if (updated) {
+            updated.coordinatorDoctorId = docId
+            updated.coordinatorDoctorName = docName
+            updated.doctorName = docName
+          }
+          window.dispatchEvent(
+            new CustomEvent('medwork:company-updated', {
+              detail: {
+                id: compId,
+                coordinatorDoctorId: docId,
+                coordinatorDoctorName: docName,
+                doctorName: docName,
+              },
+            }),
+          )
+        }
+
         setRows((current) =>
           current.map((row) => {
             const id = row[config.idField || 'id']
@@ -706,11 +778,20 @@ function CrudEntityView({
           }
         })
         const created = await apiSend('POST', config.createEndpoint, payload)
+        if (config.key === 'companies' && created?.id && payload.coordinatorDoctorId) {
+          const docId = Number(payload.coordinatorDoctorId)
+          await apiSend('PUT', '/api/admin-data/company-doctors', {
+            companyId: Number(created.id),
+            doctorIds: [docId],
+            coordinatorDoctorId: docId,
+          }).catch(console.warn)
+        }
         setRows((current) => [created, ...current])
         setSuccessMessage('Elemento creato correttamente.')
         if (typeof onCreated === 'function') {
           onCreated(created, 'created')
         }
+        loadRows()
       }
 
       setDialogOpen(false)
@@ -767,11 +848,108 @@ function CrudEntityView({
     )
   }
 
+  const renderLookupField = (field) => {
+    const options = field.options || selectOptions[field.optionsEndpoint] || []
+    const currentValue = formData[field.name]
+    const selectedOption =
+      options.find((opt) => Number(opt[field.optionValue || 'id']) === Number(currentValue)) || null
+
+    return (
+      <Autocomplete
+        key={field.name}
+        size="small"
+        options={options}
+        value={selectedOption}
+        onChange={(_, newValue) => {
+          const val = newValue ? newValue[field.optionValue || 'id'] : ''
+          markDirty((current) => ({
+            ...current,
+            [field.name]: val,
+            coordinatorDoctorName: newValue ? `Dott. ${newValue.firstName} ${newValue.lastName}` : '',
+          }))
+        }}
+        getOptionLabel={(option) => {
+          if (!option) return ''
+          if (typeof option === 'string') return option
+          return getOptionLabel(option, field)
+        }}
+        isOptionEqualToValue={(option, val) =>
+          Number(option[field.optionValue || 'id']) === Number(val[field.optionValue || 'id'] || val)
+        }
+        filterOptions={(opts, state) => {
+          const query = (state.inputValue || '').toLowerCase().trim()
+          if (!query) return opts
+          return opts.filter((opt) => {
+            const fullName = `${opt.firstName || ''} ${opt.lastName || ''} ${opt.lastName || ''} ${opt.firstName || ''}`.toLowerCase()
+            const spec = (opt.specialty || '').toLowerCase()
+            const albo = (opt.medicalLicenseNumber || '').toLowerCase()
+            const mail = (opt.email || '').toLowerCase()
+            return fullName.includes(query) || spec.includes(query) || albo.includes(query) || mail.includes(query)
+          })
+        }}
+        renderOption={(props, option) => (
+          <Box component="li" {...props} key={option.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', py: 0.8, gap: 0.2 }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <MedicalServicesIcon fontSize="small" color="primary" />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Dott. {option.firstName} {option.lastName}
+              </Typography>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ pl: 3.2 }}>
+              {option.specialty || 'Medico Competente'}
+              {option.medicalLicenseNumber ? ` • Albo: ${option.medicalLicenseNumber}` : ''}
+              {option.email ? ` • ${option.email}` : ''}
+            </Typography>
+          </Box>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            size="small"
+            label={field.label}
+            placeholder={field.placeholder || 'Cerca per nome, albo, specialità...'}
+            error={Boolean(formErrors[field.name])}
+            helperText={formErrors[field.name]}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {params.InputProps.endAdornment}
+                  <InputAdornment position="end">
+                    <Tooltip title="Apri ricerca avanzata medico (Lookup)">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setActiveLookupField(field)
+                          setDoctorSearchQuery('')
+                          setDoctorLookupModalOpen(true)
+                        }}
+                        aria-label="Cerca medico nella lookup"
+                        sx={{ color: 'primary.main', mr: -0.5 }}
+                      >
+                        <PersonSearchIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                </>
+              ),
+            }}
+          />
+        )}
+      />
+    )
+  }
+
   const renderFormField = (field) => {
     if (field.hiddenInForm) return null
 
     if (field.type === 'select') {
       return renderSelectField(field)
+    }
+
+    if (field.type === 'lookup') {
+      return renderLookupField(field)
     }
 
     if (field.type === 'textarea') {
@@ -877,7 +1055,6 @@ function CrudEntityView({
           <Table size="small" sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox" />
                 {defaultColumns.map((column) => (
                   <TableCell key={column}>{fieldLabels[column] || keyToLabel(column)}</TableCell>
                 ))}
@@ -887,14 +1064,10 @@ function CrudEntityView({
             <TableBody>
               {pagedRows.map((row) => {
                 const rowId = row[config.idField || 'id'] ?? row._id
-                const isSelected = selectedRowId === rowId
                 return (
                   <TableRow
                     key={rowId}
                     hover
-                    tabIndex={0}
-                    selected={isSelected}
-                    onClick={() => setSelectedRowId(rowId)}
                     onDoubleClick={() => handleOpenRow(row)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -904,14 +1077,44 @@ function CrudEntityView({
                     }}
                     sx={{
                       cursor: 'pointer',
-                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
+                      userSelect: 'none',
                     }}
                   >
-                    <TableCell padding="checkbox" />
-                    {defaultColumns.map((column) => (
-                      <TableCell key={column}>{displayValue(row[column])}</TableCell>
-                    ))}
+                    {defaultColumns.map((column) => {
+                      if (column === 'coordinatorDoctorId') {
+                        const docObj = (selectOptions['/api/master-data/doctors'] || []).find(
+                          (d) => Number(d.id) === Number(row[column]),
+                        )
+                        const label =
+                          row.coordinatorDoctorName ||
+                          row.doctorName ||
+                          (docObj ? `Dott. ${docObj.firstName} ${docObj.lastName}` : (row[column] ? `Medico #${row[column]}` : 'Non assegnato'))
+                        return (
+                          <TableCell key={column}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontWeight: row[column] || row.coordinatorDoctorName ? 500 : 400,
+                                color: row[column] || row.coordinatorDoctorName ? 'text.primary' : 'text.secondary',
+                              }}
+                            >
+                              {label}
+                            </Typography>
+                          </TableCell>
+                        )
+                      }
+                      if (column === 'companyGroupId') {
+                        const grp = (selectOptions['/api/master-data/company-groups'] || []).find(
+                          (g) => Number(g.id) === Number(row[column]),
+                        )
+                        return (
+                          <TableCell key={column}>
+                            {row.companyGroupName || (grp ? grp.name : displayValue(row[column]))}
+                          </TableCell>
+                        )
+                      }
+                      return <TableCell key={column}>{displayValue(row[column])}</TableCell>
+                    })}
                     {canEdit && (
                       <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                         <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
@@ -933,8 +1136,12 @@ function CrudEntityView({
                           <Button
                             size="small"
                             onClick={() => {
-                              if (config.key === 'companies' && onOpenCompanyProfile) {
-                                onOpenCompanyProfile(row)
+                              if (config.key === 'companies') {
+                                if (onOpenCompanyProfile) {
+                                  onOpenCompanyProfile(row)
+                                } else {
+                                  setProfileCompany(row)
+                                }
                               } else {
                                 setProfileEmployee(row)
                               }
@@ -951,7 +1158,7 @@ function CrudEntityView({
               })}
               {pagedRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={canEdit ? defaultColumns.length + 2 : defaultColumns.length + 1}>
+                  <TableCell colSpan={canEdit ? defaultColumns.length + 1 : defaultColumns.length}>
                     <Typography variant="body2" color="text.secondary">Nessun elemento disponibile.</Typography>
                   </TableCell>
                 </TableRow>
@@ -1072,6 +1279,197 @@ function CrudEntityView({
           setDialogOpen(true)
         }}
       />
+      <CompanyProfileDialog
+        open={Boolean(profileCompany)}
+        onClose={() => setProfileCompany(null)}
+        company={profileCompany}
+        onSaveCompany={(updated) => {
+          setProfileCompany((current) => (current ? { ...current, ...updated } : current))
+          loadRows()
+        }}
+      />
+
+      {/* LOOKUP MODALE AVANZATA MEDICO COMPETENTE */}
+      <Dialog
+        open={doctorLookupModalOpen}
+        onClose={() => setDoctorLookupModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
+              <MedicalServicesIcon fontSize="small" />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight={700}>
+                Lookup Medico Competente
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                D.Lgs. 81/08 Art. 38 • Seleziona il Medico Competente da nominare per questa azienda
+              </Typography>
+            </Box>
+          </Stack>
+          <IconButton size="small" onClick={() => setDoctorLookupModalOpen(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 2 }}>
+          <TextField
+            size="small"
+            fullWidth
+            placeholder="Cerca per cognome, nome, specializzazione, albo, email..."
+            value={doctorSearchQuery}
+            onChange={(e) => setDoctorSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" color="action" />
+                </InputAdornment>
+              ),
+              endAdornment: doctorSearchQuery ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setDoctorSearchQuery('')}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            }}
+            sx={{ mb: 2 }}
+          />
+
+          <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 380 }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Medico</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Specializzazione</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Iscrizione Albo</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Contatti</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>Azione</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(() => {
+                  const doctors = selectOptions[activeLookupField?.optionsEndpoint || '/api/master-data/doctors'] || []
+                  const q = doctorSearchQuery.toLowerCase().trim()
+                  const filtered = doctors.filter((d) => {
+                    if (!q) return true
+                    const fullName = `${d.firstName || ''} ${d.lastName || ''} ${d.lastName || ''} ${d.firstName || ''}`.toLowerCase()
+                    const spec = (d.specialty || '').toLowerCase()
+                    const albo = (d.medicalLicenseNumber || '').toLowerCase()
+                    const mail = (d.email || '').toLowerCase()
+                    return fullName.includes(q) || spec.includes(q) || albo.includes(q) || mail.includes(q)
+                  })
+
+                  if (filtered.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Nessun medico trovato con i criteri di ricerca inseriti.
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  }
+
+                  const selectedDocId = Number(formData[activeLookupField?.name || 'coordinatorDoctorId'])
+
+                  return filtered.map((doc) => {
+                    const isSelected = selectedDocId === Number(doc.id)
+                    return (
+                      <TableRow
+                        key={doc.id}
+                        hover
+                        selected={isSelected}
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          const targetFieldName = activeLookupField?.name || 'coordinatorDoctorId'
+                          markDirty((current) => ({
+                            ...current,
+                            [targetFieldName]: doc.id,
+                            coordinatorDoctorName: `Dott. ${doc.firstName} ${doc.lastName}`,
+                          }))
+                          setDoctorLookupModalOpen(false)
+                        }}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            Dott. {doc.firstName} {doc.lastName}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip size="small" label={doc.specialty || 'Medicina del Lavoro'} color="primary" variant="outlined" />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption" fontFamily="monospace">
+                            {doc.medicalLicenseNumber || '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            {doc.email || '—'}
+                          </Typography>
+                          {doc.phone && (
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              {doc.phone}
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          {isSelected ? (
+                            <Chip size="small" label="Assegnato" color="success" icon={<CheckCircleIcon />} />
+                          ) : (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              sx={{ textTransform: 'none', px: 1.5 }}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const targetFieldName = activeLookupField?.name || 'coordinatorDoctorId'
+                                markDirty((current) => ({
+                                  ...current,
+                                  [targetFieldName]: doc.id,
+                                  coordinatorDoctorName: `Dott. ${doc.firstName} ${doc.lastName}`,
+                                }))
+                                setDoctorLookupModalOpen(false)
+                              }}
+                            >
+                              Seleziona
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                })()}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions sx={{ px: 2.5, py: 1.5, justifyContent: 'space-between' }}>
+          <Button
+            color="error"
+            onClick={() => {
+              const targetFieldName = activeLookupField?.name || 'coordinatorDoctorId'
+              markDirty((current) => ({
+                ...current,
+                [targetFieldName]: '',
+                coordinatorDoctorName: '',
+              }))
+              setDoctorLookupModalOpen(false)
+            }}
+            sx={{ textTransform: 'none' }}
+          >
+            Rimuovi assegnazione
+          </Button>
+          <Button variant="outlined" onClick={() => setDoctorLookupModalOpen(false)} sx={{ textTransform: 'none' }}>
+            Chiudi
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* UNSAVED CHANGES CONFIRMATION DIALOG */}
       <Dialog open={unsavedDialog.open} onClose={() => setUnsavedDialog({ open: false, onConfirm: () => {} })}>
         <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Modifiche non salvate</DialogTitle>

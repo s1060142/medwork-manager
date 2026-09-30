@@ -346,8 +346,6 @@ export default function PhraseTemplatesCenter() {
                         key={phrase.id}
                         hover
                         tabIndex={0}
-                        selected={isSelected}
-                        onClick={() => setSelectedRowId(phrase.id)}
                         onDoubleClick={() => openEdit(phrase)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -357,8 +355,6 @@ export default function PhraseTemplatesCenter() {
                         }}
                         sx={{
                           cursor: 'pointer',
-                          '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                          '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                         }}
                       >
                         <TableCell onClick={(e) => e.stopPropagation()}>

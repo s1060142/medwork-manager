@@ -609,8 +609,6 @@ export default function MedicalStaffCenter() {
                           key={staff.id}
                           hover
                           tabIndex={0}
-                          selected={isSelected}
-                          onClick={() => setSelectedRowId(staff.id)}
                           onDoubleClick={() => handleOpenEdit(staff)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -621,8 +619,6 @@ export default function MedicalStaffCenter() {
                           sx={{
                             cursor: 'pointer',
                             opacity: staff.isActive ? 1 : 0.65,
-                            '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                            '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                           }}
                         >
                           <TableCell>

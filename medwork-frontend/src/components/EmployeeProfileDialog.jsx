@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -49,6 +50,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
   const [visitExams, setVisitExams] = useState([])
   const [employeeRisks, setEmployeeRisks] = useState([])
   const [riskFactors, setRiskFactors] = useState([])
+  const [doctors, setDoctors] = useState([])
   const [dirty, setDirty] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -115,6 +117,8 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       indirizzoDomicilio: employee.indirizzoDomicilio || current.indirizzoDomicilio,
       nazionalita: employee.nazionalita || employee.nationality || current.nazionalita,
       matricola: employee.matricola || current.matricola,
+      companyDoctorId: employee.companyDoctorId || current.companyDoctorId || null,
+      companyDoctorName: employee.companyDoctorName || current.companyDoctorName || '',
       referenteAziendale: employee.referenteAziendale || current.referenteAziendale,
       identificativoMPI: employee.identificativoMPI || current.identificativoMPI,
       statoRisorsa: employee.statoRisorsa || current.statoRisorsa,
@@ -146,17 +150,34 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       try {
         setLoading(true)
         setError('')
-        const [allVisits, allExams, allEmployeeRisks, allRiskFactors] = await Promise.all([
+        const [allVisits, allExams, allEmployeeRisks, allRiskFactors, allDoctors] = await Promise.all([
           apiGet('/api/master-data/medical-visits'),
           apiGet('/api/master-data/visit-exams').catch(() => []),
           apiGet('/api/master-data/employee-risks').catch(() => []),
           apiGet('/api/master-data/risk-factors').catch(() => []),
+          apiGet('/api/master-data/doctors').catch(() => []),
         ])
 
         const empVisits = (Array.isArray(allVisits) ? allVisits : []).filter((item) => Number(item.employeeId) === Number(employee.id))
         setVisits(empVisits)
         setEmployeeRisks((Array.isArray(allEmployeeRisks) ? allEmployeeRisks : []).filter((item) => Number(item.employeeId) === Number(employee.id)))
         setRiskFactors(Array.isArray(allRiskFactors) ? allRiskFactors : [])
+        const docList = Array.isArray(allDoctors) ? allDoctors : (allDoctors?.data || [])
+        setDoctors(docList)
+
+        // If employee has no doctor explicitly, match with company doctor
+        if (!employee.companyDoctorId && docList.length > 0 && employee.companyId) {
+          const companies = await apiGet('/api/master-data/companies').catch(() => [])
+          const compList = Array.isArray(companies) ? companies : (companies?.data || [])
+          const c = compList.find(x => Number(x.id) === Number(employee.companyId))
+          if (c?.coordinatorDoctorId) {
+            setFormData(prev => ({
+              ...prev,
+              companyDoctorId: Number(c.coordinatorDoctorId),
+              companyDoctorName: c.coordinatorDoctorName || prev.companyDoctorName,
+            }))
+          }
+        }
 
         const employeeVisitIds = new Set(empVisits.map((item) => Number(item.id)))
         setVisitExams(
@@ -264,6 +285,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
       const payload = {
         id: employee.id,
         ...formData,
+        companyDoctorId: formData.companyDoctorId ? Number(formData.companyDoctorId) : null,
         nationality: formData.nazionalita || null,
         medicoCurante: formData.medicoCurante || null,
         phoneNumber: formData.phoneNumber === '' ? null : formData.phoneNumber,
@@ -287,6 +309,19 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
         ])
       )
       const updated = await apiSend('PUT', `/api/admin-data/employees/${employee.id}`, sanitizedPayload)
+
+      if (formData.companyDoctorId && (formData.companyId || employee.companyId)) {
+        try {
+          await apiSend('PUT', '/api/admin-data/company-doctors', {
+            companyId: Number(formData.companyId || employee.companyId),
+            doctorId: Number(formData.companyDoctorId),
+            isCoordinator: true,
+          })
+        } catch (syncErr) {
+          console.warn('Sync company doctor:', syncErr)
+        }
+      }
+
       if (typeof onSaveEmployee === 'function') {
         onSaveEmployee(updated)
       }
@@ -323,7 +358,7 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
                   {employee?.jobRole || 'Mansione non specificata'} {employee?.reparto ? `• Reparto: ${employee.reparto}` : ''}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)' }}>
-                  Azienda: <strong>{employee?.companyName || '-'}</strong> • Medico Competente: <strong>{employee?.companyDoctorName || 'Non assegnato'}</strong>
+                  Azienda: <strong>{employee?.companyName || '-'}</strong> • Medico Competente: <strong>{formData.companyDoctorName || employee?.companyDoctorName || 'Non assegnato'}</strong>
                 </Typography>
               </Box>
             </Stack>
@@ -402,12 +437,31 @@ function EmployeeProfileDialog({ open, onClose, employee, onEditEmployee, onSave
               <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1.2, fontWeight: 700 }}>Riferimenti Sanitari & Medico Curante</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-                  <TextField
+                  <Autocomplete
                     size="small"
-                    label="Medico Competente (Aziendale)"
-                    value={employee?.companyDoctorName || 'Nessun medico assegnato'}
-                    InputProps={{ readOnly: true }}
-                    helperText="Rilevato dalla convenzione aziendale"
+                    options={doctors}
+                    getOptionLabel={(d) => {
+                      if (!d) return ''
+                      return `Dott. ${d.firstName} ${d.lastName} (${d.specialty || 'Medicina del Lavoro'})`
+                    }}
+                    value={doctors.find((d) => Number(d.id) === Number(formData.companyDoctorId)) || null}
+                    onChange={(_, val) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        companyDoctorId: val?.id ? Number(val.id) : null,
+                        companyDoctorName: val ? `Dott. ${val.firstName} ${val.lastName}` : '',
+                      }))
+                      setDirty(true)
+                    }}
+                    isOptionEqualToValue={(option, value) => Number(option.id) === Number(value?.id)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Medico Competente (D.Lgs. 81/08)"
+                        placeholder="Seleziona..."
+                        helperText={formData.companyDoctorId ? '✓ Convenzione attiva' : 'Nessun medico assegnato'}
+                      />
+                    )}
                   />
                   <TextField size="small" label="Medico curante (Personale)" value={formData.medicoCurante} onChange={handleFieldChange('medicoCurante')} />
                   <TextField size="small" label="Indirizzo medico" value={formData.indirizzoMedico} onChange={handleFieldChange('indirizzoMedico')} />

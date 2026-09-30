@@ -537,8 +537,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     key={row.id}
                     hover
                     tabIndex={0}
-                    selected={isSelected}
-                    onClick={() => setSelectedRowId(row.id)}
                     onDoubleClick={() => handleOpenRow(row)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -548,8 +546,6 @@ function WorkersCenter({ activeCompanyId = '', activeBranchId = '', onOpenEmploy
                     }}
                     sx={{
                       cursor: 'pointer',
-                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                       backgroundColor: row.isOverdue
                         ? 'rgba(211,47,47,0.05)'
                         : row.isDueSoon

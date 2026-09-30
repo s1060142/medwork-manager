@@ -13,6 +13,7 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   MenuItem,
   Paper,
   Select,
@@ -33,6 +34,8 @@ import EmailIcon from '@mui/icons-material/Email'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import PrintIcon from '@mui/icons-material/Print'
+import CloseIcon from '@mui/icons-material/Close'
 import { apiGet, apiSend } from '../services/apiClient'
 
 const RECALL_TEMPLATES = [
@@ -63,6 +66,8 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
   const [selectedTemplateId, setSelectedTemplateId] = useState('standard')
   const [selectedRowId, setSelectedRowId] = useState(null)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [letterModalOpen, setLetterModalOpen] = useState(false)
+  const [letterCandidates, setLetterCandidates] = useState([])
   
   const [candidates, setCandidates] = useState([])
   const [loading, setLoading] = useState(false)
@@ -154,6 +159,17 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
     }
   }
 
+  const handleOpenAllLetters = () => {
+    if (candidates.length === 0) return
+    setLetterCandidates(candidates)
+    setLetterModalOpen(true)
+  }
+
+  const handleOpenSingleLetter = (candidate) => {
+    setLetterCandidates([candidate])
+    setLetterModalOpen(true)
+  }
+
   return (
     <Stack spacing={3} sx={{ pb: 4 }}>
       {/* HEADER & MORNING DIGEST */}
@@ -235,7 +251,18 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
               </Typography>
             </Box>
 
-            <Stack direction="row" spacing={1.5}>
+            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+              <Button
+                variant="outlined"
+                color="primary"
+                size="small"
+                startIcon={<PrintIcon />}
+                disabled={candidates.length === 0 || loading}
+                onClick={handleOpenAllLetters}
+                sx={{ textTransform: 'none', fontWeight: 600 }}
+              >
+                Stampa Lettere ({candidates.length})
+              </Button>
               <Button
                 variant="outlined"
                 size="small"
@@ -282,8 +309,6 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
                         key={row.employeeId}
                         hover
                         tabIndex={0}
-                        selected={isSelected}
-                        onClick={() => setSelectedRowId(row.employeeId)}
                         onDoubleClick={() => setPreviewOpen(true)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -293,8 +318,6 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
                         }}
                         sx={{
                           cursor: 'pointer',
-                          '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                          '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                         }}
                       >
                         <TableCell>
@@ -316,6 +339,19 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
                         <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                           <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
                             <Chip label="In attesa invio" size="small" color="default" sx={{ fontSize: '0.75rem' }} />
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              startIcon={<PrintIcon />}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleOpenSingleLetter(row)
+                              }}
+                              sx={{ textTransform: 'none', fontSize: '0.72rem', py: 0.2 }}
+                            >
+                              Lettera
+                            </Button>
                             <Button
                               size="small"
                               variant="outlined"
@@ -353,6 +389,134 @@ function RecallCampaignsCenter({ activeCompanyId = '' }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPreviewOpen(false)}>Chiudi</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* FORMAL CONVOCATION LETTER DIALOG (A4 PRINT READY) */}
+      <Dialog
+        open={letterModalOpen}
+        onClose={() => setLetterModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={1} alignItems="center">
+              <PrintIcon color="primary" />
+              <Typography variant="h6" fontWeight={700}>
+                Lettera di Convocazione Visita Medica (Art. 41 D.Lgs. 81/08)
+              </Typography>
+            </Stack>
+            <IconButton onClick={() => setLetterModalOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Stack>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3, bgcolor: '#f1f5f9' }}>
+          <Stack spacing={4}>
+            {letterCandidates.map((cand, idx) => (
+              <Paper
+                key={cand.employeeId || idx}
+                sx={{
+                  p: 4,
+                  bgcolor: '#ffffff',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  border: '1px solid #e2e8f0',
+                  '@media print': {
+                    boxShadow: 'none',
+                    border: 'none',
+                    p: 0,
+                    pageBreakAfter: 'always',
+                  }
+                }}
+              >
+                {/* INTESTAZIONE */}
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ pb: 2, borderBottom: '2px solid #0f172a', mb: 3 }}>
+                  <Box>
+                    <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ letterSpacing: 0.5 }}>
+                      MEDWORK MANAGER — MEDICINA DEL LAVORO
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Servizio di Sorveglianza Sanitaria Aziendale (D.Lgs. 81/08 e s.m.i.)
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Protocollo: <strong>CONV-{cand.employeeId || '00'}-{new Date().getFullYear()}</strong>
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Data emissione: {new Date().toLocaleDateString('it-IT')}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {/* DESTINATARIO E OGGETTO */}
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" display="block">Azienda di appartenenza:</Typography>
+                    <Typography variant="body1" fontWeight={700}>{cand.companyName || 'Azienda'}</Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" color="text.secondary" display="block">Lavoratore convocato:</Typography>
+                    <Typography variant="body1" fontWeight={700}>{cand.employeeName}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Scadenza periodicità: <strong>{new Date(cand.deadlineDate).toLocaleDateString('it-IT')}</strong>
+                    </Typography>
+                  </Grid>
+                </Grid>
+
+                <Alert severity="info" icon={false} sx={{ mb: 3, bgcolor: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e3a8a', fontWeight: 600 }}>
+                  OGGETTO: Convocazione a Visita Medica Preventiva / Periodica di Sorveglianza Sanitaria ex Art. 41 D.Lgs. 81/08.
+                </Alert>
+
+                {/* CORPO DELLA LETTERA */}
+                <Typography variant="body2" sx={{ lineHeight: 1.8, mb: 3 }}>
+                  Gentile Lavoratore/trice,<br />
+                  in ottemperanza agli obblighi di sorveglianza sanitaria prescritti dall&apos;Art. 41 del D.Lgs. 81/08 per la tutela della salute nei luoghi di lavoro, La informiamo che è programmata la Sua visita medica periodica di idoneità alla mansione specifica.
+                </Typography>
+
+                {/* ISTRUZIONI OPERATIVE AL LAVORATORE */}
+                <Paper variant="outlined" sx={{ p: 2.5, bgcolor: '#f8fafc', borderRadius: 2, mb: 3, borderColor: '#cbd5e1' }}>
+                  <Typography variant="subtitle2" fontWeight={700} color="#0f172a" gutterBottom>
+                    📌 Disposizioni obbligatorie per il giorno della visita:
+                  </Typography>
+                  <Typography variant="body2" component="ul" sx={{ pl: 2.5, lineHeight: 1.8, fontSize: '0.875rem' }}>
+                    <li><strong>Documenti di identità:</strong> Presentarsi muniti di documento di riconoscimento valido e tessera sanitaria (codice fiscale).</li>
+                    <li><strong>Ausili visivi:</strong> I lavoratori addetti a VDT o guida che utilizzano occhiali da vista o lenti a contatto devono obbligatoriamente portarli con sé per il controllo della vista (Visiotest).</li>
+                    <li><strong>Esami ematochimici (ove previsti dal protocollo):</strong> Presentarsi rigorosamente a digiuno da almeno 8 ore.</li>
+                    <li><strong>Documentazione sanitaria pregressa:</strong> Portare in visione eventuali cartelle cliniche o referti di visite specialistiche recenti.</li>
+                  </Typography>
+                </Paper>
+
+                {/* FIRME */}
+                <Grid container spacing={4} sx={{ pt: 3, mt: 2, borderTop: '1px solid #e2e8f0' }}>
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary" display="block">Per ricevuta e presa visione (Il Lavoratore):</Typography>
+                    <Box sx={{ height: 40, borderBottom: '1px dashed #94a3b8', mt: 3 }} />
+                  </Grid>
+                  <Grid item xs={6} sx={{ textAlign: 'right' }}>
+                    <Typography variant="caption" color="text.secondary" display="block">Il Medico Competente Nominato:</Typography>
+                    <Typography variant="body2" fontWeight={700} sx={{ mt: 3, fontStyle: 'italic' }}>
+                      Dr. Medico Competente (Art. 38 D.Lgs. 81/08)
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            ))}
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, px: 3, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+          <Button onClick={() => setLetterModalOpen(false)}>Chiudi</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<PrintIcon />}
+            onClick={() => window.print()}
+            sx={{ fontWeight: 700 }}
+          >
+            Stampa / Salva in PDF (A4)
+          </Button>
         </DialogActions>
       </Dialog>
 

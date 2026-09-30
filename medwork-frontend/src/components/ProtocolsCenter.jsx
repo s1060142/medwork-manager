@@ -296,8 +296,6 @@ function ProtocolsCenter() {
                     key={row.id}
                     hover
                     tabIndex={0}
-                    selected={isSelected}
-                    onClick={() => setSelectedRowId(row.id)}
                     onDoubleClick={() => handleOpenEdit(row)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -307,8 +305,6 @@ function ProtocolsCenter() {
                     }}
                     sx={{
                       cursor: 'pointer',
-                      '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.12) !important' },
-                      '&:focus': { outline: '2px solid #3b82f6', outlineOffset: '-2px' },
                     }}
                   >
                     <TableCell>

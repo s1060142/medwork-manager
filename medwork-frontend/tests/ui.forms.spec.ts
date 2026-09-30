@@ -13,8 +13,8 @@ async function loginAsAdmin(page) {
 
 async function openCompanyCreateDialog(page) {
   await page.click('button:has-text("Gestione aziende")')
-  await page.locator('button:has-text("Anagrafica")').click()
-  await page.waitForSelector('text=Anagrafica', { timeout: 5000 })
+  await page.locator('button:has-text("Aziende"), button:has-text("Anagrafica")').first().click()
+  await page.waitForTimeout(500)
   await page.locator('button:has-text("Nuova azienda")').click()
   await expect(page.locator('[role="dialog"]').getByText('Nuova azienda')).toBeVisible({ timeout: 10000 })
 }
@@ -36,8 +36,8 @@ test('company create dialog: Nuovo opens, Salva empty shows validation, Annulla 
 test('company edit dialog: Modifica opens and closes', async ({ page }) => {
   await loginAsAdmin(page)
   await page.click('button:has-text("Gestione aziende")')
-  await page.locator('button:has-text("Anagrafica")').click()
-  await page.waitForSelector('text=Anagrafica', { timeout: 5000 })
+  await page.locator('button:has-text("Aziende"), button:has-text("Anagrafica")').first().click()
+  await page.waitForTimeout(500)
 
   const editBtn = page.locator('button:has-text("Modifica")').first()
   if (await editBtn.count() > 0) {
@@ -50,8 +50,8 @@ test('company edit dialog: Modifica opens and closes', async ({ page }) => {
 test('company row "Profilo" opens CompanyProfileDialog with Salva/Chiudi', async ({ page }) => {
   await loginAsAdmin(page)
   await page.click('button:has-text("Gestione aziende")')
-  await page.locator('button:has-text("Anagrafica")').click()
-  await page.waitForSelector('text=Anagrafica', { timeout: 5000 })
+  await page.locator('button:has-text("Aziende"), button:has-text("Anagrafica")').first().click()
+  await page.waitForTimeout(500)
 
   const profiloBtn = page.locator('table tbody tr button:has-text("Profilo")').first()
   if (await profiloBtn.count() > 0) {
